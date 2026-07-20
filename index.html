@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FC26 Kariyer Paneli</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Firebase (Cloud Sync) -->
+    <script src="https://www.gstatic.com/firebasejs/12.11.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.11.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans h-[100dvh] flex selection:bg-emerald-500 selection:text-white overflow-hidden">
+
+    <!-- Bulut Senkron Durum Rozeti -->
+    <div id="sync-status" class="fixed top-3 right-3 z-[250] flex items-center gap-2 bg-slate-900/90 border border-slate-700 rounded-full px-3 py-1.5 text-xs font-bold text-slate-400 shadow-lg backdrop-blur-sm">
+        <i class="fa-solid fa-cloud"></i><span>Bulut</span>
+    </div>
+
+    <!-- Erişim Kodu (PIN) Ekranı -->
+    <div id="pin-modal" class="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center z-[220] hidden transition-opacity duration-500">
+        <div class="bg-slate-900 p-8 rounded-2xl border border-slate-700 shadow-[0_0_50px_rgba(59,130,246,0.15)] w-[95%] max-w-md fade-in text-center">
+            <h1 class="text-2xl font-black text-white tracking-wider mb-2"><i class="fa-solid fa-cloud text-blue-400 mr-2"></i>Cihazlar Arası Erişim</h1>
+            <p class="text-slate-400 text-sm mb-6">Verilerinize başka cihazlardan da ulaşmak için bir erişim kodu belirleyin. Bu kod hem şifreniz hem de verinizin adresidir — unutmayın ve kimseyle paylaşmayın.</p>
+            <div class="space-y-3 text-left">
+                <div>
+                    <label class="block text-sm font-bold text-slate-300 mb-2">Erişim Kodu</label>
+                    <input type="text" id="pin-input" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-white focus:border-blue-500 outline-none" placeholder="Örn: kaan-galatasaray-26" autocomplete="off">
+                </div>
+                <p id="pin-status" class="text-xs text-red-400 min-h-[1rem]"></p>
+            </div>
+            <button onclick="submitPin()" class="w-full mt-4 bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl shadow-lg transition-all transform hover:scale-105">Bağlan <i class="fa-solid fa-cloud-arrow-up ml-2"></i></button>
+            <button onclick="skipPin()" class="w-full mt-3 text-slate-500 hover:text-slate-300 text-sm font-medium transition-colors">Şimdilik atla, sadece bu cihazda kullan</button>
+        </div>
+    </div>
+
+    <!-- Başlangıç Setup Ekranı -->
+    <div id="setup-modal" class="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center z-[200] transition-opacity duration-500">
+        <div class="bg-slate-900 p-8 rounded-2xl border border-slate-700 shadow-[0_0_50px_rgba(16,185,129,0.1)] w-[95%] max-w-md fade-in text-center">
+            <h1 class="text-3xl font-black text-white tracking-wider mb-2"><span class="text-emerald-500">FC26</span> Kariyer Paneli</h1>
+            <p class="text-slate-400 text-sm mb-8">Kariyerinize başlamak için takımınızı oluşturun.</p>
+            <div class="space-y-5 text-left">
+                <div>
+                    <label class="block text-sm font-bold text-slate-300 mb-2">Ülke Kodu</label>
+                    <input type="text" id="setup-country" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-white uppercase focus:border-emerald-500 outline-none" placeholder="Örn: TUR, ENG" value="TUR">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-slate-300 mb-2">Kulüp Adı</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="setup-name" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-white focus:border-emerald-500 outline-none" placeholder="Takım Adı">
+                        <button onclick="searchTeamLogos('setup')" class="bg-blue-600 hover:bg-blue-500 px-4 rounded-lg text-white font-bold transition-colors" title="Logoları Ara"><i class="fa-solid fa-search"></i></button>
+                        <a href="https://football-logos.cc/" target="_blank" class="bg-indigo-600 hover:bg-indigo-500 flex items-center justify-center px-4 rounded-lg text-white transition-colors" title="Football-Logos.cc Sitesini Aç"><i class="fa-solid fa-globe"></i></a>
+                    </div>
+                </div>
+                <div id="setup-logo-results" class="flex gap-2 overflow-x-auto hidden py-2 hide-scrollbar bg-slate-950/50 rounded-lg px-2 min-h-[60px] items-center border border-slate-700/50"></div>
+                <div>
+                    <label class="block text-sm font-bold text-slate-300 mb-2">Logo URL / Dosya</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="setup-url-input" class="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:border-emerald-500 outline-none">
+                        <input type="file" id="setup-file-input" class="hidden" accept="image/*" onchange="handleFileUpload(event, 'setup')">
+                        <button type="button" id="setup-upload-btn" onclick="document.getElementById('setup-file-input').click()" class="bg-slate-800 px-4 rounded-lg text-slate-300 hover:text-emerald-400"><i class="fa-solid fa-folder-open"></i></button>
+                    </div>
+                </div>
+            </div>
+            <button onclick="finishSetup()" class="w-full mt-8 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 rounded-xl shadow-lg transition-all transform hover:scale-105">Kariyeri Başlat <i class="fa-solid fa-arrow-right ml-2"></i></button>
+        </div>
+    </div>
+
+    <!-- Sol Panel (Ana Menü Sidebar) -->
+    <aside class="w-16 sm:w-20 bg-slate-950 border-r border-slate-800 flex flex-col items-center py-4 shrink-0 z-[60] overflow-y-auto hide-scrollbar">
+        <div class="mb-6 flex items-center justify-center w-full px-2">
+            <div class="w-12 h-12 bg-slate-800 rounded-full flex items-center justify-center border border-slate-700 shadow-inner overflow-hidden cursor-pointer hover:scale-105 transition-transform" onclick="openManagedTeamModal()" title="Takımı Düzenle">
+                <img id="sidebar-team-logo" src="https://ui-avatars.com/api/?name=FC&background=random&color=fff" alt="Logo" class="w-full h-full object-contain p-0.5">
+            </div>
+        </div>
+        <nav class="flex flex-col items-center w-full gap-3 sm:gap-4 px-2">
+            <button onclick="selectMainMenu('kupalar')" id="btn-kupalar" title="Kupalar" aria-label="Kupalar" class="main-btn w-full aspect-square rounded-xl bg-slate-800 hover:bg-slate-700 transition-colors border-2 border-transparent focus:outline-none flex justify-center items-center text-slate-100"><i class="fa-solid fa-trophy text-xl"></i></button>
+            <button onclick="selectMainMenu('maclar')" id="btn-maclar" title="Maçlar" aria-label="Maçlar" class="main-btn w-full aspect-square rounded-xl bg-slate-800 hover:bg-slate-700 transition-colors border-2 border-transparent focus:outline-none flex justify-center items-center text-slate-100"><i class="fa-solid fa-futbol text-xl"></i></button>
+            <button onclick="selectMainMenu('kadro')" id="btn-kadro" title="Kadro" aria-label="Kadro" class="main-btn w-full aspect-square rounded-xl bg-slate-800 hover:bg-slate-700 transition-colors border-2 border-transparent focus:outline-none flex justify-center items-center text-slate-100"><i class="fa-solid fa-users text-xl"></i></button>
+            <button onclick="selectMainMenu('ligtarihi')" id="btn-ligtarihi" title="Lig Tarihi" aria-label="Lig Tarihi" class="main-btn w-full aspect-square rounded-xl bg-slate-800 hover:bg-slate-700 transition-colors border-2 border-transparent focus:outline-none flex justify-center items-center text-slate-100"><i class="fa-solid fa-clock-rotate-left text-xl"></i></button>
+            <button onclick="selectMainMenu('transfer')" id="btn-transfer" title="Transfer" aria-label="Transfer" class="main-btn w-full aspect-square rounded-xl bg-slate-800 hover:bg-slate-700 transition-colors border-2 border-transparent focus:outline-none flex justify-center items-center text-slate-100"><i class="fa-solid fa-right-left text-xl"></i></button>
+            <button onclick="selectMainMenu('golasist')" id="btn-golasist" title="Gol-Asist" aria-label="Gol ve Asistler" class="main-btn w-full aspect-square rounded-xl bg-slate-800 hover:bg-slate-700 transition-colors border-2 border-transparent focus:outline-none flex justify-center items-center text-slate-100"><i class="fa-solid fa-chart-simple text-xl"></i></button>
+            <button onclick="selectMainMenu('sezonlar')" id="btn-sezonlar" title="Sezonlar" aria-label="Sezonlar" class="main-btn w-full aspect-square rounded-xl bg-slate-800 hover:bg-slate-700 transition-colors border-2 border-transparent focus:outline-none flex justify-center items-center text-slate-100"><i class="fa-solid fa-layer-group text-xl"></i></button>
+            <button onclick="selectMainMenu('ayarlar')" id="btn-ayarlar" title="Ayarlar" aria-label="Ayarlar" class="main-btn w-full aspect-square rounded-xl bg-slate-800 hover:bg-slate-700 transition-colors border-2 border-transparent focus:outline-none flex justify-center items-center text-slate-100"><i class="fa-solid fa-gear text-xl"></i></button>
+        </nav>
+    </aside>
+
+    <!-- Ana İçerik Konteyneri -->
+    <div class="flex-1 flex flex-col min-w-0 h-full relative">
+        <div id="submenu-container" class="bg-slate-900 border-b border-slate-800 hidden fade-in shrink-0">
+            <div class="container mx-auto px-4 py-3 flex flex-wrap justify-start sm:justify-center gap-3" id="submenu-buttons"></div>
+        </div>
+        <div id="tertiary-menu-container" class="bg-slate-800/50 border-b border-slate-700 hidden fade-in shrink-0">
+            <div class="container mx-auto px-4 py-2 flex justify-start sm:justify-center gap-4" id="tertiary-buttons"></div>
+        </div>
+
+        <!-- Ana Çerçeve -->
+        <main class="w-full px-2 py-4 sm:px-4 flex-1 flex flex-col min-h-0 overflow-hidden">
+            <div id="content-area" class="bg-slate-800/30 rounded-xl p-2 sm:p-4 border border-slate-700/50 flex-1 flex flex-col items-center justify-center text-center fade-in w-full max-w-full overflow-hidden">
+                <!-- Dinamik İçerik Buraya Yüklenir -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal: Kupalar - Takım Ekleme -->
+    <div id="trophy-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[100] fade-in backdrop-blur-sm">
+        <div class="bg-slate-800 p-6 rounded-xl border border-slate-600 w-[95%] max-w-lg shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <button onclick="closeTrophyModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <h3 class="text-xl font-bold mb-2 text-white">Takım Ekle & Düzenle</h3>
+            <p id="modal-info" class="text-sm text-emerald-400 mb-4 font-medium bg-emerald-900/30 p-2 rounded"></p>
+            
+            <div class="space-y-4 mb-6">
+                <!-- Şampiyon -->
+                <div class="bg-slate-900/50 p-3.5 rounded-lg border border-slate-700">
+                    <label class="block text-left text-sm font-bold text-yellow-500 mb-2"><i class="fa-solid fa-crown mr-1"></i> Şampiyon Takım</label>
+                    <div class="flex gap-2 mb-2">
+                        <input type="text" id="champ-name-input" class="w-full bg-slate-950 border border-slate-600 rounded px-3 py-2 text-white focus:outline-none focus:border-yellow-500" placeholder="Takım Adı">
+                        <button onclick="searchTeamLogos('champ')" class="bg-blue-600 hover:bg-blue-500 px-3 rounded text-white whitespace-nowrap" title="Logoları Ara"><i class="fa-solid fa-search"></i></button>
+                        <a href="https://football-logos.cc/" target="_blank" class="bg-indigo-600 hover:bg-indigo-500 flex items-center justify-center px-3 rounded text-white transition-colors" title="Football-Logos'ta Ara"><i class="fa-solid fa-globe"></i></a>
+                    </div>
+                    <div id="champ-logo-results" class="flex gap-2 overflow-x-auto hidden py-2 mb-2 hide-scrollbar bg-slate-950/50 rounded px-2 min-h-[60px] items-center border border-slate-700/50"></div>
+                    <div class="flex gap-2 items-center">
+                        <input type="text" id="champ-url-input" class="flex-1 bg-slate-950 border border-slate-600 rounded px-3 py-2 text-xs text-white" placeholder="Seçilen / Özel Logo URL">
+                        <input type="file" id="champ-file-input" class="hidden" accept="image/*" onchange="handleFileUpload(event, 'champ')">
+                        <button type="button" id="champ-upload-btn" onclick="document.getElementById('champ-file-input').click()" class="bg-slate-700 px-3 py-2 rounded text-slate-300"><i class="fa-solid fa-folder-open"></i></button>
+                    </div>
+                </div>
+                <!-- İkinci -->
+                <div class="bg-slate-900/50 p-3.5 rounded-lg border border-slate-700">
+                    <label class="block text-left text-sm font-bold text-slate-300 mb-2"><i class="fa-solid fa-medal mr-1"></i> İkinci Takım</label>
+                    <div class="flex gap-2 mb-2">
+                        <input type="text" id="runner-name-input" class="w-full bg-slate-950 border border-slate-600 rounded px-3 py-2 text-white" placeholder="Takım Adı">
+                        <button onclick="searchTeamLogos('runner')" class="bg-blue-600 hover:bg-blue-500 px-3 rounded text-white whitespace-nowrap" title="Logoları Ara"><i class="fa-solid fa-search"></i></button>
+                        <a href="https://football-logos.cc/" target="_blank" class="bg-indigo-600 hover:bg-indigo-500 flex items-center justify-center px-3 rounded text-white transition-colors" title="Football-Logos'ta Ara"><i class="fa-solid fa-globe"></i></a>
+                    </div>
+                    <div id="runner-logo-results" class="flex gap-2 overflow-x-auto hidden py-2 mb-2 hide-scrollbar bg-slate-950/50 rounded px-2 min-h-[60px] items-center border border-slate-700/50"></div>
+                    <div class="flex gap-2 items-center">
+                        <input type="text" id="runner-url-input" class="flex-1 bg-slate-950 border border-slate-600 rounded px-3 py-2 text-xs text-white" placeholder="Seçilen / Özel Logo URL">
+                        <input type="file" id="runner-file-input" class="hidden" accept="image/*" onchange="handleFileUpload(event, 'runner')">
+                        <button type="button" id="runner-upload-btn" onclick="document.getElementById('runner-file-input').click()" class="bg-slate-700 px-3 py-2 rounded text-slate-300"><i class="fa-solid fa-folder-open"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-between items-center gap-3">
+                <button onclick="clearTrophyCell()" class="px-4 py-2.5 rounded-lg bg-red-900/50 hover:bg-red-800 text-red-200 font-medium transition-colors">Kutuyu Temizle</button>
+                <div class="flex gap-2">
+                    <button onclick="closeTrophyModal()" class="px-5 py-2.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-medium transition-colors">İptal</button>
+                    <button id="save-trophy-btn" onclick="saveTrophyTeam()" class="px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition-colors">Kaydet</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Kupalar - Turnuva Düzenleme -->
+    <div id="tournament-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[100] fade-in backdrop-blur-sm">
+        <div class="bg-slate-800 p-6 rounded-xl border border-slate-600 w-[90%] max-w-md shadow-2xl relative">
+            <button onclick="closeTournamentModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <h3 class="text-xl font-bold mb-4 text-white">Turnuva Kutusunu Düzenle</h3>
+            <div class="space-y-4 mb-6">
+                <div>
+                    <label class="block text-left text-sm font-medium text-slate-300 mb-1">Turnuva Adı</label>
+                    <div class="flex gap-2 mb-2">
+                        <input type="text" id="tour-name-input" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white">
+                        <button onclick="searchTeamLogos('tour')" class="bg-blue-600 hover:bg-blue-500 px-3 rounded text-white whitespace-nowrap" title="Logoları Ara"><i class="fa-solid fa-search"></i> Ara</button>
+                    </div>
+                    <div id="tour-logo-results" class="flex gap-2 overflow-x-auto hidden py-2 mb-2 hide-scrollbar bg-slate-950/50 rounded px-2 items-center border border-slate-700/50"></div>
+                </div>
+                <div>
+                    <label class="block text-left text-sm font-medium text-slate-300 mb-1">Turnuva Logosu URL / Dosya</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="tour-url-input" class="flex-1 bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white text-sm">
+                        <input type="file" id="tour-file-input" class="hidden" accept="image/*" onchange="handleFileUpload(event, 'tournament')">
+                        <button type="button" id="tour-upload-btn" onclick="document.getElementById('tour-file-input').click()" class="bg-slate-700 px-4 py-2 rounded-lg text-slate-300"><i class="fa-solid fa-upload"></i></button>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-left text-sm font-medium text-slate-300 mb-1">Sütun Rengi</label>
+                    <div class="flex items-center gap-3">
+                        <input type="color" id="tour-color-input" class="w-12 h-10 bg-transparent rounded cursor-pointer border-none outline-none">
+                        <span class="text-xs text-slate-400">Bu renk sütun zeminine uygulanır.</span>
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-between mt-2">
+                <button onclick="deleteTournament()" class="px-4 py-2 rounded-lg bg-red-900/50 hover:bg-red-800 text-red-200 font-medium">Sütunu Sil</button>
+                <div class="flex gap-2 ml-auto">
+                    <button onclick="closeTournamentModal()" class="px-5 py-2.5 rounded-lg bg-slate-700 text-white font-medium">İptal</button>
+                    <button onclick="saveTournament()" class="px-5 py-2.5 rounded-lg bg-blue-600 text-white font-bold">Güncelle</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Yönetilen Takım Düzenleme -->
+    <div id="managed-team-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[100] fade-in backdrop-blur-sm">
+        <div class="bg-slate-800 p-6 rounded-xl border border-slate-600 w-[90%] max-w-md shadow-2xl relative">
+            <button onclick="closeManagedTeamModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <h3 class="text-xl font-bold mb-4 text-white">Yönetilen Takımı Düzenle</h3>
+            <div class="space-y-4 mb-6">
+                <div>
+                    <label class="block text-left text-sm font-medium text-slate-300 mb-1">Takım Adı</label>
+                    <div class="flex gap-2 mb-2">
+                        <input type="text" id="managed-name-input" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white">
+                        <button onclick="searchTeamLogos('managed')" class="bg-blue-600 hover:bg-blue-500 px-3 rounded text-white whitespace-nowrap" title="Logoları Ara"><i class="fa-solid fa-search"></i></button>
+                        <a href="https://football-logos.cc/" target="_blank" class="bg-indigo-600 hover:bg-indigo-500 flex items-center justify-center px-3 rounded text-white transition-colors" title="Football-Logos'ta Ara"><i class="fa-solid fa-globe"></i></a>
+                    </div>
+                    <div id="managed-logo-results" class="flex gap-2 overflow-x-auto hidden py-2 mb-2 hide-scrollbar bg-slate-950/50 rounded px-2 items-center border border-slate-700/50"></div>
+                </div>
+                <div>
+                    <label class="block text-left text-sm font-medium text-slate-300 mb-1">Logo URL / Dosya</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="managed-url-input" class="flex-1 bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white text-sm">
+                        <input type="file" id="managed-file-input" class="hidden" accept="image/*" onchange="handleFileUpload(event, 'managed')">
+                        <button type="button" id="managed-upload-btn" onclick="document.getElementById('managed-file-input').click()" class="bg-slate-700 px-4 py-2 rounded-lg text-slate-300"><i class="fa-solid fa-upload"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-end gap-3">
+                <button onclick="closeManagedTeamModal()" class="px-5 py-2.5 rounded-lg bg-slate-700 text-white font-medium">İptal</button>
+                <button onclick="saveManagedTeam()" class="px-5 py-2.5 rounded-lg bg-blue-600 text-white font-bold">Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Rakip Takım Ekle/Düzenle -->
+    <div id="opponent-editor-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[100] fade-in backdrop-blur-sm">
+        <div class="bg-slate-800 p-6 rounded-xl border border-slate-600 w-[90%] max-w-md shadow-2xl relative">
+            <button onclick="closeOpponentEditorModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <h3 class="text-xl font-bold mb-4 text-white">Rakip Takım Bilgileri</h3>
+            <div class="space-y-4 mb-6">
+                <div id="opp-country-container">
+                    <label id="lbl-opp-country" class="block text-left text-sm font-medium text-slate-300 mb-1">Ülke (Kısa Adı, Örn: ENG, ITA)</label>
+                    <input type="text" id="opp-country-input" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white uppercase" maxlength="15">
+                </div>
+                <div>
+                    <label class="block text-left text-sm font-medium text-slate-300 mb-1">Takım Adı</label>
+                    <div class="flex gap-2 mb-2">
+                        <input type="text" id="opp-name-input" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white">
+                        <button onclick="searchTeamLogos('opp')" class="bg-blue-600 hover:bg-blue-500 px-3 rounded text-white whitespace-nowrap" title="Logoları Ara"><i class="fa-solid fa-search"></i></button>
+                        <a href="https://football-logos.cc/" target="_blank" class="bg-indigo-600 hover:bg-indigo-500 flex items-center justify-center px-3 rounded text-white transition-colors" title="Football-Logos'ta Ara"><i class="fa-solid fa-globe"></i></a>
+                    </div>
+                    <div id="opp-logo-results" class="flex gap-2 overflow-x-auto hidden py-2 mb-2 hide-scrollbar bg-slate-950/50 rounded px-2 items-center border border-slate-700/50"></div>
+                </div>
+                <div>
+                    <label class="block text-left text-sm font-medium text-slate-300 mb-1">Logo URL / Dosya</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="opp-url-input" class="flex-1 bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white text-sm">
+                        <input type="file" id="opp-file-input" class="hidden" accept="image/*" onchange="handleFileUpload(event, 'opp')">
+                        <button type="button" id="opp-upload-btn" onclick="document.getElementById('opp-file-input').click()" class="bg-slate-700 px-4 py-2 rounded-lg text-slate-300"><i class="fa-solid fa-upload"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-between mt-2">
+                <button id="btn-delete-opp" onclick="deleteOpponent()" class="px-4 py-2 rounded-lg bg-red-900/50 hover:bg-red-800 text-red-200 font-medium">Sütunu Sil</button>
+                <div class="flex gap-2 ml-auto">
+                    <button onclick="closeOpponentEditorModal()" class="px-5 py-2.5 rounded-lg bg-slate-700 text-white font-medium">İptal</button>
+                    <button onclick="saveOpponent()" class="px-5 py-2.5 rounded-lg bg-emerald-600 text-white font-bold">Kaydet</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal: Üst Sütun (Grup) Düzenleme -->
+    <div id="group-editor-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[100] fade-in backdrop-blur-sm">
+        <div class="bg-slate-800 p-6 rounded-xl border border-slate-600 w-[90%] max-w-md shadow-2xl relative">
+            <button onclick="closeGroupEditorModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <h3 class="text-xl font-bold mb-4 text-white">Grubu / Ülkeyi Düzenle</h3>
+            <div class="space-y-4 mb-6">
+                <div>
+                    <label id="lbl-group-name" class="block text-left text-sm font-medium text-slate-300 mb-1">Grup Adı (Örn: İNGİLTERE)</label>
+                    <input type="text" id="group-name-input" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white uppercase">
+                </div>
+                <div>
+                    <label class="block text-left text-sm font-medium text-slate-300 mb-1">Grup Rengi (Sütunlara tonlanarak yansır)</label>
+                    <div class="flex items-center gap-3">
+                        <input type="color" id="group-color-input" class="w-12 h-10 bg-transparent rounded cursor-pointer border-none outline-none">
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-between mt-2">
+                <button id="btn-delete-group" onclick="deleteGroup()" class="px-4 py-2 rounded-lg bg-red-900/50 hover:bg-red-800 text-red-200 font-medium">Tüm Grubu Sil</button>
+                <div class="flex gap-2 ml-auto">
+                    <button onclick="closeGroupEditorModal()" class="px-5 py-2.5 rounded-lg bg-slate-700 text-white font-medium">İptal</button>
+                    <button onclick="saveGroupInfo()" class="px-5 py-2.5 rounded-lg bg-blue-600 text-white font-bold">Kaydet</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Rakip İstatistik Pop-up -->
+    <div id="opponent-stats-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[100] fade-in backdrop-blur-sm">
+        <div class="bg-slate-800 p-6 rounded-xl border border-slate-600 w-[90%] max-w-sm shadow-2xl relative text-center">
+            <button onclick="closeOpponentStatsModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <div class="w-24 h-24 mx-auto mb-4 bg-slate-200 p-2 rounded-xl shadow-lg">
+                <img id="stat-opp-logo" src="" class="w-full h-full object-contain">
+            </div>
+            <h3 id="stat-opp-name" class="text-2xl font-bold text-white mb-1">Takım</h3>
+            <p id="stat-opp-country" class="text-sm text-slate-400 font-semibold mb-6 tracking-widest">ULKE</p>
+            
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div class="bg-slate-900 p-3 rounded-lg border border-slate-700">
+                    <p class="text-xs text-slate-400 uppercase tracking-wider mb-1">Oynanan</p>
+                    <p id="stat-played" class="text-2xl font-bold text-blue-400">0</p>
+                </div>
+                <div class="bg-slate-900 p-3 rounded-lg border border-slate-700">
+                    <p class="text-xs text-slate-400 uppercase tracking-wider mb-1">Galibiyet Oranı</p>
+                    <p id="stat-winrate" class="text-2xl font-bold text-emerald-400">%0</p>
+                </div>
+            </div>
+            
+            <div class="flex justify-between gap-2 mb-6">
+                <div class="flex-1 bg-green-900/30 p-2 rounded border border-green-800/50">
+                    <p class="text-[10px] text-green-500 uppercase">Galibiyet</p>
+                    <p id="stat-w" class="text-lg font-bold text-green-400">0</p>
+                </div>
+                <div class="flex-1 bg-slate-700/30 p-2 rounded border border-slate-600/50">
+                    <p class="text-[10px] text-slate-400 uppercase">Beraberlik</p>
+                    <p id="stat-d" class="text-lg font-bold text-slate-300">0</p>
+                </div>
+                <div class="flex-1 bg-red-900/30 p-2 rounded border border-red-800/50">
+                    <p class="text-[10px] text-red-500 uppercase">Mağlubiyet</p>
+                    <p id="stat-l" class="text-lg font-bold text-red-400">0</p>
+                </div>
+            </div>
+
+            <button onclick="editOpponentFromStats()" class="w-full py-2 bg-slate-700 hover:bg-slate-600 rounded text-sm text-white transition-colors mb-2"><i class="fa-solid fa-pen mr-2"></i>Rakibi Düzenle</button>
+            <button onclick="deleteOpponentFromStats()" class="w-full py-2 bg-red-900/30 hover:bg-red-800/50 rounded text-sm text-red-400 transition-colors"><i class="fa-solid fa-trash mr-2"></i>Sütunu Sil</button>
+        </div>
+    </div>
+
+    <!-- Modal: Sezon İstatistikleri -->
+    <div id="season-stats-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[100] fade-in backdrop-blur-sm">
+        <div class="bg-slate-800 p-6 rounded-xl border border-slate-600 w-[90%] max-w-sm shadow-2xl relative text-center">
+            <button onclick="closeSeasonStatsModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <h3 class="text-2xl font-bold text-white mb-1" id="ss-title">Sezon</h3>
+            <p class="text-sm text-emerald-400 font-semibold mb-6 tracking-widest">TOPLAM BİLANÇO</p>
+            
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div class="bg-slate-900 p-3 rounded-lg border border-slate-700">
+                    <p class="text-xs text-slate-400 uppercase tracking-wider mb-1">Oynanan Maç</p>
+                    <p id="ss-played" class="text-2xl font-bold text-blue-400">0</p>
+                </div>
+                <div class="bg-slate-900 p-3 rounded-lg border border-slate-700">
+                    <p class="text-xs text-slate-400 uppercase tracking-wider mb-1">Galibiyet Oranı</p>
+                    <p id="ss-winrate" class="text-2xl font-bold text-emerald-400">%0</p>
+                </div>
+            </div>
+            
+            <div class="flex justify-between gap-2 mb-4">
+                <div class="flex-1 bg-green-900/30 p-2 rounded border border-green-800/50">
+                    <p class="text-[10px] text-green-500 uppercase">G</p>
+                    <p id="ss-w" class="text-lg font-bold text-green-400">0</p>
+                </div>
+                <div class="flex-1 bg-slate-700/30 p-2 rounded border border-slate-600/50">
+                    <p class="text-[10px] text-slate-400 uppercase">B</p>
+                    <p id="ss-d" class="text-lg font-bold text-slate-300">0</p>
+                </div>
+                <div class="flex-1 bg-red-900/30 p-2 rounded border border-red-800/50">
+                    <p class="text-[10px] text-red-500 uppercase">M</p>
+                    <p id="ss-l" class="text-lg font-bold text-red-400">0</p>
+                </div>
+            </div>
+
+            <div class="flex justify-between gap-2 mb-2">
+                <div class="flex-1 bg-blue-900/30 p-2 rounded border border-blue-800/50">
+                    <p class="text-[10px] text-blue-400 uppercase">Atılan</p>
+                    <p id="ss-gf" class="text-lg font-bold text-blue-300">0</p>
+                </div>
+                <div class="flex-1 bg-orange-900/30 p-2 rounded border border-orange-800/50">
+                    <p class="text-[10px] text-orange-400 uppercase">Yenilen</p>
+                    <p id="ss-ga" class="text-lg font-bold text-orange-300">0</p>
+                </div>
+                <div class="flex-1 bg-purple-900/30 p-2 rounded border border-purple-800/50">
+                    <p class="text-[10px] text-purple-400 uppercase">Averaj</p>
+                    <p id="ss-gd" class="text-lg font-bold text-purple-300">0</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Maç Editörü -->
+    <div id="match-editor-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[100] fade-in backdrop-blur-sm">
+        <div class="bg-slate-800 p-4 sm:p-6 rounded-xl border border-slate-600 w-[95%] max-w-3xl shadow-2xl relative max-h-[90vh] flex flex-col mx-auto">
+            <button onclick="closeMatchEditorModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <h3 class="text-xl font-bold mb-1 text-white" id="match-editor-title">Maç Sonuçları</h3>
+            <p class="text-sm text-emerald-400 mb-4" id="match-editor-subtitle">Sezon - Rakip</p>
+            
+            <div id="match-slots-container" class="space-y-4 overflow-y-auto pr-2 pb-2">
+                <!-- JS will generate match slot rows here -->
+            </div>
+            
+            <div class="mt-4 flex flex-wrap justify-between items-center gap-3 border-t border-slate-700 pt-4 shrink-0">
+                <button onclick="addMatchSlot()" class="px-4 py-2 rounded bg-slate-700 hover:bg-slate-600 text-emerald-400 text-sm font-bold transition-colors"><i class="fa-solid fa-plus mr-2"></i>Yeni Maç Ekle</button>
+                <div class="flex gap-2">
+                    <button onclick="closeMatchEditorModal()" class="px-5 py-2.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-medium">İptal</button>
+                    <button onclick="saveMatchData()" class="px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold">Sonuçları Kaydet</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Oyuncu Bilgisi (Statik) Editörü -->
+    <div id="player-info-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[100] fade-in backdrop-blur-sm">
+        <div class="bg-slate-800 p-6 rounded-xl border border-slate-600 w-[90%] max-w-md shadow-2xl relative">
+            <button onclick="closePlayerInfoModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <h3 class="text-xl font-bold mb-4 text-white" id="player-info-title">Oyuncu Ekle</h3>
+            
+            <div class="space-y-3 mb-6">
+                <div class="flex gap-2">
+                    <div class="flex-1">
+                        <label class="block text-left text-xs font-medium text-slate-400 mb-1">Mevki</label>
+                        <select id="pi-pos" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white outline-none">
+                            <optgroup label="KALECİ" class="text-yellow-500">
+                                <option value="GK" class="text-white">GK (Kaleci)</option>
+                            </optgroup>
+                            <optgroup label="DEFANS" class="text-blue-500">
+                                <option value="CB" class="text-white">CB (Stoper)</option>
+                                <option value="LB" class="text-white">LB (Sol Bek)</option>
+                                <option value="RB" class="text-white">RB (Sağ Bek)</option>
+                            </optgroup>
+                            <optgroup label="ORTA SAHA" class="text-green-500">
+                                <option value="DM" class="text-white">DM (Ön Libero)</option>
+                                <option value="CM" class="text-white">CM (Merkez Orta)</option>
+                                <option value="LM" class="text-white">LM (Sol Orta)</option>
+                                <option value="RM" class="text-white">RM (Sağ Orta)</option>
+                                <option value="AM" class="text-white">AM (Ofansif Orta)</option>
+                            </optgroup>
+                            <optgroup label="FORVET" class="text-red-500">
+                                <option value="LW" class="text-white">LW (Sol Açık)</option>
+                                <option value="RW" class="text-white">RW (Sağ Açık)</option>
+                                <option value="ST" class="text-white">ST (Santrfor)</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-left text-xs font-medium text-slate-400 mb-1">Kadro Önemi</label>
+                        <select id="pi-role" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white outline-none" onchange="checkCustomRole(this)"></select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-left text-xs font-medium text-slate-400 mb-1">İsim Soyisim</label>
+                    <input type="text" id="pi-name" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white outline-none">
+                </div>
+                <div>
+                    <label class="block text-left text-xs font-medium text-slate-400 mb-1">Fotoğraf URL / Dosya</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="pi-photo-url" class="flex-1 bg-slate-900 border border-slate-600 rounded p-2 text-white text-xs outline-none">
+                        <input type="file" id="pi-photo-file" class="hidden" accept="image/*" onchange="handleFileUpload(event, 'pi-photo')">
+                        <button type="button" id="pi-photo-upload-btn" onclick="document.getElementById('pi-photo-file').click()" class="bg-slate-700 px-3 py-2 rounded text-slate-300"><i class="fa-solid fa-image"></i></button>
+                    </div>
+                </div>
+                <div class="flex gap-2 items-end">
+                    <div class="flex-1">
+                        <label class="block text-left text-xs font-medium text-slate-400 mb-1" title="Örn: TR, BR, AR, FR, GB-ENG">Ülke Kodu</label>
+                        <input type="text" id="pi-country" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white outline-none uppercase" maxlength="6" placeholder="TR">
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-left text-xs font-medium text-slate-400 mb-1">Geldiği Yaş</label>
+                        <input type="number" id="pi-age" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white outline-none appearance-none" autocomplete="off">
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-left text-xs font-medium text-slate-400 mb-1">Geldiği OVR</label>
+                        <input type="number" id="pi-ovr" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white outline-none appearance-none" autocomplete="off">
+                    </div>
+                    <div id="pi-pot-container" class="flex-1 hidden">
+                        <label class="block text-left text-xs font-medium text-emerald-400 mb-1">Potansiyel</label>
+                        <input type="text" id="pi-pot" class="w-full bg-slate-900 border border-emerald-600 rounded p-2 text-white outline-none" placeholder="80-85" autocomplete="off">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex justify-between mt-2">
+                <button id="btn-delete-player" onclick="deletePlayer()" class="px-4 py-2 rounded-lg bg-red-900/50 hover:bg-red-800 text-red-200 font-medium hidden">Sil</button>
+                <div class="flex gap-2 ml-auto">
+                    <button onclick="closePlayerInfoModal()" class="px-5 py-2.5 rounded-lg bg-slate-700 text-white font-medium">İptal</button>
+                    <button onclick="savePlayerInfo()" class="px-5 py-2.5 rounded-lg bg-emerald-600 text-white font-bold">Kaydet</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Oyuncu Tekil Hücre Editörü -->
+    <div id="player-cell-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[100] fade-in backdrop-blur-sm">
+        <div class="bg-slate-800 p-6 rounded-xl border border-slate-600 w-[90%] max-w-sm shadow-2xl relative">
+            <button onclick="closePlayerCellModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <h3 class="text-xl font-bold mb-1 text-white" id="pc-title">Kategori</h3>
+            <p class="text-sm text-emerald-400 mb-6" id="pc-subtitle">Oyuncu - Sezon</p>
+            
+            <div id="pc-form-transfer" class="space-y-4 hidden">
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">Durum / Aksiyon</label>
+                    <select id="pc-tr-type" class="w-full bg-slate-900 border border-slate-600 rounded p-2.5 text-sm text-white outline-none focus:border-emerald-500">
+                        <option value="none">Boş / Normal Not</option>
+                        <option value="continue" class="text-slate-400 font-bold">Devam (Kadroda Kaldı)</option>
+                        <option value="in" class="text-emerald-400 font-bold">Takıma Katıldı (Gelen)</option>
+                        <option value="renew" class="text-purple-400 font-bold">Sözleşme Yeniledi</option>
+                        <option value="loan_in" class="text-blue-400 font-bold">Kiralık Gelen</option>
+                        <option value="loan_out" class="text-orange-400 font-bold">Kiralık Giden</option>
+                        <option value="out" class="text-red-400 font-bold">Takımdan Ayrıldı (Giden)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">Açıklama Notu</label>
+                    <input type="text" id="pc-tr-note" class="w-full bg-slate-900 border border-slate-600 rounded p-2.5 text-sm text-white outline-none focus:border-emerald-500" placeholder="Örn: FENERBAHÇE ->" autocomplete="off">
+                </div>
+            </div>
+
+            <div id="pc-form-stat" class="hidden">
+                <label class="block text-xs font-bold text-slate-300 mb-4 text-center">Yaş ve Genel Reyting (OVR) Güncellemesi</label>
+                <div class="flex justify-center gap-6">
+                    <div class="flex flex-col items-center gap-1">
+                        <label class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Yaş</label>
+                        <input type="number" id="pc-st-age" class="w-16 h-16 bg-slate-900 border border-slate-600 rounded-lg text-center text-xl font-black text-white outline-none focus:border-emerald-500 appearance-none shadow-inner" placeholder="--" autocomplete="off">
+                    </div>
+                    <div class="flex flex-col items-center gap-1">
+                        <label class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">OVR</label>
+                        <input type="number" id="pc-st-ovr" class="w-16 h-16 bg-slate-900 border border-slate-600 rounded-lg text-center text-xl font-black text-emerald-400 outline-none focus:border-emerald-500 appearance-none shadow-inner" placeholder="--" autocomplete="off">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex justify-end gap-3 mt-8">
+                <button onclick="closePlayerCellModal()" class="px-5 py-2.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-medium transition-colors">İptal</button>
+                <button onclick="savePlayerCell()" class="px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition-colors">Veriyi Kaydet</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal: Lig Tarihi Takım Ekleme Modalı -->
+    <div id="league-team-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[100] fade-in backdrop-blur-sm">
+        <div class="bg-slate-800 p-6 rounded-xl border border-slate-600 w-[90%] max-w-sm shadow-2xl relative">
+            <button onclick="closeLeagueTeamModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <h3 class="text-xl font-bold mb-4 text-white" id="lt-modal-title">Lig Tarihine Takım Ekle</h3>
+            
+            <div class="space-y-4 mb-6">
+                <div>
+                    <label class="block text-left text-xs font-bold text-slate-400 mb-1">Takım Adı</label>
+                    <input type="text" id="lt-name" class="w-full bg-slate-900 border border-slate-600 rounded p-2.5 text-sm text-white outline-none focus:border-emerald-500" placeholder="Örn: Galatasaray" autocomplete="off">
+                </div>
+                <div>
+                    <label class="block text-left text-xs font-bold text-slate-400 mb-1">Takım (Grafik) Rengi</label>
+                    <div class="flex items-center gap-3">
+                        <input type="color" id="lt-color" class="w-16 h-12 bg-transparent rounded cursor-pointer border-none outline-none" value="#3b82f6">
+                        <span class="text-xs text-slate-500">Sıralama grafiğindeki çizgi rengi</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex justify-between mt-4">
+                <button id="btn-delete-league-team" onclick="deleteLeagueTeam()" class="px-4 py-2 rounded-lg bg-red-900/50 hover:bg-red-800 text-red-200 font-medium transition-colors hidden">Takımı Sil</button>
+                <div class="flex gap-2 ml-auto">
+                    <button onclick="closeLeagueTeamModal()" class="px-5 py-2.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-medium transition-colors">İptal</button>
+                    <button onclick="saveLeagueTeam()" class="px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition-colors">Kaydet</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Lig Tarihi Hücre Editörü -->
+    <div id="league-cell-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[100] fade-in backdrop-blur-sm">
+        <div class="bg-slate-800 p-6 rounded-xl border border-slate-600 w-[90%] max-w-sm shadow-2xl relative text-center">
+            <button onclick="closeLeagueCellModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <h3 class="text-xl font-bold mb-1 text-white" id="lc-title">Takım Adı</h3>
+            <p class="text-sm text-emerald-400 mb-6" id="lc-subtitle">Sezon Verileri</p>
+            
+            <div class="flex justify-center gap-6">
+                <div class="flex flex-col items-center gap-1">
+                    <label class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Puan</label>
+                    <input type="number" id="lc-pts" class="w-16 h-16 bg-slate-900 border border-slate-600 rounded-lg text-center text-xl font-black text-white outline-none focus:border-emerald-500 appearance-none shadow-inner" placeholder="--" autocomplete="off">
+                </div>
+                <div class="flex flex-col items-center gap-1">
+                    <label class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Sıralama</label>
+                    <input type="number" id="lc-rank" class="w-16 h-16 bg-slate-900 border border-slate-600 rounded-lg text-center text-xl font-black text-emerald-400 outline-none focus:border-emerald-500 appearance-none shadow-inner" placeholder="--" autocomplete="off" min="1" max="18">
+                </div>
+            </div>
+            
+            <div class="flex justify-end gap-3 mt-8">
+                <button onclick="closeLeagueCellModal()" class="px-5 py-2.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-medium transition-colors">İptal</button>
+                <button onclick="saveLeagueCell()" class="px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold transition-colors">Kaydet</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal: Transfer Ekle/Düzenle -->
+    <div id="transfer-editor-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[100] fade-in backdrop-blur-sm">
+        <div class="bg-slate-800 p-6 rounded-xl border border-slate-600 w-[90%] max-w-md shadow-2xl relative">
+            <button onclick="closeTransferModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <h3 class="text-xl font-bold mb-4 text-white" id="tr-modal-title">Transfer Ekle</h3>
+            
+            <div class="space-y-4 mb-6">
+                <div>
+                    <label class="block text-left text-xs font-bold text-slate-400 mb-1">Sezon</label>
+                    <select id="tr-season" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white outline-none focus:border-emerald-500"></select>
+                </div>
+                <div>
+                    <label class="block text-left text-xs font-bold text-slate-400 mb-1">İsim Soyisim</label>
+                    <input type="text" id="tr-name" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white outline-none focus:border-emerald-500 use-autocomplete" placeholder="Oyuncu Adı" autocomplete="off">
+                </div>
+                <div class="flex gap-2">
+                    <div class="flex-1">
+                        <label class="block text-left text-xs font-bold text-slate-400 mb-1">Mevki</label>
+                        <select id="tr-pos" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white outline-none focus:border-emerald-500">
+                            <optgroup label="KALECİ" class="text-yellow-500"><option value="GK" class="text-white">GK (Kaleci)</option></optgroup>
+                            <optgroup label="DEFANS" class="text-blue-500"><option value="CB" class="text-white">CB (Stoper)</option><option value="LB" class="text-white">LB (Sol Bek)</option><option value="RB" class="text-white">RB (Sağ Bek)</option></optgroup>
+                            <optgroup label="ORTA SAHA" class="text-green-500"><option value="DM" class="text-white">DM (Ön Libero)</option><option value="CM" class="text-white">CM (Merkez Orta)</option><option value="LM" class="text-white">LM (Sol Orta)</option><option value="RM" class="text-white">RM (Sağ Orta)</option><option value="AM" class="text-white">AM (Ofansif Orta)</option></optgroup>
+                            <optgroup label="FORVET" class="text-red-500"><option value="LW" class="text-white">LW (Sol Açık)</option><option value="RW" class="text-white">RW (Sağ Açık)</option><option value="ST" class="text-white">ST (Santrfor)</option></optgroup>
+                        </select>
+                    </div>
+                    <div class="w-20">
+                        <label class="block text-left text-xs font-bold text-slate-400 mb-1">Yaş</label>
+                        <input type="number" id="tr-age" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white outline-none focus:border-emerald-500 appearance-none text-center" placeholder="20" autocomplete="off">
+                    </div>
+                    <div class="w-20">
+                        <label class="block text-left text-xs font-bold text-slate-400 mb-1">OVR</label>
+                        <input type="number" id="tr-ovr" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-emerald-400 font-bold outline-none focus:border-emerald-500 appearance-none text-center" placeholder="75" autocomplete="off">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-left text-xs font-bold text-slate-400 mb-1" id="tr-team-label">Geldiği Takım</label>
+                    <input type="text" id="tr-team" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white outline-none focus:border-emerald-500" placeholder="Takım Adı" autocomplete="off">
+                </div>
+                <div>
+                    <label class="block text-left text-xs font-bold text-slate-400 mb-1">Bonservis Ücreti (€)</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">€</span>
+                        <input type="text" id="tr-fee" class="w-full bg-slate-900 border border-slate-600 rounded p-2 pl-7 text-white outline-none focus:border-emerald-500" placeholder="Örn: 15.000.000 (Boşsa Bedelsiz)" oninput="formatCurrency(this)" autocomplete="off">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex justify-between mt-4">
+                <button id="btn-delete-transfer" onclick="deleteTransfer()" class="px-4 py-2 rounded-lg bg-red-900/50 hover:bg-red-800 text-red-200 font-medium transition-colors hidden">Sil</button>
+                <div class="flex gap-2 ml-auto">
+                    <button onclick="closeTransferModal()" class="px-5 py-2.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-medium transition-colors">İptal</button>
+                    <button onclick="saveTransfer()" class="px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition-colors">Kaydet</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Modal: Fikstür Maç Ekle/Düzenle -->
+    <div id="fixture-match-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[100] fade-in backdrop-blur-sm">
+        <div class="bg-slate-800 p-6 rounded-xl border border-slate-600 w-[95%] max-w-2xl shadow-2xl relative max-h-[92vh] flex flex-col">
+            <button onclick="closeFixtureModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white z-10"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <h3 class="text-xl font-bold mb-1 text-white" id="fm-modal-title">Maç Ekle</h3>
+            <p class="text-xs text-emerald-400 font-bold mb-4" id="fm-modal-subtitle"></p>
+
+            <!-- Temel Bilgiler -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-1">Tarih</label>
+                    <input type="date" id="fm-date" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-sm text-white outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-1">Müsabaka</label>
+                    <input type="text" id="fm-tournament" list="fm-tournament-list" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-sm text-white outline-none focus:border-emerald-500" placeholder="Lig, Kupa...">
+                    <datalist id="fm-tournament-list"></datalist>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-1">Zemin</label>
+                    <select id="fm-ground" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-sm text-white outline-none focus:border-emerald-500">
+                        <option value="home">İç Saha</option>
+                        <option value="away">Deplasman</option>
+                        <option value="neutral">Tarafsız</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Ev Sahibi / Skor / Deplasman -->
+            <div class="flex items-center gap-3 mb-5 bg-slate-900 rounded-xl p-4 border border-slate-700">
+                <div class="flex-1">
+                    <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-widest">Ev Sahibi</label>
+                    <input type="text" id="fm-home" class="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-white font-bold text-sm outline-none focus:border-emerald-500" placeholder="Takım Adı">
+                </div>
+                <div class="flex flex-col items-center gap-1 shrink-0">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Skor</label>
+                    <div class="flex items-center gap-2 bg-slate-800 rounded-lg px-3 py-2 border border-slate-600">
+                        <input type="number" id="fm-home-score" class="w-10 bg-transparent text-center text-xl font-black text-white outline-none appearance-none" placeholder="-" min="0" max="99">
+                        <span class="text-slate-400 font-black text-lg">:</span>
+                        <input type="number" id="fm-away-score" class="w-10 bg-transparent text-center text-xl font-black text-white outline-none appearance-none" placeholder="-" min="0" max="99">
+                    </div>
+                </div>
+                <div class="flex-1 text-right">
+                    <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-widest text-right">Deplasman</label>
+                    <input type="text" id="fm-away" class="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-white font-bold text-sm outline-none focus:border-emerald-500 text-right" placeholder="Takım Adı">
+                </div>
+            </div>
+
+            <!-- Gol / Asist Olayları -->
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-xs font-bold text-slate-300 uppercase tracking-widest"><i class="fa-solid fa-futbol text-emerald-500 mr-1"></i>Gol & Asist Detayları</span>
+                <button onclick="addFixtureEvent()" class="bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold px-3 py-1.5 rounded transition-colors"><i class="fa-solid fa-plus mr-1"></i>Olay Ekle</button>
+            </div>
+            <div id="fm-events-container" class="flex-1 overflow-y-auto space-y-2 pr-1 hide-scrollbar min-h-[60px]">
+                <div class="text-center text-slate-600 text-xs py-3">Henüz olay eklenmedi.</div>
+            </div>
+
+            <div class="flex justify-between items-center mt-5 pt-4 border-t border-slate-700 shrink-0">
+                <button id="fm-delete-btn" onclick="deleteFixtureMatch()" class="px-4 py-2 rounded-lg bg-red-900/50 hover:bg-red-800 text-red-200 font-medium transition-colors hidden text-sm">
+                    <i class="fa-solid fa-trash mr-1"></i>Maçı Sil
+                </button>
+                <div class="flex gap-2 ml-auto">
+                    <button onclick="closeFixtureModal()" class="px-5 py-2.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-medium transition-colors text-sm">İptal</button>
+                    <button onclick="saveFixtureMatch()" class="px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition-colors text-sm"><i class="fa-solid fa-floppy-disk mr-1"></i>Kaydet</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Autocomplete Dropdown Container (Global) -->
+    <div id="custom-autocomplete-dropdown" class="absolute z-[300] bg-slate-800 border border-slate-600 rounded-lg shadow-xl w-48 max-h-48 overflow-y-auto hidden flex-col py-1 text-sm text-white hide-scrollbar"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>

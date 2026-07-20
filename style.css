@@ -1,0 +1,48 @@
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .table-scroll::-webkit-scrollbar { width: 10px; height: 10px; }
+        .table-scroll::-webkit-scrollbar-track { background: #0f172a; border-radius: 8px; }
+        .table-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 8px; border: 2px solid #0f172a; }
+        .table-scroll::-webkit-scrollbar-thumb:hover { background: #475569; }
+        
+        td.dynamic-bg { border-right-width: 1px; border-bottom-width: 1px; }
+
+        /* Match Cell Mini Boxes */
+        .match-box { width: 38px; height: 22px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); transition: all 0.2s; position: relative; display: flex; align-items: center; justify-content: center; }
+        .match-W { background-color: #22c55e; } /* Green */
+        .match-D { background-color: #f97316; } /* Orange */
+        .match-L { background-color: #ef4444; } /* Red */
+        .score-display { font-size: 0.65rem; font-weight: 800; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.8); line-height: 1; pointer-events: none; }
+
+        /* Squad Table Specifics */
+        .ovr-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 16px; font-size: 10px; font-weight: 900; border-radius: 2px; color: #000; box-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+        .ovr-high { background-color: #4ade80; } /* 80+ Green */
+        .ovr-med { background-color: #facc15; } /* 70-79 Yellow */
+        .ovr-low { background-color: #f87171; } /* <70 Red */
+        
+        .pos-GK { color: #eab308; }
+        .pos-DEF, .pos-CB, .pos-LB, .pos-RB { color: #60a5fa; }
+        .pos-MID, .pos-DM, .pos-CM, .pos-LM, .pos-RM, .pos-AM { color: #4ade80; }
+        .pos-FWD, .pos-LW, .pos-RW, .pos-ST { color: #f87171; }
+        
+        .bg-row-GK { background-color: #1f2420; }
+        .bg-row-DEF { background-color: #121c2e; }
+        .bg-row-MID { background-color: #12241d; }
+        .bg-row-FWD { background-color: #23171a; }
+        
+        .group-row:hover .bg-row-GK, .group-row:hover.bg-row-GK { background-color: #2a302a; }
+        .group-row:hover .bg-row-DEF, .group-row:hover.bg-row-DEF { background-color: #1a263d; }
+        .group-row:hover .bg-row-MID, .group-row:hover.bg-row-MID { background-color: #1a3027; }
+        .group-row:hover .bg-row-FWD, .group-row:hover.bg-row-FWD { background-color: #2e1f23; }
+        
+        /* Remove Number Input Arrows */
+        input[type="number"]::-webkit-inner-spin-button, 
+        input[type="number"]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+        input[type="number"] { -moz-appearance: textfield; }
