@@ -1,17 +1,18 @@
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+// ==============================================================
+// FIREBASE PROJE AYARLARI
+// ==============================================================
+// Bu değerleri Firebase Console'da oluşturduğunuz projeden alacaksınız:
+// Project Settings (dişli ikonu) > "Your apps" > Web app (</>) > SDK setup and configuration > "Config"
+//
+// Bu değerler GİZLİ DEĞİLDİR (herkese açık web config'idir), tarayıcıda görünmeleri normaldir.
+// Gerçek güvenlik, Firestore Security Rules ve seçtiğiniz erişim kodunun (PIN) gizliliğinden gelir.
+// ==============================================================
 
-// Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyBLTjkZHEjOzSYJ5mePCntEjrF0q2qsu_U",
-  authDomain: "glorytrack-719cc.firebaseapp.com",
-  projectId: "glorytrack-719cc",
-  storageBucket: "glorytrack-719cc.firebasestorage.app",
-  messagingSenderId: "1045571405363",
-  appId: "1:1045571405363:web:43b82208c8eaa605a3c546"
+    apiKey: "PASTE_YOUR_API_KEY_HERE",
+    authDomain: "PASTE_YOUR_PROJECT.firebaseapp.com",
+    projectId: "PASTE_YOUR_PROJECT_ID",
+    storageBucket: "PASTE_YOUR_PROJECT.appspot.com",
+    messagingSenderId: "PASTE_YOUR_SENDER_ID",
+    appId: "PASTE_YOUR_APP_ID"
 };
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);

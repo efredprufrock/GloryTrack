@@ -24,20 +24,16 @@
         <i class="fa-solid fa-cloud"></i><span>Bulut</span>
     </div>
 
-    <!-- Erişim Kodu (PIN) Ekranı -->
-    <div id="pin-modal" class="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center z-[220] hidden transition-opacity duration-500">
+    <!-- Google Hesabı ile Giriş Ekranı -->
+    <div id="login-modal" class="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center z-[220] hidden transition-opacity duration-500">
         <div class="bg-slate-900 p-8 rounded-2xl border border-slate-700 shadow-[0_0_50px_rgba(59,130,246,0.15)] w-[95%] max-w-md fade-in text-center">
             <h1 class="text-2xl font-black text-white tracking-wider mb-2"><i class="fa-solid fa-cloud text-blue-400 mr-2"></i>Cihazlar Arası Erişim</h1>
-            <p class="text-slate-400 text-sm mb-6">Verilerinize başka cihazlardan da ulaşmak için bir erişim kodu belirleyin. Bu kod hem şifreniz hem de verinizin adresidir — unutmayın ve kimseyle paylaşmayın.</p>
-            <div class="space-y-3 text-left">
-                <div>
-                    <label class="block text-sm font-bold text-slate-300 mb-2">Erişim Kodu</label>
-                    <input type="text" id="pin-input" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-white focus:border-blue-500 outline-none" placeholder="Örn: kaan-galatasaray-26" autocomplete="off">
-                </div>
-                <p id="pin-status" class="text-xs text-red-400 min-h-[1rem]"></p>
-            </div>
-            <button onclick="submitPin()" class="w-full mt-4 bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl shadow-lg transition-all transform hover:scale-105">Bağlan <i class="fa-solid fa-cloud-arrow-up ml-2"></i></button>
-            <button onclick="skipPin()" class="w-full mt-3 text-slate-500 hover:text-slate-300 text-sm font-medium transition-colors">Şimdilik atla, sadece bu cihazda kullan</button>
+            <p class="text-slate-400 text-sm mb-6">Google hesabınızla giriş yapın, verileriniz güvenli şekilde bulutta saklansın ve tüm cihazlarınızdan aynı kariyere ulaşın.</p>
+            <button onclick="signInWithGoogle()" class="w-full flex items-center justify-center gap-3 bg-white hover:bg-slate-100 text-slate-800 font-bold py-3.5 rounded-xl shadow-lg transition-all transform hover:scale-105">
+                <i class="fa-brands fa-google text-lg"></i> Google ile Giriş Yap
+            </button>
+            <p id="login-status" class="text-xs text-red-400 min-h-[1rem] mt-3"></p>
+            <button onclick="continueOffline()" class="w-full mt-3 text-slate-500 hover:text-slate-300 text-sm font-medium transition-colors">Şimdilik atla, sadece bu cihazda kullan</button>
         </div>
     </div>
 

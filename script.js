@@ -161,9 +161,9 @@
             }
         }
 
-        // --- FIREBASE / BULUT SENKRONIZASYONU ---
-        let fbAuth = null, fbDb = null, firebaseReady = false;
-        let currentPin = null, cloudDocRef = null, cloudUnsubscribe = null;
+        // --- FIREBASE / BULUT SENKRONIZASYONU (Google Hesabı ile) ---
+        let fbAuth = null, fbDb = null, firebaseReady = false, googleProvider = null;
+        let currentUser = null, cloudDocRef = null, cloudUnsubscribe = null;
         let saveDebounceTimer = null, isApplyingRemoteData = false;
 
         function initFirebase() {
@@ -175,16 +175,13 @@
                 firebase.initializeApp(firebaseConfig);
                 fbAuth = firebase.auth();
                 fbDb = firebase.firestore();
+                googleProvider = new firebase.auth.GoogleAuthProvider();
                 firebaseReady = true;
                 return true;
             } catch (e) {
                 console.error('Firebase başlatma hatası:', e);
                 return false;
             }
-        }
-
-        function normalizePin(p) {
-            return p.trim().toLowerCase().replace(/\s+/g, '-');
         }
 
         function setSyncStatus(state, msg) {
@@ -202,37 +199,44 @@
             el.innerHTML = `<i class="fa-solid ${s.icon}"></i><span>${s.text}</span>`;
         }
 
-        async function submitPin() {
-            const pinRaw = document.getElementById('pin-input').value;
-            const statusEl = document.getElementById('pin-status');
-            if (!pinRaw || !pinRaw.trim()) { statusEl.textContent = 'Lütfen bir erişim kodu girin.'; return; }
-            if (pinRaw.trim().length < 4) { statusEl.textContent = 'Erişim kodu en az 4 karakter olmalı.'; return; }
+        async function signInWithGoogle() {
+            const statusEl = document.getElementById('login-status');
             if (!firebaseReady && !initFirebase()) {
-                statusEl.textContent = 'Bulut bağlantısı kurulamadı. firebase-config.js dosyasını kontrol edin.';
+                if (statusEl) statusEl.textContent = 'Bulut bağlantısı kurulamadı. firebase-config.js dosyasını kontrol edin.';
                 return;
             }
-            statusEl.textContent = 'Bağlanılıyor...';
+            if (statusEl) statusEl.textContent = 'Google ile bağlanılıyor...';
             try {
-                await fbAuth.signInAnonymously();
-                currentPin = normalizePin(pinRaw);
-                localStorage.setItem('fc26_pin', currentPin);
-                await connectToCloud(currentPin);
-                document.getElementById('pin-modal').classList.add('hidden');
+                await fbAuth.signInWithPopup(googleProvider);
+                // Gerisini onAuthStateChanged devralır
             } catch (e) {
-                console.error(e);
-                statusEl.textContent = 'Bağlantı hatası: ' + e.message;
+                console.error('Google giriş hatası:', e);
+                if (e.code === 'auth/popup-blocked' || e.code === 'auth/cancelled-popup-request') {
+                    try { await fbAuth.signInWithRedirect(googleProvider); return; } catch (e2) { console.error(e2); }
+                }
+                if (statusEl) statusEl.textContent = e.code === 'auth/unauthorized-domain'
+                    ? 'Bu site adresi Firebase\'de yetkilendirilmemiş (Authorized domains).'
+                    : 'Giriş hatası: ' + e.message;
             }
         }
 
-        function skipPin() {
-            currentPin = null;
-            document.getElementById('pin-modal').classList.add('hidden');
+        function continueOffline() {
+            document.getElementById('login-modal').classList.add('hidden');
             setSyncStatus('offline');
-            startAppAfterAuth();
         }
 
-        async function connectToCloud(pin) {
-            cloudDocRef = fbDb.collection('careers').doc(pin);
+        function signOutOfCloud() {
+            if (cloudUnsubscribe) { cloudUnsubscribe(); cloudUnsubscribe = null; }
+            cloudDocRef = null;
+            currentUser = null;
+            if (fbAuth) fbAuth.signOut();
+            document.getElementById('login-modal').classList.remove('hidden');
+            setSyncStatus('offline');
+            rerenderCurrentPanel();
+        }
+
+        async function connectToCloud(uid) {
+            cloudDocRef = fbDb.collection('careers').doc(uid);
             setSyncStatus('saving', 'Veriler alınıyor...');
             try {
                 const snap = await cloudDocRef.get();
@@ -242,7 +246,7 @@
                 } else {
                     const localStr = localStorage.getItem('fc26_career_data');
                     if (localStr) {
-                        const upload = confirm('Bu erişim kodunda henüz bulut verisi yok.\n\nBu cihazdaki mevcut kariyer verinizi bu koda yüklemek ister misiniz?');
+                        const upload = confirm('Google hesabınızla ilişkili bulut verisi bulunamadı.\n\nBu cihazdaki mevcut kariyer verinizi hesabınıza yüklemek ister misiniz?');
                         if (upload) {
                             const parsed = JSON.parse(localStr);
                             applyLoadedData(parsed);
@@ -312,17 +316,6 @@
                 console.error('Bulut kayıt hatası:', e);
                 setSyncStatus('error');
             }
-        }
-
-        function changePinFlow() {
-            if (cloudUnsubscribe) { cloudUnsubscribe(); cloudUnsubscribe = null; }
-            cloudDocRef = null;
-            currentPin = null;
-            localStorage.removeItem('fc26_pin');
-            document.getElementById('pin-input').value = '';
-            document.getElementById('pin-status').textContent = '';
-            document.getElementById('pin-modal').classList.remove('hidden');
-            setSyncStatus('offline');
         }
 
         let mockPlayers = [];
@@ -543,15 +536,20 @@
 
             // 2) Ardından buluta bağlanmayı dene (firebase-config.js doldurulmuşsa)
             if (initFirebase()) {
-                const savedPin = localStorage.getItem('fc26_pin');
-                if (savedPin) {
-                    setSyncStatus('saving', 'Bağlanılıyor...');
-                    fbAuth.signInAnonymously()
-                        .then(() => { currentPin = savedPin; return connectToCloud(savedPin); })
-                        .catch((e) => { console.error('Oturum açma hatası:', e); setSyncStatus('error', 'Oturum açılamadı'); });
-                } else {
-                    document.getElementById('pin-modal').classList.remove('hidden');
-                }
+                fbAuth.onAuthStateChanged(function(user) {
+                    if (user) {
+                        currentUser = { uid: user.uid, displayName: user.displayName, email: user.email, photoURL: user.photoURL };
+                        document.getElementById('login-modal').classList.add('hidden');
+                        setSyncStatus('saving', 'Bağlanılıyor...');
+                        connectToCloud(user.uid);
+                    } else {
+                        currentUser = null;
+                        cloudDocRef = null;
+                        if (cloudUnsubscribe) { cloudUnsubscribe(); cloudUnsubscribe = null; }
+                        document.getElementById('login-modal').classList.remove('hidden');
+                        setSyncStatus('offline');
+                    }
+                });
             } else {
                 setSyncStatus('offline');
             }
@@ -848,14 +846,17 @@
                         <div class="mb-6 bg-slate-800 border border-slate-600 rounded-xl p-4">
                             <div class="flex justify-between items-center mb-2 flex-wrap gap-2">
                                 <span class="text-sm font-bold text-slate-300"><i class="fa-solid fa-cloud mr-2 text-blue-400"></i>Bulut Senkronizasyonu</span>
-                                ${currentPin
-                                    ? `<span class="text-xs font-mono font-bold text-emerald-400 bg-emerald-900/30 px-2 py-1 rounded">Erişim Kodu: ${currentPin}</span>`
+                                ${currentUser
+                                    ? `<span class="flex items-center gap-2 text-xs font-bold text-emerald-400 bg-emerald-900/30 px-2 py-1 rounded">
+                                         ${currentUser.photoURL ? `<img src="${currentUser.photoURL}" class="w-5 h-5 rounded-full" referrerpolicy="no-referrer">` : ''}
+                                         ${currentUser.email || currentUser.displayName || 'Bağlı'}
+                                       </span>`
                                     : `<span class="text-xs font-mono font-bold text-slate-400 bg-slate-900 px-2 py-1 rounded">Bağlı değil</span>`
                                 }
                             </div>
-                            <p class="text-xs text-slate-500 mb-3">${currentPin ? 'Bu erişim kodunu diğer cihazlarınızda girerek aynı kariyer verisine ulaşabilirsiniz. Kodu kimseyle paylaşmayın.' : 'Verilerinizi diğer cihazlarınızdan da görmek için bir erişim kodu ile buluta bağlanın.'}</p>
-                            <button onclick="changePinFlow()" class="bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold py-2 px-4 rounded-lg transition-colors">
-                                <i class="fa-solid fa-rotate mr-1"></i> ${currentPin ? 'Erişim Kodunu Değiştir' : 'Buluta Bağlan'}
+                            <p class="text-xs text-slate-500 mb-3">${currentUser ? 'Bu Google hesabıyla giriş yaptığınız her cihazda aynı kariyer verisine ulaşırsınız.' : 'Verilerinizi diğer cihazlarınızdan da görmek için Google hesabınızla giriş yapın.'}</p>
+                            <button onclick="${currentUser ? 'signOutOfCloud()' : 'document.getElementById(\'login-modal\').classList.remove(\'hidden\')'}" class="${currentUser ? 'bg-slate-700 hover:bg-slate-600' : 'bg-blue-600 hover:bg-blue-500'} text-white text-sm font-bold py-2 px-4 rounded-lg transition-colors">
+                                <i class="fa-solid ${currentUser ? 'fa-right-from-bracket' : 'fa-cloud-arrow-up'} mr-1"></i> ${currentUser ? 'Hesaptan Çık' : 'Buluta Bağlan'}
                             </button>
                         </div>
                         <!-- Storage Usage Bar -->
