@@ -1,5 +1,9 @@
 // firebase-config.js
-window.firebaseConfig = {
+
+// DİKKAT: "import { initializeApp }..." veya "const app = ..." gibi ES Module kodlarını siliyoruz.
+// Sadece script.js'nin doğrudan okuyabileceği küresel bir obje bırakıyoruz.
+
+const firebaseConfig = {
   apiKey: "AIzaSyBLTjkZHEjOzSYJ5mePCntEjrF0q2qsu_U",
   authDomain: "glorytrack-719cc.firebaseapp.com",
   projectId: "glorytrack-719cc",
