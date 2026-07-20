@@ -633,21 +633,53 @@
             }
         }
 
-        function handleFileUpload(event, type) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                fileUploads[type] = e.target.result;
-                const btn = document.getElementById(`${type}-upload-btn`);
-                if(btn) { btn.classList.add('text-emerald-400'); btn.classList.remove('text-slate-300'); }
-                const urlInput = document.getElementById(`${type}-url`);
-                if(urlInput) urlInput.value = "Yerel Dosya Seçildi";
-                const urlInputOld = document.getElementById(`${type}-url-input`);
-                if(urlInputOld) urlInputOld.value = "Yerel Dosya Seçildi";
-            };
-            reader.readAsDataURL(file);
-        }
+// Compress uploaded images before storing in state
+function handleFileUpload(event, type) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const img = new Image();
+        img.src = e.target.result;
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const maxDim = 256; // Max width/height in px
+            let width = img.width;
+            let height = img.height;
+
+            if (width > height) {
+                if (width > maxDim) {
+                    height *= maxDim / width;
+                    width = maxDim;
+                }
+            } else {
+                if (height > maxDim) {
+                    width *= maxDim / height;
+                    height = maxDim;
+                }
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+
+            // Compress to WebP / JPEG format
+            const compressedDataUrl = canvas.toDataURL('image/webp', 0.8);
+            fileUploads[type] = compressedDataUrl;
+
+            const btn = document.getElementById(`${type}-upload-btn`);
+            if (btn) { 
+                btn.classList.add('text-emerald-400'); 
+                btn.classList.remove('text-slate-300'); 
+            }
+            const urlInput = document.getElementById(`${type}-url`) || document.getElementById(`${type}-url-input`);
+            if (urlInput) urlInput.value = "Yerel Dosya Yüklendi (Sıkıştırıldı)";
+        };
+    };
+    reader.readAsDataURL(file);
+}
 
         async function searchTeamLogos(type) {
             const nameInput = document.getElementById(`${type}-name${type==='setup'? '':'-input'}`).value.trim();
@@ -2736,48 +2768,52 @@
         }
 
         function openTransferModal(type, id = null) {
-            activeTransferType = type;
-            activeTransferId = id;
-            
-            const seasonSelect = document.getElementById('tr-season');
-            seasonSelect.innerHTML = seasonsList.map(s => `<option value="${s}">${s}</option>`).join('');
+    activeTransferType = type;
+    activeTransferId = id;
+    
+    const seasonSelect = document.getElementById('tr-season');
+    seasonSelect.innerHTML = seasonsList.map(s => `<option value="${s}">${s}</option>`).join('');
 
-            const modalTitle = document.getElementById('tr-modal-title');
-            const teamLabel = document.getElementById('tr-team-label');
-            const deleteBtn = document.getElementById('btn-delete-transfer');
+    const modalTitle = document.getElementById('tr-modal-title');
+    const teamLabel = document.getElementById('tr-team-label');
+    const deleteBtn = document.getElementById('btn-delete-transfer');
 
-            modalTitle.innerText = id ? "Transferi Düzenle" : (type === 'in' ? "Gelen Transfer Ekle" : "Giden Transfer Ekle");
-            teamLabel.innerText = type === 'in' ? "Geldiği Takım" : "Gittiği Takım";
+    modalTitle.innerText = id ? "Transferi Düzenle" : (type === 'in' ? "Gelen Transfer Ekle" : "Giden Transfer Ekle");
+    teamLabel.innerText = type === 'in' ? "Geldiği Takım" : "Gittiği Takım";
 
-            if(id) {
-                const t = transferData[type].find(x => x.id === id);
-                seasonSelect.value = t.season;
-                document.getElementById('tr-name').value = t.name;
-                document.getElementById('tr-pos').value = t.pos;
-                document.getElementById('tr-age').value = t.age;
-                document.getElementById('tr-ovr').value = t.ovr;
-                document.getElementById('tr-team').value = t.team;
-                document.getElementById('tr-fee').value = t.fee > 0 ? t.fee.toLocaleString('tr-TR') : '';
-                deleteBtn.classList.remove('hidden');
-            } else {
-                seasonSelect.value = seasonsList[seasonsList.length - 1];
-                document.getElementById('tr-name').value = '';
-                document.getElementById('tr-pos').value = 'CM';
-                document.getElementById('tr-age').value = '';
-                document.getElementById('tr-ovr').value = '';
-                document.getElementById('tr-team').value = '';
-                document.getElementById('tr-fee').value = '';
-                deleteBtn.classList.add('hidden');
-            }
+    if (id) {
+        const t = transferData[type].find(x => x.id === id);
+        seasonSelect.value = t.season;
+        document.getElementById('tr-name').value = t.name;
+        document.getElementById('tr-pos').value = t.pos;
+        document.getElementById('tr-age').value = t.age;
+        document.getElementById('tr-ovr').value = t.ovr;
+        document.getElementById('tr-team').value = t.team;
+        document.getElementById('tr-fee').value = t.fee > 0 ? t.fee.toLocaleString('tr-TR') : '';
+        deleteBtn.classList.remove('hidden');
+    } else {
+        seasonSelect.value = seasonsList[seasonsList.length - 1];
+        document.getElementById('tr-name').value = '';
+        document.getElementById('tr-pos').value = 'CM';
+        document.getElementById('tr-age').value = '';
+        document.getElementById('tr-ovr').value = '';
+        document.getElementById('tr-team').value = '';
+        document.getElementById('tr-fee').value = '';
+        deleteBtn.classList.add('hidden');
+    }
 
-            const modal = document.getElementById('transfer-editor-modal', 'fixture-match-modal');
-            modal.classList.remove('hidden'); modal.classList.add('flex');
-        }
+    // FIXED: Passed single element ID
+    const modal = document.getElementById('transfer-editor-modal');
+    modal.classList.remove('hidden'); 
+    modal.classList.add('flex');
+}
 
-        function closeTransferModal() {
-            document.getElementById('transfer-editor-modal', 'fixture-match-modal').classList.add('hidden');
-            document.getElementById('transfer-editor-modal', 'fixture-match-modal').classList.remove('flex');
-        }
+function closeTransferModal() {
+    // FIXED: Passed single element ID
+    const modal = document.getElementById('transfer-editor-modal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+}
 
         function saveTransfer() {
             const season = document.getElementById('tr-season').value;
