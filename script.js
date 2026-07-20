@@ -15,6 +15,7 @@
         let seasonsList = ['25/26'];
 
         let activeMain = null;
+        let isSetupComplete = false;
         let activeSub = null;
         let activeTertiary = null;
         let fileUploads = { champ: null, runner: null, tournament: null, managed: null, opp: null, setup: null, 'pi-photo': null };
