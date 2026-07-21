@@ -105,6 +105,114 @@
         let activeFixtureMatchId = null;
         let fixtureFilter = { tournament: '' };
 
+function getFlagIcon(countryCode) {
+            if (!countryCode || countryCode === 'BİLİNMEYEN') return '';
+            const c = countryCode.toUpperCase().trim();
+            
+            // Oyunda/Fikstürde en sık girilebilecek ülke kodlarının bayrak karşılıkları (ISO kodları)
+const flagMap = {
+    // UEFA (Avrupa)
+    'TR': 'tr', 'TUR': 'tr', 'TURKEY': 'tr',
+    'EN': 'gb-eng', 'ENG': 'gb-eng', 'ENGLAND': 'gb-eng',
+    'SP': 'es', 'ESP': 'es', 'SPAIN': 'es',
+    'GE': 'de', 'GER': 'de', 'DE': 'de', 'GERMANY': 'de',
+    'IT': 'it', 'ITA': 'it', 'ITALY': 'it',
+    'FR': 'fr', 'FRA': 'fr', 'FRANCE': 'fr',
+    'PT': 'pt', 'POR': 'pt', 'PORTUGAL': 'pt',
+    'NL': 'nl', 'NED': 'nl', 'NETHERLANDS': 'nl',
+    'BE': 'be', 'BEL': 'be', 'BELGIUM': 'be',
+    'SC': 'gb-sct', 'SCO': 'gb-sct', 'SCOTLAND': 'gb-sct',
+    'WA': 'gb-wls', 'WAL': 'gb-wls', 'WALES': 'gb-wls',
+    'NI': 'gb-nir', 'NIR': 'gb-nir', 'NORTHERN IRELAND': 'gb-nir',
+    'IE': 'ie', 'IRL': 'ie', 'IRELAND': 'ie', 'REPUBLIC OF IRELAND': 'ie',
+    'HR': 'hr', 'CRO': 'hr', 'CROATIA': 'hr',
+    'RS': 'rs', 'SRB': 'rs', 'SERBIA': 'rs',
+    'PL': 'pl', 'POL': 'pl', 'POLAND': 'pl',
+    'SE': 'se', 'SWE': 'se', 'SWEDEN': 'se',
+    'DK': 'dk', 'DEN': 'dk', 'DENMARK': 'dk',
+    'NO': 'no', 'NOR': 'no', 'NORWAY': 'no',
+    'FI': 'fi', 'FIN': 'fi', 'FINLAND': 'fi',
+    'CZ': 'cz', 'CZE': 'cz', 'CZECH REPUBLIC': 'cz', 'CZECHIA': 'cz',
+    'RO': 'ro', 'ROU': 'ro', 'ROMANIA': 'ro',
+    'HU': 'hu', 'HUN': 'hu', 'HUNGARY': 'hu',
+    'SK': 'sk', 'SVK': 'sk', 'SLOVAKIA': 'sk',
+    'SI': 'si', 'SVN': 'si', 'SLOVENIA': 'si',
+    'IS': 'is', 'ISL': 'is', 'ICELAND': 'is',
+    'AL': 'al', 'ALB': 'al', 'ALBANIA': 'al',
+    'BA': 'ba', 'BIH': 'ba', 'BOSNIA': 'ba', 'BOSNIA AND HERZEGOVINA': 'ba',
+    'ME': 'me', 'MNE': 'me', 'MONTENEGRO': 'me',
+    'MK': 'mk', 'MKD': 'mk', 'NORTH MACEDONIA': 'mk', 'MACEDONIA': 'mk',
+    'BG': 'bg', 'BUL': 'bg', 'BULGARIA': 'bg',
+    'GE': 'ge', 'GEO': 'ge', 'GEORGIA': 'ge',
+    'GR': 'gr', 'GRE': 'gr', 'GREECE': 'gr',
+    'RU': 'ru', 'RUS': 'ru', 'RUSSIA': 'ru',
+    'UA': 'ua', 'UKR': 'ua', 'UKRAINE': 'ua',
+    'AT': 'at', 'AUT': 'at', 'AUSTRIA': 'at',
+    'CH': 'ch', 'SUI': 'ch', 'SWITZERLAND': 'ch',
+    'IL': 'il', 'ISR': 'il', 'ISRAEL': 'il',
+
+    // CONMEBOL (Güney Amerika)
+    'BR': 'br', 'BRA': 'br', 'BRAZIL': 'br',
+    'AR': 'ar', 'ARG': 'ar', 'ARGENTINA': 'ar',
+    'UY': 'uy', 'URU': 'uy', 'URUGUAY': 'uy',
+    'CO': 'co', 'COL': 'co', 'COLOMBIA': 'co',
+    'CL': 'cl', 'CHI': 'cl', 'CHILE': 'cl',
+    'EC': 'ec', 'ECU': 'ec', 'ECUADOR': 'ec',
+    'PE': 'pe', 'PER': 'pe', 'PERU': 'pe',
+    'VE': 've', 'VEN': 've', 'VENEZUELA': 've',
+    'PY': 'py', 'PAR': 'py', 'PARAGUAY': 'py',
+    'BO': 'bo', 'BOL': 'bo', 'BOLIVIA': 'bo',
+
+    // CONCACAF (Kuzey ve Orta Amerika)
+    'US': 'us', 'USA': 'us', 'UNITED STATES': 'us',
+    'MX': 'mx', 'MEX': 'mx', 'MEXICO': 'mx',
+    'CA': 'ca', 'CAN': 'ca', 'CANADA': 'ca',
+    'CR': 'cr', 'CRC': 'cr', 'COSTA RICA': 'cr',
+    'JM': 'jm', 'JAM': 'jm', 'JAMAICA': 'jm',
+    'PA': 'pa', 'PAN': 'pa', 'PANAMA': 'pa',
+    'HN': 'hn', 'HON': 'hn', 'HONDURAS': 'hn',
+
+    // CAF (Afrika)
+    'MA': 'ma', 'MAR': 'ma', 'MOROCCO': 'ma',
+    'EG': 'eg', 'EGY': 'eg', 'EGYPT': 'eg',
+    'SN': 'sn', 'SEN': 'sn', 'SENEGAL': 'sn',
+    'NG': 'ng', 'NGA': 'ng', 'NIGERIA': 'ng',
+    'CI': 'ci', 'CIV': 'ci', 'IVORY COAST': 'ci', 'COTE D IVOIRE': 'ci',
+    'GH': 'gh', 'GHA': 'gh', 'GHANA': 'gh',
+    'CM': 'cm', 'CMR': 'cm', 'CAMEROON': 'cm',
+    'DZ': 'dz', 'ALG': 'dz', 'ALGERIA': 'dz',
+    'ZA': 'za', 'RSA': 'za', 'SOUTH AFRICA': 'za',
+    'ML': 'ml', 'MLI': 'ml', 'MALI': 'ml',
+    'CD': 'cd', 'COD': 'cd', 'DR CONGO': 'cd',
+
+    // AFC (Asya & Avustralya)
+    'SA': 'sa', 'KSA': 'sa', 'SAUDI ARABIA': 'sa',
+    'JP': 'jp', 'JPN': 'jp', 'JAPAN': 'jp',
+    'KR': 'kr', 'KOR': 'kr', 'SOUTH KOREA': 'kr', 'KOREA REPUBLIC': 'kr',
+    'AU': 'au', 'AUS': 'au', 'AUSTRALIA': 'au',
+    'IR': 'ir', 'IRN': 'ir', 'IRAN': 'ir',
+    'QA': 'qa', 'QAT': 'qa', 'QATAR': 'qa',
+    'AE': 'ae', 'UAE': 'ae', 'UNITED ARAB EMIRATES': 'ae',
+    'CN': 'cn', 'CHN': 'cn', 'CHINA': 'cn', 'CHINA PR': 'cn',
+    'UZ': 'uz', 'UZB': 'uz', 'UZBEKISTAN': 'uz',
+    'IQ': 'iq', 'IRQ': 'iq', 'IRAQ': 'iq',
+    
+    // Diğer Sık Karşılaşılanlar (FC Altyapıları / Genç Yetenekler)
+    'NZ': 'nz', 'NZL': 'nz', 'NEW ZEALAND': 'nz',
+    'CY': 'cy', 'CYP': 'cy', 'CYPRUS': 'cy',
+    'LU': 'lu', 'LUX': 'lu', 'LUXEMBOURG': 'lu',
+    'KV': 'xk', 'KOS': 'xk', 'KOSOVO': 'xk' // Kosovo için standart dışı ama sık kullanılan (xk)
+};
+            
+            const code = flagMap[c];
+            if (code) {
+                // Eşleşme varsa şık bir bayrak görseli döndür
+                return `<img src="https://flagcdn.com/w20/${code}.png" alt="${c}" title="${c}" class="inline-block h-3.5 object-contain rounded-sm drop-shadow-md">`;
+            }
+            // Eşleşmeyen / bilinmeyen bir kod girilirse eskisi gibi metin olarak kalsın
+            return `<span class="text-[9px] font-mono text-emerald-300 bg-slate-950/70 px-1 rounded">${c}</span>`;
+        }
+
         // --- YEREL VERİTABANI (LOCAL STORAGE) VE VERİ YÖNETİMİ ---
         function getAllData() {
             return {
@@ -470,7 +578,8 @@
             'trophy-modal', 'tournament-modal', 'managed-team-modal',
             'opponent-editor-modal', 'group-editor-modal', 'player-info-modal',
             'player-cell-modal', 'match-editor-modal', 'season-stats-modal',
-            'league-team-modal', 'league-cell-modal', 'transfer-editor-modal', 'fixture-match-modal'
+            'league-team-modal', 'league-cell-modal', 'transfer-editor-modal', 'fixture-match-modal', 'match-result-modal',
+            'fixture-match-modal', 'match-result-modal', 'fixture-bulk-modal'
         ];
         const MODAL_CLOSE_FNS = {
             'trophy-modal': () => closeTrophyModal(),
@@ -486,6 +595,9 @@
             'league-cell-modal': () => closeLeagueCellModal(),
             'transfer-editor-modal': () => closeTransferModal(),
             'fixture-match-modal': () => closeFixtureModal(),
+            'match-result-modal': () => closeMatchResultModal(),
+            'fixture-bulk-modal': () => closeFixtureBulkModal(),
+            
         };
 
         document.addEventListener('keydown', function(e) {
@@ -682,44 +794,68 @@ function handleFileUpload(event, type) {
 }
 
         async function searchTeamLogos(type) {
+            // Hangi inputtan (setup, champ, runner, vs.) veri alınacağını tespit et
             const nameInput = document.getElementById(`${type}-name${type==='setup'? '':'-input'}`).value.trim();
             const resultsContainer = document.getElementById(`${type}-logo-results`);
-            if (!nameInput) { alert('Lütfen arama yapmak için bir ad girin!'); return; }
+            if (!nameInput) { alert('Lütfen arama yapmak için bir ad veya kelime girin!'); return; }
 
-            resultsContainer.innerHTML = '<div class="text-xs text-slate-400 w-full text-center"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Logolar aranıyor...</div>';
+            resultsContainer.innerHTML = '<div class="text-xs text-slate-400 w-full text-center"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Çift Motorlu Logo Taraması Yapılıyor...</div>';
             resultsContainer.classList.remove('hidden');
 
+            let results = [];
+
+            // --- 1. MOTOR: TheSportsDB API (Resmi, Şeffaf PNG, Kesintisiz) ---
+            try {
+                const sdbUrl = `https://www.thesportsdb.com/api/v1/json/3/searchteams.php?t=${encodeURIComponent(nameInput)}`;
+                let sdbRes = await fetch(sdbUrl);
+                let sdbData = await sdbRes.json();
+                if (sdbData && sdbData.teams) {
+                    sdbData.teams.forEach(t => {
+                        if (t.strTeamBadge) results.push(t.strTeamBadge); // En yüksek kaliteli PNG arması
+                    });
+                }
+            } catch (e) {
+                console.warn("TheSportsDB motoru hata verdi:", e);
+            }
+
+            // --- 2. MOTOR: Web Scraper (Turnuvalar ve Alternatif Logolar İçin Yeni Proxy) ---
             try {
                 const searchUrl = `https://football-logos.cc/search?q=${encodeURIComponent(nameInput)}`;
-                const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(searchUrl)}`;
-                let res = await fetch(proxyUrl);
-                let data = await res.json();
-                let parser = new DOMParser();
-                let doc = parser.parseFromString(data.contents, "text/html");
+                // allorigins yerine daha stabil ve doğrudan HTML döndüren corsproxy kullanıyoruz
+                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(searchUrl)}`;
+                let flRes = await fetch(proxyUrl);
+                let flText = await flRes.text();
                 
-                let results = [];
+                let parser = new DOMParser();
+                let doc = parser.parseFromString(flText, "text/html");
+                
                 let imgs = doc.querySelectorAll('img');
                 imgs.forEach(img => {
                     let src = img.getAttribute('src');
-                    if (src && src.includes('.png') && !src.includes('lazyload')) {
+                    // Sitenin kendi arayüz logolarını ayıklayıp sadece PNG takım/kupa logolarını alıyoruz
+                    if (src && src.includes('.png') && !src.includes('lazyload') && !src.includes('logo.png')) {
                         if (src.startsWith('/')) src = 'https://football-logos.cc' + src;
                         results.push(src);
                     }
                 });
-
-                results = [...new Set(results)].slice(0, 15); 
-                if (results.length === 0) {
-                    resultsContainer.innerHTML = '<div class="text-xs text-yellow-500 w-full text-center">Sonuç bulunamadı. Lütfen URL giriniz veya tarayıcıdan arayınız.</div>'; return;
-                }
-                resultsContainer.innerHTML = results.map(url => `
-                    <div class="flex-shrink-0 relative group">
-                        <img src="${url}" class="w-12 h-12 object-contain bg-slate-200/90 p-1 rounded cursor-pointer hover:scale-110 border-2 border-transparent ${type}-search-img" onclick="selectSearchedLogo('${type}', '${url}', this)" title="Seç">
-                    </div>
-                `).join('');
             } catch (e) {
-                console.error("Arama hatası:", e);
-                resultsContainer.innerHTML = '<div class="text-xs text-red-500 w-full text-center">Bağlantı hatası oluştu. Logo URL\'sini kendiniz girebilir veya sağdaki butona tıklayarak football-logos.cc sitesini açabilirsiniz.</div>';
+                console.warn("Web Scraper motoru hata verdi:", e);
             }
+
+            // Kopya (aynı) logoları temizle ve ekrana en fazla 15 sonuç yansıt
+            results = [...new Set(results)].slice(0, 15); 
+
+            if (results.length === 0) {
+                resultsContainer.innerHTML = '<div class="text-xs text-yellow-500 w-full text-center">Sonuç bulunamadı. Lütfen takım/kupa ismini değiştirip tekrar deneyin.</div>'; 
+                return;
+            }
+
+            // Logoları kullanıcıya göster
+            resultsContainer.innerHTML = results.map(url => `
+                <div class="flex-shrink-0 relative group">
+                    <img src="${url}" class="w-12 h-12 object-contain bg-slate-200/90 p-1 rounded cursor-pointer hover:scale-110 border-2 border-transparent ${type}-search-img" onclick="selectSearchedLogo('${type}', '${url}', this)" title="Seç">
+                </div>
+            `).join('');
         }
 
         function selectSearchedLogo(type, url, imgElement) {
@@ -728,6 +864,69 @@ function handleFileUpload(event, type) {
             document.getElementById(`${type}-url-input`).value = url;
             fileUploads[type] = null;
             document.getElementById(`${type}-upload-btn`).classList.replace('text-emerald-400', 'text-slate-300');
+        }
+
+        // --- OYUNCU FACECARD / FOTOĞRAF ARAMA ---
+        async function searchPlayerPhotos() {
+            const nameInput = document.getElementById('pi-name').value.trim();
+            const resultsContainer = document.getElementById('pi-photo-results');
+            if (!nameInput) { alert('Lütfen arama yapmak için oyuncunun adını girin!'); return; }
+
+            resultsContainer.innerHTML = '<div class="text-xs text-slate-400 w-full text-center"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Facecard Taranıyor...</div>';
+            resultsContainer.classList.remove('hidden');
+
+            let results = [];
+
+            // --- 1. MOTOR: TheSportsDB API (Şeffaf PNG "Facecard" Kesimi - strCutout) ---
+            try {
+                const sdbUrl = `https://www.thesportsdb.com/api/v1/json/3/searchplayers.php?p=${encodeURIComponent(nameInput)}`;
+                let sdbRes = await fetch(sdbUrl);
+                let sdbData = await sdbRes.json();
+                if (sdbData && sdbData.player) {
+                    sdbData.player.forEach(p => {
+                        if (p.strCutout) results.push(p.strCutout); // Şeffaf facecard kesimi (öncelikli)
+                        if (p.strThumb) results.push(p.strThumb);   // Normal fotoğraf (yedek)
+                        if (p.strRender) results.push(p.strRender); // FIFA tarzı render (varsa)
+                    });
+                }
+            } catch (e) {
+                console.warn("TheSportsDB oyuncu motoru hata verdi:", e);
+            }
+
+            // --- 2. MOTOR: Wikipedia (Yedek - Gerçek Fotoğraf) ---
+            try {
+                const wikiUrl = `https://tr.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(nameInput)}`;
+                let wikiRes = await fetch(wikiUrl);
+                if (wikiRes.ok) {
+                    let wikiData = await wikiRes.json();
+                    if (wikiData.thumbnail && wikiData.thumbnail.source) {
+                        results.push(wikiData.thumbnail.source.replace(/\/\d+px-/, '/300px-'));
+                    }
+                }
+            } catch (e) {
+                console.warn("Wikipedia motoru hata verdi:", e);
+            }
+
+            results = [...new Set(results)].slice(0, 15);
+
+            if (results.length === 0) {
+                resultsContainer.innerHTML = '<div class="text-xs text-yellow-500 w-full text-center">Sonuç bulunamadı. İsmi kontrol edip tekrar deneyin veya URL/Dosya ile manuel ekleyin.</div>';
+                return;
+            }
+
+            resultsContainer.innerHTML = results.map(url => `
+                <div class="flex-shrink-0 relative group">
+                    <img src="${url}" class="w-12 h-14 object-contain bg-slate-200/90 p-1 rounded cursor-pointer hover:scale-110 border-2 border-transparent pi-photo-search-img" onclick="selectSearchedPlayerPhoto('${url}', this)" title="Seç">
+                </div>
+            `).join('');
+        }
+
+        function selectSearchedPlayerPhoto(url, imgElement) {
+            document.querySelectorAll('.pi-photo-search-img').forEach(el => el.classList.remove('border-emerald-500', 'bg-emerald-100'));
+            imgElement.classList.add('border-emerald-500', 'bg-emerald-100');
+            document.getElementById('pi-photo-url').value = url;
+            fileUploads['pi-photo'] = null;
+            document.getElementById('pi-photo-upload-btn').classList.replace('text-emerald-400', 'text-slate-300');
         }
 
         function selectMainMenu(menuId) {
@@ -1256,12 +1455,51 @@ function handleFileUpload(event, type) {
                 if(rate >= 50) return 'text-orange-500';
                 return 'text-red-500';
             };
+
+            // --- YENİ: Takımları Ülkelere Göre Gruplama ve Sıralama Motoru ---
+            const sortTeamsByCountry = (teamsArr) => {
+                // Boş hücreleri (ismi olmayanları) ayır
+                const emptyTeams = teamsArr.filter(t => !t.name || t.name.trim() === '');
+                const filledTeams = teamsArr.filter(t => t.name && t.name.trim() !== '');
+
+                // Dolu takımları ülkesine göre grupla
+                const countryMap = {};
+                filledTeams.forEach(t => {
+                    const c = (t.country || '').trim().toUpperCase() || 'BİLİNMEYEN';
+                    if(!countryMap[c]) countryMap[c] = [];
+                    countryMap[c].push(t);
+                });
+
+                // Ülkeleri, sahip oldukları takım sayısına göre ÇOKTAN AZA doğru sırala
+                const sortedCountries = Object.keys(countryMap).sort((a, b) => {
+                    const countDiff = countryMap[b].length - countryMap[a].length;
+                    if (countDiff !== 0) return countDiff; // Çok olan sola geçer
+                    if (a === 'BİLİNMEYEN') return 1; // Bilinmeyenler sağa atılır
+                    if (b === 'BİLİNMEYEN') return -1;
+                    return a.localeCompare(b, 'tr', { sensitivity: 'base' }); // Eşitse alfabetik
+                });
+
+                // Sıralanmış ülkelerin içindeki takımları da kendi içinde alfabetik diz
+                let sortedFilled = [];
+                sortedCountries.forEach(c => {
+                    const sortedInCountry = countryMap[c].sort((a, b) => a.name.localeCompare(b.name, 'tr', { sensitivity: 'base' }));
+                    sortedFilled.push(...sortedInCountry);
+                });
+
+                // Mevcut diziyi (referansını bozmadan) yeni sırayla güncelle
+                teamsArr.length = 0;
+                teamsArr.push(...sortedFilled); // YENİ: Boş takımları diziye geri eklemiyoruz, böylece tamamen siliniyorlar.
+            };
+
+            // Tabloyu çizmeden önce grupları yukarıdaki kurala göre sırala (Milli takımda da çalışması için isKulup kontrolü kaldırıldı)
+            sortTeamsByCountry(opps.domestic.teams);
+            opps.foreign.forEach(grp => sortTeamsByCountry(grp.teams));
             
             let html = `
                 <div class="w-full flex justify-between items-center mb-3 px-2 shrink-0">
                     <h3 class="text-2xl font-bold text-white">${isKulup ? 'Kulüp' : 'Milli Takım'} Fikstür & Sonuçlar</h3>
                     <div class="flex items-center gap-4">
-                        <button onclick="addNewForeignGroup()" class="bg-blue-900/50 hover:bg-blue-800 text-blue-300 px-3 py-1.5 rounded text-xs border border-blue-800 transition-colors"><i class="fa-solid fa-plus mr-1"></i>${isKulup ? 'Yeni Ülke Grubu' : 'Yeni Kıta Grubu'}</button>
+                        <button onclick="addNewForeignGroup()" class="bg-blue-900/50 hover:bg-blue-800 text-blue-300 px-3 py-1.5 rounded text-xs border border-blue-800 transition-colors"><i class="fa-solid fa-plus mr-1"></i>Yeni Kıta Grubu</button>
                         ${getScaleSelectorHtml()}
                     </div>
                 </div>
@@ -1269,7 +1507,8 @@ function handleFileUpload(event, type) {
                     <table class="w-full border-collapse text-sm" style="zoom: ${currentScale};">
                         <thead class="bg-slate-950 sticky top-0 z-[40] shadow-md">
                             <tr>
-                                <th rowspan="2" class="p-2 border-r border-b border-slate-700 sticky left-0 bg-slate-950 z-[60] min-w-[96px] w-24 align-middle shadow-[2px_0_5px_rgba(0,0,0,0.2)]">
+                                <!-- Sol Sabit Logo Hücresi -->
+                                <th rowspan="3" class="p-2 border-r border-b border-slate-700 sticky left-0 bg-slate-950 z-[60] min-w-[96px] w-24 align-middle shadow-[2px_0_5px_rgba(0,0,0,0.2)]">
                                     <div class="relative group cursor-pointer" onclick="openManagedTeamModal()">
                                         <img src="${team.logoUrl}" alt="${team.name}" class="w-16 h-16 mx-auto object-contain drop-shadow-lg" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(team.name)}&background=random&color=fff'">
                                         <div class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 rounded transition-opacity"><i class="fa-solid fa-pen text-white"></i></div>
@@ -1277,66 +1516,79 @@ function handleFileUpload(event, type) {
                                 </th>
             `;
 
-            if (isKulup) {
-                html += `<th colspan="${opps.domestic.teams.length}" class="p-1 border-r border-b border-slate-700 text-center font-bold text-xs tracking-widest text-white group relative" style="background-color: ${opps.domestic.color}90">
-                            ${opps.domestic.name}
+            // 1. SATIR: ÜST BÖLGELER / KITALAR (Milli Takım da foreign destekleyecek)
+            html += `<th colspan="${opps.domestic.teams.length}" class="p-1 border-r border-b border-slate-700 text-center font-bold text-xs tracking-widest text-white group relative" style="background-color: ${opps.domestic.color}90">
+                        ${opps.domestic.name}
+                        <div class="absolute bottom-1 right-1 opacity-0 group-hover:opacity-100 flex gap-1">
+                            <button onclick="openGroupEditorModal('domestic', 0)" class="bg-slate-800 p-1 rounded text-[10px] text-white" title="Grubu Düzenle/Sil"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="addOpponentColumn('domestic', 0)" class="bg-emerald-600 p-1 rounded text-[10px] text-white" title="Takım Ekle"><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    </th>`;
+            opps.foreign.forEach((grp, gIdx) => {
+                html += `<th colspan="${grp.teams.length}" class="p-1 border-r border-b border-slate-700 text-center font-bold text-xs tracking-widest text-white group relative" style="background-color: ${grp.color}90">
+                            ${grp.name}
                             <div class="absolute bottom-1 right-1 opacity-0 group-hover:opacity-100 flex gap-1">
-                                <button onclick="openGroupEditorModal('domestic', 0)" class="bg-slate-800 p-1 rounded text-[10px] text-white" title="Grubu Düzenle/Sil"><i class="fa-solid fa-pen"></i></button>
-                                <button onclick="addOpponentColumn('domestic', 0)" class="bg-emerald-600 p-1 rounded text-[10px] text-white" title="Takım Ekle"><i class="fa-solid fa-plus"></i></button>
+                                <button onclick="openGroupEditorModal('foreign', ${gIdx})" class="bg-slate-800 p-1 rounded text-[10px] text-white" title="Grubu Düzenle/Sil"><i class="fa-solid fa-pen"></i></button>
+                                <button onclick="addOpponentColumn('foreign', ${gIdx})" class="bg-emerald-600 p-1 rounded text-[10px] text-white" title="Takım Ekle"><i class="fa-solid fa-plus"></i></button>
                             </div>
                         </th>`;
-                opps.foreign.forEach((grp, gIdx) => {
-                    html += `<th colspan="${grp.teams.length}" class="p-1 border-r border-b border-slate-700 text-center font-bold text-xs tracking-widest text-white group relative" style="background-color: ${grp.color}90">
-                                ${grp.name}
-                                <div class="absolute bottom-1 right-1 opacity-0 group-hover:opacity-100 flex gap-1">
-                                    <button onclick="openGroupEditorModal('foreign', ${gIdx})" class="bg-slate-800 p-1 rounded text-[10px] text-white" title="Grubu Düzenle/Sil"><i class="fa-solid fa-pen"></i></button>
-                                    <button onclick="addOpponentColumn('foreign', ${gIdx})" class="bg-emerald-600 p-1 rounded text-[10px] text-white" title="Takım Ekle"><i class="fa-solid fa-plus"></i></button>
-                                </div>
-                            </th>`;
-                });
-            } else {
-                html += `<th colspan="${opps.domestic.teams.length}" class="p-1 border-r border-b border-slate-700 text-center font-bold text-xs tracking-widest text-white group relative" style="background-color: ${opps.domestic.color}90">
-                            ${opps.domestic.name}
-                            <div class="absolute bottom-1 right-1 opacity-0 group-hover:opacity-100 flex gap-1">
-                                <button onclick="openGroupEditorModal('domestic', 0)" class="bg-slate-800 p-1 rounded text-[10px] text-white"><i class="fa-solid fa-pen"></i></button>
-                                <button onclick="addOpponentColumn('domestic', 0)" class="bg-emerald-600 p-1 rounded text-[10px] text-white"><i class="fa-solid fa-plus"></i></button>
-                            </div>
-                        </th>`;
-            }
+            });
             html += `</tr><tr>`;
 
-            const renderOpponentHeader = (opp, groupType, groupIndex, index, grpColor) => {
-                if (opp.logoUrl || opp.name) {
-                    const winRate = getWinRate(opp.id);
-                    const winRateStr = winRate !== null ? `%${winRate}` : '-';
-                    const winRateColor = getWinRateColorClass(winRate);
-                    return `
-                        <th class="p-2 border-r border-b border-slate-700 min-w-[84px] w-[84px] relative group cursor-pointer hover:bg-slate-800 transition-colors" style="background-color: ${grpColor}40" onclick="handleOpponentClick('${groupType}', ${groupIndex}, ${index})">
-                            <div class="h-12 w-12 mx-auto bg-slate-200/90 rounded p-1 shadow hover:scale-110 transition-transform">
-                                <img src="${opp.logoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(opp.name)}`}" title="${opp.name}" class="w-full h-full object-contain">
-                            </div>
-                            <div class="text-[11px] font-bold mt-1 text-center ${winRateColor}" title="Galibiyet Yüzdesi">${winRateStr}</div>
-                        </th>`;
-                } else {
-                    return `
-                        <th class="p-2 border-r border-b border-slate-700 min-w-[84px] w-[84px] relative group" style="background-color: ${grpColor}40">
-                            <button onclick="handleOpponentClick('${groupType}', ${groupIndex}, ${index})" class="h-12 w-12 mx-auto bg-slate-800 hover:bg-emerald-600 rounded flex items-center justify-center text-slate-400 hover:text-white transition-colors border border-dashed border-slate-600">
-                                <i class="fa-solid fa-plus"></i>
-                            </button>
-                        </th>`;
+            // 2. SATIR: BAYRAKLAR (ÜLKE BLOKLARI)
+            const renderCountryRow = (teamsArr, grpColor) => {
+                if (teamsArr.length === 0) return '';
+                let countryRuns = [];
+                let currentCountry = (teamsArr[0].name && teamsArr[0].name.trim() !== '') ? ((teamsArr[0].country || '').trim().toUpperCase() || 'BİLİNMEYEN') : '';
+                let currentCount = 1;
+
+                for (let i = 1; i < teamsArr.length; i++) {
+                    let tCountry = (teamsArr[i].name && teamsArr[i].name.trim() !== '') ? ((teamsArr[i].country || '').trim().toUpperCase() || 'BİLİNMEYEN') : '';
+                    if (tCountry === currentCountry) {
+                        currentCount++;
+                    } else {
+                        countryRuns.push({ country: currentCountry, count: currentCount });
+                        currentCountry = tCountry;
+                        currentCount = 1;
+                    }
                 }
+                countryRuns.push({ country: currentCountry, count: currentCount });
+
+                let countryHtml = '';
+                countryRuns.forEach(run => {
+                    const flagContent = (run.country && run.country !== 'BİLİNMEYEN') ? getFlagIcon(run.country) : '';
+                    countryHtml += `<th colspan="${run.count}" class="p-1 border-r border-b border-slate-700 text-center shadow-inner" style="background-color: ${grpColor}70">${flagContent}</th>`;
+                });
+                return countryHtml;
             };
 
-            if (isKulup) {
-                opps.domestic.teams.forEach((opp, i) => html += renderOpponentHeader(opp, 'domestic', 0, i, opps.domestic.color));
-                opps.foreign.forEach((grp, gIdx) => {
-                    grp.teams.forEach((opp, i) => html += renderOpponentHeader(opp, 'foreign', gIdx, i, grp.color));
-                });
-            } else {
-                opps.domestic.teams.forEach((opp, i) => html += renderOpponentHeader(opp, 'domestic', 0, i, opps.domestic.color));
-            }
+            html += renderCountryRow(opps.domestic.teams, opps.domestic.color);
+            opps.foreign.forEach(grp => {
+                html += renderCountryRow(grp.teams, grp.color);
+            });
+            html += `</tr><tr>`;
+
+            // 3. SATIR: TAKIM LOGOLARI
+            const renderOpponentHeader = (opp, groupType, groupIndex, index, grpColor) => {
+                const winRate = getWinRate(opp.id);
+                const winRateStr = winRate !== null ? `%${winRate}` : '-';
+                const winRateColor = getWinRateColorClass(winRate);
+                return `
+                    <th class="p-2 border-r border-b border-slate-700 min-w-[84px] w-[84px] relative group cursor-pointer hover:bg-slate-800 transition-colors align-top" style="background-color: ${grpColor}40" onclick="handleOpponentClick('${groupType}', ${groupIndex}, ${index})">
+                        <div class="h-12 w-12 mx-auto bg-slate-200/90 rounded p-1 shadow hover:scale-110 transition-transform">
+                            <img src="${opp.logoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(opp.name)}`}" title="${opp.name}" class="w-full h-full object-contain">
+                        </div>
+                        <div class="text-[11px] font-bold mt-1 text-center ${winRateColor}" title="Galibiyet Yüzdesi">${winRateStr}</div>
+                    </th>`;
+            };
+
+            opps.domestic.teams.forEach((opp, i) => html += renderOpponentHeader(opp, 'domestic', 0, i, opps.domestic.color));
+            opps.foreign.forEach((grp, gIdx) => {
+                grp.teams.forEach((opp, i) => html += renderOpponentHeader(opp, 'foreign', gIdx, i, grp.color));
+            });
             html += `</tr></thead><tbody>`;
 
+            // 4. SATIRLAR: MAÇ SONUÇLARI KUTULARI
             seasonsList.forEach((season, sIdx) => {
                 html += `<tr class="hover:bg-slate-800/50 transition-colors group/srow">
                             <td class="p-0 py-4 sticky left-0 bg-slate-950 z-[30] border-r border-b border-slate-700 font-bold text-slate-200 text-center shadow-[2px_0_5px_rgba(0,0,0,0.2)] w-24 min-w-[96px] align-middle cursor-pointer hover:bg-slate-800 transition-colors relative" onclick="openSeasonStatsModal('${season}')" title="Sezon İstatistikleri">
@@ -1345,59 +1597,38 @@ function handleFileUpload(event, type) {
                             </td>`;
 
                 const renderMatchCell = (opp, grpColor) => {
-                    if (!opp.name) return `<td class="p-2 border-r border-b border-slate-800/50" style="background-color: ${grpColor}10"></td>`;
-                    
                     if (!matchDataStore[matchContext][season]) matchDataStore[matchContext][season] = {};
                     let cellData = matchDataStore[matchContext][season][opp.id] || [];
                     
-                    let hasData = cellData.some(m => m && m.result);
+                    let hasData = cellData.some(m => m && (m.result || m.fixtureId)); 
                     
                     if (!hasData) {
                         return `<td class="p-1 border-r border-b border-slate-700 align-middle cursor-pointer hover:bg-slate-700 transition-colors" style="background-color: ${grpColor}15" onclick="openMatchEditor('${season}', '${opp.id}', '${opp.name}')"></td>`;
                     }
 
                     let boxesHtml = cellData.map(match => {
-                        if (!match || !match.result) return '';
+                        if (!match || (!match.result && !match.fixtureId)) return ''; 
                         let loc = match.location === 'H' ? 'E' : (match.location === 'A' ? 'D' : 'T');
-                        let scoreStr = (match.teamScore !== '' && match.oppScore !== '') ? `${match.teamScore}-${match.oppScore}` : '';
                         
-                        let eventStr = '';
-                        if (match.events && match.events.length > 0) {
-                            eventStr = '\n\nOlaylar:\n' + match.events.map(ev => {
-                                let icon = ev.type === 'US' ? '⚽' : '🔴';
-                                let ast = ev.assist ? ` (Ast: ${ev.assist})` : '';
-                                let min = ev.min ? `${ev.min}' ` : '';
-                                return `${icon} ${min}${ev.scorer}${ast}`;
-                            }).join('\n');
-                        } else {
-                            let oldGoals = match.goals && match.goals.length > 0 ? '\n⚽ Biz: ' + match.goals.join(', ') : '';
-                            let oldAst = match.assists && match.assists.length > 0 ? '\n👟 Asist: ' + match.assists.join(', ') : '';
-                            let oldOpp = match.oppGoals && match.oppGoals.length > 0 ? '\n🔴 Rakip: ' + match.oppGoals.join(', ') : '';
-                            eventStr = oldGoals + oldAst + oldOpp;
-                        }
+                        let hasScore = (match.teamScore !== '' && match.teamScore !== undefined && match.oppScore !== '' && match.oppScore !== undefined);
+                        let scoreStr = hasScore ? `${match.teamScore}-${match.oppScore}` : '-';
+                        let resultClass = match.result ? `match-${match.result}` : 'bg-slate-600 border-slate-500 opacity-70';
 
-                        return `<div class="match-box match-${match.result}" title="${loc} | ${match.tournament}\nSkor: ${scoreStr}${eventStr}">
+                        return `<div class="match-box ${resultClass}" title="${loc} | ${match.tournament}\nSkor: ${scoreStr}">
                                     <span class="score-display">${scoreStr}</span>
                                 </div>`;
                     }).join('');
 
-                    return `
-                        <td class="p-1 border-r border-b border-slate-700 align-middle cursor-pointer hover:bg-slate-700 transition-colors" style="background-color: ${grpColor}15" onclick="openMatchEditor('${season}', '${opp.id}', '${opp.name}')">
-                            <div class="flex flex-wrap justify-center gap-1 w-full mx-auto p-1 rounded">
-                                ${boxesHtml}
-                            </div>
-                        </td>
-                    `;
+                    return `<td class="p-1 border-r border-b border-slate-700 align-middle cursor-pointer hover:bg-slate-700 transition-colors" style="background-color: ${grpColor}15" onclick="openMatchEditor('${season}', '${opp.id}', '${opp.name}')">
+                                <div class="flex flex-wrap justify-center gap-1 w-full mx-auto p-1 rounded">${boxesHtml}</div>
+                            </td>`;
                 };
 
-                if (isKulup) {
-                    opps.domestic.teams.forEach(opp => html += renderMatchCell(opp, opps.domestic.color));
-                    opps.foreign.forEach(grp => {
-                        grp.teams.forEach(opp => html += renderMatchCell(opp, grp.color));
-                    });
-                } else {
-                    opps.domestic.teams.forEach(opp => html += renderMatchCell(opp, opps.domestic.color));
-                }
+                opps.domestic.teams.forEach(opp => html += renderMatchCell(opp, opps.domestic.color));
+                opps.foreign.forEach(grp => {
+                    grp.teams.forEach(opp => html += renderMatchCell(opp, grp.color));
+                });
+                
                 html += `</tr>`;
             });
 
@@ -1516,10 +1747,29 @@ function handleFileUpload(event, type) {
 
         function addOpponentColumn(groupType, groupIndex) {
             const newId = `${matchContext === 'kulup' ? 'k' : 'm'}_${groupType.charAt(0)}_${Date.now()}`;
-            if(groupType === 'domestic') opponentsConfig[matchContext].domestic.teams.push({ id: newId, name: '', logoUrl: '', country: 'TURKEY' });
-            else opponentsConfig[matchContext].foreign[groupIndex].teams.push({ id: newId, name: '', logoUrl: '', country: '' });
+            // Boş görünmemesi ve anında listeye girmesi için geçici bir isim veriyoruz
+            const newOpp = { id: newId, name: 'Yeni Takım', logoUrl: '', country: groupType === 'domestic' ? 'TURKEY' : '' };
+            
+            let targetArray = groupType === 'domestic' ? opponentsConfig[matchContext].domestic.teams : opponentsConfig[matchContext].foreign[groupIndex].teams;
+            targetArray.push(newOpp);
+            
             saveToLocalStorage();
             renderMatchesGrid();
+            
+            // Tablo çizildikten sonra, eklenen takımı bul ve anında düzenleme penceresini aç
+            const newIndex = targetArray.findIndex(t => t.id === newId);
+            if (newIndex !== -1) {
+                openOpponentEditorModal(matchContext, groupType, groupIndex, newIndex);
+                
+                // Kullanıcıya kolaylık olması için inputu temizle ve odakla
+                setTimeout(() => {
+                    const nameInput = document.getElementById('opp-name-input');
+                    if (nameInput) {
+                        nameInput.value = '';
+                        nameInput.focus();
+                    }
+                }, 50);
+            }
         }
 
         function handleOpponentClick(groupType, groupIndex, index) {
@@ -1773,7 +2023,8 @@ function handleFileUpload(event, type) {
                         events: mEvents,
                         goals: activeMatchesTemp[i].goals || [],
                         assists: activeMatchesTemp[i].assists || [],
-                        oppGoals: activeMatchesTemp[i].oppGoals || []
+                        oppGoals: activeMatchesTemp[i].oppGoals || [],
+                        fixtureId: activeMatchesTemp[i].fixtureId || null
                     });
                 }
             }
@@ -1875,9 +2126,73 @@ function handleFileUpload(event, type) {
             document.getElementById('match-editor-modal').classList.remove('flex');
         }
 
+        // Sezonlar panelindeki bir maçı Maçlar (fikstür) panelindeki karşılığıyla eşler.
+        // Daha önce eşlenmişse (fixtureId varsa) mevcut fikstür kaydını günceller, yoksa yenisini oluşturur.
+        function syncSeasonMatchToFixture(m, season, oppName) {
+            const teamName = managedTeams.kulup.name || '';
+            if (!fixtureData[season]) fixtureData[season] = [];
+            const seasonFixtures = fixtureData[season];
+
+            const isHome = m.location !== 'A'; // 'H' veya 'N' -> takım "home" alanına yazılır
+            const homeName = isHome ? teamName : oppName;
+            const awayName = isHome ? oppName : teamName;
+            const ground = m.location === 'H' ? 'home' : (m.location === 'A' ? 'away' : 'neutral');
+
+            const toScore = (v) => (v !== '' && v !== undefined && v !== null && !isNaN(parseInt(v))) ? parseInt(v) : '';
+            const teamScoreVal = toScore(m.teamScore);
+            const oppScoreVal = toScore(m.oppScore);
+            const homeScore = isHome ? teamScoreVal : oppScoreVal;
+            const awayScore = isHome ? oppScoreVal : teamScoreVal;
+            const events = JSON.parse(JSON.stringify(m.events || []));
+
+            let fixture = m.fixtureId ? seasonFixtures.find(f => f.id === m.fixtureId) : null;
+
+            if (fixture) {
+                fixture.tournament = m.tournament;
+                fixture.ground = ground;
+                fixture.home = homeName;
+                fixture.away = awayName;
+                fixture.homeScore = homeScore;
+                fixture.awayScore = awayScore;
+                fixture.events = events;
+            } else {
+                const maxNo = seasonFixtures.reduce((max, f) => Math.max(max, parseInt(f.matchNo) || 0), 0);
+                fixture = {
+                    id: 'fx_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+                    matchNo: (maxNo + 1).toString(),
+                    tournament: m.tournament || '',
+                    ground: ground,
+                    home: homeName,
+                    away: awayName,
+                    homeScore: homeScore,   // Skor girilmediyse '' kalır -> Maçlar panelinde boş (-) görünür
+                    awayScore: awayScore,
+                    events: events
+                };
+                seasonFixtures.push(fixture);
+                m.fixtureId = fixture.id; // Sezonlar panelindeki maçı bu fikstür kaydına bağla
+            }
+        }
+
         function saveMatchData() {
             syncMatchSlotsToTemp();
-            const { season, oppId } = activeMatchInfo;
+            const { season, oppId, oppName } = activeMatchInfo;
+            if (!matchDataStore[matchContext][season]) matchDataStore[matchContext][season] = {};
+
+            // Sadece kulüp maçlarını Maçlar (fikstür) paneline senkronize et
+            if (matchContext === 'kulup') {
+                const prevMatches = matchDataStore[matchContext][season][oppId] || [];
+                const prevFixtureIds = prevMatches.map(m => m.fixtureId).filter(Boolean);
+
+                activeMatchesTemp.forEach(m => syncSeasonMatchToFixture(m, season, oppName));
+
+                // Sezonlar panelinden silinen maçları Maçlar panelinden de kaldır
+                const currentFixtureIds = activeMatchesTemp.map(m => m.fixtureId).filter(Boolean);
+                const removedFixtureIds = prevFixtureIds.filter(id => !currentFixtureIds.includes(id));
+                if (removedFixtureIds.length && fixtureData[season]) {
+                    fixtureData[season] = fixtureData[season].filter(f => !removedFixtureIds.includes(f.id));
+                }
+            }
+
             matchDataStore[matchContext][season][oppId] = activeMatchesTemp;
             saveToLocalStorage();
             closeMatchEditorModal();
@@ -2158,6 +2473,8 @@ function handleFileUpload(event, type) {
             fileUploads['pi-photo'] = null;
             document.getElementById('pi-photo-file').value = '';
             document.getElementById('pi-photo-upload-btn').classList.replace('text-emerald-400', 'text-slate-300');
+            document.getElementById('pi-photo-results').innerHTML = '';
+            document.getElementById('pi-photo-results').classList.add('hidden');
 
             const modal = document.getElementById('player-info-modal');
             modal.classList.remove('hidden'); modal.classList.add('flex');
@@ -3190,22 +3507,6 @@ function closeTransferModal() {
             return [...new Set([...allTournamentOptions, ...custom])].sort();
         }
 
-        function getFixtureResultBadge(match) {
-            const hs = parseInt(match.homeScore);
-            const as = parseInt(match.awayScore);
-            const teamName = managedTeams.kulup.name || '';
-            if (isNaN(hs) || isNaN(as)) return '<span class="text-slate-500 text-xs font-bold px-2 py-0.5 rounded bg-slate-700">-</span>';
-            const isHome = match.home === teamName;
-            const isAway = match.away === teamName;
-            let result = '';
-            if (isHome) result = hs > as ? 'W' : hs < as ? 'L' : 'D';
-            else if (isAway) result = as > hs ? 'W' : as < hs ? 'L' : 'D';
-            else result = 'N'; // neither team matches (neutral display)
-            const map = { W: 'bg-green-600 text-white', D: 'bg-orange-500 text-white', L: 'bg-red-600 text-white', N: 'bg-slate-600 text-white' };
-            const lbl = { W: 'G', D: 'B', L: 'M', N: '-' };
-            return `<span class="text-xs font-black px-2 py-0.5 rounded ${map[result]}">${lbl[result]}</span>`;
-        }
-
         function getGroundLabel(g) {
             return g === 'home' ? '<span class="text-[10px] font-bold text-emerald-400 bg-emerald-900/40 px-1.5 py-0.5 rounded">İÇ</span>'
                  : g === 'away' ? '<span class="text-[10px] font-bold text-red-400 bg-red-900/40 px-1.5 py-0.5 rounded">DEP</span>'
@@ -3215,19 +3516,14 @@ function closeTransferModal() {
         function renderFixturePanel() {
             updateMockPlayers();
 
-            // If no active season, default to last
             if (!activeFixtureSeason || !seasonsList.includes(activeFixtureSeason)) {
                 activeFixtureSeason = seasonsList[seasonsList.length - 1];
             }
 
             const matches = fixtureData[activeFixtureSeason] || [];
-            const tours = getFixtureTournaments();
-
-            // Filter
             const filterTour = fixtureFilter.tournament || '';
             let filtered = filterTour ? matches.filter(m => m.tournament === filterTour) : matches;
 
-            // Stats summary
             let wins = 0, draws = 0, losses = 0, gf = 0, ga = 0;
             const teamName = managedTeams.kulup.name || '';
             filtered.forEach(m => {
@@ -3242,7 +3538,6 @@ function closeTransferModal() {
             const played = wins + draws + losses;
             const pts = wins * 3 + draws;
 
-            // Season tabs
             const seasonTabsHtml = seasonsList.map(s => `
                 <button onclick="switchFixtureSeason('${s}')"
                     class="px-4 py-1.5 rounded-full text-sm font-bold border transition-all whitespace-nowrap
@@ -3251,7 +3546,6 @@ function closeTransferModal() {
                 </button>
             `).join('');
 
-            // Tournament filter pills
             const filterHtml = `
                 <button onclick="setFixtureFilter('')"
                     class="px-3 py-1 rounded-full text-xs font-bold border transition-all whitespace-nowrap
@@ -3269,7 +3563,6 @@ function closeTransferModal() {
                 }).join('')}
             `;
 
-            // Match rows
             let matchRowsHtml = '';
             if (filtered.length === 0) {
                 matchRowsHtml = `
@@ -3281,20 +3574,31 @@ function closeTransferModal() {
                         </td>
                     </tr>`;
             } else {
-                // Sort by date
                 const sorted = [...filtered].sort((a, b) => {
-                    if (!a.date && !b.date) return 0;
-                    if (!a.date) return 1;
-                    if (!b.date) return -1;
-                    return a.date.localeCompare(b.date);
+                    const numA = parseInt(a.matchNo) || 999;
+                    const numB = parseInt(b.matchNo) || 999;
+                    return numA - numB;
                 });
                 sorted.forEach((m, idx) => {
-                    const dateStr = m.date ? new Date(m.date).toLocaleDateString('tr-TR', { day:'2-digit', month:'short', year:'2-digit' }) : '-';
                     const hsDisplay = m.homeScore !== '' && m.homeScore !== null && m.homeScore !== undefined ? m.homeScore : '-';
                     const asDisplay = m.awayScore !== '' && m.awayScore !== null && m.awayScore !== undefined ? m.awayScore : '-';
-                    const scoreClass = (hsDisplay === '-' || asDisplay === '-') ? 'text-slate-500' : 'text-white';
 
-                    // Goal scorers from events
+                    let resultLetter = '';
+                    const hs = parseInt(m.homeScore), as = parseInt(m.awayScore);
+                    if (!isNaN(hs) && !isNaN(as)) {
+                        const isHome = m.home === teamName;
+                        const isAway = m.away === teamName;
+                        if (isHome) resultLetter = hs > as ? 'W' : (hs < as ? 'L' : 'D');
+                        else if (isAway) resultLetter = as > hs ? 'W' : (as < hs ? 'L' : 'D');
+                    }
+                    
+                    const rowResultClass = resultLetter ? `frow-${resultLetter}` : '';
+                    
+                    const scoreBgClass = resultLetter === 'W' ? 'bg-green-600 border-green-500 text-white shadow-sm' : 
+                                         resultLetter === 'D' ? 'bg-orange-500 border-orange-400 text-white shadow-sm' : 
+                                         resultLetter === 'L' ? 'bg-red-600 border-red-500 text-white shadow-sm' : 
+                                         'bg-slate-900 border-slate-700 text-slate-400';
+
                     let scorersList = '';
                     if (m.events && m.events.length > 0) {
                         const ourGoals = m.events.filter(ev => ev.type === 'US');
@@ -3302,25 +3606,26 @@ function closeTransferModal() {
                             scorersList = ourGoals.map(ev => {
                                 const min = ev.min ? `${ev.min}'` : '';
                                 const ast = ev.assist ? ` <span class="text-blue-400/70">(${ev.assist})</span>` : '';
-                                return `<span class="text-green-400/80 text-[10px]">⚽ ${min} ${ev.scorer}${ast}</span>`;
-                            }).join(' ');
+                                return `<span class="text-emerald-400/90 text-[10px]">⚽ ${min} ${ev.scorer}${ast}</span>`;
+                            }).join(' <span class="text-slate-600">|</span> ');
                         }
                     }
 
                     matchRowsHtml += `
-                        <tr class="hover:bg-slate-800/60 transition-colors group cursor-pointer border-b border-slate-700/40" onclick="openFixtureModal('${activeFixtureSeason}', '${m.id}')">
-                            <td class="p-3 text-slate-400 text-xs font-mono whitespace-nowrap">${dateStr}</td>
-                            <td class="p-3">${getGroundLabel(m.ground)}</td>
-                            <td class="p-3 text-xs text-slate-400 font-medium max-w-[120px] truncate" title="${m.tournament || ''}">${m.tournament || '-'}</td>
-                            <td class="p-3 text-right font-bold text-white text-sm">${m.home || '-'}</td>
-                            <td class="p-3 text-center">
-                                <span class="inline-flex items-center justify-center gap-1.5 font-black text-lg ${scoreClass} bg-slate-950 rounded-lg px-3 py-1 border border-slate-700 min-w-[70px]">
-                                    ${hsDisplay}<span class="text-slate-600 font-normal text-sm">:</span>${asDisplay}
+                        <tr class="fixture-compact-row hover:bg-slate-800/80 transition-colors group cursor-pointer border-b border-slate-700/40 ${rowResultClass}" onclick="openFixtureModal('${activeFixtureSeason}', '${m.id}')">
+                            <td class="p-1 text-emerald-500 text-xs font-black text-center w-10">${m.matchNo || '-'}</td>
+                            <td class="p-1 text-slate-400 text-[10px] font-bold w-28 truncate" title="${m.tournament || ''}">${m.tournament || '-'}</td>
+                            <td class="p-1 w-12 text-center">${getGroundLabel(m.ground)}</td>
+                            <td class="p-1 text-right font-bold text-white text-xs truncate max-w-[120px]" title="${m.home || ''}">${m.home || '-'}</td>
+                            <td class="p-1 text-center w-20">
+                                <span onclick="event.stopPropagation(); openMatchResultModal('${activeFixtureSeason}', '${m.id}')" title="Skoru gir / düzenle" class="score-display ${scoreBgClass} inline-flex items-center justify-center font-black text-xs rounded px-2 py-1 border min-w-[50px] transition-colors">
+                                    ${hsDisplay}<span class="px-1 opacity-50">:</span>${asDisplay}
                                 </span>
                             </td>
-                            <td class="p-3 font-bold text-white text-sm">${m.away || '-'}</td>
-                            <td class="p-3 text-center">${getFixtureResultBadge(m)}</td>
-                            <td class="p-3 text-[10px] text-slate-500 max-w-[200px]">${scorersList}</td>
+                            <td class="p-1 font-bold text-white text-xs truncate max-w-[120px]" title="${m.away || ''}">${m.away || '-'}</td>
+                            <td class="p-1 text-[9px] text-slate-500" title="${scorersList.replace(/<[^>]*>?/gm, '')}">
+                                <div class="goal-events-cell">${scorersList}</div>
+                            </td>
                         </tr>`;
                 });
             }
@@ -3328,17 +3633,17 @@ function closeTransferModal() {
             const html = `
                 <div class="w-full flex flex-col h-full min-h-0 overflow-hidden">
                     <!-- Header -->
-                    <div class="flex flex-wrap justify-between items-center mb-3 gap-3 px-1 shrink-0">
-                        <div>
-                            <h3 class="text-2xl font-bold text-white flex items-center gap-2">
-                                <i class="fa-solid fa-calendar-days text-emerald-500"></i>
-                                Fikstür & Maç Listesi
-                            </h3>
-                            <p class="text-xs text-slate-500 mt-0.5">Sezon bazlı maç kayıtları, sonuçlar ve istatistikler</p>
-                        </div>
+                    <div class="flex gap-2">
+                        <button onclick="openFixtureBulkModal('${activeFixtureSeason}')"
+                            class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-4 py-2 rounded-lg text-sm transition-colors shadow-lg flex items-center gap-2">
+                            <i class="fa-solid fa-list-check"></i> Toplu Ekle
+                        </button>
                         <button onclick="openFixtureModal('${activeFixtureSeason}', null)"
-                            class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2 rounded-lg text-sm transition-colors shadow-lg flex items-center gap-2">
+                            class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2 rounded-lg text-sm transition-colors shadow-lg flex items-center gap-2 hidden sm:flex">
                             <i class="fa-solid fa-plus"></i> Maç Ekle
+                        </button>
+                        <button onclick="deleteBulkFixtures()" class="bg-red-900/50 hover:bg-red-800 text-red-200 font-bold px-3 py-2 rounded-lg text-xs transition-colors">
+                            <i class="fa-solid fa-trash-can mr-1"></i> Toplu Sil
                         </button>
                     </div>
 
@@ -3386,13 +3691,12 @@ function closeTransferModal() {
                         <table class="w-full border-collapse text-sm">
                             <thead class="bg-slate-950 sticky top-0 z-10">
                                 <tr class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
-                                    <th class="p-3 text-left border-b border-slate-700 w-24">Tarih</th>
-                                    <th class="p-3 text-left border-b border-slate-700 w-12">Zemin</th>
-                                    <th class="p-3 text-left border-b border-slate-700">Müsabaka</th>
+                                    <th class="p-3 text-center border-b border-slate-700 w-10">#</th>
+                                    <th class="p-3 text-left border-b border-slate-700 w-28">Müsabaka</th>
+                                    <th class="p-3 text-center border-b border-slate-700 w-12">Zemin</th>
                                     <th class="p-3 text-right border-b border-slate-700">Ev Sahibi</th>
-                                    <th class="p-3 text-center border-b border-slate-700 w-24">Skor</th>
+                                    <th class="p-3 text-center border-b border-slate-700 w-20">Skor</th>
                                     <th class="p-3 text-left border-b border-slate-700">Deplasman</th>
-                                    <th class="p-3 text-center border-b border-slate-700 w-10">S</th>
                                     <th class="p-3 text-left border-b border-slate-700">Goller</th>
                                 </tr>
                             </thead>
@@ -3417,12 +3721,10 @@ function closeTransferModal() {
             renderFixturePanel();
         }
 
-        // --- FİKSTÜR MODAL ---
         function openFixtureModal(season, matchId) {
             activeFixtureSeason = season;
             activeFixtureMatchId = matchId;
 
-            // Populate tournament datalist
             const dl = document.getElementById('fm-tournament-list');
             if (dl) dl.innerHTML = getFixtureTournaments().map(t => `<option value="${t}">`).join('');
 
@@ -3430,36 +3732,27 @@ function closeTransferModal() {
             const deleteBtn = document.getElementById('fm-delete-btn');
 
             if (matchId) {
-                // Edit mode
-                document.getElementById('fm-modal-title').textContent = 'Maçı Düzenle';
+                document.getElementById('fm-modal-title').textContent = 'Fikstürü Düzenle';
                 deleteBtn.classList.remove('hidden');
                 const match = (fixtureData[season] || []).find(m => m.id === matchId);
                 if (match) {
-                    document.getElementById('fm-date').value = match.date || '';
+                    document.getElementById('fm-matchno').value = match.matchNo || '';
                     document.getElementById('fm-tournament').value = match.tournament || '';
                     document.getElementById('fm-ground').value = match.ground || 'home';
                     document.getElementById('fm-home').value = match.home || '';
                     document.getElementById('fm-away').value = match.away || '';
-                    document.getElementById('fm-home-score').value = match.homeScore !== '' && match.homeScore !== null && match.homeScore !== undefined ? match.homeScore : '';
-                    document.getElementById('fm-away-score').value = match.awayScore !== '' && match.awayScore !== null && match.awayScore !== undefined ? match.awayScore : '';
-                    fixtureEventsTemp = match.events ? JSON.parse(JSON.stringify(match.events)) : [];
+                    document.getElementById('fm-opp-country').value = match.oppCountry || '';
                 }
             } else {
-                // Add mode
-                document.getElementById('fm-modal-title').textContent = 'Maç Ekle';
+                document.getElementById('fm-modal-title').textContent = 'Fikstür Planla';
                 deleteBtn.classList.add('hidden');
-                document.getElementById('fm-date').value = '';
+                document.getElementById('fm-matchno').value = '';
                 document.getElementById('fm-tournament').value = '';
                 document.getElementById('fm-ground').value = 'home';
-                const teamName = managedTeams.kulup.name || '';
-                document.getElementById('fm-home').value = teamName;
+                document.getElementById('fm-home').value = managedTeams.kulup.name || '';
                 document.getElementById('fm-away').value = '';
-                document.getElementById('fm-home-score').value = '';
-                document.getElementById('fm-away-score').value = '';
-                fixtureEventsTemp = [];
+                document.getElementById('fm-opp-country').value = '';
             }
-
-            renderFixtureEvents();
 
             const modal = document.getElementById('fixture-match-modal');
             modal.classList.remove('hidden');
@@ -3469,7 +3762,120 @@ function closeTransferModal() {
         function closeFixtureModal() {
             document.getElementById('fixture-match-modal').classList.add('hidden');
             document.getElementById('fixture-match-modal').classList.remove('flex');
+        }
+
+        function saveFixtureMatch() {
+            const matchNo = parseInt(document.getElementById('fm-matchno').value);
+            const tournament = document.getElementById('fm-tournament').value.trim();
+            const ground = document.getElementById('fm-ground').value;
+            const home = document.getElementById('fm-home').value.trim();
+            const away = document.getElementById('fm-away').value.trim();
+            const oppCountry = document.getElementById('fm-opp-country').value.trim().toUpperCase();
+
+            if (isNaN(matchNo)) { alert('Lütfen geçerli bir Maç No girin!'); return; }
+            if (!fixtureData[activeFixtureSeason]) fixtureData[activeFixtureSeason] = [];
+
+            const existingMatches = fixtureData[activeFixtureSeason];
+            const isNew = !activeFixtureMatchId;
+            const oldMatch = isNew ? null : existingMatches.find(m => m.id === activeFixtureMatchId);
+            
+            if (isNew || oldMatch.matchNo != matchNo) {
+                existingMatches.forEach(m => {
+                    if (parseInt(m.matchNo) >= matchNo) {
+                        m.matchNo = (parseInt(m.matchNo) + 1).toString();
+                    }
+                });
+            }
+
+            if (activeFixtureMatchId) {
+                const match = existingMatches.find(m => m.id === activeFixtureMatchId);
+                if (match) {
+                    match.matchNo = matchNo.toString();
+                    match.tournament = tournament;
+                    match.ground = ground;
+                    match.home = home;
+                    match.away = away;
+                    match.oppCountry = oppCountry;
+                    syncFixtureToMatches(match, activeFixtureSeason);
+                }
+            } else {
+                const newMatch = {
+                    id: 'fx_' + Date.now(),
+                    matchNo: matchNo.toString(),
+                    tournament: tournament,
+                    ground: ground,
+                    home: home,
+                    away: away,
+                    oppCountry: oppCountry,
+                    homeScore: '',
+                    awayScore: '',
+                    events: []
+                };
+                existingMatches.push(newMatch);
+                syncFixtureToMatches(newMatch, activeFixtureSeason);
+            }
+
+            saveToLocalStorage();
+            closeFixtureModal();
+            renderFixturePanel();
+        }
+
+        function deleteFixtureMatch() {
+            if (!confirm('Bu maç kaydını ve (varsa) içindeki skorları silmek istediğinize emin misiniz?')) return;
+            removeFixtureFromMatches(activeFixtureMatchId, activeFixtureSeason);
+            if (fixtureData[activeFixtureSeason]) {
+                fixtureData[activeFixtureSeason] = fixtureData[activeFixtureSeason].filter(m => m.id !== activeFixtureMatchId);
+            }
+            saveToLocalStorage();
+            closeFixtureModal();
+            renderFixturePanel();
+        }
+
+        function openMatchResultModal(season, matchId) {
+            activeFixtureSeason = season;
+            activeFixtureMatchId = matchId;
+            
+            const match = (fixtureData[season] || []).find(m => m.id === matchId);
+            if (!match) return;
+
+            document.getElementById('mr-modal-subtitle').textContent = `${season} Sezonu - ${match.tournament || 'Diğer'} Müsabakası`;
+            document.getElementById('mr-home-label').textContent = match.home;
+            document.getElementById('mr-away-label').textContent = match.away;
+
+            document.getElementById('mr-home-score').value = match.homeScore !== '' ? match.homeScore : '';
+            document.getElementById('mr-away-score').value = match.awayScore !== '' ? match.awayScore : '';
+            
+            fixtureEventsTemp = match.events ? JSON.parse(JSON.stringify(match.events)) : [];
+            renderFixtureEvents();
+
+            const modal = document.getElementById('match-result-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeMatchResultModal() {
+            document.getElementById('match-result-modal').classList.add('hidden');
+            document.getElementById('match-result-modal').classList.remove('flex');
             fixtureEventsTemp = [];
+        }
+
+        function saveMatchResult() {
+            syncFixtureEvents();
+            
+            const homeScore = document.getElementById('mr-home-score').value;
+            const awayScore = document.getElementById('mr-away-score').value;
+            const match = fixtureData[activeFixtureSeason].find(m => m.id === activeFixtureMatchId);
+
+            if (match) {
+                match.homeScore = homeScore !== '' ? parseInt(homeScore) : '';
+                match.awayScore = awayScore !== '' ? parseInt(awayScore) : '';
+                match.events = fixtureEventsTemp.filter(ev => ev.scorer || ev.type === 'OPP' || ev.type === 'OG');
+                syncFixtureToMatches(match, activeFixtureSeason);
+            }
+
+            saveToLocalStorage();
+            closeMatchResultModal();
+            renderFixturePanel();
         }
 
         function addFixtureEvent() {
@@ -3509,7 +3915,7 @@ function closeTransferModal() {
                     <select id="fev_type_${i}" class="bg-slate-950 text-xs text-white p-1.5 rounded border border-slate-600 outline-none focus:border-emerald-500">
                         <option value="US" ${ev.type==='US'?'selected':''}>⚽ Biz</option>
                         <option value="OPP" ${ev.type==='OPP'?'selected':''}>⚽ Rakip</option>
-                        <option value="OG" ${ev.type==='OG'?'selected':''}>↩ Kendi Kalesine</option>
+                        <option value="OG" ${ev.type==='OG'?'selected':''}>↩ K.Kalesine</option>
                     </select>
                     <input type="text" id="fev_scorer_${i}" value="${ev.scorer}" placeholder="Gol atan"
                         class="flex-1 bg-slate-950 text-xs text-white p-1.5 rounded border border-slate-600 outline-none focus:border-emerald-500 use-autocomplete" autocomplete="off">
@@ -3522,50 +3928,194 @@ function closeTransferModal() {
             `).join('');
         }
 
-        function saveFixtureMatch() {
-            syncFixtureEvents();
+        function openFixtureBulkModal(season) {
+            activeFixtureSeason = season;
+            document.getElementById('fb-modal-subtitle').textContent = season + ' Sezonu';
+            document.getElementById('fb-textarea').value = '';
+            
+            const modal = document.getElementById('fixture-bulk-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
 
-            const date = document.getElementById('fm-date').value;
-            const tournament = document.getElementById('fm-tournament').value.trim();
-            const ground = document.getElementById('fm-ground').value;
-            const home = document.getElementById('fm-home').value.trim();
-            const away = document.getElementById('fm-away').value.trim();
-            const homeScore = document.getElementById('fm-home-score').value;
-            const awayScore = document.getElementById('fm-away-score').value;
+        function closeFixtureBulkModal() {
+            const modal = document.getElementById('fixture-bulk-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
 
-            if (!home && !away) { alert('En az ev sahibi veya deplasman takımı girilmelidir!'); return; }
+        function deleteBulkFixtures() {
+           if(!confirm("Toplu olarak eklenen TÜM maçları silmek istediğinize emin misiniz? (Tek tek eklenenler silinmeyecektir.)")) return;
+            if(fixtureData[activeFixtureSeason]) {
+                const toRemove = fixtureData[activeFixtureSeason].filter(m => m.id.startsWith('fx_bulk_'));
+                toRemove.forEach(m => removeFixtureFromMatches(m.id, activeFixtureSeason));
+                fixtureData[activeFixtureSeason] = fixtureData[activeFixtureSeason].filter(m => !m.id.startsWith('fx_bulk_'));
+            }
+            saveToLocalStorage();
+            renderFixturePanel();
+        }
 
+        function saveBulkFixtures() {
+            const text = document.getElementById('fb-textarea').value.trim();
+            if (!text) { alert('Lütfen eklenecek maçları girin!'); return; }
+
+            const lines = text.split('\n');
+            let addedCount = 0;
+            
             if (!fixtureData[activeFixtureSeason]) fixtureData[activeFixtureSeason] = [];
+            const teamName = managedTeams.kulup.name || '';
 
-            const matchObj = {
-                id: activeFixtureMatchId || ('fx_' + Date.now()),
-                date, tournament, ground, home, away,
-                homeScore: homeScore !== '' ? parseInt(homeScore) : '',
-                awayScore: awayScore !== '' ? parseInt(awayScore) : '',
-                events: fixtureEventsTemp.filter(ev => ev.scorer || ev.type === 'OPP' || ev.type === 'OG')
-            };
+            lines.forEach(line => {
+                if (!line.trim()) return;
+                const parts = line.split(',').map(s => s.trim());
+                
+                if (parts.length >= 4) {
+                    const matchNo = parts[0];
+                    const tournament = parts[1];
+                    const home = parts[2];
+                    const away = parts[3];
+                    const oppCountry = parts[4] ? parts[4].toUpperCase() : ''; 
+                    
+                    let ground = 'neutral';
+                    if (home === teamName) ground = 'home';
+                    else if (away === teamName) ground = 'away';
 
-            if (activeFixtureMatchId) {
-                const idx = fixtureData[activeFixtureSeason].findIndex(m => m.id === activeFixtureMatchId);
-                if (idx !== -1) fixtureData[activeFixtureSeason][idx] = matchObj;
-                else fixtureData[activeFixtureSeason].push(matchObj);
+                    const newMatch = {
+                        id: 'fx_bulk_' + Date.now() + '_' + addedCount,
+                        matchNo: matchNo, 
+                        tournament: tournament,
+                        ground: ground,
+                        home: home,
+                        away: away,
+                        oppCountry: oppCountry, 
+                        homeScore: '',
+                        awayScore: '',
+                        events: []
+                    };
+                    fixtureData[activeFixtureSeason].push(newMatch);
+                    syncFixtureToMatches(newMatch, activeFixtureSeason);
+                    addedCount++;
+                }
+            });
+
+            if (addedCount > 0) {
+                saveToLocalStorage();
+                closeFixtureBulkModal();
+                renderFixturePanel();
             } else {
-                fixtureData[activeFixtureSeason].push(matchObj);
+                alert('Geçerli formatta maç bulunamadı. Lütfen "Maç No, Müsabaka, Ev, Deplasman" formatında girin.');
             }
-
-            saveToLocalStorage();
-            closeFixtureModal();
-            renderFixturePanel();
         }
 
-        function deleteFixtureMatch() {
-            if (!confirm('Bu maç kaydını silmek istediğinize emin misiniz?')) return;
-            if (fixtureData[activeFixtureSeason]) {
-                fixtureData[activeFixtureSeason] = fixtureData[activeFixtureSeason].filter(m => m.id !== activeFixtureMatchId);
-            }
-            saveToLocalStorage();
-            closeFixtureModal();
-            renderFixturePanel();
-        }
+        // --- SENKRONİZASYON MOTORU ---
+function syncFixtureToMatches(match, season) {
+    // 1. Maçın Kulüp mü Milli Takım mı olduğunu tespit et
+    let isMilli = false;
+    let teamName = managedTeams.kulup.name || '';
+    
+    // Eğer ev sahibi veya deplasman milli takımımızın adıyla eşleşiyorsa, bu bir milli maçtır.
+    if (match.home === managedTeams.milli.name || match.away === managedTeams.milli.name) {
+        isMilli = true;
+        teamName = managedTeams.milli.name || '';
+    }
 
+    const context = isMilli ? 'milli' : 'kulup';
+    const isHome = match.home === teamName;
+    const oppName = isHome ? match.away : match.home;
+    
+    if (!oppName || oppName === teamName) return;
+
+    // Kıtalar Sözlüğü
+    const continentMap = {
+        'EN': 'AVRUPA', 'ENG': 'AVRUPA', 'SC': 'AVRUPA', 'SP': 'AVRUPA', 'IT': 'AVRUPA', 'GE': 'AVRUPA', 'FR': 'AVRUPA',
+        'PT': 'AVRUPA', 'NL': 'AVRUPA', 'BE': 'AVRUPA', 'TR': 'AVRUPA', 'TUR': 'AVRUPA', 'GR': 'AVRUPA', 'RU': 'AVRUPA', 'UA': 'AVRUPA',
+        'BR': 'GÜNEY AMERİKA', 'AR': 'GÜNEY AMERİKA', 'CO': 'GÜNEY AMERİKA', 'UY': 'GÜNEY AMERİKA',
+        'US': 'KUZEY AMERİKA', 'MX': 'KUZEY AMERİKA', 'CA': 'KUZEY AMERİKA',
+        'SA': 'ASYA', 'JP': 'ASYA', 'KR': 'ASYA', 'IR': 'ASYA',
+        'MA': 'AFRİKA', 'EG': 'AFRİKA', 'SN': 'AFRİKA', 'NG': 'AFRİKA', 'CI': 'AFRİKA'
+    };
+
+    let oppCountryCode = (match.oppCountry || '').toUpperCase().trim();
+    let targetContinent = oppCountryCode ? (continentMap[oppCountryCode] || 'DİĞER') : 'DİĞER';
+
+    // 2. Grubun Ana (Domestic) Grup mu Yoksa Yabancı Kıta mı Olduğunu Belirle
+    let isDomestic = false;
+    if (context === 'kulup' && (oppCountryCode === 'TR' || oppCountryCode === 'TUR' || targetContinent === 'YURTİÇİ' || !oppCountryCode)) {
+        isDomestic = true;
+    } else if (context === 'milli' && targetContinent === opponentsConfig.milli.domestic.name) {
+        // Milli takımımız Avrupa'da olduğu için, AVRUPA kıtası "domestic" grubuna girer
+        isDomestic = true;
+    }
+
+    // 3. Rakibi İlgili Grupta Bul veya Oluştur
+    let foundOpp = null;
+    ['domestic', 'foreign'].forEach(type => {
+        if (opponentsConfig[context][type]) {
+            const list = type === 'domestic' ? opponentsConfig[context][type].teams : opponentsConfig[context].foreign.flatMap(f => f.teams);
+            let exist = list.find(o => o.name.toLowerCase() === oppName.toLowerCase());
+            if(exist) foundOpp = exist;
+        }
+    });
+
+    if (!foundOpp) {
+        if (isDomestic) {
+            let slot = opponentsConfig[context].domestic.teams.find(o => !o.name);
+            if (slot) { 
+                foundOpp = slot; 
+                foundOpp.name = oppName; 
+                foundOpp.logoUrl = `https://ui-avatars.com/api/?name=${oppName}`;
+                foundOpp.country = oppCountryCode;
+            } else {
+                foundOpp = { id: `${context.charAt(0)}_d_${Date.now()}`, name: oppName, logoUrl: `https://ui-avatars.com/api/?name=${oppName}`, country: oppCountryCode };
+                opponentsConfig[context].domestic.teams.push(foundOpp);
+            }
+        } else {
+            let grp = opponentsConfig[context].foreign.find(g => g.name === targetContinent);
+            if (!grp) { 
+                grp = { id: 'f_' + Date.now(), name: targetContinent, color: context === 'milli' ? '#9f1239' : '#0f766e', teams: [] }; 
+                opponentsConfig[context].foreign.push(grp); 
+            }
+            foundOpp = { id: `f_${Date.now()}`, name: oppName, logoUrl: `https://ui-avatars.com/api/?name=${oppName}`, country: oppCountryCode };
+            grp.teams.push(foundOpp);
+        }
+    } else {
+        if(!foundOpp.country && oppCountryCode) foundOpp.country = oppCountryCode;
+    }
+
+    // 4. Veriyi Maçlar Databese'ine Yaz
+    if (!matchDataStore[context][season]) matchDataStore[context][season] = {};
+    if (!matchDataStore[context][season][foundOpp.id]) matchDataStore[context][season][foundOpp.id] = [];
+    
+    // YENİ: Maç sonucunu inline olarak hesapla
+    let matchResult = '';
+    if (match.homeScore !== '' && match.awayScore !== '' && match.homeScore !== undefined && match.awayScore !== undefined) {
+        const tScore = parseInt(isHome ? match.homeScore : match.awayScore);
+        const oScore = parseInt(isHome ? match.awayScore : match.homeScore);
+        if (!isNaN(tScore) && !isNaN(oScore)) {
+            if (tScore > oScore) matchResult = 'W';
+            else if (tScore < oScore) matchResult = 'L';
+            else matchResult = 'D';
+        }
+    }
+
+    const mData = { 
+        fixtureId: match.id, 
+        result: matchResult, 
+        location: isHome ? 'H' : 'A', 
+        teamScore: isHome ? match.homeScore : match.awayScore, 
+        oppScore: isHome ? match.awayScore : match.homeScore, 
+        tournament: match.tournament || '' 
+    };
+    
+    const idx = matchDataStore[context][season][foundOpp.id].findIndex(m => m.fixtureId === match.id);
+    if (idx !== -1) matchDataStore[context][season][foundOpp.id][idx] = mData;
+    else matchDataStore[context][season][foundOpp.id].push(mData);
+}
+
+        function removeFixtureFromMatches(fixtureId, season) {
+            if (!matchDataStore.kulup[season]) return;
+            Object.keys(matchDataStore.kulup[season]).forEach(oppId => {
+                matchDataStore.kulup[season][oppId] = matchDataStore.kulup[season][oppId].filter(m => m.fixtureId !== fixtureId);
+            });
+        }
 

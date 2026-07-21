@@ -446,6 +446,10 @@
                 </div>
                 <div>
                     <label class="block text-left text-xs font-medium text-slate-400 mb-1">Fotoğraf URL / Dosya</label>
+                    <div class="flex gap-2 mb-2">
+                        <button type="button" onclick="searchPlayerPhotos()" class="bg-blue-600 hover:bg-blue-500 px-3 rounded text-white whitespace-nowrap text-xs" title="Facecard / Fotoğraf Ara"><i class="fa-solid fa-search"></i> Facecard Ara</button>
+                    </div>
+                    <div id="pi-photo-results" class="flex gap-2 overflow-x-auto hidden py-2 mb-2 hide-scrollbar bg-slate-950/50 rounded px-2 items-center border border-slate-700/50"></div>
                     <div class="flex gap-2">
                         <input type="text" id="pi-photo-url" class="flex-1 bg-slate-900 border border-slate-600 rounded p-2 text-white text-xs outline-none">
                         <input type="file" id="pi-photo-file" class="hidden" accept="image/*" onchange="handleFileUpload(event, 'pi-photo')">
@@ -642,25 +646,24 @@
     </div>
 
 
-    <!-- Modal: Fikstür Maç Ekle/Düzenle -->
+    <!-- Modal: Fikstür Ekle/Düzenle (Sadece Planlama) -->
     <div id="fixture-match-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[100] fade-in backdrop-blur-sm">
-        <div class="bg-slate-800 p-6 rounded-xl border border-slate-600 w-[95%] max-w-2xl shadow-2xl relative max-h-[92vh] flex flex-col">
+        <div class="bg-slate-800 p-6 rounded-xl border border-slate-600 w-[95%] max-w-lg shadow-2xl relative flex flex-col">
             <button onclick="closeFixtureModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white z-10"><i class="fa-solid fa-xmark text-xl"></i></button>
-            <h3 class="text-xl font-bold mb-1 text-white" id="fm-modal-title">Maç Ekle</h3>
+            <h3 class="text-xl font-bold mb-1 text-white" id="fm-modal-title">Fikstür Planla</h3>
             <p class="text-xs text-emerald-400 font-bold mb-4" id="fm-modal-subtitle"></p>
 
-            <!-- Temel Bilgiler -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                 <div>
-                    <label class="block text-xs font-bold text-slate-400 mb-1">Tarih</label>
-                    <input type="date" id="fm-date" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-sm text-white outline-none focus:border-emerald-500">
+                    <label class="block text-xs font-bold text-slate-400 mb-1">Maç No</label>
+                    <input type="number" id="fm-matchno" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-sm text-white outline-none focus:border-emerald-500" placeholder="Örn: 1">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-400 mb-1">Müsabaka</label>
                     <input type="text" id="fm-tournament" list="fm-tournament-list" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-sm text-white outline-none focus:border-emerald-500" placeholder="Lig, Kupa...">
                     <datalist id="fm-tournament-list"></datalist>
                 </div>
-                <div>
+                <div class="sm:col-span-2">
                     <label class="block text-xs font-bold text-slate-400 mb-1">Zemin</label>
                     <select id="fm-ground" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-sm text-white outline-none focus:border-emerald-500">
                         <option value="home">İç Saha</option>
@@ -668,21 +671,16 @@
                         <option value="neutral">Tarafsız</option>
                     </select>
                 </div>
+                <div class="sm:col-span-2">
+                    <label class="block text-[10px] font-bold text-emerald-400 mb-1 uppercase tracking-widest bg-emerald-900/20 px-2 py-1 rounded inline-block"><i class="fa-solid fa-earth-americas mr-1"></i> Rakip Ülke Kodu</label>
+                    <input type="text" id="fm-opp-country" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-sm text-white outline-none focus:border-emerald-500 uppercase placeholder-slate-500" placeholder="Örn: EN, SC, SP, IT (Boş bırakılırsa Yurtiçi sayılır)">
+                </div>
             </div>
 
-            <!-- Ev Sahibi / Skor / Deplasman -->
             <div class="flex items-center gap-3 mb-5 bg-slate-900 rounded-xl p-4 border border-slate-700">
                 <div class="flex-1">
                     <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-widest">Ev Sahibi</label>
                     <input type="text" id="fm-home" class="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-white font-bold text-sm outline-none focus:border-emerald-500" placeholder="Takım Adı">
-                </div>
-                <div class="flex flex-col items-center gap-1 shrink-0">
-                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Skor</label>
-                    <div class="flex items-center gap-2 bg-slate-800 rounded-lg px-3 py-2 border border-slate-600">
-                        <input type="number" id="fm-home-score" class="w-10 bg-transparent text-center text-xl font-black text-white outline-none appearance-none" placeholder="-" min="0" max="99">
-                        <span class="text-slate-400 font-black text-lg">:</span>
-                        <input type="number" id="fm-away-score" class="w-10 bg-transparent text-center text-xl font-black text-white outline-none appearance-none" placeholder="-" min="0" max="99">
-                    </div>
                 </div>
                 <div class="flex-1 text-right">
                     <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-widest text-right">Deplasman</label>
@@ -690,23 +688,73 @@
                 </div>
             </div>
 
-            <!-- Gol / Asist Olayları -->
+            <div class="flex justify-between items-center mt-2 pt-4 border-t border-slate-700 shrink-0">
+                <button id="fm-delete-btn" onclick="deleteFixtureMatch()" class="px-4 py-2 rounded-lg bg-red-900/50 hover:bg-red-800 text-red-200 font-medium transition-colors hidden text-sm">
+                    <i class="fa-solid fa-trash mr-1"></i>Fikstürü Sil
+                </button>
+                <div class="flex gap-2 ml-auto">
+                    <button onclick="closeFixtureModal()" class="px-5 py-2.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-medium transition-colors text-sm">İptal</button>
+                    <button onclick="saveFixtureMatch()" class="px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition-colors text-sm"><i class="fa-solid fa-calendar-plus mr-1"></i>Planı Kaydet</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Maç Sonucu ve Olay Ekleme -->
+    <div id="match-result-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[100] fade-in backdrop-blur-sm">
+        <div class="bg-slate-800 p-6 rounded-xl border border-slate-600 w-[95%] max-w-2xl shadow-2xl relative max-h-[92vh] flex flex-col">
+            <button onclick="closeMatchResultModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white z-10"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <h3 class="text-xl font-bold mb-1 text-white">Maç Sonucu Gir</h3>
+            <p class="text-xs text-emerald-400 font-bold mb-4" id="mr-modal-subtitle"></p>
+
+            <div class="flex items-center gap-3 mb-5 bg-slate-900 rounded-xl p-4 border border-slate-700">
+                <div class="flex-1 text-right text-lg font-bold text-white truncate" id="mr-home-label">GS</div>
+                <div class="flex flex-col items-center gap-1 shrink-0">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Skor</label>
+                    <div class="flex items-center gap-2 bg-slate-800 rounded-lg px-3 py-2 border border-slate-600">
+                        <input type="number" id="mr-home-score" class="w-10 bg-transparent text-center text-xl font-black text-white outline-none appearance-none" placeholder="-" min="0" max="99">
+                        <span class="text-slate-400 font-black text-lg">:</span>
+                        <input type="number" id="mr-away-score" class="w-10 bg-transparent text-center text-xl font-black text-white outline-none appearance-none" placeholder="-" min="0" max="99">
+                    </div>
+                </div>
+                <div class="flex-1 text-left text-lg font-bold text-white truncate" id="mr-away-label">FB</div>
+            </div>
+
             <div class="flex justify-between items-center mb-2">
                 <span class="text-xs font-bold text-slate-300 uppercase tracking-widest"><i class="fa-solid fa-futbol text-emerald-500 mr-1"></i>Gol & Asist Detayları</span>
                 <button onclick="addFixtureEvent()" class="bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold px-3 py-1.5 rounded transition-colors"><i class="fa-solid fa-plus mr-1"></i>Olay Ekle</button>
             </div>
             <div id="fm-events-container" class="flex-1 overflow-y-auto space-y-2 pr-1 hide-scrollbar min-h-[60px]">
-                <div class="text-center text-slate-600 text-xs py-3">Henüz olay eklenmedi.</div>
+                <!-- Olaylar buraya yüklenecek -->
             </div>
 
-            <div class="flex justify-between items-center mt-5 pt-4 border-t border-slate-700 shrink-0">
-                <button id="fm-delete-btn" onclick="deleteFixtureMatch()" class="px-4 py-2 rounded-lg bg-red-900/50 hover:bg-red-800 text-red-200 font-medium transition-colors hidden text-sm">
-                    <i class="fa-solid fa-trash mr-1"></i>Maçı Sil
-                </button>
-                <div class="flex gap-2 ml-auto">
-                    <button onclick="closeFixtureModal()" class="px-5 py-2.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-medium transition-colors text-sm">İptal</button>
-                    <button onclick="saveFixtureMatch()" class="px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition-colors text-sm"><i class="fa-solid fa-floppy-disk mr-1"></i>Kaydet</button>
-                </div>
+            <div class="flex justify-end items-center mt-5 pt-4 border-t border-slate-700 shrink-0">
+                <button onclick="closeMatchResultModal()" class="px-5 py-2.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-medium transition-colors text-sm mr-2">İptal</button>
+                <button onclick="saveMatchResult()" class="px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold transition-colors text-sm"><i class="fa-solid fa-floppy-disk mr-1"></i>Sonucu Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Toplu Fikstür Ekle (Excel/Metin) -->
+    <div id="fixture-bulk-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[100] fade-in backdrop-blur-sm">
+        <div class="bg-slate-800 p-6 rounded-xl border border-slate-600 w-[95%] max-w-3xl shadow-2xl relative flex flex-col">
+            <button onclick="closeFixtureBulkModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white z-10"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <h3 class="text-xl font-bold mb-1 text-white">Toplu Fikstür Ekle</h3>
+            <p class="text-xs text-emerald-400 font-bold mb-4" id="fb-modal-subtitle"></p>
+
+            <div class="mb-4 bg-slate-900 p-4 rounded-lg border border-slate-700">
+                <p class="text-sm text-slate-300 mb-2">Excel'den kopyaladığınız veya virgülle ayırdığınız maç listesini aşağıya yapıştırın.</p>
+                <p class="text-[11px] text-slate-400 font-mono bg-slate-950 p-2 rounded border border-slate-800">
+                    Sütun Sırası: <span class="text-emerald-400">Maç No</span> | <span class="text-emerald-400">Müsabaka</span> | <span class="text-emerald-400">Ev Sahibi</span> | <span class="text-emerald-400">Deplasman</span> | <span class="text-blue-400">Ülke Kodu (Opsiyonel)</span><br>
+                Örnek: 1, Süper Lig, Galatasaray, Fenerbahçe, TR<br>
+                Örnek: 2, Şampiyonlar Ligi, Juventus, Galatasaray, IT
+            </p>
+            <textarea id="fb-textarea" rows="10" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-sm text-white outline-none focus:border-emerald-500 font-mono whitespace-pre text-nowrap hide-scrollbar mt-2" placeholder="1, Süper Lig, Galatasaray, Fenerbahçe, TR&#10;2, Şampiyonlar Ligi, Juventus, Galatasaray, IT"></textarea>
+            </div>
+
+            <div class="flex justify-end items-center mt-4 pt-4 border-t border-slate-700 shrink-0 gap-2">
+                <button onclick="closeFixtureBulkModal()" class="px-5 py-2.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-medium transition-colors text-sm">İptal</button>
+                <button onclick="saveBulkFixtures()" class="px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold transition-colors text-sm"><i class="fa-solid fa-file-import mr-1"></i>Listeyi İçe Aktar</button>
             </div>
         </div>
     </div>
