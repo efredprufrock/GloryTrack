@@ -1,4 +1,4 @@
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
         .fade-in { animation: fadeIn 0.3s ease-out forwards; }
@@ -49,6 +49,13 @@
         .group-row:hover .bg-row-DEF, .group-row:hover.bg-row-DEF { background-color: #1a263d; }
         .group-row:hover .bg-row-MID, .group-row:hover.bg-row-MID { background-color: #1a3027; }
         .group-row:hover .bg-row-FWD, .group-row:hover.bg-row-FWD { background-color: #2e1f23; }
+
+        /* --- YENİ EKLENEN BÖLÜM: Mevki Grup Arka Planları (Tailwind JIT Çözümü) --- */
+        .bg-orange-600\/30 { background-color: rgba(234, 88, 12, 0.3) !important; }
+        .bg-blue-600\/30 { background-color: rgba(37, 99, 235, 0.3) !important; }
+        .bg-green-600\/30 { background-color: rgba(22, 163, 74, 0.3) !important; }
+        .bg-red-600\/30 { background-color: rgba(220, 38, 38, 0.3) !important; }
+        /* -------------------------------------------------------------------------- */
         
         /* Remove Number Input Arrows */
         input[type="number"]::-webkit-inner-spin-button, 
@@ -82,3 +89,175 @@
             vertical-align: middle;
             margin-top: 3px;
         }
+
+/* =========================================================
+   YÜKSEK KONTRASTLI TEMALAR (NET OKUNABİLİRLİK)
+   ========================================================= */
+
+/* 1. KOYU TEMA İYİLEŞTİRMELERİ (VARSAYILAN) */
+.goal-text { color: #34d399 !important; } /* Net Zümrüt Yeşili */
+.assist-text { color: #60a5fa !important; } /* Net Açık Mavi */
+
+/* 2. AÇIK TEMA (KREM ZEMİN ÜZERİNE BORDO METİNLER) */
+body.theme-light {
+    background-color: #f5f0e6 !important; /* Krem zemin */
+    color: #2c2420 !important; /* Koyu kahve/siyah metin */
+}
+
+/* --- Arkaplanlar (Lacivertten Kreme) --- */
+body.theme-light .bg-slate-950,
+body.theme-light .bg-slate-900 { background-color: #fdfbf7 !important; }
+body.theme-light .bg-slate-800 { background-color: #e8e2d5 !important; }
+body.theme-light .bg-slate-700 { background-color: #d1c6b4 !important; }
+
+/* Turnuva Satırları ve Yarı Saydam Hover Efektleri */
+body.theme-light .hover\:bg-slate-800\/50:hover,
+body.theme-light .hover\:bg-slate-800\/80:hover,
+body.theme-light .bg-slate-800\/50 { background-color: rgba(232, 226, 213, 0.7) !important; }
+body.theme-light .bg-slate-900\/50,
+body.theme-light .bg-slate-950\/50 { background-color: rgba(253, 251, 247, 0.8) !important; }
+
+/* Fikstür Sonuç Satırları (Hafif ve Okunabilir Tonlar) */
+body.theme-light .frow-W { background-color: rgba(153, 27, 27, 0.1) !important; } /* Açık Bordo tonu */
+body.theme-light .frow-D { background-color: rgba(249, 115, 22, 0.1) !important; }
+body.theme-light .frow-L { background-color: rgba(63, 63, 70, 0.1) !important; }
+
+/* --- Kenarlıklar --- */
+body.theme-light .border-slate-800,
+body.theme-light .border-slate-700,
+body.theme-light .border-slate-600,
+body.theme-light .border-slate-500 { border-color: #c2b6a3 !important; }
+
+/* --- Metin Renkleri (Koyu Kahve/Bordo Okunabilir Tonlar) --- */
+body.theme-light .text-white,
+body.theme-light .text-slate-100,
+body.theme-light .text-slate-200 { color: #2c2420 !important; font-weight: 700 !important; }
+body.theme-light .text-slate-300,
+body.theme-light .text-slate-400 { color: #4a3f39 !important; font-weight: 600 !important; }
+body.theme-light .text-slate-500 { color: #7a6e65 !important; font-weight: 600 !important; }
+
+/* GOL VE ASİST (Açık Tema Özel - Krem/Bordo Konseptine Uygun) */
+body.theme-light .goal-text { color: #7f1d1d !important; } /* Çok Koyu Bordo */
+body.theme-light .assist-text { color: #451a03 !important; } /* Çok Koyu Kahve */
+
+/* Bordo Vurgular (Önceki yeşil vurguların yerini alır) */
+body.theme-light .text-emerald-500,
+body.theme-light .text-emerald-400,
+body.theme-light .text-emerald-300 { color: #991b1b !important; } 
+
+body.theme-light .bg-emerald-700 { background-color: #7f1d1d !important; }
+body.theme-light .bg-emerald-600 { background-color: #991b1b !important; }
+body.theme-light .hover\:bg-emerald-500:hover { background-color: #b91c1c !important; }
+body.theme-light .border-emerald-500,
+body.theme-light .border-emerald-400 { border-color: #991b1b !important; }
+body.theme-light .focus\:border-emerald-500:focus { border-color: #991b1b !important; }
+
+/* Input, Select ve Textarea alanlarındaki yazılar */
+body.theme-light input, 
+body.theme-light select, 
+body.theme-light textarea { 
+    background-color: #fdfbf7 !important;
+    color: #2c2420 !important; 
+    border-color: #c2b6a3 !important;
+}
+
+/* --- İSTİSNALAR: Buton, Rozet ve Skor içindeki yazılar BEYAZ kalmalı --- */
+body.theme-light .bg-emerald-600,
+body.theme-light .bg-emerald-700,
+body.theme-light .bg-blue-600,
+body.theme-light .bg-indigo-600,
+body.theme-light .bg-red-600,
+body.theme-light .bg-slate-700,
+body.theme-light .match-box,
+body.theme-light .score-display,
+body.theme-light .ovr-badge,
+body.theme-light .sub-btn.bg-emerald-600 {
+    color: #ffffff !important;
+}
+
+/* Aktif Menü Butonları (Sol Menü & Alt Menü) */
+body.theme-light .main-btn.border-emerald-500 { 
+    background-color: #e8e2d5 !important; 
+    border-color: #991b1b !important; 
+    color: #991b1b !important; 
+}
+body.theme-light .sub-btn.bg-emerald-600 { 
+    background-color: #991b1b !important; 
+    color: #ffffff !important; 
+    border-color: #991b1b !important; 
+}
+
+/* Seçim Rengi (Highlight) */
+body.theme-light *::selection { background-color: #991b1b !important; color: white !important; }
+
+/* Kadro Ekranı Satır Renkleri (Krem temaya uygun pastel tonlar) */
+body.theme-light .bg-row-GK { background-color: #f2e9d0 !important; }
+body.theme-light .bg-row-DEF { background-color: #e0e8f0 !important; }
+body.theme-light .bg-row-MID { background-color: #e1eedb !important; }
+body.theme-light .bg-row-FWD { background-color: #f2e1e1 !important; }
+
+body.theme-light .group-row:hover .bg-row-GK, body.theme-light .group-row:hover.bg-row-GK { background-color: #e6dbbf !important; }
+body.theme-light .group-row:hover .bg-row-DEF, body.theme-light .group-row:hover.bg-row-DEF { background-color: #d1dbe6 !important; }
+body.theme-light .group-row:hover .bg-row-MID, body.theme-light .group-row:hover.bg-row-MID { background-color: #d1e2cc !important; }
+body.theme-light .group-row:hover .bg-row-FWD, body.theme-light .group-row:hover.bg-row-FWD { background-color: #e6d3d3 !important; }
+
+/* =========================================================
+   MODERN İSTATİSTİK TABLOSU (EXCEL GÖRÜNÜMÜNÜ KIRMA)
+   ========================================================= */
+.modern-stats-table {
+    border-collapse: collapse !important;
+    width: 100%;
+    border: none !important;
+}
+
+/* Dikey çizgileri ve dış çerçeveyi tamamen kaldır, sadece ince yatay çizgi bırak */
+.modern-stats-table th, 
+.modern-stats-table td {
+    border-left: none !important;
+    border-right: none !important;
+    border-top: none !important;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.15) !important; /* Çok hafif yatay çizgi */
+    padding: 14px 10px !important; /* Hücreleri genişlet (Excel sıkışıklığını alır) */
+    vertical-align: middle;
+}
+
+/* Üst Başlıkları (Mevki, Oyuncu vb.) Zarifleştir */
+.modern-stats-table thead th {
+    font-size: 0.70rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    color: #94a3b8 !important; /* Soft gri */
+    font-weight: 600 !important;
+    border-bottom: 2px solid rgba(148, 163, 184, 0.25) !important;
+    background-color: transparent !important;
+}
+
+/* Son Satır (Genel Toplam) Düzenlemesi - Sert kutuları yumuşatır */
+.modern-stats-table tbody tr:last-child td {
+    border-bottom: none !important;
+    background-color: transparent !important; /* Keskin siyah/koyu yeşil arka planları kaldırır */
+    border-top: 2px solid rgba(148, 163, 184, 0.3) !important;
+    font-size: 1.1em !important; 
+    font-weight: 800 !important;
+}
+
+/* Tablo Hover (Satırın üzerine gelince uygulanan hafif aydınlanma) */
+.modern-stats-table tbody tr:hover td {
+    background-color: rgba(148, 163, 184, 0.05) !important;
+}
+
+/* --- AÇIK TEMA (KREM/BORDO) UYUMU --- */
+body.theme-light .modern-stats-table th, 
+body.theme-light .modern-stats-table td {
+    border-bottom-color: rgba(44, 36, 32, 0.1) !important;
+}
+body.theme-light .modern-stats-table thead th {
+    color: #7a6e65 !important;
+    border-bottom-color: rgba(44, 36, 32, 0.2) !important;
+}
+body.theme-light .modern-stats-table tbody tr:last-child td {
+    border-top-color: rgba(44, 36, 32, 0.3) !important;
+}
+body.theme-light .modern-stats-table tbody tr:hover td {
+    background-color: rgba(153, 27, 27, 0.03) !important; /* Açık temada satır hover efekti */
+}
