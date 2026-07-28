@@ -4989,27 +4989,30 @@ function closeTransferModal() {
             });
 
             if (!foundOpp) {
-                if (isDomestic) {
-                    let slot = opponentsConfig[context].domestic.teams.find(o => !o.name);
-                    if (slot) { 
-                        foundOpp = slot; 
-                        foundOpp.name = oppName; 
-                        foundOpp.logoUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(oppName)}`;
-                        foundOpp.country = oppCountryCode;
-                    } else {
-                        foundOpp = { id: `${context.charAt(0)}_d_${Date.now()}`, name: oppName, logoUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(oppName)}`, country: oppCountryCode };
-                        opponentsConfig[context].domestic.teams.push(foundOpp);
-                    }
-                } else {
-                    let grp = opponentsConfig[context].foreign.find(g => g.name === targetContinent);
-                    if (!grp) { 
-                        grp = { id: 'f_' + Date.now(), name: targetContinent, color: context === 'milli' ? '#9f1239' : '#0f766e', teams: [] }; 
-                        opponentsConfig[context].foreign.push(grp); 
-                    }
-                    foundOpp = { id: `f_${Date.now()}`, name: oppName, logoUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(oppName)}`, country: oppCountryCode };
-                    grp.teams.push(foundOpp);
-                }
-            } else {
+    if (isDomestic) {
+        let slot = opponentsConfig[context].domestic.teams.find(o => !o.name);
+        if (slot) { 
+            foundOpp = slot; 
+            foundOpp.name = oppName; 
+            foundOpp.logoUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(oppName)}`;
+            foundOpp.country = oppCountryCode;
+        } else {
+            // YENİ: ID çakışmasını önlemek için Math.random eklendi
+            foundOpp = { id: `${context.charAt(0)}_d_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`, name: oppName, logoUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(oppName)}`, country: oppCountryCode };
+            opponentsConfig[context].domestic.teams.push(foundOpp);
+        }
+    } else {
+        let grp = opponentsConfig[context].foreign.find(g => g.name === targetContinent);
+        if (!grp) { 
+            // YENİ: ID çakışmasını önlemek için Math.random eklendi
+            grp = { id: 'f_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5), name: targetContinent, color: context === 'milli' ? '#9f1239' : '#0f766e', teams: [] }; 
+            opponentsConfig[context].foreign.push(grp); 
+        }
+        // YENİ: ID çakışmasını önlemek için Math.random eklendi
+        foundOpp = { id: `f_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`, name: oppName, logoUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(oppName)}`, country: oppCountryCode };
+        grp.teams.push(foundOpp);
+    }
+} else {
                 if(!foundOpp.country && oppCountryCode) foundOpp.country = oppCountryCode;
             }
 
