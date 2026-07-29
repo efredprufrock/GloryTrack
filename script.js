@@ -1497,6 +1497,28 @@ function handleFileUpload(event, type) {
                 </div>
             `;
             updateContentArea(html);
+            
+            // YENİ: En son oynanan maçı bul ve otomatik olarak ekranda ortala
+            setTimeout(() => {
+                const tableContainer = document.querySelector('#content-area .overflow-auto.table-scroll');
+                if (tableContainer) {
+                    // Skoru girilmiş (oynanmış) olan satırları bul ('-' veya boş olmayanlar)
+                    const rows = tableContainer.querySelectorAll('tbody tr');
+                    let lastPlayedRow = null;
+                    
+                    rows.forEach(row => {
+                        const scoreSpan = row.querySelector('.score-display');
+                        if (scoreSpan && !scoreSpan.innerText.includes('-:-')) {
+                            lastPlayedRow = row; // Skoru girildikçe güncellenir, böylece en son oynanan kalır
+                        }
+                    });
+
+                    if (lastPlayedRow) {
+                        // Son oynanan maçı tablonun ortasına kaydır
+                        lastPlayedRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+            }, 100);
         }
 
         function exportJSON() {
