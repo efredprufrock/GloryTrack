@@ -2601,6 +2601,69 @@ function handleFileUpload(event, type) {
             renderMatchesGrid();
         }
 
+        // --- OYUNCU GELİŞİM VE YAŞ HESAPLAMA MOTORU ---
+        function getPrevOvr(player, season, type) {
+            const sIdx = seasonsList.indexOf(season);
+            if (sIdx === -1) return parseInt(player.joinOvr) || 0;
+
+            if (type === 's2') {
+                // Aynı sezonun s1 (İlk Yarı) değerine bak
+                if (player.history && player.history[season] && player.history[season].s1o) {
+                    return parseInt(player.history[season].s1o);
+                }
+            }
+
+            // Önceki sezonlara doğru geriye git
+            for (let i = sIdx - 1; i >= 0; i--) {
+                const prevS = seasonsList[i];
+                if (player.history && player.history[prevS]) {
+                    if (player.history[prevS].s2o) return parseInt(player.history[prevS].s2o);
+                    if (player.history[prevS].s1o) return parseInt(player.history[prevS].s1o);
+                }
+            }
+            return parseInt(player.joinOvr) || 0;
+        }
+
+        function getExpectedAge(player, season, type) {
+            const targetIdx = seasonsList.indexOf(season);
+            if (targetIdx === -1) return parseInt(player.joinAge) || 18;
+
+            if (type === 's2') {
+                if (player.history && player.history[season] && player.history[season].s1a) {
+                    return parseInt(player.history[season].s1a); 
+                }
+            }
+
+            for (let i = targetIdx; i >= 0; i--) {
+                const checkS = seasonsList[i];
+                if (player.history && player.history[checkS]) {
+                    if (i === targetIdx && type === 's1') continue;
+                    if (player.history[checkS].s2a) return parseInt(player.history[checkS].s2a) + (targetIdx - i);
+                    if (player.history[checkS].s1a) return parseInt(player.history[checkS].s1a) + (targetIdx - i);
+                }
+            }
+
+            // Hiç geçmiş bulunamadıysa giriş yılına göre hesapla
+            let joinSeasonIdx = -1;
+            for (let i = 0; i < seasonsList.length; i++) {
+                if (player.history && player.history[seasonsList[i]] && Object.keys(player.history[seasonsList[i]]).length > 0) {
+                    joinSeasonIdx = i; break;
+                }
+            }
+            if (joinSeasonIdx === -1 || targetIdx < joinSeasonIdx) return parseInt(player.joinAge) || 18;
+
+            return parseInt(player.joinAge) + (targetIdx - joinSeasonIdx);
+        }
+
+        function getDeltaHtml(current, prev) {
+            if (!current || !prev) return '';
+            const diff = parseInt(current) - parseInt(prev);
+            if (diff > 0) return `<span class="text-[10px] font-black text-emerald-400 ml-1.5 drop-shadow-md">+${diff}</span>`;
+            if (diff < 0) return `<span class="text-[10px] font-black text-red-400 ml-1.5 drop-shadow-md">${diff}</span>`;
+            return ''; // Fark sıfırsa bir şey göstermiyoruz, kalabalık yapmasın
+        }
+        // ----------------------------------------------
+
         // --- KADRO TABLOSU ---
         function renderSquadGrid() {
             updateMockPlayers();
@@ -2645,8 +2708,9 @@ function handleFileUpload(event, type) {
                 { id: 'pos', label: 'Mevki', w: 40, align: 'center' },
                 { id: 'name', label: 'İsim Soyisim', w: 180, align: 'left', pl: 'pl-3' },
                 { id: 'countryCode', label: 'Ülke', w: 40, align: 'center' },
-                { id: 'joinAge', label: 'G.Yaş', w: 35, align: 'center' },
-                { id: 'joinOvr', label: 'G.OVR', w: 35, align: 'center' }
+                { id: 'joinAge', label: 'Yaş', w: 35, align: 'center' },
+                { id: 'joinOvr', label: 'OVR', w: 40, align: 'center' },
+                { id: 'growth', label: '+/-', w: 45, align: 'center' } // YENİ: Gelişim sütunu
             ];
             
             if (squadContext === 'akademi') {
@@ -2741,6 +2805,28 @@ function handleFileUpload(event, type) {
                 let archivedPlayers = players.filter(p => p.isArchived);
 
                 const renderPlayerList = (list, isArchivedSection) => {
+                    // YENİ: Listeyi render etmeden önce her oyuncunun "güncel" yaşını ve OVR'sini geçmişe bakarak hesapla
+                    list.forEach(p => {
+                        p.currentAge = p.joinAge;
+                        p.currentOvr = p.joinOvr;
+                        // Geçmişten günümüze (sondan başa) doğru tarama yap
+                        for (let i = seasonsList.length - 1; i >= 0; i--) {
+                            let s = seasonsList[i];
+                            if (p.history && p.history[s]) {
+                                if (p.history[s].s2o || p.history[s].s2a) {
+                                    if (p.history[s].s2a) p.currentAge = p.history[s].s2a;
+                                    if (p.history[s].s2o) p.currentOvr = p.history[s].s2o;
+                                    break;
+                                }
+                                if (p.history[s].s1o || p.history[s].s1a) {
+                                    if (p.history[s].s1a) p.currentAge = p.history[s].s1a;
+                                    if (p.history[s].s1o) p.currentOvr = p.history[s].s1o;
+                                    break;
+                                }
+                            }
+                        }
+                    });
+
                     let resultHtml = '';
                     groups.forEach(group => {
                         let groupPlayers = list.filter(p => getGroupForPos(p.pos) === group.id);
@@ -2748,11 +2834,16 @@ function handleFileUpload(event, type) {
 
                         groupPlayers.sort((a, b) => {
                             let valA = a[squadSort.field]; let valB = b[squadSort.field];
-                            if (squadSort.field === 'joinOvr' || squadSort.field === 'joinAge') {
-                                valA = Number(valA || 0); valB = Number(valB || 0);
+                            
+                            // YENİ: Sıralama yapılırken "Geldiği" değil, dinamik hesaplanan "Güncel" değerleri baz al
+                            if (squadSort.field === 'joinOvr') {
+                                valA = Number(a.currentOvr || 0); valB = Number(b.currentOvr || 0);
+                            } else if (squadSort.field === 'joinAge') {
+                                valA = Number(a.currentAge || 0); valB = Number(b.currentAge || 0);
                             } else {
                                 valA = (valA || '').toString().toLowerCase(); valB = (valB || '').toString().toLowerCase();
                             }
+                            
                             if (valA < valB) return squadSort.asc ? -1 : 1;
                             if (valA > valB) return squadSort.asc ? 1 : -1;
                             return 0;
@@ -2774,8 +2865,24 @@ function handleFileUpload(event, type) {
                                 if(c.id === 'pos') content = `<span class="pos-${p.pos} font-black text-[10px]">${p.pos}</span>`;
                                 else if(c.id === 'name') content = `<div class="flex items-center justify-start w-full overflow-hidden hover:text-emerald-400 cursor-pointer" onclick="openPlayerInfoModal('${p.id}')" title="Düzenle">${photoHtml}<span class="truncate text-xs font-bold">${p.name}</span></div>`;
                                 else if(c.id === 'countryCode') content = flagHtml;
-                                else if(c.id === 'joinAge') content = `<span class="text-[10px] font-mono text-slate-300">${p.joinAge || ''}</span>`;
-                                else if(c.id === 'joinOvr') content = renderOvrBadge(p.joinOvr);
+                                else if(c.id === 'joinAge') content = `<span class="text-[10px] font-mono text-slate-300">${p.currentAge || ''}</span>`;
+                                else if(c.id === 'joinOvr') {
+                                    // OVR sütunu artık sadece rozeti gösteriyor
+                                    content = `<div class="flex items-center justify-center w-full h-full">${renderOvrBadge(p.currentOvr)}</div>`;
+                                }
+                                else if(c.id === 'growth') {
+                                    // YENİ: Yeni gelişim sütunu mantığı
+                                    let delta = (parseInt(p.currentOvr) || 0) - (parseInt(p.joinOvr) || 0);
+                                    let deltaHtml = `<span class="text-[10px] text-slate-500 font-medium">-</span>`; // Gelişim yoksa "-" görünsün
+                                    
+                                    if (delta > 0) {
+                                        deltaHtml = `<div class="flex items-center justify-center bg-emerald-950/60 border border-emerald-800/80 rounded-full px-1.5 py-[1px] text-emerald-400 shadow-inner"><span class="text-[6px] mr-0.5">▲</span><span class="text-[9px] font-black leading-none">${delta}</span></div>`;
+                                    } else if (delta < 0) {
+                                        deltaHtml = `<div class="flex items-center justify-center bg-red-950/60 border border-red-800/80 rounded-full px-1.5 py-[1px] text-red-400 shadow-inner"><span class="text-[6px] mr-0.5">▼</span><span class="text-[9px] font-black leading-none">${Math.abs(delta)}</span></div>`;
+                                    }
+                                    
+                                    content = `<div class="flex items-center justify-center w-full h-full">${deltaHtml}</div>`;
+                                }
                                 else if(c.id === 'pot') content = `<span class="text-[10px] font-bold text-emerald-300">${p.pot || '-'}</span>`;
                                 
                                 let extraClasses = (c.id === 'joinOvr' && squadContext !== 'akademi') || c.id === 'pot' ? 'border-r-2 border-slate-500 shadow-[2px_0_5px_rgba(0,0,0,0.4)]' : 'border-r border-slate-700/50';
@@ -2795,11 +2902,14 @@ function handleFileUpload(event, type) {
                                 let s1CellBg = sData.s1a || sData.s1o ? group.strip : 'bg-transparent';
                                 let t1CellBg = getTdBackground(sData.t1Type, sData.t1, group.strip);
 
+                                // YENİ: S2 (İkinci Yarı) için OVR Farkı Hesaplama
+                                let s2Prev = getPrevOvr(p, season, 's2');
+                                let s2Delta = getDeltaHtml(sData.s2o, s2Prev);
                                 let s2Str = (sData.s2a || sData.s2o) ? `
-                                    <div class="flex items-center justify-center gap-1.5 w-full h-full">
-                                        <span class="text-[10px] text-slate-100 font-mono drop-shadow-md">${sData.s2a || ''}</span>
-                                        <i class="fa-solid fa-caret-right text-[9px] text-emerald-400 drop-shadow-md"></i>
+                                    <div class="flex items-center justify-center w-full h-full">
+                                        <span class="text-[10px] text-slate-300 font-mono drop-shadow-md mr-1.5">${sData.s2a || ''}</span>
                                         ${renderOvrBadge(sData.s2o)}
+                                        ${s2Delta}
                                     </div>` : '';
                                 resultHtml += `<td class="p-0 border-r border-b border-slate-700/50 hover:bg-slate-800/80 align-middle cursor-pointer text-center transition-colors ${s2CellBg}" onclick="openPlayerCellModal('${p.id}', '${season}', 's2')">${s2Str}</td>`;
 
@@ -2807,11 +2917,14 @@ function handleFileUpload(event, type) {
                                             ${getTrBadge(sData.t2Type, sData.t2)}
                                          </td>`;
                                          
+                                // YENİ: S1 (İlk Yarı) için OVR Farkı Hesaplama
+                                let s1Prev = getPrevOvr(p, season, 's1');
+                                let s1Delta = getDeltaHtml(sData.s1o, s1Prev);
                                 let s1Str = (sData.s1a || sData.s1o) ? `
-                                    <div class="flex items-center justify-center gap-1.5 w-full h-full">
-                                        <span class="text-[10px] text-slate-100 font-mono drop-shadow-md">${sData.s1a || ''}</span>
-                                        <i class="fa-solid fa-caret-right text-[9px] text-emerald-400 drop-shadow-md"></i>
+                                    <div class="flex items-center justify-center w-full h-full">
+                                        <span class="text-[10px] text-slate-300 font-mono drop-shadow-md mr-1.5">${sData.s1a || ''}</span>
                                         ${renderOvrBadge(sData.s1o)}
+                                        ${s1Delta}
                                     </div>` : '';
                                 resultHtml += `<td class="p-0 border-r border-b border-slate-700/50 hover:bg-slate-800/80 align-middle cursor-pointer text-center transition-colors ${s1CellBg}" onclick="openPlayerCellModal('${p.id}', '${season}', 's1')">${s1Str}</td>`;
                                 
@@ -3041,8 +3154,46 @@ async function autoFetchPlayerPhoto(playerName, urlInputId) {
                 posBadge.className = `font-black px-2 py-0.5 rounded border border-slate-700 bg-slate-900/80 pos-${p.pos}`;
                 
                 document.getElementById('pi-view-role').innerText = p.role;
-                document.getElementById('pi-view-ovr').innerText = p.joinOvr;
-                document.getElementById('pi-view-age').innerText = p.joinAge;
+                
+                // --- YENİ: Profil için güncel gelişim hesaplamaları ---
+                let currentAge = p.joinAge;
+                let currentOvr = p.joinOvr;
+                
+                // Oyuncunun geçmişini tarayarak en güncel verilerini bulalım
+                for (let i = seasonsList.length - 1; i >= 0; i--) {
+                    let s = seasonsList[i];
+                    if (p.history && p.history[s]) {
+                        if (p.history[s].s2a || p.history[s].s2o) {
+                            if (p.history[s].s2a) currentAge = p.history[s].s2a;
+                            if (p.history[s].s2o) currentOvr = p.history[s].s2o;
+                            break;
+                        }
+                        if (p.history[s].s1a || p.history[s].s1o) {
+                            if (p.history[s].s1a) currentAge = p.history[s].s1a;
+                            if (p.history[s].s1o) currentOvr = p.history[s].s1o;
+                            break;
+                        }
+                    }
+                }
+
+                // Gelişim farkını hesapla ve görsel rozeti (pill) oluştur
+                let ovrDelta = (parseInt(currentOvr) || 0) - (parseInt(p.joinOvr) || 0);
+                let deltaPill = `<span class="text-[11px] text-slate-500 font-medium">-</span>`;
+                
+                if (ovrDelta > 0) {
+                    deltaPill = `<div class="flex items-center justify-center bg-emerald-950/60 border border-emerald-800/80 rounded-full px-2 py-[2px] text-emerald-400 shadow-inner"><span class="text-[7px] mr-0.5">▲</span><span class="text-[11px] font-black leading-none">${ovrDelta}</span></div>`;
+                } else if (ovrDelta < 0) {
+                    deltaPill = `<div class="flex items-center justify-center bg-red-950/60 border border-red-800/80 rounded-full px-2 py-[2px] text-red-400 shadow-inner"><span class="text-[7px] mr-0.5">▼</span><span class="text-[11px] font-black leading-none">${Math.abs(ovrDelta)}</span></div>`;
+                }
+
+                // Modal içeriğine verileri bas
+                document.getElementById('pi-view-current-ovr').innerText = currentOvr;
+                document.getElementById('pi-view-delta-container').innerHTML = deltaPill;
+                document.getElementById('pi-view-join-ovr').innerText = `Geliş OVR: ${p.joinOvr}`;
+                
+                document.getElementById('pi-view-current-age').innerText = currentAge;
+                document.getElementById('pi-view-join-age').innerText = `Geliş Yaşı: ${p.joinAge}`;
+                // ------------------------------------------------------
                 
                 // Ülke bayrağını küçük köşede göstermek için
                 const flagContainer = document.getElementById('pi-view-flag-container');
@@ -3191,8 +3342,16 @@ async function autoFetchPlayerPhoto(playerName, urlInputId) {
                 document.getElementById('pc-tr-note').value = sData[type] || '';
             } else {
                 document.getElementById('pc-form-stat').classList.remove('hidden');
-                document.getElementById('pc-st-age').value = sData[`${type}a`] || '';
+                
+                // YENİ: Eğer yaş daha önce kaydedilmemişse, otomatik hesaplayıp kutuya yerleştiriyoruz.
+                let ageVal = sData[`${type}a`];
+                if (!ageVal) ageVal = getExpectedAge(p, season, type);
+                
+                document.getElementById('pc-st-age').value = ageVal || '';
                 document.getElementById('pc-st-ovr').value = sData[`${type}o`] || '';
+                
+                // OVR kutusuna otomatik odaklan (Kullanıcı yaşla uğraşmadan direkt reytingi yazabilsin)
+                setTimeout(() => document.getElementById('pc-st-ovr').focus(), 50);
             }
             
             const modal = document.getElementById('player-cell-modal');

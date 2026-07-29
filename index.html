@@ -400,9 +400,13 @@
             
             <!-- GÖRÜNTÜLEME (PROFIL) MODU -->
             <div id="pi-view-section" class="hidden flex-col items-center w-full mt-2">
-                <div class="relative w-28 h-28 mb-4">
-                    <img id="pi-view-photo" src="" class="w-full h-full object-cover rounded-full border-4 border-slate-700 shadow-xl bg-slate-900" onerror="this.src='https://ui-avatars.com/api/?name=Oyuncu&background=random&color=fff'">
-                    <div class="absolute bottom-0 right-1 border-2 border-slate-800 rounded-sm overflow-hidden shadow-sm bg-slate-800">
+                <!-- Fotoğrafı büyütüp (w-36 h-36) negatif margin (-mt-20) ile yukarı taşırdık -->
+                <div class="relative w-36 h-36 mb-4 -mt-20">
+                    <!-- Kenarlığı arka planla aynı renk (slate-800) ve kalın (border-[6px]) yaparak şık bir kesik efekti verdik -->
+                    <img id="pi-view-photo" src="" class="w-full h-full object-cover rounded-full border-[6px] border-slate-800 shadow-2xl bg-slate-900" onerror="this.src='https://ui-avatars.com/api/?name=Oyuncu&background=random&color=fff'">
+                    
+                    <!-- Bayrağı da yeni boyuta göre hizaladık -->
+                    <div class="absolute bottom-1 right-2 border-[3px] border-slate-800 rounded shadow-md bg-slate-800">
                         <div id="pi-view-flag-container"></div>
                     </div>
                 </div>
@@ -415,14 +419,24 @@
                 </p>
                 
                 <div class="grid grid-cols-2 gap-3 w-full mb-6">
+                    <!-- Güncel OVR Kartı -->
                     <div class="bg-slate-900/50 p-3 rounded-xl border border-slate-700/50 flex flex-col items-center justify-center">
-                        <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1">Geliş OVR</span>
-                        <span id="pi-view-ovr" class="text-3xl font-black text-emerald-400">00</span>
+                        <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1.5">Güncel OVR</span>
+                        <div class="flex items-center gap-2 mb-1">
+                            <span id="pi-view-current-ovr" class="text-3xl font-black text-emerald-400 drop-shadow-md">-</span>
+                            <div id="pi-view-delta-container"></div>
+                        </div>
+                        <span id="pi-view-join-ovr" class="text-[10px] text-slate-500 mt-1">Geliş OVR: -</span>
                     </div>
+                    
+                    <!-- Güncel Yaş Kartı -->
                     <div class="bg-slate-900/50 p-3 rounded-xl border border-slate-700/50 flex flex-col items-center justify-center">
-                        <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1">Geliş Yaşı</span>
-                        <span id="pi-view-age" class="text-3xl font-black text-white">00</span>
+                        <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1.5">Güncel Yaş</span>
+                        <span id="pi-view-current-age" class="text-3xl font-black text-white drop-shadow-md mb-1">-</span>
+                        <span id="pi-view-join-age" class="text-[10px] text-slate-500 mt-1">Geliş Yaşı: -</span>
                     </div>
+
+                    <!-- Potansiyel Kutusu (Dokunulmadı) -->
                     <div id="pi-view-pot-container" class="col-span-2 bg-slate-900/50 p-3 rounded-xl border border-slate-700/50 flex flex-col items-center justify-center hidden">
                         <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1">Potansiyel Aralık</span>
                         <span id="pi-view-pot" class="text-xl font-black text-emerald-300">80-85</span>
