@@ -1865,7 +1865,14 @@ function handleFileUpload(event, type) {
 
                 // Mevcut diziyi (referansını bozmadan) yeni sırayla güncelle
                 teamsArr.length = 0;
-                teamsArr.push(...sortedFilled); // YENİ: Boş takımları diziye geri eklemiyoruz, böylece tamamen siliniyorlar.
+                
+                if (sortedFilled.length === 0) {
+                    // HATA ÇÖZÜMÜ: Eğer kıtada hiç takım kalmadıysa tablonun (colspan="0") kaymasını 
+                    // önlemek ve ekranda görünmesini sağlamak için 1 adet boş (hayalet) slot bırakıyoruz.
+                    teamsArr.push({ id: `empty_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`, name: '', logoUrl: '', country: '' });
+                } else {
+                    teamsArr.push(...sortedFilled);
+                }
             };
 
             // Tabloyu çizmeden önce grupları yukarıdaki kurala göre sırala (Milli takımda da çalışması için isKulup kontrolü kaldırıldı)
@@ -5243,8 +5250,8 @@ function closeTransferModal() {
             let isDomestic = false;
             if (context === 'kulup' && (oppCountryCode === 'TR' || oppCountryCode === 'TUR' || targetContinent === 'YURTİÇİ' || !oppCountryCode)) {
                 isDomestic = true;
-            } else if (context === 'milli') {
-                // Milli takım için avrupa / yerel grup kontrolü
+            } else if (context === 'milli' && targetContinent === opponentsConfig.milli.domestic.name) {
+                // HATA ÇÖZÜMÜ: Sadece rakibin kıtası gerçekten AVRUPA ise yerel (domestic) kabul et.
                 isDomestic = true; 
             }
 
