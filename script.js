@@ -1563,7 +1563,7 @@ function handleFileUpload(event, type) {
                     </div>
                 </div>
                 <div class="w-full overflow-auto table-scroll border border-slate-700 rounded-xl bg-slate-900 flex-1 min-h-0 relative pb-4">
-                    <table class="w-full border-collapse text-sm" style="zoom: ${currentScale};">
+                    <table class="w-full border-separate border-spacing-0 text-sm" style="zoom: ${currentScale};">
                         <thead class="bg-slate-950 sticky top-0 z-[40] shadow-md">
                             <tr>
                                 <th class="p-2 sticky left-0 bg-slate-950 z-[50] border-r border-b border-slate-700 w-24 min-w-[96px] shadow-[2px_0_5px_rgba(0,0,0,0.2)] align-middle">
@@ -1859,7 +1859,7 @@ function handleFileUpload(event, type) {
                     </div>
                 </div>
                 <div class="w-full overflow-auto table-scroll border border-slate-700 rounded-xl bg-slate-900 flex-1 min-h-0 relative pb-4">
-                    <table class="w-full border-collapse text-sm" style="zoom: ${currentScale};">
+                    <table class="w-full border-separate border-spacing-0 text-sm" style="zoom: ${currentScale};">
                         <thead class="bg-slate-950 sticky top-0 z-[40] shadow-md">
                             <tr>
                                 <!-- Sol Sabit Logo Hücresi -->
@@ -2062,17 +2062,27 @@ function handleFileUpload(event, type) {
         }
 
         function openManagedTeamModal() {
-            const team = managedTeams[matchContext];
-            document.getElementById('managed-name-input').value = team.name;
-            document.getElementById('managed-url-input').value = team.logoUrl;
+            // Kulüp verilerini doldur
+            const club = managedTeams.kulup;
+            document.getElementById('managed-name-input').value = club.name || '';
+            document.getElementById('managed-url-input').value = club.logoUrl || '';
+            document.getElementById('managed-country-input').value = club.country || 'TUR';
             
-            // Yeni Eklenen: Mevcut ülke kodunu input'a yansıt
-            document.getElementById('managed-country-input').value = team.country || 'TUR';
+            // Milli takım verilerini doldur
+            const national = managedTeams.milli;
+            document.getElementById('national-name-input').value = national.name || '';
+            document.getElementById('national-url-input').value = national.logoUrl || '';
             
+            // Dosya yükleme statülerini sıfırla
             fileUploads.managed = null;
             document.getElementById('managed-file-input').value = '';
             document.getElementById('managed-upload-btn').classList.replace('text-emerald-400', 'text-slate-300');
             document.getElementById('managed-logo-results').classList.add('hidden');
+            
+            fileUploads.national = null;
+            document.getElementById('national-file-input').value = '';
+            document.getElementById('national-upload-btn').classList.replace('text-emerald-400', 'text-slate-300');
+            document.getElementById('national-logo-results').classList.add('hidden');
             
             const modal = document.getElementById('managed-team-modal');
             modal.classList.remove('hidden'); modal.classList.add('flex');
@@ -2084,30 +2094,40 @@ function handleFileUpload(event, type) {
         }
 
         function saveManagedTeam() {
-            const name = document.getElementById('managed-name-input').value.trim();
-            const url = document.getElementById('managed-url-input').value.trim();
-            const country = document.getElementById('managed-country-input').value.trim().toUpperCase(); // Yeni
-            const logo = fileUploads.managed || (url !== "Yerel Dosya Seçildi" ? url : null);
+            // Kulüp Takımı Değerleri
+            const clubName = document.getElementById('managed-name-input').value.trim();
+            const clubUrl = document.getElementById('managed-url-input').value.trim();
+            const clubCountry = document.getElementById('managed-country-input').value.trim().toUpperCase();
+            const clubLogo = fileUploads.managed || (clubUrl !== "Yerel Dosya Seçildi" ? clubUrl : null);
 
-            if(name) {
-                managedTeams[matchContext].name = name;
-                
-                // İsim ve Ülke kodunu kaydet
-                if(matchContext === 'kulup') {
-                    leagueHistoryData[0].name = name;
-                    managedTeams.kulup.country = country || 'TUR';
-                    managedTeams.milli.country = country || 'TUR'; 
-                }
-            }
-            if(logo) managedTeams[matchContext].logoUrl = logo;
+            // Milli Takım Değerleri
+            const natName = document.getElementById('national-name-input').value.trim();
+            const natUrl = document.getElementById('national-url-input').value.trim();
+            const natLogo = fileUploads.national || (natUrl !== "Yerel Dosya Seçildi" ? natUrl : null);
 
-            if(matchContext === 'kulup' || matchContext === null) {
-                document.getElementById('sidebar-team-logo').src = managedTeams.kulup.logoUrl;
+            // Kulüp Takımını Kaydet
+            if(clubName) {
+                managedTeams.kulup.name = clubName;
+                managedTeams.kulup.country = clubCountry || 'TUR';
+                leagueHistoryData[0].name = clubName;
             }
+            if(clubLogo) managedTeams.kulup.logoUrl = clubLogo;
+
+            // Milli Takımı Kaydet
+            if(natName) {
+                managedTeams.milli.name = natName;
+                managedTeams.milli.country = clubCountry || 'TUR'; // Ana ülke kodu aynı kalır
+            }
+            if(natLogo) managedTeams.milli.logoUrl = natLogo;
+
+            // Sol taraftaki sidebar logosunu güncelle (Her zaman kulüp kalır)
+            document.getElementById('sidebar-team-logo').src = managedTeams.kulup.logoUrl;
 
             saveToLocalStorage();
             closeManagedTeamModal();
-            renderMatchesGrid();
+            
+            // Eğer maçlar veya lig tarihi açıksa tabloyu yenile
+            if(activeMain === 'maclar') renderMatchesGrid();
             if(activeMain === 'ligtarihi') renderLeagueHistory();
         }
 
@@ -2680,7 +2700,7 @@ function handleFileUpload(event, type) {
                     </div>
                 </div>
                 <div class="w-full overflow-auto table-scroll border border-slate-700 rounded-xl bg-slate-900 flex-1 min-h-0 relative pb-4">
-                    <table class="w-full border-collapse text-sm" style="zoom: ${currentScale}; min-width: max-content;">
+                    <table class="w-full border-separate border-spacing-0 text-sm" style="zoom: ${currentScale}; min-width: max-content;">
                         <thead class="bg-slate-950 sticky top-0 z-[60] shadow-md">
                             <tr>
             `;
@@ -2980,11 +3000,72 @@ async function autoFetchPlayerPhoto(playerName, urlInputId) {
 
         function openPlayerInfoModal(id = null) {
             activePlayerId = id;
-            if(squadContext === 'akademi') document.getElementById('pi-pot-container').classList.remove('hidden');
-            else document.getElementById('pi-pot-container').classList.add('hidden');
+            
+            const viewSection = document.getElementById('pi-view-section');
+            const editSection = document.getElementById('pi-edit-section');
+            
+            // Akademi/As Takım potansiyel alanı görünürlüğü (Edit modu için)
+            if(squadContext === 'akademi') document.getElementById('pi-pot-container-edit').classList.remove('hidden');
+            else document.getElementById('pi-pot-container-edit').classList.add('hidden');
 
-            if(id) {
+            // 1. Form alanlarını her ihtimale karşı temizle (Yeni ekleme için hazırlık)
+            document.getElementById('player-info-title').innerText = "Yeni Oyuncu Ekle";
+            document.getElementById('pi-pos').value = 'CM';
+            populateRolesDropdown('pi-role', squadContext === 'akademi' ? 'A Takım Adayı' : 'Rotasyon');
+            document.getElementById('pi-name').value = '';
+            document.getElementById('pi-photo-url').value = '';
+            document.getElementById('pi-country').value = '';
+            document.getElementById('pi-age').value = '18';
+            document.getElementById('pi-ovr').value = '60';
+            if(squadContext === 'akademi') document.getElementById('pi-pot').value = '80-85';
+            document.getElementById('btn-delete-player').classList.add('hidden');
+            
+            fileUploads['pi-photo'] = null;
+            document.getElementById('pi-photo-file').value = '';
+            document.getElementById('pi-photo-upload-btn').classList.replace('text-emerald-400', 'text-slate-300');
+            document.getElementById('pi-photo-results').innerHTML = '';
+            document.getElementById('pi-photo-results').classList.add('hidden');
+
+            if (id) {
+                // 2A. VAROLAN OYUNCU (PROFIL MODUNDA AÇ)
                 const p = squadData[squadContext].find(pl => pl.id === id);
+                
+                // Profil (Görüntüleme) bölümünü doldur
+                const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(p.name)}&background=random&color=fff&size=256`;
+                document.getElementById('pi-view-photo').src = p.photoUrl || avatarUrl;
+                document.getElementById('pi-view-name').innerText = p.name;
+                
+                // Mevkiye göre renkli badge atanıyor
+                const posBadge = document.getElementById('pi-view-pos');
+                posBadge.innerText = p.pos;
+                posBadge.className = `font-black px-2 py-0.5 rounded border border-slate-700 bg-slate-900/80 pos-${p.pos}`;
+                
+                document.getElementById('pi-view-role').innerText = p.role;
+                document.getElementById('pi-view-ovr').innerText = p.joinOvr;
+                document.getElementById('pi-view-age').innerText = p.joinAge;
+                
+                // Ülke bayrağını küçük köşede göstermek için
+                const flagContainer = document.getElementById('pi-view-flag-container');
+                flagContainer.innerHTML = p.countryCode ? `<img src="https://flagcdn.com/w40/${p.countryCode.toLowerCase()}.png" class="w-8 h-auto block" onerror="this.style.display='none'">` : '';
+
+                if(squadContext === 'akademi') {
+                    document.getElementById('pi-view-pot-container').classList.remove('hidden');
+                    document.getElementById('pi-view-pot').innerText = p.pot || '-';
+                } else {
+                    document.getElementById('pi-view-pot-container').classList.add('hidden');
+                }
+
+                // Arşiv butonu durumu (Görüntüleme Ekranı)
+                const archBtnView = document.getElementById('btn-view-archive');
+                if(p.isArchived) {
+                    archBtnView.innerHTML = '<i class="fa-solid fa-box-open mr-1"></i> Arşivden Çıkar';
+                    archBtnView.className = 'px-4 py-2.5 rounded-lg bg-blue-900/50 hover:bg-blue-800 text-blue-200 font-medium text-sm flex-1 transition-colors';
+                } else {
+                    archBtnView.innerHTML = '<i class="fa-solid fa-box-archive mr-1"></i> Arşive Taşı';
+                    archBtnView.className = 'px-4 py-2.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 font-medium text-sm flex-1 transition-colors';
+                }
+
+                // Düzenle tuşuna basıldığında kullanılmak üzere formu arka planda doldur
                 document.getElementById('player-info-title').innerText = "Oyuncu Düzenle";
                 document.getElementById('pi-pos').value = p.pos;
                 populateRolesDropdown('pi-role', p.role);
@@ -2995,37 +3076,39 @@ async function autoFetchPlayerPhoto(playerName, urlInputId) {
                 document.getElementById('pi-ovr').value = p.joinOvr;
                 if(squadContext === 'akademi') document.getElementById('pi-pot').value = p.pot || '';
                 document.getElementById('btn-delete-player').classList.remove('hidden');
-                
-                const archBtn = document.getElementById('btn-archive-player');
-                archBtn.classList.remove('hidden');
-                if(p.isArchived) {
-                    archBtn.innerHTML = '<i class="fa-solid fa-box-open mr-1"></i> Arşivden Çıkar';
-                    archBtn.className = 'px-4 py-2 rounded-lg bg-blue-900/50 hover:bg-blue-800 text-blue-200 font-medium';
-                } else {
-                    archBtn.innerHTML = '<i class="fa-solid fa-box-archive mr-1"></i> Arşive Taşı';
-                    archBtn.className = 'px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 font-medium';
-                }
+
+                // Sadece Profil kısmını göster, Form'u gizle
+                viewSection.classList.remove('hidden'); viewSection.classList.add('flex');
+                editSection.classList.add('hidden');
             } else {
-                document.getElementById('player-info-title').innerText = "Yeni Oyuncu Ekle";
-                document.getElementById('pi-pos').value = 'CM';
-                populateRolesDropdown('pi-role', squadContext === 'akademi' ? 'A Takım Adayı' : 'Rotasyon');
-                document.getElementById('pi-name').value = '';
-                document.getElementById('pi-photo-url').value = '';
-                document.getElementById('pi-country').value = '';
-                document.getElementById('pi-age').value = '18';
-                document.getElementById('pi-ovr').value = '60';
-                if(squadContext === 'akademi') document.getElementById('pi-pot').value = '80-85';
-                document.getElementById('btn-delete-player').classList.add('hidden');
-                document.getElementById('btn-archive-player').classList.add('hidden'); // YENİ EKLENDİ
+                // 2B. YENİ OYUNCU (DİREKT DÜZENLEME MODUNDA AÇ)
+                // Profil gösterecek veri olmadığı için direkt formu gösteriyoruz
+                viewSection.classList.add('hidden'); viewSection.classList.remove('flex');
+                editSection.classList.remove('hidden');
             }
-            fileUploads['pi-photo'] = null;
-            document.getElementById('pi-photo-file').value = '';
-            document.getElementById('pi-photo-upload-btn').classList.replace('text-emerald-400', 'text-slate-300');
-            document.getElementById('pi-photo-results').innerHTML = '';
-            document.getElementById('pi-photo-results').classList.add('hidden');
 
             const modal = document.getElementById('player-info-modal');
             modal.classList.remove('hidden'); modal.classList.add('flex');
+        }
+
+        // Profil Modu ile Düzenleme Modu (Form) arasında geçiş yapmayı sağlayan fonksiyon
+        function togglePlayerEditMode() {
+            const viewSection = document.getElementById('pi-view-section');
+            const editSection = document.getElementById('pi-edit-section');
+            
+            if (editSection.classList.contains('hidden')) {
+                // "Düzenle"ye basıldı: Profili gizle, formu göster
+                viewSection.classList.add('hidden'); viewSection.classList.remove('flex');
+                editSection.classList.remove('hidden');
+            } else {
+                // "İptal"e basıldı: Formu gizle, Profile dön (Sadece mevcut oyuncu ise)
+                if (activePlayerId) {
+                    editSection.classList.add('hidden');
+                    viewSection.classList.remove('hidden'); viewSection.classList.add('flex');
+                } else {
+                    closePlayerInfoModal();
+                }
+            }
         }
 
         function closePlayerInfoModal() {
@@ -3201,7 +3284,7 @@ async function autoFetchPlayerPhoto(playerName, urlInputId) {
                     
                     <div class="w-full lg:w-1/2 flex flex-col h-full bg-slate-900 border border-slate-700 rounded-xl overflow-hidden shadow-lg relative">
                         <div class="w-full overflow-auto table-scroll flex-1 h-full">
-                            <table class="w-full border-collapse text-sm min-w-max">
+                            <table class="w-full border-separate border-spacing-0 text-sm min-w-max">
                                 <thead class="bg-slate-950 sticky top-0 z-[40] shadow-md">
                                     <tr>
                                         <th class="p-2 border-r border-b border-slate-700 sticky left-0 bg-slate-900 z-[50] w-12 text-center text-slate-400">#</th>
@@ -4086,7 +4169,7 @@ function closeTransferModal() {
                         </h4>
                     </div>
                     <div class="flex-1 overflow-auto table-scroll relative">
-                        <table class="modern-stats-table w-max border-collapse text-sm">
+                        <table class="modern-stats-table w-max border-separate border-spacing-0 text-sm">
                             <thead class="text-slate-400 text-[11px] uppercase tracking-wider">
                                 ${th1}
                                 ${th2}
@@ -4295,7 +4378,7 @@ function closeTransferModal() {
 
             const seasonTabsHtml = seasonsList.map(s => `
                 <button onclick="switchFixtureSeason('${s}')"
-                    class="px-4 py-1.5 rounded-full text-sm font-bold border transition-all whitespace-nowrap
+                    class="px-3 py-1 rounded-full text-xs font-bold border transition-all whitespace-nowrap
                            ${s === activeFixtureSeason ? 'bg-emerald-600 text-white border-emerald-500' : 'bg-slate-800 text-slate-400 border-slate-700 hover:border-emerald-500/50 hover:text-white'}">
                     ${s}
                 </button>
@@ -4398,29 +4481,26 @@ function closeTransferModal() {
             }
 
             const html = `
-                <div class="w-full flex-1 min-h-0 grid grid-cols-1 xl:grid-cols-3 gap-4 xl:gap-6 pb-4 overflow-hidden">
+                <div class="w-full flex-1 min-h-0 grid grid-cols-1 xl:grid-cols-3 gap-4 xl:gap-6 pb-4 overflow-y-auto xl:overflow-hidden hide-scrollbar">
                     
                     <!-- 1. SOL PANEL: FİKSTÜR -->
-                    <div class="flex flex-col bg-slate-900 border border-slate-700 rounded-xl overflow-hidden shadow-lg h-full">
-                        <div class="bg-slate-800 border-b border-slate-700 p-3 shrink-0 flex justify-between items-center">
+                    <div class="flex flex-col bg-slate-900 border border-slate-700 rounded-xl overflow-hidden shadow-lg h-full min-h-[550px] xl:min-h-0">
+                        <div class="bg-slate-800 border-b border-slate-700 p-2 sm:p-3 shrink-0 flex justify-between items-center flex-wrap gap-2">
                             <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-calendar-days text-emerald-400 mr-2"></i>Fikstür</h3>
-                        </div>
-                        
-                        <div class="flex flex-col p-3 h-full overflow-hidden gap-3">
-                            <!-- Header Buttons -->
-                            <div class="flex gap-2 shrink-0">
-                                <button onclick="openFixtureBulkModal('${activeFixtureSeason}')"
-                                    class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-colors shadow flex items-center gap-2">
-                                    <i class="fa-solid fa-list-check"></i> Toplu Ekle
+                            <div class="flex gap-1.5">
+                                <button onclick="openFixtureBulkModal('${activeFixtureSeason}')" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded text-xs transition-colors shadow flex items-center gap-1.5">
+                                    <i class="fa-solid fa-list-check"></i><span class="hidden sm:inline"> Toplu Ekle</span>
                                 </button>
-                                <button onclick="openFixtureModal('${activeFixtureSeason}', null)"
-                                    class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-colors shadow flex items-center gap-2">
-                                    <i class="fa-solid fa-plus"></i> Maç Ekle
+                                <button onclick="openFixtureModal('${activeFixtureSeason}', null)" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded text-xs transition-colors shadow flex items-center gap-1.5">
+                                    <i class="fa-solid fa-plus"></i><span class="hidden sm:inline"> Ekle</span>
                                 </button>
-                                <button onclick="deleteBulkFixtures()" class="bg-red-900/50 hover:bg-red-800 text-red-200 font-bold px-3 py-1.5 rounded-lg text-xs transition-colors ml-auto" title="Toplu Sil">
+                                <button onclick="deleteBulkFixtures()" class="bg-red-900/50 hover:bg-red-800 text-red-200 font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded text-xs transition-colors" title="Toplu Sil">
                                     <i class="fa-solid fa-trash-can"></i>
                                 </button>
                             </div>
+                        </div>
+                        
+                        <div class="flex flex-col p-3 h-full overflow-hidden gap-2">
 
                             <!-- Season Tabs -->
                             <div class="flex gap-2 overflow-x-auto hide-scrollbar shrink-0 pb-1">
@@ -4451,7 +4531,7 @@ function closeTransferModal() {
 
                             <!-- Match Table -->
                             <div class="flex-1 overflow-auto table-scroll border border-slate-700 rounded-lg bg-slate-950 min-h-0">
-                                <table class="w-full border-collapse text-xs min-w-[500px]">
+                                <table class="w-full border-separate border-spacing-0 text-xs min-w-[500px]">
                                     <thead class="bg-slate-900 sticky top-0 z-10">
                                         <tr class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">
                                             <th class="p-2 text-center border-b border-slate-700 w-8">#</th>
@@ -4472,7 +4552,7 @@ function closeTransferModal() {
                     </div>
 
                     <!-- 2. ORTA PANEL: MÜSABAKA TABLOLARI -->
-                    <div class="flex flex-col bg-slate-900 border border-slate-700 rounded-xl overflow-hidden shadow-lg h-full">
+                    <div class="flex flex-col bg-slate-900 border border-slate-700 rounded-xl overflow-hidden shadow-lg h-full min-h-[550px] xl:min-h-0">
                         <div class="bg-slate-800 border-b border-slate-700 p-3 shrink-0 flex justify-between items-center">
                             <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-trophy mr-2 text-yellow-500"></i>Müsabaka Tabloları</h3>
                             
@@ -4582,7 +4662,7 @@ function closeTransferModal() {
                     </div>
 
                     <!-- 3. SAĞ PANEL: DİĞER LİGLER (İlk 4) -->
-                    <div class="flex flex-col bg-slate-900 border border-slate-700 rounded-xl overflow-hidden shadow-lg h-full">
+                    <div class="flex flex-col bg-slate-900 border border-slate-700 rounded-xl overflow-hidden shadow-lg h-full min-h-[550px] xl:min-h-0">
                         <div class="bg-slate-800 border-b border-slate-700 p-3 shrink-0 flex justify-between items-center">
                             <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-globe mr-2 text-blue-400"></i>Avrupa Ligleri (İlk 4)</h3>
                             <span class="text-[9px] text-slate-400 font-bold uppercase"><i class="fa-solid fa-pen mr-1"></i>Tıkla ve Düzenle</span>

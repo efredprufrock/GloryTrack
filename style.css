@@ -205,7 +205,8 @@ body.theme-light .group-row:hover .bg-row-FWD, body.theme-light .group-row:hover
    MODERN İSTATİSTİK TABLOSU (EXCEL GÖRÜNÜMÜNÜ KIRMA)
    ========================================================= */
 .modern-stats-table {
-    border-collapse: collapse !important;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
     width: 100%;
     border: none !important;
 }
