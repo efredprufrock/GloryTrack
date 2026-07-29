@@ -5180,20 +5180,27 @@ function closeTransferModal() {
 
         // --- SENKRONİZASYON MOTORU ---
         function syncFixtureToMatches(match, season) {
-            // 1. Maçın Kulüp mü Milli Takım mı olduğunu tespit et
-            let isMilli = false;
-            let teamName = managedTeams.kulup.name || '';
+            // 1. Maçın Kulüp mü Milli Takım mı olduğunu güvenli bir şekilde tespit et
+            const clubName = managedTeams.kulup.name || '';
+            const milliName = managedTeams.milli.name || '';
             
-            if (match.home === managedTeams.milli.name || match.away === managedTeams.milli.name) {
+            let isMilli = false;
+            let teamName = clubName;
+            
+            if (match.home === milliName || match.away === milliName) {
                 isMilli = true;
-                teamName = managedTeams.milli.name || '';
+                teamName = milliName;
+            } else if (match.home !== clubName && match.away !== clubName && milliName) {
+                // Eğer ne tam eşleşme varsa ne de kulüp adı geçiyorsa ve milli isim tanımlıysa milli ihtimalini değerlendir
+                isMilli = true;
+                teamName = milliName;
             }
 
             const context = isMilli ? 'milli' : 'kulup';
             const isHome = match.home === teamName;
             const isAway = match.away === teamName;
             
-            // DÜZELTME: Eğer maçta bizim takımımız oynamıyorsa (Tarafsız/Başka takımların maçıysa), Maçlar tablosuna senkronize etme!
+            // Eğer maçta bizim aktif takımımız (kulüp veya milli) oynamıyorsa işlem yapma
             if (!isHome && !isAway) return;
 
             const oppName = isHome ? match.away : match.home;
@@ -5214,8 +5221,9 @@ function closeTransferModal() {
             let isDomestic = false;
             if (context === 'kulup' && (oppCountryCode === 'TR' || oppCountryCode === 'TUR' || targetContinent === 'YURTİÇİ' || !oppCountryCode)) {
                 isDomestic = true;
-            } else if (context === 'milli' && targetContinent === opponentsConfig.milli.domestic.name) {
-                isDomestic = true;
+            } else if (context === 'milli') {
+                // Milli takım için avrupa / yerel grup kontrolü
+                isDomestic = true; 
             }
 
             let foundOpp = null;
@@ -5228,30 +5236,28 @@ function closeTransferModal() {
             });
 
             if (!foundOpp) {
-    if (isDomestic) {
-        let slot = opponentsConfig[context].domestic.teams.find(o => !o.name);
-        if (slot) { 
-            foundOpp = slot; 
-            foundOpp.name = oppName; 
-            foundOpp.logoUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(oppName)}`;
-            foundOpp.country = oppCountryCode;
-        } else {
-            // YENİ: ID çakışmasını önlemek için Math.random eklendi
-            foundOpp = { id: `${context.charAt(0)}_d_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`, name: oppName, logoUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(oppName)}`, country: oppCountryCode };
-            opponentsConfig[context].domestic.teams.push(foundOpp);
-        }
-    } else {
-        let grp = opponentsConfig[context].foreign.find(g => g.name === targetContinent);
-        if (!grp) { 
-            // YENİ: ID çakışmasını önlemek için Math.random eklendi
-            grp = { id: 'f_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5), name: targetContinent, color: context === 'milli' ? '#9f1239' : '#0f766e', teams: [] }; 
-            opponentsConfig[context].foreign.push(grp); 
-        }
-        // YENİ: ID çakışmasını önlemek için Math.random eklendi
-        foundOpp = { id: `f_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`, name: oppName, logoUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(oppName)}`, country: oppCountryCode };
-        grp.teams.push(foundOpp);
-    }
-} else {
+                if (isDomestic || context === 'milli') {
+                    let domGroup = context === 'milli' ? opponentsConfig.milli.domestic : opponentsConfig.kulup.domestic;
+                    let slot = domGroup.teams.find(o => !o.name);
+                    if (slot) { 
+                        foundOpp = slot; 
+                        foundOpp.name = oppName; 
+                        foundOpp.logoUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(oppName)}`;
+                        foundOpp.country = oppCountryCode;
+                    } else {
+                        foundOpp = { id: `${context.charAt(0)}_d_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`, name: oppName, logoUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(oppName)}`, country: oppCountryCode };
+                        domGroup.teams.push(foundOpp);
+                    }
+                } else {
+                    let grp = opponentsConfig[context].foreign.find(g => g.name === targetContinent);
+                    if (!grp) { 
+                        grp = { id: 'f_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5), name: targetContinent, color: '#1e3a8a', teams: [] }; 
+                        opponentsConfig[context].foreign.push(grp); 
+                    }
+                    foundOpp = { id: `f_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`, name: oppName, logoUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(oppName)}`, country: oppCountryCode };
+                    grp.teams.push(foundOpp);
+                }
+            } else {
                 if(!foundOpp.country && oppCountryCode) foundOpp.country = oppCountryCode;
             }
 
