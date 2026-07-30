@@ -1035,9 +1035,9 @@ function handleSyncClick() {
                 // İlk defa giren birini kurulum ekranı yerine direkt içeri al
                 isSetupComplete = true;
             }
-            selectMainMenu('kadro');
+            selectMainMenu('sezonlar'); // <--- YENİ: Varsayılan açılış artık Fikstür (Sezonlar) paneli oldu
             applyStoredLanguage();
-
+            
             if (initFirebase()) {
                 fbAuth.onAuthStateChanged(function(user) {
                     if (user) {
