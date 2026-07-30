@@ -394,158 +394,209 @@ function toggleLanguage() {
         }
 
 
-        
-function getFlagIcon(countryCode) {
-            if (!countryCode || countryCode === 'BİLİNMEYEN') return '';
-            const c = countryCode.toUpperCase().trim();
-            
-            // Oyunda/Fikstürde en sık girilebilecek ülke kodlarının bayrak karşılıkları (ISO kodları)
-const flagMap = {
-    // UEFA (Avrupa)
-    'TR': 'tr', 'TUR': 'tr', 'TURKEY': 'tr',
-    'EN': 'gb-eng', 'ENG': 'gb-eng', 'ENGLAND': 'gb-eng',
-    'SP': 'es', 'ESP': 'es', 'SPAIN': 'es',
-    'GE': 'de', 'GER': 'de', 'DE': 'de', 'GERMANY': 'de',
-    'IT': 'it', 'ITA': 'it', 'ITALY': 'it',
-    'FR': 'fr', 'FRA': 'fr', 'FRANCE': 'fr',
-    'PT': 'pt', 'POR': 'pt', 'PORTUGAL': 'pt',
-    'NL': 'nl', 'NED': 'nl', 'NETHERLANDS': 'nl',
-    'BE': 'be', 'BEL': 'be', 'BELGIUM': 'be',
-    'SC': 'gb-sct', 'SCO': 'gb-sct', 'SCOTLAND': 'gb-sct',
-    'WA': 'gb-wls', 'WAL': 'gb-wls', 'WALES': 'gb-wls',
-    'NI': 'gb-nir', 'NIR': 'gb-nir', 'NORTHERN IRELAND': 'gb-nir',
-    'IE': 'ie', 'IRL': 'ie', 'IRELAND': 'ie', 'REPUBLIC OF IRELAND': 'ie',
-    'HR': 'hr', 'CRO': 'hr', 'CROATIA': 'hr',
-    'RS': 'rs', 'SRB': 'rs', 'SERBIA': 'rs',
-    'PL': 'pl', 'POL': 'pl', 'POLAND': 'pl',
-    'SE': 'se', 'SWE': 'se', 'SWEDEN': 'se',
-    'DK': 'dk', 'DEN': 'dk', 'DENMARK': 'dk',
-    'NO': 'no', 'NOR': 'no', 'NORWAY': 'no',
-    'FI': 'fi', 'FIN': 'fi', 'FINLAND': 'fi',
-    'CZ': 'cz', 'CZE': 'cz', 'CZECH REPUBLIC': 'cz', 'CZECHIA': 'cz',
-    'RO': 'ro', 'ROU': 'ro', 'ROMANIA': 'ro',
-    'HU': 'hu', 'HUN': 'hu', 'HUNGARY': 'hu',
-    'SK': 'sk', 'SVK': 'sk', 'SLOVAKIA': 'sk',
-    'SI': 'si', 'SVN': 'si', 'SLOVENIA': 'si',
-    'IS': 'is', 'ISL': 'is', 'ICELAND': 'is',
-    'AL': 'al', 'ALB': 'al', 'ALBANIA': 'al',
-    'BA': 'ba', 'BIH': 'ba', 'BOSNIA': 'ba', 'BOSNIA AND HERZEGOVINA': 'ba',
-    'ME': 'me', 'MNE': 'me', 'MONTENEGRO': 'me',
-    'MK': 'mk', 'MKD': 'mk', 'NORTH MACEDONIA': 'mk', 'MACEDONIA': 'mk',
-    'BG': 'bg', 'BUL': 'bg', 'BULGARIA': 'bg',
-    'GE': 'ge', 'GEO': 'ge', 'GEORGIA': 'ge',
-    'GR': 'gr', 'GRE': 'gr', 'GREECE': 'gr',
-    'RU': 'ru', 'RUS': 'ru', 'RUSSIA': 'ru',
-    'UA': 'ua', 'UKR': 'ua', 'UKRAINE': 'ua',
-    'AT': 'at', 'AUT': 'at', 'AUSTRIA': 'at',
-    'CH': 'ch', 'SUI': 'ch', 'SWITZERLAND': 'ch',
-    'IL': 'il', 'ISR': 'il', 'ISRAEL': 'il',
-
-    // CONMEBOL (Güney Amerika)
-    'BR': 'br', 'BRA': 'br', 'BRAZIL': 'br',
-    'AR': 'ar', 'ARG': 'ar', 'ARGENTINA': 'ar',
-    'UY': 'uy', 'URU': 'uy', 'URUGUAY': 'uy',
-    'CO': 'co', 'COL': 'co', 'COLOMBIA': 'co',
-    'CL': 'cl', 'CHI': 'cl', 'CHILE': 'cl',
-    'EC': 'ec', 'ECU': 'ec', 'ECUADOR': 'ec',
-    'PE': 'pe', 'PER': 'pe', 'PERU': 'pe',
-    'VE': 've', 'VEN': 've', 'VENEZUELA': 've',
-    'PY': 'py', 'PAR': 'py', 'PARAGUAY': 'py',
-    'BO': 'bo', 'BOL': 'bo', 'BOLIVIA': 'bo',
-
-    // CONCACAF (Kuzey ve Orta Amerika)
-    'US': 'us', 'USA': 'us', 'UNITED STATES': 'us',
-    'MX': 'mx', 'MEX': 'mx', 'MEXICO': 'mx',
-    'CA': 'ca', 'CAN': 'ca', 'CANADA': 'ca',
-    'CR': 'cr', 'CRC': 'cr', 'COSTA RICA': 'cr',
-    'JM': 'jm', 'JAM': 'jm', 'JAMAICA': 'jm',
-    'PA': 'pa', 'PAN': 'pa', 'PANAMA': 'pa',
-    'HN': 'hn', 'HON': 'hn', 'HONDURAS': 'hn',
-
-    // CAF (Afrika)
-    'MA': 'ma', 'MAR': 'ma', 'MOROCCO': 'ma',
-    'EG': 'eg', 'EGY': 'eg', 'EGYPT': 'eg',
-    'SN': 'sn', 'SEN': 'sn', 'SENEGAL': 'sn',
-    'NG': 'ng', 'NGA': 'ng', 'NIGERIA': 'ng',
-    'CI': 'ci', 'CIV': 'ci', 'IVORY COAST': 'ci', 'COTE D IVOIRE': 'ci',
-    'GH': 'gh', 'GHA': 'gh', 'GHANA': 'gh',
-    'CM': 'cm', 'CMR': 'cm', 'CAMEROON': 'cm',
-    'DZ': 'dz', 'ALG': 'dz', 'ALGERIA': 'dz',
-    'ZA': 'za', 'RSA': 'za', 'SOUTH AFRICA': 'za',
-    'ML': 'ml', 'MLI': 'ml', 'MALI': 'ml',
-    'CD': 'cd', 'COD': 'cd', 'DR CONGO': 'cd',
-
-    // AFC (Asya & Avustralya)
-    'SA': 'sa', 'KSA': 'sa', 'SAUDI ARABIA': 'sa',
-    'JP': 'jp', 'JPN': 'jp', 'JAPAN': 'jp',
-    'KR': 'kr', 'KOR': 'kr', 'SOUTH KOREA': 'kr', 'KOREA REPUBLIC': 'kr',
-    'AU': 'au', 'AUS': 'au', 'AUSTRALIA': 'au',
-    'IR': 'ir', 'IRN': 'ir', 'IRAN': 'ir',
-    'QA': 'qa', 'QAT': 'qa', 'QATAR': 'qa',
-    'AE': 'ae', 'UAE': 'ae', 'UNITED ARAB EMIRATES': 'ae',
-    'CN': 'cn', 'CHN': 'cn', 'CHINA': 'cn', 'CHINA PR': 'cn',
-    'UZ': 'uz', 'UZB': 'uz', 'UZBEKISTAN': 'uz',
-    'IQ': 'iq', 'IRQ': 'iq', 'IRAQ': 'iq',
-    
-    // Diğer Sık Karşılaşılanlar (FC Altyapıları / Genç Yetenekler)
-    'NZ': 'nz', 'NZL': 'nz', 'NEW ZEALAND': 'nz',
-    'CY': 'cy', 'CYP': 'cy', 'CYPRUS': 'cy',
-    'LU': 'lu', 'LUX': 'lu', 'LUXEMBOURG': 'lu',
-    'KV': 'xk', 'KOS': 'xk', 'KOSOVO': 'xk' // Kosovo için standart dışı ama sık kullanılan (xk)
+// --- TÜRKÇE VE İNGİLİZCE TAM İSİM ÇEVİRMENİ ---
+const COUNTRY_ALIASES = {
+    'TÜRKİYE': 'TR', 'TURKEY': 'TR',
+    'ALMANYA': 'DE', 'GERMANY': 'DE',
+    'İNGİLTERE': 'EN', 'ENGLAND': 'EN',
+    'İSPANYA': 'SP', 'SPAIN': 'SP',
+    'İTALYA': 'IT', 'ITALY': 'IT',
+    'FRANSA': 'FR', 'FRANCE': 'FR',
+    'HOLLANDA': 'NL', 'NETHERLANDS': 'NL',
+    'BELÇİKA': 'BE', 'BELGIUM': 'BE',
+    'PORTEKİZ': 'PT', 'PORTUGAL': 'PT',
+    'İSKOÇYA': 'SC', 'SCOTLAND': 'SC',
+    'GALLER': 'WA', 'WALES': 'WA',
+    'KUZEY İRLANDA': 'NI', 'NORTHERN IRELAND': 'NI',
+    'İRLANDA': 'IE', 'IRELAND': 'IE',
+    'İSVİÇRE': 'CH', 'SWITZERLAND': 'CH',
+    'AVUSTURYA': 'AT', 'AUSTRIA': 'AT',
+    'YUNANİSTAN': 'GR', 'GREECE': 'GR',
+    'HIRVATİSTAN': 'HR', 'CROATIA': 'HR',
+    'SIRBİSTAN': 'RS', 'SERBIA': 'RS',
+    'ÇEKYA': 'CZ', 'ÇEK CUMHURİYETİ': 'CZ', 'CZECHIA': 'CZ', 'CZECH REPUBLIC': 'CZ',
+    'POLONYA': 'PL', 'POLAND': 'PL',
+    'İSVEÇ': 'SE', 'SWEDEN': 'SE',
+    'DANİMARKA': 'DK', 'DENMARK': 'DK',
+    'NORVEÇ': 'NO', 'NORWAY': 'NO',
+    'FİNLANDİYA': 'FI', 'FINLAND': 'FI',
+    'RUSYA': 'RU', 'RUSSIA': 'RU',
+    'UKRAYNA': 'UA', 'UKRAINE': 'UA',
+    'ROMANYA': 'RO', 'ROMANIA': 'RO',
+    'MACARİSTAN': 'HU', 'HUNGARY': 'HU',
+    'BREZİLYA': 'BR', 'BRAZIL': 'BR',
+    'ARJANTİN': 'AR', 'ARGENTINA': 'AR',
+    'URUGUAY': 'UY',
+    'ŞİLİ': 'CL', 'CHILE': 'CL',
+    'KOLOMBİYA': 'CO', 'COLOMBIA': 'CO',
+    'MEKSİKA': 'MX', 'MEXICO': 'MX',
+    'AMERİKA': 'US', 'ABD': 'US', 'AMERİKA BİRLEŞİK DEVLETLERİ': 'US', 'USA': 'US', 'UNITED STATES': 'US',
+    'FAS': 'MA', 'MOROCCO': 'MA',
+    'CEZAYİR': 'DZ', 'ALGERIA': 'DZ',
+    'MISIR': 'EG', 'EGYPT': 'EG',
+    'NİJERYA': 'NG', 'NIGERIA': 'NG',
+    'SENEGAL': 'SN',
+    'FİLDİŞİ SAHİLİ': 'CI', 'IVORY COAST': 'CI',
+    'GAMBİYA': 'GM', 'GAMBIA': 'GM',
+    'GANA': 'GH', 'GHANA': 'GH',
+    'JAPONYA': 'JP', 'JAPAN': 'JP',
+    'GÜNEY KORE': 'KR', 'KORE': 'KR', 'SOUTH KOREA': 'KR',
+    'AVUSTRALYA': 'AU', 'AUSTRALIA': 'AU',
+    'SUUDİ ARABİSTAN': 'SA', 'ARABİSTAN': 'SA', 'SAUDI ARABIA': 'SA',
+    'İRAN': 'IR',
+    'KATAR': 'QA', 'QATAR': 'QA',
+    'ÇİN': 'CN', 'CHINA': 'CN'
 };
-            
-const COUNTRY_CONTINENT_MAP = {
-            // UEFA (Avrupa)
-            'TR':'AVRUPA','TUR':'AVRUPA','EN':'AVRUPA','ENG':'AVRUPA','SP':'AVRUPA','ESP':'AVRUPA',
-            'GER':'AVRUPA','DE':'AVRUPA','IT':'AVRUPA','ITA':'AVRUPA','FR':'AVRUPA','FRA':'AVRUPA',
-            'PT':'AVRUPA','POR':'AVRUPA','NL':'AVRUPA','NED':'AVRUPA','BE':'AVRUPA','BEL':'AVRUPA',
-            'SC':'AVRUPA','SCO':'AVRUPA','WA':'AVRUPA','WAL':'AVRUPA','NI':'AVRUPA','NIR':'AVRUPA',
-            'IE':'AVRUPA','IRL':'AVRUPA','HR':'AVRUPA','CRO':'AVRUPA','RS':'AVRUPA','SRB':'AVRUPA',
-            'PL':'AVRUPA','POL':'AVRUPA','SE':'AVRUPA','SWE':'AVRUPA','DK':'AVRUPA','DEN':'AVRUPA',
-            'NO':'AVRUPA','NOR':'AVRUPA','FI':'AVRUPA','FIN':'AVRUPA','CZ':'AVRUPA','CZE':'AVRUPA',
-            'RO':'AVRUPA','ROU':'AVRUPA','HU':'AVRUPA','HUN':'AVRUPA','SK':'AVRUPA','SVK':'AVRUPA',
-            'SI':'AVRUPA','SVN':'AVRUPA','IS':'AVRUPA','ISL':'AVRUPA','AL':'AVRUPA','ALB':'AVRUPA',
-            'BA':'AVRUPA','BIH':'AVRUPA','ME':'AVRUPA','MNE':'AVRUPA','MK':'AVRUPA','MKD':'AVRUPA',
-            'BG':'AVRUPA','BUL':'AVRUPA','GE':'AVRUPA','GEO':'AVRUPA','GR':'AVRUPA','GRE':'AVRUPA',
-            'RU':'AVRUPA','RUS':'AVRUPA','UA':'AVRUPA','UKR':'AVRUPA','AT':'AVRUPA','AUT':'AVRUPA',
-            'CH':'AVRUPA','SUI':'AVRUPA','IL':'AVRUPA','ISR':'AVRUPA','CY':'AVRUPA','CYP':'AVRUPA',
-            'LU':'AVRUPA','LUX':'AVRUPA','KV':'AVRUPA','KOS':'AVRUPA',
-            // CONMEBOL (Güney Amerika)
-            'BR':'GÜNEY AMERİKA','BRA':'GÜNEY AMERİKA','AR':'GÜNEY AMERİKA','ARG':'GÜNEY AMERİKA',
-            'UY':'GÜNEY AMERİKA','URU':'GÜNEY AMERİKA','CO':'GÜNEY AMERİKA','COL':'GÜNEY AMERİKA',
-            'CL':'GÜNEY AMERİKA','CHI':'GÜNEY AMERİKA','EC':'GÜNEY AMERİKA','ECU':'GÜNEY AMERİKA',
-            'PE':'GÜNEY AMERİKA','PER':'GÜNEY AMERİKA','VE':'GÜNEY AMERİKA','VEN':'GÜNEY AMERİKA',
-            'PY':'GÜNEY AMERİKA','PAR':'GÜNEY AMERİKA','BO':'GÜNEY AMERİKA','BOL':'GÜNEY AMERİKA',
-            // CONCACAF (Kuzey/Orta Amerika)
-            'US':'KUZEY AMERİKA','USA':'KUZEY AMERİKA','MX':'KUZEY AMERİKA','MEX':'KUZEY AMERİKA',
-            'CA':'KUZEY AMERİKA','CAN':'KUZEY AMERİKA','CR':'KUZEY AMERİKA','CRC':'KUZEY AMERİKA',
-            'JM':'KUZEY AMERİKA','JAM':'KUZEY AMERİKA','PA':'KUZEY AMERİKA','PAN':'KUZEY AMERİKA',
-            'HN':'KUZEY AMERİKA','HON':'KUZEY AMERİKA',
-            // CAF (Afrika)
-            'MA':'AFRİKA','MAR':'AFRİKA','EG':'AFRİKA','EGY':'AFRİKA','SN':'AFRİKA','SEN':'AFRİKA',
-            'NG':'AFRİKA','NGA':'AFRİKA','CI':'AFRİKA','CIV':'AFRİKA','GH':'AFRİKA','GHA':'AFRİKA',
-            'CM':'AFRİKA','CMR':'AFRİKA','DZ':'AFRİKA','ALG':'AFRİKA','ZA':'AFRİKA','RSA':'AFRİKA',
-            'ML':'AFRİKA','MLI':'AFRİKA','CD':'AFRİKA','COD':'AFRİKA',
-            // AFC (Asya & Avustralya)
-            'SA':'ASYA','KSA':'ASYA','JP':'ASYA','JPN':'ASYA','KR':'ASYA','KOR':'ASYA',
-            'AU':'ASYA','AUS':'ASYA','IR':'ASYA','IRN':'ASYA','QA':'ASYA','QAT':'ASYA',
-            'AE':'ASYA','UAE':'ASYA','CN':'ASYA','CHN':'ASYA','UZ':'ASYA','UZB':'ASYA',
-            'IQ':'ASYA','IRQ':'ASYA','NZ':'ASYA','NZL':'ASYA'
-        };
-        function getContinentForCountry(countryCode) {
-            if (!countryCode) return 'DİĞER';
-            const code = countryCode.toUpperCase().trim();
-            return COUNTRY_CONTINENT_MAP[code] || 'DİĞER';
-        }
 
-            const code = flagMap[c];
-            if (code) {
-                // Eşleşme varsa şık bir bayrak görseli döndür
-                return `<img src="https://flagcdn.com/w20/${code}.png" alt="${c}" title="${c}" class="inline-block h-3.5 object-contain rounded-sm drop-shadow-md">`;
-            }
-            // Eşleşmeyen / bilinmeyen bir kod girilirse eskisi gibi metin olarak kalsın
-            return `<span class="text-[9px] font-mono text-emerald-300 bg-slate-950/70 px-1 rounded">${c}</span>`;
-        }
+function normalizeCountryInput(input) {
+    if (!input) return '';
+    let c = input.toUpperCase().trim();
+    return COUNTRY_ALIASES[c] || c;
+}
+        
+// 1. Kıta haritası ve fonksiyonu ARTIK DIŞARIDA (Global alanda)
+const COUNTRY_CONTINENT_MAP = {
+    // UEFA (Avrupa)
+    'TR':'AVRUPA','TUR':'AVRUPA','EN':'AVRUPA','ENG':'AVRUPA','SP':'AVRUPA','ESP':'AVRUPA',
+    'GER':'AVRUPA','DE':'AVRUPA','IT':'AVRUPA','ITA':'AVRUPA','FR':'AVRUPA','FRA':'AVRUPA',
+    'PT':'AVRUPA','POR':'AVRUPA','NL':'AVRUPA','NED':'AVRUPA','BE':'AVRUPA','BEL':'AVRUPA',
+    'SC':'AVRUPA','SCO':'AVRUPA','WA':'AVRUPA','WAL':'AVRUPA','NI':'AVRUPA','NIR':'AVRUPA',
+    'IE':'AVRUPA','IRL':'AVRUPA','HR':'AVRUPA','CRO':'AVRUPA','RS':'AVRUPA','SRB':'AVRUPA',
+    'PL':'AVRUPA','POL':'AVRUPA','SE':'AVRUPA','SWE':'AVRUPA','DK':'AVRUPA','DEN':'AVRUPA',
+    'NO':'AVRUPA','NOR':'AVRUPA','FI':'AVRUPA','FIN':'AVRUPA','CZ':'AVRUPA','CZE':'AVRUPA',
+    'RO':'AVRUPA','ROU':'AVRUPA','HU':'AVRUPA','HUN':'AVRUPA','SK':'AVRUPA','SVK':'AVRUPA',
+    'SI':'AVRUPA','SVN':'AVRUPA','IS':'AVRUPA','ISL':'AVRUPA','AL':'AVRUPA','ALB':'AVRUPA',
+    'BA':'AVRUPA','BIH':'AVRUPA','ME':'AVRUPA','MNE':'AVRUPA','MK':'AVRUPA','MKD':'AVRUPA',
+    'BG':'AVRUPA','BUL':'AVRUPA','GE':'AVRUPA','GEO':'AVRUPA','GR':'AVRUPA','GRE':'AVRUPA',
+    'RU':'AVRUPA','RUS':'AVRUPA','UA':'AVRUPA','UKR':'AVRUPA','AT':'AVRUPA','AUT':'AVRUPA',
+    'CH':'AVRUPA','SUI':'AVRUPA','IL':'AVRUPA','ISR':'AVRUPA','CY':'AVRUPA','CYP':'AVRUPA',
+    'LU':'AVRUPA','LUX':'AVRUPA','KV':'AVRUPA','KOS':'AVRUPA',
+    // CONMEBOL (Güney Amerika)
+    'BR':'GÜNEY AMERİKA','BRA':'GÜNEY AMERİKA','AR':'GÜNEY AMERİKA','ARG':'GÜNEY AMERİKA',
+    'UY':'GÜNEY AMERİKA','URU':'GÜNEY AMERİKA','CO':'GÜNEY AMERİKA','COL':'GÜNEY AMERİKA',
+    'CL':'GÜNEY AMERİKA','CHI':'GÜNEY AMERİKA','EC':'GÜNEY AMERİKA','ECU':'GÜNEY AMERİKA',
+    'PE':'GÜNEY AMERİKA','PER':'GÜNEY AMERİKA','VE':'GÜNEY AMERİKA','VEN':'GÜNEY AMERİKA',
+    'PY':'GÜNEY AMERİKA','PAR':'GÜNEY AMERİKA','BO':'GÜNEY AMERİKA','BOL':'GÜNEY AMERİKA',
+    // CONCACAF (Kuzey/Orta Amerika)
+    'US':'KUZEY AMERİKA','USA':'KUZEY AMERİKA','MX':'KUZEY AMERİKA','MEX':'KUZEY AMERİKA',
+    'CA':'KUZEY AMERİKA','CAN':'KUZEY AMERİKA','CR':'KUZEY AMERİKA','CRC':'KUZEY AMERİKA',
+    'JM':'KUZEY AMERİKA','JAM':'KUZEY AMERİKA','PA':'KUZEY AMERİKA','PAN':'KUZEY AMERİKA',
+    'HN':'KUZEY AMERİKA','HON':'KUZEY AMERİKA',
+    // CAF (Afrika)
+    'MA':'AFRİKA','MAR':'AFRİKA','EG':'AFRİKA','EGY':'AFRİKA','SN':'AFRİKA','SEN':'AFRİKA',
+    'NG':'AFRİKA','NGA':'AFRİKA','CI':'AFRİKA','CIV':'AFRİKA','GH':'AFRİKA','GHA':'AFRİKA',
+    'CM':'AFRİKA','CMR':'AFRİKA','DZ':'AFRİKA','ALG':'AFRİKA','ZA':'AFRİKA','RSA':'AFRİKA',
+    'ML':'AFRİKA','MLI':'AFRİKA','CD':'AFRİKA','COD':'AFRİKA',
+    // AFC (Asya & Avustralya)
+    'SA':'ASYA','KSA':'ASYA','JP':'ASYA','JPN':'ASYA','KR':'ASYA','KOR':'ASYA',
+    'AU':'ASYA','AUS':'ASYA','IR':'ASYA','IRN':'ASYA','QA':'ASYA','QAT':'ASYA',
+    'AE':'ASYA','UAE':'ASYA','CN':'ASYA','CHN':'ASYA','UZ':'ASYA','UZB':'ASYA',
+    'IQ':'ASYA','IRQ':'ASYA','NZ':'ASYA','NZL':'ASYA'
+};
+
+function getContinentForCountry(countryCode) {
+    if (!countryCode) return 'DİĞER';
+    // Girdiyi önce süzgeçten geçir
+    const code = normalizeCountryInput(countryCode);
+    return COUNTRY_CONTINENT_MAP[code] || 'DİĞER';
+}
+
+// 2. Bayrak fonksiyonu temizlenmiş halde aşağıda kalıyor
+function getFlagIcon(countryCode) {
+    if (!countryCode || countryCode === 'BİLİNMEYEN') return '';
+    // Girdiyi önce süzgeçten geçir
+    const c = normalizeCountryInput(countryCode);
+    
+    const flagMap = {
+        'TR': 'tr', 'TUR': 'tr', 'TURKEY': 'tr',
+        'EN': 'gb-eng', 'ENG': 'gb-eng', 'ENGLAND': 'gb-eng',
+        'SP': 'es', 'ESP': 'es', 'SPAIN': 'es',
+        'GE': 'de', 'GER': 'de', 'DE': 'de', 'GERMANY': 'de',
+        'IT': 'it', 'ITA': 'it', 'ITALY': 'it',
+        'FR': 'fr', 'FRA': 'fr', 'FRANCE': 'fr',
+        'PT': 'pt', 'POR': 'pt', 'PORTUGAL': 'pt',
+        'NL': 'nl', 'NED': 'nl', 'NETHERLANDS': 'nl',
+        'BE': 'be', 'BEL': 'be', 'BELGIUM': 'be',
+        'SC': 'gb-sct', 'SCO': 'gb-sct', 'SCOTLAND': 'gb-sct',
+        'WA': 'gb-wls', 'WAL': 'gb-wls', 'WALES': 'gb-wls',
+        'NI': 'gb-nir', 'NIR': 'gb-nir', 'NORTHERN IRELAND': 'gb-nir',
+        'IE': 'ie', 'IRL': 'ie', 'IRELAND': 'ie', 'REPUBLIC OF IRELAND': 'ie',
+        'HR': 'hr', 'CRO': 'hr', 'CROATIA': 'hr',
+        'RS': 'rs', 'SRB': 'rs', 'SERBIA': 'rs',
+        'PL': 'pl', 'POL': 'pl', 'POLAND': 'pl',
+        'SE': 'se', 'SWE': 'se', 'SWEDEN': 'se',
+        'DK': 'dk', 'DEN': 'dk', 'DENMARK': 'dk',
+        'NO': 'no', 'NOR': 'no', 'NORWAY': 'no',
+        'FI': 'fi', 'FIN': 'fi', 'FINLAND': 'fi',
+        'CZ': 'cz', 'CZE': 'cz', 'CZECH REPUBLIC': 'cz', 'CZECHIA': 'cz',
+        'RO': 'ro', 'ROU': 'ro', 'ROMANIA': 'ro',
+        'HU': 'hu', 'HUN': 'hu', 'HUNGARY': 'hu',
+        'SK': 'sk', 'SVK': 'sk', 'SLOVAKIA': 'sk',
+        'SI': 'si', 'SVN': 'si', 'SLOVENIA': 'si',
+        'IS': 'is', 'ISL': 'is', 'ICELAND': 'is',
+        'AL': 'al', 'ALB': 'al', 'ALBANIA': 'al',
+        'BA': 'ba', 'BIH': 'ba', 'BOSNIA': 'ba', 'BOSNIA AND HERZEGOVINA': 'ba',
+        'ME': 'me', 'MNE': 'me', 'MONTENEGRO': 'me',
+        'MK': 'mk', 'MKD': 'mk', 'NORTH MACEDONIA': 'mk', 'MACEDONIA': 'mk',
+        'BG': 'bg', 'BUL': 'bg', 'BULGARIA': 'bg',
+        'GE': 'ge', 'GEO': 'ge', 'GEORGIA': 'ge',
+        'GR': 'gr', 'GRE': 'gr', 'GREECE': 'gr',
+        'RU': 'ru', 'RUS': 'ru', 'RUSSIA': 'ru',
+        'UA': 'ua', 'UKR': 'ua', 'UKRAINE': 'ua',
+        'AT': 'at', 'AUT': 'at', 'AUSTRIA': 'at',
+        'CH': 'ch', 'SUI': 'ch', 'SWITZERLAND': 'ch',
+        'IL': 'il', 'ISR': 'il', 'ISRAEL': 'il',
+        'BR': 'br', 'BRA': 'br', 'BRAZIL': 'br',
+        'AR': 'ar', 'ARG': 'ar', 'ARGENTINA': 'ar',
+        'UY': 'uy', 'URU': 'uy', 'URUGUAY': 'uy',
+        'CO': 'co', 'COL': 'co', 'COLOMBIA': 'co',
+        'CL': 'cl', 'CHI': 'cl', 'CHILE': 'cl',
+        'EC': 'ec', 'ECU': 'ec', 'ECUADOR': 'ec',
+        'PE': 'pe', 'PER': 'pe', 'PERU': 'pe',
+        'VE': 've', 'VEN': 've', 'VENEZUELA': 've',
+        'PY': 'py', 'PAR': 'py', 'PARAGUAY': 'py',
+        'BO': 'bo', 'BOL': 'bo', 'BOLIVIA': 'bo',
+        'US': 'us', 'USA': 'us', 'UNITED STATES': 'us',
+        'MX': 'mx', 'MEX': 'mx', 'MEXICO': 'mx',
+        'CA': 'ca', 'CAN': 'ca', 'CANADA': 'ca',
+        'CR': 'cr', 'CRC': 'cr', 'COSTA RICA': 'cr',
+        'JM': 'jm', 'JAM': 'jm', 'JAMAICA': 'jm',
+        'PA': 'pa', 'PAN': 'pa', 'PANAMA': 'pa',
+        'HN': 'hn', 'HON': 'hn', 'HONDURAS': 'hn',
+        'MA': 'ma', 'MAR': 'ma', 'MOROCCO': 'ma',
+        'EG': 'eg', 'EGY': 'eg', 'EGYPT': 'eg',
+        'SN': 'sn', 'SEN': 'sn', 'SENEGAL': 'sn',
+        'NG': 'ng', 'NGA': 'ng', 'NIGERIA': 'ng',
+        'CI': 'ci', 'CIV': 'ci', 'IVORY COAST': 'ci', 'COTE D IVOIRE': 'ci',
+        'GH': 'gh', 'GHA': 'gh', 'GHANA': 'gh',
+        'CM': 'cm', 'CMR': 'cm', 'CAMEROON': 'cm',
+        'DZ': 'dz', 'ALG': 'dz', 'ALGERIA': 'dz',
+        'ZA': 'za', 'RSA': 'za', 'SOUTH AFRICA': 'za',
+        'ML': 'ml', 'MLI': 'ml', 'MALI': 'ml',
+        'CD': 'cd', 'COD': 'cd', 'DR CONGO': 'cd',
+        'SA': 'sa', 'KSA': 'sa', 'SAUDI ARABIA': 'sa',
+        'JP': 'jp', 'JPN': 'jp', 'JAPAN': 'jp',
+        'KR': 'kr', 'KOR': 'kr', 'SOUTH KOREA': 'kr', 'KOREA REPUBLIC': 'kr',
+        'AU': 'au', 'AUS': 'au', 'AUSTRALIA': 'au',
+        'IR': 'ir', 'IRN': 'ir', 'IRAN': 'ir',
+        'QA': 'qa', 'QAT': 'qa', 'QATAR': 'qa',
+        'AE': 'ae', 'UAE': 'ae', 'UNITED ARAB EMIRATES': 'ae',
+        'CN': 'cn', 'CHN': 'cn', 'CHINA': 'cn', 'CHINA PR': 'cn',
+        'UZ': 'uz', 'UZB': 'uz', 'UZBEKISTAN': 'uz',
+        'IQ': 'iq', 'IRQ': 'iq', 'IRAQ': 'iq',
+        'NZ': 'nz', 'NZL': 'nz', 'NEW ZEALAND': 'nz',
+        'CY': 'cy', 'CYP': 'cy', 'CYPRUS': 'cy',
+        'LU': 'lu', 'LUX': 'lu', 'LUXEMBOURG': 'lu',
+        'KV': 'xk', 'KOS': 'xk', 'KOSOVO': 'xk'
+    };
+
+    const code = flagMap[c];
+    if (code) {
+        return `<img src="https://flagcdn.com/w20/${code}.png" alt="${c}" title="${c}" class="inline-block h-3.5 object-contain rounded-sm drop-shadow-md">`;
+    }
+    
+    return `<span class="text-[9px] font-mono text-emerald-300 bg-slate-950/70 px-1 rounded">${c}</span>`;
+}
 
         // --- YEREL VERİTABANI (LOCAL STORAGE) VE VERİ YÖNETİMİ ---
         function getAllData() {
@@ -2252,27 +2303,17 @@ function handleFileUpload(event, type) {
             const continentDiv = document.getElementById('opp-continent-container');
             const continentInput = document.getElementById('opp-continent-input');
 
-            countryLbl.innerText = "Ülke Bayrağı Kodu (Örn: TR, EN, ID)";
+            countryLbl.innerText = "Ülke Adı veya Kodu (Örn: Türkiye, Spain, TR)";
 
-            if (context === 'milli') {
-                countryDiv.classList.remove('hidden');
-                document.getElementById('opp-country-input').value = opp.country;
+            // Hem kulüp hem milli takımlar için ülke ve kıta alanlarını göster
+            countryDiv.classList.remove('hidden');
+            document.getElementById('opp-country-input').value = opp.country || '';
 
-                if (groupType === 'domestic') {
-                    continentDiv.classList.add('hidden');
-                } else {
-                    continentDiv.classList.remove('hidden');
-                    continentInput.value = opponentsConfig.milli.foreign[groupIndex].name;
-                }
+            continentDiv.classList.remove('hidden');
+            if (groupType === 'domestic') {
+                continentInput.value = opponentsConfig[context].domestic.name;
             } else {
-                continentDiv.classList.add('hidden');
-                if(groupType === 'domestic') {
-                    countryDiv.classList.add('hidden');
-                    document.getElementById('opp-country-input').value = managedTeams[context].country;
-                } else {
-                    countryDiv.classList.remove('hidden');
-                    document.getElementById('opp-country-input').value = opp.country;
-                }
+                continentInput.value = opponentsConfig[context].foreign[groupIndex].name;
             }
 
             document.getElementById('opp-name-input').value = opp.name;
@@ -2300,7 +2341,11 @@ function handleFileUpload(event, type) {
 
         function saveOpponent() {
             const { context, groupType, groupIndex, index } = activeOppInfo;
-            const country = document.getElementById('opp-country-input').value.trim().toUpperCase();
+            
+            // Kullanıcının girdiği metni alıp süzgeçten (Çevirmen) geçiriyoruz
+            const rawCountry = document.getElementById('opp-country-input').value;
+            const country = normalizeCountryInput(rawCountry);
+            // ...
             const name = document.getElementById('opp-name-input').value.trim();
             const url = document.getElementById('opp-url-input').value.trim();
             let logo = fileUploads.opp || (url !== "Yerel Dosya Seçildi" ? url : null);
@@ -2308,32 +2353,46 @@ function handleFileUpload(event, type) {
             if(!name) { alert("Takım adı zorunludur!"); return; }
             if(!logo) logo = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff`;
 
-            if(groupType === 'domestic') {
-                opponentsConfig[context].domestic.teams[index] = { ...opponentsConfig[context].domestic.teams[index], name, logoUrl: logo, country };
-            } else if (context === 'milli') {
-                const typedContinent = document.getElementById('opp-continent-input').value.trim();
-                const updatedOpp = { ...opponentsConfig[context].foreign[groupIndex].teams[index], name, logoUrl: logo, country };
-                // Kullanıcı bir kıta yazdıysa onu kullan; boş bıraktıysa bayrak koduna göre otomatik tahmin et
-                const targetContinent = typedContinent || getContinentForCountry(country);
+            const typedContinent = document.getElementById('opp-continent-input').value.trim();
+            // Kıta/Grup yazılmamışsa, ülke kodundan otomatik bul
+            const targetContinent = typedContinent || getContinentForCountry(country);
 
-                if (targetContinent.toUpperCase() === opponentsConfig.milli.domestic.name.toUpperCase()) {
+            // Mevcut takımı güncelle
+            let updatedOpp;
+            if(groupType === 'domestic') {
+                updatedOpp = { ...opponentsConfig[context].domestic.teams[index], name, logoUrl: logo, country };
+            } else {
+                updatedOpp = { ...opponentsConfig[context].foreign[groupIndex].teams[index], name, logoUrl: logo, country };
+            }
+
+            // --- TAŞIMA MANTIĞI (Hem Kulüp Hem Milli İçin Ortak) ---
+            if (targetContinent.toUpperCase() === opponentsConfig[context].domestic.name.toUpperCase()) {
+                // Ana gruba (Yurtiçi/Avrupa) taşı
+                if (groupType !== 'domestic') {
                     opponentsConfig[context].foreign[groupIndex].teams.splice(index, 1);
-                    opponentsConfig.milli.domestic.teams.push(updatedOpp);
+                    opponentsConfig[context].domestic.teams.push(updatedOpp);
                 } else {
-                    let targetGroup = opponentsConfig[context].foreign.find(g => g.name.toUpperCase() === targetContinent.toUpperCase());
-                    if (!targetGroup) {
-                        targetGroup = { id: 'f_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5), name: targetContinent, color: '#1e3a8a', teams: [] };
-                        opponentsConfig[context].foreign.push(targetGroup);
-                    }
-                    if (targetGroup === opponentsConfig[context].foreign[groupIndex]) {
-                        opponentsConfig[context].foreign[groupIndex].teams[index] = updatedOpp;
-                    } else {
-                        opponentsConfig[context].foreign[groupIndex].teams.splice(index, 1);
-                        targetGroup.teams.push(updatedOpp);
-                    }
+                    opponentsConfig[context].domestic.teams[index] = updatedOpp;
                 }
             } else {
-                opponentsConfig[context].foreign[groupIndex].teams[index] = { ...opponentsConfig[context].foreign[groupIndex].teams[index], name, logoUrl: logo, country };
+                // Alt gruplara (Kıtalar/Ülkeler) taşı
+                let targetGroup = opponentsConfig[context].foreign.find(g => g.name.toUpperCase() === targetContinent.toUpperCase());
+                
+                // Grup yoksa yeni oluştur
+                if (!targetGroup) {
+                    targetGroup = { id: 'f_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5), name: targetContinent, color: '#1e3a8a', teams: [] };
+                    opponentsConfig[context].foreign.push(targetGroup);
+                }
+                
+                if (groupType === 'domestic') {
+                    opponentsConfig[context].domestic.teams.splice(index, 1);
+                    targetGroup.teams.push(updatedOpp);
+                } else if (targetGroup === opponentsConfig[context].foreign[groupIndex]) {
+                    opponentsConfig[context].foreign[groupIndex].teams[index] = updatedOpp;
+                } else {
+                    opponentsConfig[context].foreign[groupIndex].teams.splice(index, 1);
+                    targetGroup.teams.push(updatedOpp);
+                }
             }
 
             saveToLocalStorage();
@@ -5235,52 +5294,65 @@ function closeTransferModal() {
             const text = document.getElementById('fb-textarea').value.trim();
             if (!text) { alert('Lütfen eklenecek maçları girin!'); return; }
 
-            const lines = text.split('\n');
-            let addedCount = 0;
-            
-            if (!fixtureData[activeFixtureSeason]) fixtureData[activeFixtureSeason] = [];
-            const teamName = managedTeams.kulup.name || '';
+            // YENİ: Sistemin donmadığını göstermek için butona yükleniyor efekti ver
+            const btn = document.querySelector('#fixture-bulk-modal button.bg-blue-600');
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i>Ekleniyor...';
+            btn.disabled = true;
 
-            lines.forEach(line => {
-                if (!line.trim()) return;
-                const parts = line.split(',').map(s => s.trim());
+            // YENİ: Ağır işlemi setTimeout içine alarak tarayıcıya nefes aldırıyoruz
+            setTimeout(() => {
+                const lines = text.split('\n');
+                let addedCount = 0;
                 
-                if (parts.length >= 4) {
-                    const matchNo = parts[0];
-                    const tournament = parts[1];
-                    const home = parts[2];
-                    const away = parts[3];
-                    const oppCountry = parts[4] ? parts[4].toUpperCase() : ''; 
+                if (!fixtureData[activeFixtureSeason]) fixtureData[activeFixtureSeason] = [];
+                const teamName = managedTeams.kulup.name || '';
+
+                lines.forEach(line => {
+                    if (!line.trim()) return;
+                    const parts = line.split(',').map(s => s.trim());
                     
-                    let ground = 'neutral';
-                    if (home === teamName) ground = 'home';
-                    else if (away === teamName) ground = 'away';
+                    if (parts.length >= 4) {
+                        const matchNo = parts[0];
+                        const tournament = parts[1];
+                        const home = parts[2];
+                        const away = parts[3];
+                        const oppCountry = parts[4] ? normalizeCountryInput(parts[4]) : ''; 
+                        
+                        let ground = 'neutral';
+                        if (home === teamName) ground = 'home';
+                        else if (away === teamName) ground = 'away';
 
-                    const newMatch = {
-                        id: 'fx_bulk_' + Date.now() + '_' + addedCount,
-                        matchNo: matchNo, 
-                        tournament: tournament,
-                        ground: ground,
-                        home: home,
-                        away: away,
-                        oppCountry: oppCountry, 
-                        homeScore: '',
-                        awayScore: '',
-                        events: []
-                    };
-                    fixtureData[activeFixtureSeason].push(newMatch);
-                    syncFixtureToMatches(newMatch, activeFixtureSeason);
-                    addedCount++;
+                        const newMatch = {
+                            id: 'fx_bulk_' + Date.now() + '_' + addedCount,
+                            matchNo: matchNo, 
+                            tournament: tournament,
+                            ground: ground,
+                            home: home,
+                            away: away,
+                            oppCountry: oppCountry, 
+                            homeScore: '',
+                            awayScore: '',
+                            events: []
+                        };
+                        fixtureData[activeFixtureSeason].push(newMatch);
+                        syncFixtureToMatches(newMatch, activeFixtureSeason);
+                        addedCount++;
+                    }
+                });
+
+                // İşlem bitince butonu eski haline getir
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+
+                if (addedCount > 0) {
+                    saveToLocalStorage();
+                    closeFixtureBulkModal();
+                    renderFixturePanel();
+                } else {
+                    alert('Geçerli formatta maç bulunamadı. Lütfen "Maç No, Müsabaka, Ev, Deplasman" formatında girin.');
                 }
-            });
-
-            if (addedCount > 0) {
-                saveToLocalStorage();
-                closeFixtureBulkModal();
-                renderFixturePanel();
-            } else {
-                alert('Geçerli formatta maç bulunamadı. Lütfen "Maç No, Müsabaka, Ev, Deplasman" formatında girin.');
-            }
+            }, 50); // 50 milisaniye bekle, "Ekleniyor" yazısının ekranda belirmesine izin ver
         }
 
         // --- SENKRONİZASYON MOTORU ---
@@ -5323,13 +5395,21 @@ function closeTransferModal() {
             }
 
             let foundOpp = null;
-            ['domestic', 'foreign'].forEach(type => {
-                if (opponentsConfig[context][type]) {
-                    const list = type === 'domestic' ? opponentsConfig[context][type].teams : opponentsConfig[context].foreign.flatMap(f => f.teams);
-                    let exist = list.find(o => o.name.toLowerCase() === oppName.toLowerCase());
-                    if(exist) foundOpp = exist;
+            const safeOppName = (oppName || '').toLowerCase();
+            
+            // 1. Ana (Yurtiçi/Avrupa) grupta ara (Hata vermemesi için name koruması eklendi)
+            if (opponentsConfig[context].domestic && opponentsConfig[context].domestic.teams) {
+                foundOpp = opponentsConfig[context].domestic.teams.find(o => (o.name || '').toLowerCase() === safeOppName);
+            }
+            
+            // 2. Bulunamadıysa yabancı (Kıta) gruplarında ara (Performans için flatMap iptal edildi, normal döngüye geçildi)
+            if (!foundOpp && opponentsConfig[context].foreign) {
+                for (let i = 0; i < opponentsConfig[context].foreign.length; i++) {
+                    let grp = opponentsConfig[context].foreign[i];
+                    foundOpp = grp.teams.find(o => (o.name || '').toLowerCase() === safeOppName);
+                    if (foundOpp) break; // Rakibi bulur bulmaz döngüyü kır (Müthiş hız kazandırır)
                 }
-            });
+            }
 
             if (!foundOpp) {
                 if (isDomestic || context === 'milli') {
