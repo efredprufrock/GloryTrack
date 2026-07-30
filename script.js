@@ -494,6 +494,50 @@ const flagMap = {
     'KV': 'xk', 'KOS': 'xk', 'KOSOVO': 'xk' // Kosovo için standart dışı ama sık kullanılan (xk)
 };
             
+const COUNTRY_CONTINENT_MAP = {
+            // UEFA (Avrupa)
+            'TR':'AVRUPA','TUR':'AVRUPA','EN':'AVRUPA','ENG':'AVRUPA','SP':'AVRUPA','ESP':'AVRUPA',
+            'GER':'AVRUPA','DE':'AVRUPA','IT':'AVRUPA','ITA':'AVRUPA','FR':'AVRUPA','FRA':'AVRUPA',
+            'PT':'AVRUPA','POR':'AVRUPA','NL':'AVRUPA','NED':'AVRUPA','BE':'AVRUPA','BEL':'AVRUPA',
+            'SC':'AVRUPA','SCO':'AVRUPA','WA':'AVRUPA','WAL':'AVRUPA','NI':'AVRUPA','NIR':'AVRUPA',
+            'IE':'AVRUPA','IRL':'AVRUPA','HR':'AVRUPA','CRO':'AVRUPA','RS':'AVRUPA','SRB':'AVRUPA',
+            'PL':'AVRUPA','POL':'AVRUPA','SE':'AVRUPA','SWE':'AVRUPA','DK':'AVRUPA','DEN':'AVRUPA',
+            'NO':'AVRUPA','NOR':'AVRUPA','FI':'AVRUPA','FIN':'AVRUPA','CZ':'AVRUPA','CZE':'AVRUPA',
+            'RO':'AVRUPA','ROU':'AVRUPA','HU':'AVRUPA','HUN':'AVRUPA','SK':'AVRUPA','SVK':'AVRUPA',
+            'SI':'AVRUPA','SVN':'AVRUPA','IS':'AVRUPA','ISL':'AVRUPA','AL':'AVRUPA','ALB':'AVRUPA',
+            'BA':'AVRUPA','BIH':'AVRUPA','ME':'AVRUPA','MNE':'AVRUPA','MK':'AVRUPA','MKD':'AVRUPA',
+            'BG':'AVRUPA','BUL':'AVRUPA','GE':'AVRUPA','GEO':'AVRUPA','GR':'AVRUPA','GRE':'AVRUPA',
+            'RU':'AVRUPA','RUS':'AVRUPA','UA':'AVRUPA','UKR':'AVRUPA','AT':'AVRUPA','AUT':'AVRUPA',
+            'CH':'AVRUPA','SUI':'AVRUPA','IL':'AVRUPA','ISR':'AVRUPA','CY':'AVRUPA','CYP':'AVRUPA',
+            'LU':'AVRUPA','LUX':'AVRUPA','KV':'AVRUPA','KOS':'AVRUPA',
+            // CONMEBOL (Güney Amerika)
+            'BR':'GÜNEY AMERİKA','BRA':'GÜNEY AMERİKA','AR':'GÜNEY AMERİKA','ARG':'GÜNEY AMERİKA',
+            'UY':'GÜNEY AMERİKA','URU':'GÜNEY AMERİKA','CO':'GÜNEY AMERİKA','COL':'GÜNEY AMERİKA',
+            'CL':'GÜNEY AMERİKA','CHI':'GÜNEY AMERİKA','EC':'GÜNEY AMERİKA','ECU':'GÜNEY AMERİKA',
+            'PE':'GÜNEY AMERİKA','PER':'GÜNEY AMERİKA','VE':'GÜNEY AMERİKA','VEN':'GÜNEY AMERİKA',
+            'PY':'GÜNEY AMERİKA','PAR':'GÜNEY AMERİKA','BO':'GÜNEY AMERİKA','BOL':'GÜNEY AMERİKA',
+            // CONCACAF (Kuzey/Orta Amerika)
+            'US':'KUZEY AMERİKA','USA':'KUZEY AMERİKA','MX':'KUZEY AMERİKA','MEX':'KUZEY AMERİKA',
+            'CA':'KUZEY AMERİKA','CAN':'KUZEY AMERİKA','CR':'KUZEY AMERİKA','CRC':'KUZEY AMERİKA',
+            'JM':'KUZEY AMERİKA','JAM':'KUZEY AMERİKA','PA':'KUZEY AMERİKA','PAN':'KUZEY AMERİKA',
+            'HN':'KUZEY AMERİKA','HON':'KUZEY AMERİKA',
+            // CAF (Afrika)
+            'MA':'AFRİKA','MAR':'AFRİKA','EG':'AFRİKA','EGY':'AFRİKA','SN':'AFRİKA','SEN':'AFRİKA',
+            'NG':'AFRİKA','NGA':'AFRİKA','CI':'AFRİKA','CIV':'AFRİKA','GH':'AFRİKA','GHA':'AFRİKA',
+            'CM':'AFRİKA','CMR':'AFRİKA','DZ':'AFRİKA','ALG':'AFRİKA','ZA':'AFRİKA','RSA':'AFRİKA',
+            'ML':'AFRİKA','MLI':'AFRİKA','CD':'AFRİKA','COD':'AFRİKA',
+            // AFC (Asya & Avustralya)
+            'SA':'ASYA','KSA':'ASYA','JP':'ASYA','JPN':'ASYA','KR':'ASYA','KOR':'ASYA',
+            'AU':'ASYA','AUS':'ASYA','IR':'ASYA','IRN':'ASYA','QA':'ASYA','QAT':'ASYA',
+            'AE':'ASYA','UAE':'ASYA','CN':'ASYA','CHN':'ASYA','UZ':'ASYA','UZB':'ASYA',
+            'IQ':'ASYA','IRQ':'ASYA','NZ':'ASYA','NZL':'ASYA'
+        };
+        function getContinentForCountry(countryCode) {
+            if (!countryCode) return 'DİĞER';
+            const code = countryCode.toUpperCase().trim();
+            return COUNTRY_CONTINENT_MAP[code] || 'DİĞER';
+        }
+
             const code = flagMap[c];
             if (code) {
                 // Eşleşme varsa şık bir bayrak görseli döndür
@@ -2205,13 +2249,23 @@ function handleFileUpload(event, type) {
 
             const countryLbl = document.getElementById('lbl-opp-country');
             const countryDiv = document.getElementById('opp-country-container');
-            
+            const continentDiv = document.getElementById('opp-continent-container');
+            const continentInput = document.getElementById('opp-continent-input');
+
+            countryLbl.innerText = "Ülke Bayrağı Kodu (Örn: TR, EN, ID)";
+
             if (context === 'milli') {
-                countryLbl.innerText = "Kıta Kodu (Örn: EUR, AFR)";
                 countryDiv.classList.remove('hidden');
                 document.getElementById('opp-country-input').value = opp.country;
+
+                if (groupType === 'domestic') {
+                    continentDiv.classList.add('hidden');
+                } else {
+                    continentDiv.classList.remove('hidden');
+                    continentInput.value = opponentsConfig.milli.foreign[groupIndex].name;
+                }
             } else {
-                countryLbl.innerText = "Ülke (Kısa Adı, Örn: ENG, ITA)";
+                continentDiv.classList.add('hidden');
                 if(groupType === 'domestic') {
                     countryDiv.classList.add('hidden');
                     document.getElementById('opp-country-input').value = managedTeams[context].country;
@@ -2256,6 +2310,28 @@ function handleFileUpload(event, type) {
 
             if(groupType === 'domestic') {
                 opponentsConfig[context].domestic.teams[index] = { ...opponentsConfig[context].domestic.teams[index], name, logoUrl: logo, country };
+            } else if (context === 'milli') {
+                const typedContinent = document.getElementById('opp-continent-input').value.trim();
+                const updatedOpp = { ...opponentsConfig[context].foreign[groupIndex].teams[index], name, logoUrl: logo, country };
+                // Kullanıcı bir kıta yazdıysa onu kullan; boş bıraktıysa bayrak koduna göre otomatik tahmin et
+                const targetContinent = typedContinent || getContinentForCountry(country);
+
+                if (targetContinent.toUpperCase() === opponentsConfig.milli.domestic.name.toUpperCase()) {
+                    opponentsConfig[context].foreign[groupIndex].teams.splice(index, 1);
+                    opponentsConfig.milli.domestic.teams.push(updatedOpp);
+                } else {
+                    let targetGroup = opponentsConfig[context].foreign.find(g => g.name.toUpperCase() === targetContinent.toUpperCase());
+                    if (!targetGroup) {
+                        targetGroup = { id: 'f_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5), name: targetContinent, color: '#1e3a8a', teams: [] };
+                        opponentsConfig[context].foreign.push(targetGroup);
+                    }
+                    if (targetGroup === opponentsConfig[context].foreign[groupIndex]) {
+                        opponentsConfig[context].foreign[groupIndex].teams[index] = updatedOpp;
+                    } else {
+                        opponentsConfig[context].foreign[groupIndex].teams.splice(index, 1);
+                        targetGroup.teams.push(updatedOpp);
+                    }
+                }
             } else {
                 opponentsConfig[context].foreign[groupIndex].teams[index] = { ...opponentsConfig[context].foreign[groupIndex].teams[index], name, logoUrl: logo, country };
             }
@@ -5235,17 +5311,8 @@ function closeTransferModal() {
             const oppName = isHome ? match.away : match.home;
             if (!oppName) return;
 
-            const continentMap = {
-                'EN': 'AVRUPA', 'ENG': 'AVRUPA', 'SC': 'AVRUPA', 'SP': 'AVRUPA', 'IT': 'AVRUPA', 'GE': 'AVRUPA', 'FR': 'AVRUPA',
-                'PT': 'AVRUPA', 'NL': 'AVRUPA', 'BE': 'AVRUPA', 'TR': 'AVRUPA', 'TUR': 'AVRUPA', 'GR': 'AVRUPA', 'RU': 'AVRUPA', 'UA': 'AVRUPA',
-                'BR': 'GÜNEY AMERİKA', 'AR': 'GÜNEY AMERİKA', 'CO': 'GÜNEY AMERİKA', 'UY': 'GÜNEY AMERİKA',
-                'US': 'KUZEY AMERİKA', 'MX': 'KUZEY AMERİKA', 'CA': 'KUZEY AMERİKA',
-                'SA': 'ASYA', 'JP': 'ASYA', 'KR': 'ASYA', 'IR': 'ASYA',
-                'MA': 'AFRİKA', 'EG': 'AFRİKA', 'SN': 'AFRİKA', 'NG': 'AFRİKA', 'CI': 'AFRİKA'
-            };
-
             let oppCountryCode = (match.oppCountry || '').toUpperCase().trim();
-            let targetContinent = oppCountryCode ? (continentMap[oppCountryCode] || 'DİĞER') : 'DİĞER';
+            let targetContinent = getContinentForCountry(oppCountryCode);
 
             let isDomestic = false;
             if (context === 'kulup' && (oppCountryCode === 'TR' || oppCountryCode === 'TUR' || targetContinent === 'YURTİÇİ' || !oppCountryCode)) {
