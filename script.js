@@ -275,7 +275,7 @@ function escapeHtml(str) {
         const menuConfig = {
             kupalar: { title: "Kupalar", submenus: [] },
             maclar: { title: "Maçlar", submenus: [{ id: "maclar-kulup", label: "Kulüp" }, { id: "maclar-milli", label: "Milli" }]},
-            kadro: { title: "Kadro", submenus: [{ id: "kadro-astakim", label: "As Takım" }, { id: "kadro-akademi", label: "Akademi" }]},
+            kadro: { title: "Kadro", submenus: [{ id: "kadro-astakim", label: "As Takım" }, { id: "kadro-akademi", label: "Akademi" }, { id: "kadro-milli", label: "Milli" }]},
             ligtarihi: { title: "Lig Tarihi", submenus: [] },
             transfer: { title: "Transfer", submenus: [] },
             golasist: { title: "Gol ve Asistler", submenus: [] },
@@ -289,7 +289,7 @@ function escapeHtml(str) {
         let isSetupComplete = false;
         let activeSub = null;
         let activeTertiary = null;
-        let fileUploads = { champ: null, runner: null, tournament: null, managed: null, opp: null, setup: null, 'pi-photo': null };
+        let fileUploads = { champ: null, runner: null, tournament: null, managed: null, opp: null, setup: null, 'pi-photo': null, 'pi-team': null };
 
         // Trophies State
         let trophyData = {}; 
@@ -336,9 +336,10 @@ function escapeHtml(str) {
         let squadContext = 'astakim';
         let playerRoles = {
             astakim: ['Yıldız', 'İlk 11', 'Rotasyon', 'Gelecek Vadeden'],
-            akademi: ['A Takım Adayı', 'Kiralık Gelişecek', 'Gelecek Vadeden', 'Yetersiz']
+            akademi: ['A Takım Adayı', 'Kiralık Gelişecek', 'Gelecek Vadeden', 'Yetersiz'],
+            milli: ['Kadroda', 'Yedek', 'Genç Milli', 'İzlemede']
         };
-        let squadData = { astakim: [], akademi: [] };
+        let squadData = { astakim: [], akademi: [], milli: [] };
         let squadSort = { field: 'joinOvr', asc: false };
         
         let activePlayerId = null;
@@ -654,6 +655,11 @@ function getFlagIcon(countryCode) {
             if (data.euroLeaguesData) euroLeaguesData = data.euroLeaguesData;
             if (data.customTournamentsData) customTournamentsData = data.customTournamentsData;
             if (data.isSetupComplete !== undefined) isSetupComplete = data.isSetupComplete;
+
+            // Geriye dönük uyumluluk: eski yedeklerde "milli" kadrosu bulunmayabilir
+            if (!squadData.milli) squadData.milli = [];
+            if (!playerRoles.milli) playerRoles.milli = ['Kadroda', 'Yedek', 'Genç Milli', 'İzlemede'];
+
             return true;
         }
 
@@ -834,7 +840,14 @@ function handleSyncClick() {
         function updateMockPlayers() {
             let astakim = squadData.astakim.map(p => p.name);
             let akademi = squadData.akademi.map(p => p.name);
-            mockPlayers = [...new Set([...astakim, ...akademi])].sort();
+            let milli = (squadData.milli || []).map(p => p.name);
+
+            // Milli takım maçları için gol/asist girerken Milli kadrosunu da öneri listesine ekle
+            if (activeMain === 'maclar' && matchContext === 'milli') {
+                mockPlayers = [...new Set([...milli, ...astakim, ...akademi])].sort();
+            } else {
+                mockPlayers = [...new Set([...astakim, ...akademi])].sort();
+            }
         }
         
         // --- Custom Chart.js Plugin for Points inside Dots ---
@@ -1151,6 +1164,20 @@ function handleSyncClick() {
         function deleteSeason(season) {
             if(confirm(`"${season}" sezonunu tüm panellerden kalıcı olarak silmek istediğinize emin misiniz?`)) {
                 seasonsList = seasonsList.filter(s => s !== season);
+
+                // Bağımlı verileri temizle (hayalet veri kalmasın)
+                delete trophyData[season];
+                delete fixtureData[season];
+                delete euroLeaguesData[season];
+                delete customTournamentsData[season];
+                ['kulup', 'milli'].forEach(ctx => {
+                    if (matchDataStore[ctx]) delete matchDataStore[ctx][season];
+                });
+                leagueHistoryData.forEach(t => { if (t.history) delete t.history[season]; });
+                ['astakim', 'akademi'].forEach(ctx => {
+                    (squadData[ctx] || []).forEach(p => { if (p.history) delete p.history[season]; });
+                });
+
                 saveToLocalStorage();
                 if(activeMain === 'kupalar') renderTrophiesGrid();
                 if(activeMain === 'maclar') renderMatchesGrid();
@@ -1487,7 +1514,7 @@ function handleFileUpload(event, type) {
                 matchContext = subId === 'maclar-kulup' ? 'kulup' : 'milli';
                 renderMatchesGrid();
             } else if (activeMain === 'kadro') {
-                squadContext = subId === 'kadro-astakim' ? 'astakim' : 'akademi';
+                squadContext = subId === 'kadro-astakim' ? 'astakim' : (subId === 'kadro-akademi' ? 'akademi' : 'milli');
                 renderSquadGrid();
             } else {
                 hideTertiaryMenu(); updateContentArea(`${menuConfig[activeMain].title} / ${label} verileri yükleniyor...`);
@@ -2880,6 +2907,9 @@ function handleFileUpload(event, type) {
             
             if (squadContext === 'akademi') {
                 staticCols.push({ id: 'pot', label: 'POT', w: 45, align: 'center' });
+            } else if (squadContext === 'milli') {
+                staticCols.push({ id: 'teamName', label: 'Kulüp', w: 55, align: 'center' });
+                staticCols.push({ id: 'caps', label: 'Forma', w: 45, align: 'center' });
             }
             
             let accW = 0;
@@ -2920,7 +2950,7 @@ function handleFileUpload(event, type) {
             let html = `
                 <div class="w-full flex justify-between items-center mb-3 px-2 shrink-0">
                     <div class="flex items-center gap-3">
-                        <h3 class="text-2xl font-bold text-white">${squadContext === 'astakim' ? 'As Takım' : 'Akademi'} Gelişim Takibi</h3>
+                        <h3 class="text-2xl font-bold text-white">${squadContext === 'astakim' ? 'As Takım' : (squadContext === 'akademi' ? 'Akademi' : 'Milli Takım')} Gelişim Takibi</h3>
                         <button onclick="openPlayerInfoModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-lg"><i class="fa-solid fa-user-plus mr-1"></i>Oyuncu Ekle</button>
                         <button onclick="openSquadBulkModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-lg"><i class="fa-solid fa-list-ol mr-1"></i>Toplu Ekle</button>
                     </div>
@@ -2935,7 +2965,7 @@ function handleFileUpload(event, type) {
             `;
             
             staticCols.forEach(c => {
-                let borderRight = (c.id === 'joinOvr' && squadContext !== 'akademi') || c.id === 'pot' ? 'border-r-2 border-slate-500' : 'border-r border-slate-700';
+                let borderRight = (c.id === 'joinOvr' && squadContext !== 'akademi' && squadContext !== 'milli') || c.id === 'pot' || c.id === 'caps' ? 'border-r-2 border-slate-500' : 'border-r border-slate-700';
                 html += `<th rowspan="2" class="p-1 ${borderRight} border-b border-slate-700 sticky bg-slate-950 z-[70] text-[10px] font-bold text-slate-400 cursor-pointer hover:text-white transition-colors" onclick="sortSquad('${c.id}')" style="left: ${c.left}px; width: ${c.w}px; min-width: ${c.w}px; max-width: ${c.w}px;">
                             ${c.label} <i class="fa-solid fa-sort ml-0.5 opacity-50"></i>
                          </th>`;
@@ -3005,6 +3035,8 @@ function handleFileUpload(event, type) {
                                 valA = Number(a.currentOvr || 0); valB = Number(b.currentOvr || 0);
                             } else if (squadSort.field === 'joinAge') {
                                 valA = Number(a.currentAge || 0); valB = Number(b.currentAge || 0);
+                            } else if (squadSort.field === 'caps') {
+                                valA = Number(a.caps || 0); valB = Number(b.caps || 0);
                             } else {
                                 valA = (valA || '').toString().toLowerCase(); valB = (valB || '').toString().toLowerCase();
                             }
@@ -3050,8 +3082,10 @@ function handleFileUpload(event, type) {
                                     content = `<div class="flex items-center justify-center w-full h-full">${deltaHtml}</div>`;
                                 }
                                 else if(c.id === 'pot') content = `<span class="text-[10px] font-bold text-emerald-300">${p.pot || '-'}</span>`;
+                                else if(c.id === 'teamName') content = p.teamLogo ? `<img src="${p.teamLogo}" title="${escapeHtml(p.teamName||'')}" class="w-7 h-7 object-contain mx-auto rounded bg-slate-200/10 p-0.5">` : `<span class="text-[9px] text-slate-500">-</span>`;
+                                else if(c.id === 'caps') content = `<span class="text-[10px] font-bold text-blue-300">${p.caps || 0}</span>`;
                                 
-                                let extraClasses = (c.id === 'joinOvr' && squadContext !== 'akademi') || c.id === 'pot' ? 'border-r-2 border-slate-500 shadow-[2px_0_5px_rgba(0,0,0,0.4)]' : 'border-r border-slate-700/50';
+                                let extraClasses = (c.id === 'joinOvr' && squadContext !== 'akademi' && squadContext !== 'milli') || c.id === 'pot' || c.id === 'caps' ? 'border-r-2 border-slate-500 shadow-[2px_0_5px_rgba(0,0,0,0.4)]' : 'border-r border-slate-700/50';
 
                                 resultHtml += `<td class="p-1 ${extraClasses} border-b border-slate-700/50 sticky z-[50] ${rowBgClass} transition-colors text-${c.align} ${c.pl || ''}" style="left: ${c.left}px; width: ${c.w}px; min-width: ${c.w}px; max-width: ${c.w}px;">
                                             ${content}
@@ -3126,7 +3160,20 @@ function handleFileUpload(event, type) {
 
         // Toplu Ekleme Modalını Aç
         function openSquadBulkModal() {
-            document.getElementById('squad-bulk-input').value = ''; // İçeriği temizle
+            const textarea = document.getElementById('squad-bulk-input');
+            textarea.value = ''; // İçeriği temizle
+
+            document.getElementById('squad-bulk-target-name').innerText =
+                squadContext === 'astakim' ? 'As Takım' : (squadContext === 'akademi' ? 'Akademi' : 'Milli Takım');
+
+            if (squadContext === 'milli') {
+                document.getElementById('squad-bulk-format-hint').innerText = 'Pozisyon, İsim Soyisim, Yaş, Reyting, Kulübü, Forma Sayısı';
+                textarea.placeholder = 'Örnek:\nGK, Uğurcan Çakır, 26, 80, Galatasaray, 5\nCB, Merih Demiral, 26, 82, Al-Ahli, 45\nST, Kerem Aktürkoğlu, 26, 79, Benfica, 30';
+            } else {
+                document.getElementById('squad-bulk-format-hint').innerText = 'Pozisyon, İsim Soyisim, Ülke, Yaş, Reyting';
+                textarea.placeholder = 'Örnek:\nST, Victor Osimhen, NGA, 25, 88\nCAM, Dries Mertens, BEL, 37, 84\nCM, Gabriel Sara, BRA, 25, 79';
+            }
+
             const modal = document.getElementById('squad-bulk-modal');
             modal.classList.remove('hidden'); 
             modal.classList.add('flex');
@@ -3287,10 +3334,13 @@ async function autoFetchPlayerPhoto(playerName, urlInputId) {
             if(squadContext === 'akademi') document.getElementById('pi-pot-container-edit').classList.remove('hidden');
             else document.getElementById('pi-pot-container-edit').classList.add('hidden');
 
+            if(squadContext === 'milli') document.getElementById('pi-milli-container-edit').classList.remove('hidden');
+            else document.getElementById('pi-milli-container-edit').classList.add('hidden');
+
             // 1. Form alanlarını her ihtimale karşı temizle (Yeni ekleme için hazırlık)
             document.getElementById('player-info-title').innerText = "Yeni Oyuncu Ekle";
             document.getElementById('pi-pos').value = 'CM';
-            populateRolesDropdown('pi-role', squadContext === 'akademi' ? 'A Takım Adayı' : 'Rotasyon');
+            populateRolesDropdown('pi-role', squadContext === 'akademi' ? 'A Takım Adayı' : (squadContext === 'milli' ? 'Kadroda' : 'Rotasyon'));
             document.getElementById('pi-name').value = '';
             document.getElementById('pi-photo-url').value = '';
             document.getElementById('pi-country').value = '';
@@ -3304,6 +3354,17 @@ async function autoFetchPlayerPhoto(playerName, urlInputId) {
             document.getElementById('pi-photo-upload-btn').classList.replace('text-emerald-400', 'text-slate-300');
             document.getElementById('pi-photo-results').innerHTML = '';
             document.getElementById('pi-photo-results').classList.add('hidden');
+
+            if (squadContext === 'milli') {
+                document.getElementById('pi-team-name-input').value = '';
+                document.getElementById('pi-team-url-input').value = '';
+                document.getElementById('pi-caps').value = '0';
+                fileUploads['pi-team'] = null;
+                document.getElementById('pi-team-file-input').value = '';
+                document.getElementById('pi-team-upload-btn').classList.replace('text-emerald-400', 'text-slate-300');
+                document.getElementById('pi-team-logo-results').innerHTML = '';
+                document.getElementById('pi-team-logo-results').classList.add('hidden');
+            }
 
             if (id) {
                 // 2A. VAROLAN OYUNCU (PROFIL MODUNDA AÇ)
@@ -3392,6 +3453,11 @@ async function autoFetchPlayerPhoto(playerName, urlInputId) {
                 document.getElementById('pi-age').value = p.joinAge;
                 document.getElementById('pi-ovr').value = p.joinOvr;
                 if(squadContext === 'akademi') document.getElementById('pi-pot').value = p.pot || '';
+                if(squadContext === 'milli') {
+                    document.getElementById('pi-team-name-input').value = p.teamName || '';
+                    document.getElementById('pi-team-url-input').value = p.teamLogo || '';
+                    document.getElementById('pi-caps').value = p.caps || 0;
+                }
                 document.getElementById('btn-delete-player').classList.remove('hidden');
 
                 // Sadece Profil kısmını göster, Form'u gizle
@@ -3444,15 +3510,26 @@ async function autoFetchPlayerPhoto(playerName, urlInputId) {
             const ovr = document.getElementById('pi-ovr').value;
             const pot = document.getElementById('pi-pot').value.trim();
 
+            let teamName = '', teamLogo = '', caps = 0;
+            if (squadContext === 'milli') {
+                teamName = document.getElementById('pi-team-name-input').value.trim();
+                const teamUrl = document.getElementById('pi-team-url-input').value.trim();
+                teamLogo = fileUploads['pi-team'] || (teamUrl !== "Yerel Dosya Yüklendi (Sıkıştırıldı)" ? teamUrl : '');
+                if (!teamLogo && teamName) teamLogo = `https://ui-avatars.com/api/?name=${encodeURIComponent(teamName)}&background=random&color=fff`;
+                caps = parseInt(document.getElementById('pi-caps').value) || 0;
+            }
+
             if(!name) { alert("İsim zorunludur!"); return; }
 
             if(activePlayerId) {
                 let p = squadData[squadContext].find(pl => pl.id === activePlayerId);
                 p.pos = pos; p.role = role; p.name = name; p.photoUrl = photo; p.countryCode = countryCode; p.joinAge = age; p.joinOvr = ovr;
                 if(squadContext === 'akademi') p.pot = pot;
+                if(squadContext === 'milli') { p.teamName = teamName; p.teamLogo = teamLogo; p.caps = caps; }
             } else {
                 let newPlayer = { id: 'p_' + Date.now(), pos, role, name, photoUrl: photo, countryCode, joinAge: age, joinOvr: ovr, history: {} };
                 if(squadContext === 'akademi') newPlayer.pot = pot;
+                if(squadContext === 'milli') { newPlayer.teamName = teamName; newPlayer.teamLogo = teamLogo; newPlayer.caps = caps; }
                 squadData[squadContext].push(newPlayer);
             }
             saveToLocalStorage();
@@ -3970,7 +4047,7 @@ async function autoFetchPlayerPhoto(playerName, urlInputId) {
                                 ${photoHtml}
                                 <div class="flex-1 min-w-0">
                                     <div class="flex justify-between items-start">
-                                        <h4 class="font-bold text-white text-sm truncate">${t.name} <span class="text-[10px] text-slate-400 font-normal ml-1 border border-slate-600 rounded px-1">${t.season}</span></h4>
+                                        <h4 class="font-bold text-white text-sm truncate">${escapeHtml(t.name)} <span class="text-[10px] text-slate-400 font-normal ml-1 border border-slate-600 rounded px-1">${escapeHtml(t.season)}</span></h4>
                                         <span class="font-bold text-sm ${feeColor} whitespace-nowrap">${feeText}</span>
                                     </div>
                                     <div class="flex justify-between items-end mt-1 text-[11px] text-slate-400">
@@ -4689,11 +4766,13 @@ function closeTransferModal() {
 
             let wins = 0, draws = 0, losses = 0, gf = 0, ga = 0;
             const teamName = managedTeams.kulup.name || '';
+            const nationalTeamName = managedTeams.milli.name || '';
+            const isOurTeam = (name) => name === teamName || (nationalTeamName && name === nationalTeamName);
             filtered.forEach(m => {
                 const hs = parseInt(m.homeScore), as = parseInt(m.awayScore);
                 if (!isNaN(hs) && !isNaN(as)) {
-                    const isHome = m.home === teamName;
-                    const isAway = m.away === teamName;
+                    const isHome = isOurTeam(m.home);
+                    const isAway = isOurTeam(m.away);
                     if (isHome)      { gf += hs; ga += as; hs > as ? wins++ : hs < as ? losses++ : draws++; }
                     else if (isAway) { gf += as; ga += hs; as > hs ? wins++ : as < hs ? losses++ : draws++; }
                 }
@@ -4749,8 +4828,8 @@ function closeTransferModal() {
                     let resultLetter = '';
                     const hs = parseInt(m.homeScore), as = parseInt(m.awayScore);
                     if (!isNaN(hs) && !isNaN(as)) {
-                        const isHome = m.home === teamName;
-                        const isAway = m.away === teamName;
+                        const isHome = isOurTeam(m.home);
+                        const isAway = isOurTeam(m.away);
                         if (isHome) resultLetter = hs > as ? 'W' : (hs < as ? 'L' : 'D');
                         else if (isAway) resultLetter = as > hs ? 'W' : (as < hs ? 'L' : 'D');
                     }
@@ -5410,7 +5489,7 @@ function closeTransferModal() {
             let targetContinent = getContinentForCountry(oppCountryCode);
 
             let isDomestic = false;
-            if (context === 'kulup' && (oppCountryCode === 'TR' || oppCountryCode === 'TUR' || targetContinent === 'YURTİÇİ' || !oppCountryCode)) {
+            if (context === 'kulup' && (oppCountryCode === 'TR' || oppCountryCode === 'TUR' || targetContinent === opponentsConfig.kulup.domestic.name || !oppCountryCode)) {
                 isDomestic = true;
             } else if (context === 'milli' && targetContinent === opponentsConfig.milli.domestic.name) {
                 // HATA ÇÖZÜMÜ: Sadece rakibin kıtası gerçekten AVRUPA ise yerel (domestic) kabul et.
