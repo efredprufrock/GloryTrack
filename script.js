@@ -5130,9 +5130,14 @@ function closeTransferModal() {
                     
                     rows.forEach(row => {
                         const scoreSpan = row.querySelector('.score-display');
-                        // Skor girilmişse (boş veya sadece '-' değilse)
-                        if (scoreSpan && !scoreSpan.innerText.includes('-:-') && scoreSpan.innerText.trim() !== '-') {
-                            lastPlayedRow = row;
+                        if (scoreSpan) {
+                            // textContent ignores CSS formatting. Replace any whitespace to be 100% safe.
+                            const cleanText = scoreSpan.textContent.replace(/\s+/g, '');
+                            
+                            // Skor girilmişse (boş ' -:- ' veya sadece ' - ' değilse)
+                            if (cleanText !== '-:-' && cleanText !== '-') {
+                                lastPlayedRow = row;
+                            }
                         }
                     });
 
