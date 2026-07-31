@@ -258,6 +258,17 @@ function toggleLanguage() {
     }
 }
 
+// --- GÜVENLİK (XSS ÖNLEME) ---
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
     // --- 1. VERİ YAPILARI (STATE) ---
         let currentScale = '1';
 
@@ -510,7 +521,7 @@ function getFlagIcon(countryCode) {
     const flagMap = {
         'TR': 'tr', 'TUR': 'tr', 'TURKEY': 'tr',
         'EN': 'gb-eng', 'ENG': 'gb-eng', 'ENGLAND': 'gb-eng',
-        'SP': 'es', 'ESP': 'es', 'SPAIN': 'es',
+        'ES': 'es', 'SP': 'es', 'ESP': 'es', 'SPAIN': 'es',
         'GE': 'de', 'GER': 'de', 'DE': 'de', 'GERMANY': 'de',
         'IT': 'it', 'ITA': 'it', 'ITALY': 'it',
         'FR': 'fr', 'FRA': 'fr', 'FRANCE': 'fr',
@@ -1016,6 +1027,14 @@ function handleSyncClick() {
         });
         // --- END MODAL CLOSE HELPERS ---
 
+        // --- PREVENT CONTENTEDITABLE LINE BREAKS ---
+        document.addEventListener('keydown', function(e) {
+            if (e.target && e.target.isContentEditable && e.key === 'Enter') {
+                e.preventDefault();
+                e.target.blur(); // Blur the element to trigger the onblur save event
+            }
+        });
+
         function startAppAfterAuth() {
             // Başlangıç ekranını zorla kapat ve tamamlandı say
             const setupModal = document.getElementById('setup-modal');
@@ -1153,7 +1172,7 @@ function handleFileUpload(event, type) {
         img.src = e.target.result;
         img.onload = () => {
             const canvas = document.createElement('canvas');
-            const maxDim = 256; // Max width/height in px
+            const maxDim = 128; // Reduced to 128px for optimal thumbnail compression & storage efficiency
             let width = img.width;
             let height = img.height;
 
@@ -1233,12 +1252,13 @@ function handleFileUpload(event, type) {
                                         return t.endsWith('.png') || t.endsWith('.svg');
                                     });
 
-                                // 3. Adım: Bu görsellerin doğrudan CDN/resmi URL'lerini al
-                                for (let fileTitle of fileList) {
-                                    const fileInfoApi = `https://tr.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(fileTitle)}&prop=imageinfo&iiprop=url&format=json&origin=*`;
+                                // 3. Adım: Bu görselleri tek seferde (toplu/batched) CDN URL'leri ile çek
+                                if (fileList.length > 0) {
+                                    const batchTitles = fileList.slice(0, 30).map(t => encodeURIComponent(t)).join('|');
+                                    const fileInfoApi = `https://tr.wikipedia.org/w/api.php?action=query&titles=${batchTitles}&prop=imageinfo&iiprop=url&format=json&origin=*`;
                                     const fileRes = await fetch(fileInfoApi);
                                     const fileData = await fileRes.json();
-                                    const filePages = fileData.query.pages;
+                                    const filePages = fileData.query?.pages || {};
                                     
                                     for (let fPageId in filePages) {
                                         if (filePages[fPageId].imageinfo && filePages[fPageId].imageinfo[0].url) {
@@ -1269,13 +1289,16 @@ function handleFileUpload(event, type) {
                                     .map(img => img.title)
                                     .filter(t => t.toLowerCase().endsWith('.png') || t.toLowerCase().endsWith('.svg'));
 
-                                for (let fileTitle of fileList) {
-                                    const fileInfoApi = `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(fileTitle)}&prop=imageinfo&iiprop=url&format=json&origin=*`;
+                                if (fileList.length > 0) {
+                                    const batchTitles = fileList.slice(0, 30).map(t => encodeURIComponent(t)).join('|');
+                                    const fileInfoApi = `https://en.wikipedia.org/w/api.php?action=query&titles=${batchTitles}&prop=imageinfo&iiprop=url&format=json&origin=*`;
                                     const fileRes = await fetch(fileInfoApi);
                                     const fileData = await fileRes.json();
-                                    for (let fPageId in fileData.query.pages) {
-                                        if (fileData.query.pages[fPageId].imageinfo) {
-                                            logoUrls.push(fileData.query.pages[fPageId].imageinfo[0].url);
+                                    const filePages = fileData.query?.pages || {};
+                                    
+                                    for (let fPageId in filePages) {
+                                        if (filePages[fPageId].imageinfo && filePages[fPageId].imageinfo[0].url) {
+                                            logoUrls.push(filePages[fPageId].imageinfo[0].url);
                                         }
                                     }
                                 }
@@ -1592,28 +1615,6 @@ function handleFileUpload(event, type) {
                 </div>
             `;
             updateContentArea(html);
-            
-            // YENİ: En son oynanan maçı bul ve otomatik olarak ekranda ortala
-            setTimeout(() => {
-                const tableContainer = document.querySelector('#content-area .overflow-auto.table-scroll');
-                if (tableContainer) {
-                    // Skoru girilmiş (oynanmış) olan satırları bul ('-' veya boş olmayanlar)
-                    const rows = tableContainer.querySelectorAll('tbody tr');
-                    let lastPlayedRow = null;
-                    
-                    rows.forEach(row => {
-                        const scoreSpan = row.querySelector('.score-display');
-                        if (scoreSpan && !scoreSpan.innerText.includes('-:-')) {
-                            lastPlayedRow = row; // Skoru girildikçe güncellenir, böylece en son oynanan kalır
-                        }
-                    });
-
-                    if (lastPlayedRow) {
-                        // Son oynanan maçı tablonun ortasına kaydır
-                        lastPlayedRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                }
-            }, 100);
         }
 
         function exportJSON() {
@@ -1680,7 +1681,7 @@ function handleFileUpload(event, type) {
                     </div>
                 </div>
                 <div class="w-full overflow-auto table-scroll border border-slate-700 rounded-xl bg-slate-900 flex-1 min-h-0 relative pb-4">
-                    <table class="w-full border-separate border-spacing-0 text-sm" style="zoom: ${currentScale};">
+                    <table class="w-full border-separate border-spacing-0 text-sm origin-top-left" style="transform: scale(${currentScale}); transform-origin: top left; width: calc(100% / ${currentScale});">
                         <thead class="bg-slate-950 sticky top-0 z-[40] shadow-md">
                             <tr>
                                 <th class="p-2 sticky left-0 bg-slate-950 z-[50] border-r border-b border-slate-700 w-24 min-w-[96px] shadow-[2px_0_5px_rgba(0,0,0,0.2)] align-middle">
@@ -1983,7 +1984,7 @@ function handleFileUpload(event, type) {
                     </div>
                 </div>
                 <div class="w-full overflow-auto table-scroll border border-slate-700 rounded-xl bg-slate-900 flex-1 min-h-0 relative pb-4">
-                    <table class="w-full border-separate border-spacing-0 text-sm" style="zoom: ${currentScale};">
+                    <table class="w-full border-separate border-spacing-0 text-sm origin-top-left" style="transform: scale(${currentScale}); transform-origin: top left; width: calc(100% / ${currentScale});">
                         <thead class="bg-slate-950 sticky top-0 z-[40] shadow-md">
                             <tr>
                                 <!-- Sol Sabit Logo Hücresi -->
@@ -2928,7 +2929,7 @@ function handleFileUpload(event, type) {
                     </div>
                 </div>
                 <div class="w-full overflow-auto table-scroll border border-slate-700 rounded-xl bg-slate-900 flex-1 min-h-0 relative pb-4">
-                    <table class="w-full border-separate border-spacing-0 text-sm" style="zoom: ${currentScale}; min-width: max-content;">
+                    <table class="w-full border-separate border-spacing-0 text-sm origin-top-left" style="transform: scale(${currentScale}); transform-origin: top left; width: calc(100% / ${currentScale}); min-width: max-content;">
                         <thead class="bg-slate-950 sticky top-0 z-[60] shadow-md">
                             <tr>
             `;
@@ -3016,7 +3017,8 @@ function handleFileUpload(event, type) {
                         resultHtml += `<tr><td colspan="100%" class="h-3 bg-slate-950 border-y border-slate-700 shadow-inner"></td></tr>`;
 
                         groupPlayers.forEach(p => {
-                            let photoHtml = p.photoUrl ? `<img src="${p.photoUrl}" class="w-6 h-6 rounded-full inline-block mr-1.5 object-cover bg-slate-800">` : `<div class="w-6 h-6 rounded-full inline-flex items-center justify-center bg-slate-700 text-xs font-bold mr-1.5">${p.name.charAt(0)}</div>`;
+                            const safeName = escapeHtml(p.name); // XSS Koruması
+                            let photoHtml = p.photoUrl ? `<img src="${p.photoUrl}" class="w-6 h-6 rounded-full inline-block mr-1.5 object-cover bg-slate-800">` : `<div class="w-6 h-6 rounded-full inline-flex items-center justify-center bg-slate-700 text-xs font-bold mr-1.5">${safeName.charAt(0)}</div>`;
                             let flagHtml = p.countryCode ? `<img src="https://flagcdn.com/24x18/${p.countryCode.toLowerCase()}.png" alt="${p.countryCode}" title="${p.countryCode.toUpperCase()}" class="w-5 h-auto mx-auto shadow-sm">` : '-';
 
                             let rowBgClass = `bg-row-${getMacroGroupForPos(p.pos)}`;
@@ -3027,7 +3029,7 @@ function handleFileUpload(event, type) {
                             staticCols.forEach(c => {
                                 let content = '';
                                 if(c.id === 'pos') content = `<span class="pos-${p.pos} font-black text-[10px]">${p.pos}</span>`;
-                                else if(c.id === 'name') content = `<div class="flex items-center justify-start w-full overflow-hidden hover:text-emerald-400 cursor-pointer" onclick="openPlayerInfoModal('${p.id}')" title="Düzenle">${photoHtml}<span class="truncate text-xs font-bold">${p.name}</span></div>`;
+                                else if(c.id === 'name') content = `<div class="flex items-center justify-start w-full overflow-hidden hover:text-emerald-400 cursor-pointer" onclick="openPlayerInfoModal('${p.id}')" title="Düzenle">${photoHtml}<span class="truncate text-xs font-bold">${safeName}</span></div>`;
                                 else if(c.id === 'countryCode') content = flagHtml;
                                 else if(c.id === 'joinAge') content = `<span class="text-[10px] font-mono text-slate-300">${p.currentAge || ''}</span>`;
                                 else if(c.id === 'joinOvr') {
@@ -5039,6 +5041,27 @@ function closeTransferModal() {
                 </div>`;
 
             updateContentArea(html);
+
+            // En son oynanan maçı bul ve otomatik olarak ekranda ortala
+            setTimeout(() => {
+                const tableContainer = document.querySelector('#content-area .table-scroll');
+                if (tableContainer) {
+                    const rows = tableContainer.querySelectorAll('tbody tr');
+                    let lastPlayedRow = null;
+                    
+                    rows.forEach(row => {
+                        const scoreSpan = row.querySelector('.score-display');
+                        // Skor girilmişse (boş veya sadece '-' değilse)
+                        if (scoreSpan && !scoreSpan.innerText.includes('-:-') && scoreSpan.innerText.trim() !== '-') {
+                            lastPlayedRow = row;
+                        }
+                    });
+
+                    if (lastPlayedRow) {
+                        lastPlayedRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+            }, 100);
         }
 
         function switchFixtureSeason(season) {
