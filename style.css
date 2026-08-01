@@ -31,9 +31,17 @@
 
         /* Squad Table Specifics */
         .ovr-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 16px; font-size: 10px; font-weight: 900; border-radius: 2px; color: #000; box-shadow: 0 1px 2px rgba(0,0,0,0.5); }
-        .ovr-high { background-color: #4ade80; } /* 80+ Green */
-        .ovr-med { background-color: #facc15; } /* 70-79 Yellow */
-        .ovr-low { background-color: #f87171; } /* <70 Red */
+        .ovr-t1  { background-color: #1e3a8a; color: #fff; } /* 95-100 Dark Blue */
+        .ovr-t2  { background-color: #3b82f6; color: #fff; } /* 90-94  Blue */
+        .ovr-t3  { background-color: #15803d; color: #fff; } /* 85-89  Dark Green */
+        .ovr-t4  { background-color: #4ade80; color: #000; } /* 80-84  Green */
+        .ovr-t5  { background-color: #a3e635; color: #000; } /* 75-79  Greenish Yellow */
+        .ovr-t6  { background-color: #facc15; color: #000; } /* 70-74  Yellow */
+        .ovr-t7  { background-color: #fb923c; color: #000; } /* 65-69  Light Orange */
+        .ovr-t8  { background-color: #c2410c; color: #fff; } /* 60-64  Dark Orange */
+        .ovr-t9  { background-color: #ef4444; color: #fff; } /* 55-59  Red */
+        .ovr-t10 { background-color: #7f1d1d; color: #fff; } /* 50-54  Dark Red */
+        .ovr-t11 { background-color: #7e22ce; color: #fff; } /* 00-49  Purple */
         
         .pos-GK { color: #eab308; }
         .pos-DEF, .pos-CB, .pos-LB, .pos-RB { color: #60a5fa; }
@@ -210,6 +218,35 @@ body.theme-light .group-row:hover .bg-row-FWD, body.theme-light .group-row:hover
     width: 100%;
     border: none !important;
 }
+
+/* =========================================================
+   GOL-ASİST TABLOSU GÖRSEL İYİLEŞTİRMELERİ
+   ========================================================= */
+.stats-rank-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; border-radius: 999px;
+    font-size: 11px; font-weight: 800; color: #94a3b8;
+    background: rgba(148,163,184,0.08);
+}
+.stats-rank-1 { background: linear-gradient(135deg,#fde68a,#f59e0b); color: #451a03; box-shadow: 0 0 8px rgba(245,158,11,0.5); }
+.stats-rank-2 { background: linear-gradient(135deg,#e2e8f0,#94a3b8); color: #1e293b; }
+.stats-rank-3 { background: linear-gradient(135deg,#fdba74,#c2703d); color: #431407; }
+
+.stats-pos-pill {
+    display: inline-block; font-size: 10px; font-weight: 800; padding: 2px 8px;
+    border-radius: 999px; background: rgba(255,255,255,0.06); letter-spacing: 0.03em;
+}
+
+.stats-chip {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 26px; padding: 2px 6px; border-radius: 999px; font-weight: 800; font-size: 11px;
+}
+.stats-chip-goal { background: rgba(52,211,153,0.12); color: #34d399; }
+.stats-chip-assist { background: rgba(96,165,250,0.12); color: #60a5fa; }
+.stats-chip-goal-total { background: rgba(52,211,153,0.22); color: #6ee7b7; font-size: 13px; }
+.stats-chip-assist-total { background: rgba(96,165,250,0.22); color: #93c5fd; font-size: 13px; }
+
+.modern-stats-table tbody tr:nth-child(even) td { background-color: rgba(255,255,255,0.012); }
 
 /* Dikey çizgileri ve dış çerçeveyi tamamen kaldır, sadece ince yatay çizgi bırak */
 .modern-stats-table th, 

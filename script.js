@@ -381,28 +381,39 @@ function escapeHtml(str) {
 
         
         
-        function getSquadDatalistOptions() {
+        // context: 'milli' -> sadece Milli Takım kadrosu, aksi halde (undefined/'kulup') -> sadece Kulüp (As Takım + Akademi) kadrosu
+        function getSquadDatalistOptions(context) {
             let options = '';
             let allPlayers = [];
-            
-            // squadData'nın yapısını kontrol edip oyuncuları düz bir diziye toplayalım
-            if (Array.isArray(squadData)) {
-                allPlayers = squadData;
-            } else if (typeof squadData === 'object' && squadData !== null) {
-                Object.values(squadData).forEach(group => {
-                    if (Array.isArray(group)) allPlayers = allPlayers.concat(group);
-                });
+
+            if (context === 'milli') {
+                allPlayers = squadData.milli || [];
+            } else {
+                allPlayers = [...(squadData.astakim || []), ...(squadData.akademi || [])];
             }
 
             // 'name', 'playerName' veya 'isim' gibi olası anahtarları kontrol ederek isimleri çek
             allPlayers.forEach(player => {
                 let pName = player.name || player.playerName || player.isim; 
                 if (pName) {
-                    options += `<option value="${pName}"></option>`;
+                    options += `<option value="${escapeHtml(pName)}"></option>`;
                 }
             });
             
             return options;
+        }
+
+        // Bir fikstür maçının Kulüp mü yoksa Milli Takım maçı mı olduğunu ev sahibi/deplasman isimlerine bakarak belirler.
+        function getFixtureMatchContext(match) {
+            if (!match) return 'kulup';
+            const clubName = managedTeams.kulup.name || '';
+            const milliName = managedTeams.milli.name || '';
+
+            if (milliName && (match.home === milliName || match.away === milliName)) return 'milli';
+            if (match.home === clubName || match.away === clubName) return 'kulup';
+            // Ne kulüp ne de milli isimle tam eşleşme yoksa, milli takım tanımlıysa milli kabul et (syncFixtureToMatches ile tutarlı)
+            if (milliName) return 'milli';
+            return 'kulup';
         }
 
 
@@ -842,9 +853,10 @@ function handleSyncClick() {
             let akademi = squadData.akademi.map(p => p.name);
             let milli = (squadData.milli || []).map(p => p.name);
 
-            // Milli takım maçları için gol/asist girerken Milli kadrosunu da öneri listesine ekle
+            // Milli takım maçları için gol/asist girerken SADECE Milli kadrosunu göster.
+            // Kulüp maçlarında ise SADECE kulüp (As Takım + Akademi) kadrosunu göster.
             if (activeMain === 'maclar' && matchContext === 'milli') {
-                mockPlayers = [...new Set([...milli, ...astakim, ...akademi])].sort();
+                mockPlayers = [...new Set(milli)].sort();
             } else {
                 mockPlayers = [...new Set([...astakim, ...akademi])].sort();
             }
@@ -2862,6 +2874,11 @@ function handleFileUpload(event, type) {
             let players = squadData[squadContext];
             let squadSeasons = [...seasonsList].reverse();
             
+            // Kulüp bağlamında (astakim/akademi) 'kulup' istatistiklerini, Milli'de 'milli' istatistiklerini kullan
+const statsCtx = squadContext === 'milli' ? 'milli' : 'kulup';
+const goalAssistMap = {};
+getStatsData(statsCtx).stats.forEach(s => { goalAssistMap[s.name.toLowerCase()] = s; });
+
             // İstediğiniz kesin sıraya ve gruplara göre mevki tanımları
             const groups = [
                 { id: 'GK', label: 'KALECİLER', strip: 'bg-orange-600/30' },
@@ -2906,11 +2923,14 @@ function handleFileUpload(event, type) {
             ];
             
             if (squadContext === 'akademi') {
-                staticCols.push({ id: 'pot', label: 'POT', w: 45, align: 'center' });
-            } else if (squadContext === 'milli') {
-                staticCols.push({ id: 'teamName', label: 'Kulüp', w: 55, align: 'center' });
-                staticCols.push({ id: 'caps', label: 'Forma', w: 45, align: 'center' });
-            }
+    staticCols.push({ id: 'pot', label: 'POT', w: 45, align: 'center' });
+} else if (squadContext === 'milli') {
+    staticCols.push({ id: 'teamName', label: 'Kulüp', w: 55, align: 'center' });
+    staticCols.push({ id: 'caps', label: 'Forma', w: 45, align: 'center' });
+}
+// ↓↓↓ these two lines must be OUTSIDE/AFTER the if/else, unindented from it
+staticCols.push({ id: 'totalGoals', label: 'Gol', w: 40, align: 'center' });
+staticCols.push({ id: 'totalAssists', label: 'Asist', w: 40, align: 'center' });
             
             let accW = 0;
             staticCols.forEach(c => { c.left = accW; accW += c.w; });
@@ -2919,9 +2939,18 @@ function handleFileUpload(event, type) {
 
             const renderOvrBadge = (ovr) => {
                 if(!ovr) return '';
-                let colorClass = 'ovr-low';
-                if(ovr >= 80) colorClass = 'ovr-high';
-                else if(ovr >= 70) colorClass = 'ovr-med';
+                const n = parseInt(ovr);
+                let colorClass = 'ovr-t11';
+                if (n >= 95) colorClass = 'ovr-t1';
+                else if (n >= 90) colorClass = 'ovr-t2';
+                else if (n >= 85) colorClass = 'ovr-t3';
+                else if (n >= 80) colorClass = 'ovr-t4';
+                else if (n >= 75) colorClass = 'ovr-t5';
+                else if (n >= 70) colorClass = 'ovr-t6';
+                else if (n >= 65) colorClass = 'ovr-t7';
+                else if (n >= 60) colorClass = 'ovr-t8';
+                else if (n >= 55) colorClass = 'ovr-t9';
+                else if (n >= 50) colorClass = 'ovr-t10';
                 return `<span class="ovr-badge ${colorClass}">${ovr}</span>`;
             };
 
@@ -3004,6 +3033,9 @@ function handleFileUpload(event, type) {
                     list.forEach(p => {
                         p.currentAge = p.joinAge;
                         p.currentOvr = p.joinOvr;
+                        const gs = goalAssistMap[(p.name || '').toLowerCase()];
+p.totalGoals = gs ? gs.overallGoals : 0;
+p.totalAssists = gs ? gs.overallAssists : 0;
                         // Geçmişten günümüze (sondan başa) doğru tarama yap
                         for (let i = seasonsList.length - 1; i >= 0; i--) {
                             let s = seasonsList[i];
@@ -3036,8 +3068,12 @@ function handleFileUpload(event, type) {
                             } else if (squadSort.field === 'joinAge') {
                                 valA = Number(a.currentAge || 0); valB = Number(b.currentAge || 0);
                             } else if (squadSort.field === 'caps') {
-                                valA = Number(a.caps || 0); valB = Number(b.caps || 0);
-                            } else {
+    valA = Number(a.caps || 0); valB = Number(b.caps || 0);
+} else if (squadSort.field === 'totalGoals') {
+    valA = Number(a.totalGoals || 0); valB = Number(b.totalGoals || 0);
+} else if (squadSort.field === 'totalAssists') {
+    valA = Number(a.totalAssists || 0); valB = Number(b.totalAssists || 0);
+} else {
                                 valA = (valA || '').toString().toLowerCase(); valB = (valB || '').toString().toLowerCase();
                             }
                             
@@ -3084,6 +3120,8 @@ function handleFileUpload(event, type) {
                                 else if(c.id === 'pot') content = `<span class="text-[10px] font-bold text-emerald-300">${p.pot || '-'}</span>`;
                                 else if(c.id === 'teamName') content = p.teamLogo ? `<img src="${p.teamLogo}" title="${escapeHtml(p.teamName||'')}" class="w-7 h-7 object-contain mx-auto rounded bg-slate-200/10 p-0.5">` : `<span class="text-[9px] text-slate-500">-</span>`;
                                 else if(c.id === 'caps') content = `<span class="text-[10px] font-bold text-blue-300">${p.caps || 0}</span>`;
+else if(c.id === 'totalGoals') content = `<span class="text-[10px] font-bold text-emerald-400">${p.totalGoals}</span>`;
+else if(c.id === 'totalAssists') content = `<span class="text-[10px] font-bold text-sky-400">${p.totalAssists}</span>`;
                                 
                                 let extraClasses = (c.id === 'joinOvr' && squadContext !== 'akademi' && squadContext !== 'milli') || c.id === 'pot' || c.id === 'caps' ? 'border-r-2 border-slate-500 shadow-[2px_0_5px_rgba(0,0,0,0.4)]' : 'border-r border-slate-700/50';
 
@@ -3324,6 +3362,21 @@ async function autoFetchPlayerPhoto(playerName, urlInputId) {
             }
         }
 
+        function openStatsPlayerProfile(el) {
+           const name = el.getAttribute('data-pname');
+            if (!name) return;
+            const contexts = ['astakim', 'akademi', 'milli'];
+            for (const ctx of contexts) {
+            const found = (squadData[ctx] || []).find(p => (p.name || '').toLowerCase() === name.toLowerCase());
+            if (found) {
+                squadContext = ctx;
+                openPlayerInfoModal(found.id);
+                return;
+                }
+            }
+            alert('Bu oyuncu artık kadroda kayıtlı değil.');
+        }
+
         function openPlayerInfoModal(id = null) {
             activePlayerId = id;
             
@@ -3442,6 +3495,7 @@ async function autoFetchPlayerPhoto(playerName, urlInputId) {
                     archBtnView.innerHTML = '<i class="fa-solid fa-box-archive mr-1"></i> Arşive Taşı';
                     archBtnView.className = 'px-4 py-2.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 font-medium text-sm flex-1 transition-colors';
                 }
+             
 
                 // Düzenle tuşuna basıldığında kullanılmak üzere formu arka planda doldur
                 document.getElementById('player-info-title').innerText = "Oyuncu Düzenle";
@@ -4482,14 +4536,17 @@ function closeTransferModal() {
                     sums.overallGoals += p.overallGoals;
                     sums.overallAssists += p.overallAssists;
                     
-                    let photoHtml = p.photoUrl ? `<img src="${p.photoUrl}" class="w-7 h-7 rounded-full inline-block mr-2 object-cover bg-slate-800 shadow-sm border border-slate-700">` : `<div class="w-7 h-7 rounded-full inline-flex items-center justify-center bg-slate-700 border border-slate-600 shadow-sm text-xs font-bold mr-2">${p.name.charAt(0)}</div>`;
+                    let photoHtml = p.photoUrl ? `<img src="${p.photoUrl}" class="w-8 h-8 rounded-full inline-block mr-2.5 object-cover bg-slate-800 shadow-sm border-2 border-slate-700">` : `<div class="w-8 h-8 rounded-full inline-flex items-center justify-center bg-slate-700 border-2 border-slate-600 shadow-sm text-xs font-bold mr-2.5">${p.name.charAt(0)}</div>`;
                     let flagHtml = p.countryCode ? `<img src="https://flagcdn.com/24x18/${p.countryCode.toLowerCase()}.png" class="w-5 h-auto mx-auto shadow-sm rounded-sm">` : '-';
                     
                     rowsHTML += `<tr class="hover:bg-slate-800/80 transition-colors group">`;
                     // Sticky columns setup
-                    rowsHTML += `<td class="p-2 border-r border-b border-slate-700/50 text-center text-slate-500 font-bold bg-slate-900 group-hover:bg-slate-800 sticky z-[10]" style="left: 0px; width: ${wNo}px; min-width: ${wNo}px; max-width: ${wNo}px;">${idx + 1}</td>`;
-                    rowsHTML += `<td class="p-2 border-r border-b border-slate-700/50 text-center pos-${p.pos} font-black text-xs bg-slate-900 group-hover:bg-slate-800 sticky z-[10]" style="left: ${lPos}px; width: ${wPos}px; min-width: ${wPos}px; max-width: ${wPos}px;">${p.pos === 'UNK' ? '-' : p.pos}</td>`;
-                    rowsHTML += `<td class="p-2 border-r border-b border-slate-700/50 text-left font-bold text-sm flex items-center bg-slate-900 group-hover:bg-slate-800 sticky z-[10]" style="left: ${lName}px; width: ${wName}px; min-width: ${wName}px; max-width: ${wName}px;">${photoHtml}<span class="truncate">${p.name}</span></td>`;
+                    const rankCls = idx === 0 ? 'stats-rank-1' : idx === 1 ? 'stats-rank-2' : idx === 2 ? 'stats-rank-3' : '';
+                    rowsHTML += `<td class="p-2 border-r border-b border-slate-700/50 text-center bg-slate-900 group-hover:bg-slate-800 sticky z-[10]" style="left: 0px; width: ${wNo}px; min-width: ${wNo}px; max-width: ${wNo}px;"><span class="stats-rank-badge ${rankCls}">${idx + 1}</span></td>`;
+                    rowsHTML += `<td class="p-2 border-r border-b border-slate-700/50 text-center bg-slate-900 group-hover:bg-slate-800 sticky z-[10]" style="left: ${lPos}px; width: ${wPos}px; min-width: ${wPos}px; max-width: ${wPos}px;">${p.pos === 'UNK' ? '<span class="text-slate-600">-</span>' : `<span class="stats-pos-pill pos-${p.pos}">${p.pos}</span>`}</td>`;
+                    rowsHTML += `<td class="p-2 border-r border-b border-slate-700/50 text-left font-bold text-sm bg-slate-900 group-hover:bg-slate-800 sticky z-[10]" style="left: ${lName}px; width: ${wName}px; min-width: ${wName}px; max-width: ${wName}px;">
+    <div class="flex items-center cursor-pointer hover:text-emerald-400 transition-colors" data-pname="${escapeHtml(p.name)}" onclick="openStatsPlayerProfile(this)" title="Profili Görüntüle">${photoHtml}<span class="truncate">${p.name}</span></div>
+</td>`;
                     if (isKulup) {
                         rowsHTML += `<td class="p-2 border-r border-b border-slate-700/50 text-center bg-slate-900 group-hover:bg-slate-800 sticky z-[10]" style="left: ${lCountry}px; width: ${wCountry}px; min-width: ${wCountry}px; max-width: ${wCountry}px;">${flagHtml}</td>`;
                     }
@@ -4503,8 +4560,8 @@ function closeTransferModal() {
                         sums.seasons[season].goals += pSeason.totalGoals;
                         sums.seasons[season].assists += pSeason.totalAssists;
                         
-                        rowsHTML += `<td class="p-2 border-r border-b border-slate-700/50 text-center font-bold text-green-400 bg-green-900/10">${pSeason.totalGoals || '-'}</td>`;
-                        rowsHTML += `<td class="p-2 border-r border-b ${isExp ? 'border-slate-700/50' : 'border-slate-500 border-r-2'} text-center font-bold text-blue-400 bg-blue-900/10">${pSeason.totalAssists || '-'}</td>`;
+                        rowsHTML += `<td class="p-2 border-r border-b border-slate-700/50 text-center bg-green-900/5">${pSeason.totalGoals ? `<span class="stats-chip stats-chip-goal">${pSeason.totalGoals}</span>` : '<span class="text-slate-700">-</span>'}</td>`;
+                        rowsHTML += `<td class="p-2 border-r border-b ${isExp ? 'border-slate-700/50' : 'border-slate-500 border-r-2'} text-center bg-blue-900/5">${pSeason.totalAssists ? `<span class="stats-chip stats-chip-assist">${pSeason.totalAssists}</span>` : '<span class="text-slate-700">-</span>'}</td>`;
                         
                         if (isExp) {
                             tours.forEach((t, i) => {
@@ -4517,14 +4574,14 @@ function closeTransferModal() {
                                 sums.seasons[season].tours[t].goals += tGoals;
                                 sums.seasons[season].tours[t].assists += tAssists;
                                 
-                                rowsHTML += `<td class="p-2 border-r border-b border-slate-700/50 text-center text-green-400/80 bg-green-900/5 hover:bg-green-900/30 transition-colors">${tGoals || '-'}</td>`;
-                                rowsHTML += `<td class="p-2 border-b border-r ${isLast ? 'border-slate-500 border-r-2' : 'border-slate-700/50'} text-center text-blue-400/80 bg-blue-900/5 hover:bg-blue-900/30 transition-colors">${tAssists || '-'}</td>`;
+                                rowsHTML += `<td class="p-2 border-r border-b border-slate-700/50 text-center bg-green-900/5 hover:bg-green-900/30 transition-colors">${tGoals ? `<span class="stats-chip stats-chip-goal" style="min-width:20px;font-size:10px;">${tGoals}</span>` : '<span class="text-slate-700">-</span>'}</td>`;
+                                rowsHTML += `<td class="p-2 border-b border-r ${isLast ? 'border-slate-500 border-r-2' : 'border-slate-700/50'} text-center bg-blue-900/5 hover:bg-blue-900/30 transition-colors">${tAssists ? `<span class="stats-chip stats-chip-assist" style="min-width:20px;font-size:10px;">${tAssists}</span>` : '<span class="text-slate-700">-</span>'}</td>`;
                             });
                         }
                     });
                     
-                    rowsHTML += `<td class="p-2 border-r border-b border-slate-700/50 text-center font-black text-green-500 bg-emerald-900/20">${p.overallGoals}</td>`;
-                    rowsHTML += `<td class="p-2 border-b border-slate-700/50 text-center font-black text-blue-500 bg-emerald-900/20">${p.overallAssists}</td>`;
+                    rowsHTML += `<td class="p-2 border-r border-b border-slate-700/50 text-center bg-emerald-900/10"><span class="stats-chip stats-chip-goal-total">${p.overallGoals}</span></td>`;
+                    rowsHTML += `<td class="p-2 border-b border-slate-700/50 text-center bg-emerald-900/10"><span class="stats-chip stats-chip-assist-total">${p.overallAssists}</span></td>`;
                     rowsHTML += `</tr>`;
                 });
             }
@@ -4534,7 +4591,7 @@ function closeTransferModal() {
                 <tr class="bg-slate-950 font-black shadow-[0_-4px_6px_rgba(0,0,0,0.3)]">
                     <td class="p-3 border-r border-slate-700 sticky left-0 z-[20] bg-slate-950" style="left: 0px; width: ${wNo}px;"></td>
                     <td class="p-3 border-r border-slate-700 sticky bg-slate-950 z-[20]" style="left: ${lPos}px; width: ${wPos}px;"></td>
-                    <td class="p-3 border-r border-slate-700 sticky bg-slate-950 text-right text-emerald-500 tracking-widest uppercase z-[20]" style="left: ${lName}px; width: ${wName}px;">TOPLAM</td>
+                    <td class="p-3 border-r border-slate-700 sticky bg-slate-950 text-right text-emerald-400 tracking-widest uppercase z-[20] font-black" style="left: ${lName}px; width: ${wName}px;"><i class="fa-solid fa-trophy text-yellow-500 mr-2"></i>TOPLAM</td>
                     ${isKulup ? `<td class="p-3 border-r border-slate-700 sticky bg-slate-950 z-[20]" style="left: ${lCountry}px; width: ${wCountry}px;"></td>` : ''}
             `;
 
@@ -5283,9 +5340,9 @@ function closeTransferModal() {
             document.getElementById('mr-home-score').value = match.homeScore !== '' ? match.homeScore : '';
             document.getElementById('mr-away-score').value = match.awayScore !== '' ? match.awayScore : '';
             
-            // YENİ EKLENEN KOD: Modal açılırken datalist'i güncel kadroyla doldurur
+            // Modal açılırken datalist'i, maçın Kulüp mü Milli Takım mı olduğuna göre filtrelenmiş kadroyla doldurur
             const datalist = document.getElementById('squad-players-list');
-            if(datalist) datalist.innerHTML = getSquadDatalistOptions();
+            if(datalist) datalist.innerHTML = getSquadDatalistOptions(getFixtureMatchContext(match));
             
             fixtureEventsTemp = match.events ? JSON.parse(JSON.stringify(match.events)) : [];
             renderFixtureEvents();
