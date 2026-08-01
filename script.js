@@ -378,6 +378,7 @@ function escapeHtml(str) {
         let activeFixtureSeason = null;
         let activeFixtureMatchId = null;
         let fixtureFilter = { tournament: '' };
+        let expandedFixtureMatchIds = new Set(); // Inline açılan (expand edilen) maç satırlarının ID'lerini tutar
 
         
         
@@ -4424,7 +4425,7 @@ function closeTransferModal() {
                 seasonsData[season] = Array.from(tournaments).sort();
             });
 
-            let allSquadPlayers = [...squadData.astakim, ...squadData.akademi];
+            let allSquadPlayers = context === 'milli' ? (squadData.milli || []) : [...squadData.astakim, ...squadData.akademi];
             let stats = Object.values(playersMap).map(p => {
                 let squadP = allSquadPlayers.find(sp => sp.name.toLowerCase() === p.name.toLowerCase());
                 if (squadP) {
@@ -4717,6 +4718,29 @@ function closeTransferModal() {
             return foundLogo || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff`;
         }
 
+        function toggleFixtureRowExpand(matchId) {
+            if (expandedFixtureMatchIds.has(matchId)) expandedFixtureMatchIds.delete(matchId);
+            else expandedFixtureMatchIds.add(matchId);
+            renderFixturePanel();
+        }
+
+        // Fikstür/gol detaylarında oyuncu fotoğrafını bulmak için: kulüp veya milli, hangi kadroda kayıtlıysa oradan çeker
+        function getPlayerPhotoByName(name) {
+            if (!name) return null;
+            const all = [...(squadData.astakim || []), ...(squadData.akademi || []), ...(squadData.milli || [])];
+            const p = all.find(pl => (pl.name || '').toLowerCase() === name.trim().toLowerCase());
+            return p ? p.photoUrl : null;
+        }
+
+        // "Victor Osimhen" -> "V. OSIMHEN"
+function formatShortPlayerName(name) {
+    if (!name) return '';
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 1) return parts[0].toUpperCase();
+    const last = parts[parts.length - 1];
+    return `${parts[0].charAt(0).toUpperCase()}. ${last.toUpperCase()}`;
+}
+
         // Turnuva ismine göre satır arka plan rengini belirleyen fonksiyon
         function getTournamentBgClass(tournamentName) {
             if (!tournamentName) return 'hover:bg-slate-800/80'; 
@@ -4928,11 +4952,20 @@ function closeTransferModal() {
                     const homeLogo = getTeamLogoByName(m.home);
                     const awayLogo = getTeamLogoByName(m.away);
                     const tournamentBg = getTournamentBgClass(m.tournament);
+                    const isExpanded = expandedFixtureMatchIds.has(m.id);
 
                     matchRowsHtml += `
-                        <tr class="fixture-compact-row ${tournamentBg} transition-colors group cursor-pointer border-b border-slate-700/40 ${rowResultClass}" onclick="openFixtureModal('${activeFixtureSeason}', '${m.id}')">
-                            <td class="p-1 text-emerald-500 text-xs font-black text-center w-8">${m.matchNo || '-'}</td>
-                            <td class="p-1 text-slate-300 text-[10px] font-bold w-24 truncate" title="${m.tournament || ''}">${m.tournament || '-'}</td>
+                        <tr class="fixture-compact-row ${tournamentBg} transition-colors group cursor-pointer border-b border-slate-700/40 ${rowResultClass} ${isExpanded ? 'bg-slate-800/40' : ''}" onclick="toggleFixtureRowExpand('${m.id}')">
+                            <td class="p-1 text-center w-8">
+                                <div class="flex items-center justify-center gap-1">
+                                    <i class="fa-solid ${isExpanded ? 'fa-chevron-down' : 'fa-chevron-right'} text-[8px] text-slate-500 group-hover:text-emerald-400 transition-transform"></i>
+                                    <span class="text-emerald-500 text-xs font-black">${m.matchNo || '-'}</span>
+                                </div>
+                            </td>
+                            <td class="p-1 text-slate-300 text-[10px] font-bold w-24 truncate" title="${m.tournament || ''}">
+                                ${m.tournament || '-'}
+                                <button onclick="event.stopPropagation(); openFixtureModal('${activeFixtureSeason}', '${m.id}')" class="ml-1 opacity-0 group-hover:opacity-100 text-slate-500 hover:text-blue-400 transition-opacity" title="Fikstürü Düzenle"><i class="fa-solid fa-pen text-[9px]"></i></button>
+                            </td>
                             <td class="p-1 w-10 text-center">${getGroundLabel(m.ground)}</td>
                             <td class="p-1 text-right" title="${m.home || ''}">
                                 <div class="flex justify-end items-center h-full">
@@ -4953,6 +4986,50 @@ function closeTransferModal() {
                                 <div class="goal-events-cell">${scorersList}</div>
                             </td>
                         </tr>`;
+
+                    if (isExpanded) {
+                        let eventsListHtml = '';
+                        if (m.events && m.events.length > 0) {
+                            const isHomeUs = isOurTeam(m.home);
+                            const ourLogo = isHomeUs ? homeLogo : awayLogo;
+                            const oppLogo = isHomeUs ? awayLogo : homeLogo;
+
+                            eventsListHtml = m.events.map(ev => {
+                                // Golün ait olduğu takımın logosu: Bizim golümüzse bizim logo, rakip golüyse (kendi kalesine dahil) rakip logosu
+                                const eventTeamLogo = ev.type === 'US' ? ourLogo : oppLogo;
+                                const scorerPhoto = getPlayerPhotoByName(ev.scorer);
+                                const scorerImg = scorerPhoto
+                                    ? `<img src="${scorerPhoto}" class="w-8 h-8 rounded-full object-cover border border-slate-700 shrink-0">`
+                                    : `<div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-[10px] font-bold shrink-0">${escapeHtml((ev.scorer || '?').charAt(0))}</div>`;
+
+                                return `
+                                    <div class="flex items-center gap-3 bg-slate-900/60 border border-slate-700/50 rounded-lg px-3 py-2">
+                                        ${eventTeamLogo ? `<img src="${eventTeamLogo}" class="w-6 h-6 object-contain shrink-0">` : '<div class="w-6 h-6 shrink-0"></div>'}
+                                        <span class="text-[10px] font-black text-slate-400 w-8 text-center shrink-0">${ev.min ? ev.min + "'" : '-'}</span>
+                                        ${scorerImg}
+                                        <div class="flex-1 min-w-0">
+                                            <div class="text-xs font-black text-white truncate">${formatShortPlayerName(ev.scorer) || 'BİLİNMİYOR'}</div>
+                                            ${ev.assist ? `<div class="text-[10px] font-bold text-blue-400 truncate">${formatShortPlayerName(ev.assist)}</div>` : ''}
+                                        </div>
+                                    </div>`;
+                            }).join('');
+                        } else {
+                            eventsListHtml = `<div class="text-center text-slate-500 text-xs py-3 col-span-2"><i class="fa-solid fa-circle-info mr-1"></i>Bu maç için henüz gol/asist detayı girilmedi.</div>`;
+                        }
+
+                        matchRowsHtml += `
+                            <tr class="bg-slate-950/60 fade-in">
+                                <td colspan="7" class="p-3 border-b border-slate-700/60">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"><i class="fa-solid fa-futbol mr-1 text-emerald-500"></i>Gol & Asist Detayları</span>
+                                        <button onclick="event.stopPropagation(); openMatchResultModal('${activeFixtureSeason}', '${m.id}')" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-emerald-400 px-2 py-1 rounded transition-colors"><i class="fa-solid fa-pen mr-1"></i>Düzenle</button>
+                                    </div>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                        ${eventsListHtml}
+                                    </div>
+                                </td>
+                            </tr>`;
+                    }
                 });
             }
 
