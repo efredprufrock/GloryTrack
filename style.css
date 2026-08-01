@@ -43,6 +43,23 @@
         .ovr-t10 { background-color: #7f1d1d; color: #fff; } /* 50-54  Dark Red */
         .ovr-t11 { background-color: #7e22ce; color: #fff; } /* 00-49  Purple */
         
+        .age-badge {
+            display: inline-flex; align-items: center; justify-content: center;
+            min-width: 20px; height: 15px; padding: 0 4px; font-size: 9px; font-weight: 700;
+            border-radius: 3px; font-style: italic;
+            background: transparent; border: 1px solid currentColor;
+            box-shadow: none;
+        }
+        .age-t1 { color: #60a5fa; } /* 13-15 Dark Blue */
+        .age-t2 { color: #93c5fd; } /* 16-18 Blue */
+        .age-t3 { color: #4ade80; } /* 19-21 Dark Green */
+        .age-t4 { color: #86efac; } /* 22-24 Green */
+        .age-t5 { color: #d9f99d; } /* 25-26 Greenish Yellow */
+        .age-t6 { color: #fde047; } /* 27-29 Yellow */
+        .age-t7 { color: #fdba74; } /* 30-32 Orange */
+        .age-t8 { color: #fca5a5; } /* 33-35 Red */
+        .age-t9 { color: #d8b4fe; } /* 36-50 Purple */
+
         .pos-GK { color: #eab308; }
         .pos-DEF, .pos-CB, .pos-LB, .pos-RB { color: #60a5fa; }
         .pos-MID, .pos-DM, .pos-CM, .pos-LM, .pos-RM, .pos-AM { color: #4ade80; }

@@ -2875,9 +2875,9 @@ function handleFileUpload(event, type) {
             let squadSeasons = [...seasonsList].reverse();
             
             // Kulüp bağlamında (astakim/akademi) 'kulup' istatistiklerini, Milli'de 'milli' istatistiklerini kullan
-const statsCtx = squadContext === 'milli' ? 'milli' : 'kulup';
-const goalAssistMap = {};
-getStatsData(statsCtx).stats.forEach(s => { goalAssistMap[s.name.toLowerCase()] = s; });
+            const statsCtx = squadContext === 'milli' ? 'milli' : 'kulup';
+            const goalAssistMap = {};
+                getStatsData(statsCtx).stats.forEach(s => { goalAssistMap[s.name.toLowerCase()] = s; });
 
             // İstediğiniz kesin sıraya ve gruplara göre mevki tanımları
             const groups = [
@@ -2923,14 +2923,14 @@ getStatsData(statsCtx).stats.forEach(s => { goalAssistMap[s.name.toLowerCase()] 
             ];
             
             if (squadContext === 'akademi') {
-    staticCols.push({ id: 'pot', label: 'POT', w: 45, align: 'center' });
-} else if (squadContext === 'milli') {
-    staticCols.push({ id: 'teamName', label: 'Kulüp', w: 55, align: 'center' });
-    staticCols.push({ id: 'caps', label: 'Forma', w: 45, align: 'center' });
-}
-// ↓↓↓ these two lines must be OUTSIDE/AFTER the if/else, unindented from it
-staticCols.push({ id: 'totalGoals', label: 'Gol', w: 40, align: 'center' });
-staticCols.push({ id: 'totalAssists', label: 'Asist', w: 40, align: 'center' });
+                staticCols.push({ id: 'pot', label: 'POT', w: 45, align: 'center' });
+            } else if (squadContext === 'milli') {
+                staticCols.push({ id: 'teamName', label: 'Kulüp', w: 55, align: 'center' });
+                staticCols.push({ id: 'caps', label: 'Forma', w: 45, align: 'center' });
+            }
+            // ↓↓↓ these two lines must be OUTSIDE/AFTER the if/else, unindented from it
+                staticCols.push({ id: 'totalGoals', label: 'Gol', w: 40, align: 'center' });
+                staticCols.push({ id: 'totalAssists', label: 'Asist', w: 40, align: 'center' });
             
             let accW = 0;
             staticCols.forEach(c => { c.left = accW; accW += c.w; });
@@ -2952,6 +2952,21 @@ staticCols.push({ id: 'totalAssists', label: 'Asist', w: 40, align: 'center' });
                 else if (n >= 55) colorClass = 'ovr-t9';
                 else if (n >= 50) colorClass = 'ovr-t10';
                 return `<span class="ovr-badge ${colorClass}">${ovr}</span>`;
+            };
+
+            const renderAgeBadge = (age) => {
+                if(!age) return '';
+                const n = parseInt(age);
+                let colorClass = 'age-t9'; // fallback (36-50)
+                if (n <= 15) colorClass = 'age-t1';
+                else if (n <= 18) colorClass = 'age-t2';
+                else if (n <= 21) colorClass = 'age-t3';
+                else if (n <= 24) colorClass = 'age-t4';
+                else if (n <= 26) colorClass = 'age-t5';
+                else if (n <= 29) colorClass = 'age-t6';
+                else if (n <= 32) colorClass = 'age-t7';
+                else if (n <= 35) colorClass = 'age-t8';
+                return `<span class="age-badge ${colorClass}">${age}</span>`;
             };
 
             const getTrBadge = (type, text) => {
@@ -2994,10 +3009,10 @@ staticCols.push({ id: 'totalAssists', label: 'Asist', w: 40, align: 'center' });
             `;
             
             staticCols.forEach(c => {
-                let borderRight = (c.id === 'joinOvr' && squadContext !== 'akademi' && squadContext !== 'milli') || c.id === 'pot' || c.id === 'caps' ? 'border-r-2 border-slate-500' : 'border-r border-slate-700';
+                let borderRight = c.id === 'totalAssists' ? 'border-r-2 border-slate-500' : 'border-r border-slate-700';
                 html += `<th rowspan="2" class="p-1 ${borderRight} border-b border-slate-700 sticky bg-slate-950 z-[70] text-[10px] font-bold text-slate-400 cursor-pointer hover:text-white transition-colors" onclick="sortSquad('${c.id}')" style="left: ${c.left}px; width: ${c.w}px; min-width: ${c.w}px; max-width: ${c.w}px;">
                             ${c.label} <i class="fa-solid fa-sort ml-0.5 opacity-50"></i>
-                         </th>`;
+                        </th>`;
             });
 
             html += `<th rowspan="2" class="p-1 border-r-2 border-b border-slate-500 sticky bg-slate-950 z-[70] text-center shadow-[2px_0_5px_rgba(0,0,0,0.3)]" style="left: ${btnLeft}px; width: ${btnW}px; min-width: ${btnW}px;">
@@ -3099,7 +3114,7 @@ p.totalAssists = gs ? gs.overallAssists : 0;
                                 if(c.id === 'pos') content = `<span class="pos-${p.pos} font-black text-[10px]">${p.pos}</span>`;
                                 else if(c.id === 'name') content = `<div class="flex items-center justify-start w-full overflow-hidden hover:text-emerald-400 cursor-pointer" onclick="openPlayerInfoModal('${p.id}')" title="Düzenle">${photoHtml}<span class="truncate text-xs font-bold">${safeName}</span></div>`;
                                 else if(c.id === 'countryCode') content = flagHtml;
-                                else if(c.id === 'joinAge') content = `<span class="text-[10px] font-mono text-slate-300">${p.currentAge || ''}</span>`;
+                                else if(c.id === 'joinAge') content = `<div class="flex items-center justify-center w-full h-full">${renderAgeBadge(p.currentAge)}</div>`;
                                 else if(c.id === 'joinOvr') {
                                     // OVR sütunu artık sadece rozeti gösteriyor
                                     content = `<div class="flex items-center justify-center w-full h-full">${renderOvrBadge(p.currentOvr)}</div>`;
@@ -3120,10 +3135,10 @@ p.totalAssists = gs ? gs.overallAssists : 0;
                                 else if(c.id === 'pot') content = `<span class="text-[10px] font-bold text-emerald-300">${p.pot || '-'}</span>`;
                                 else if(c.id === 'teamName') content = p.teamLogo ? `<img src="${p.teamLogo}" title="${escapeHtml(p.teamName||'')}" class="w-7 h-7 object-contain mx-auto rounded bg-slate-200/10 p-0.5">` : `<span class="text-[9px] text-slate-500">-</span>`;
                                 else if(c.id === 'caps') content = `<span class="text-[10px] font-bold text-blue-300">${p.caps || 0}</span>`;
-else if(c.id === 'totalGoals') content = `<span class="text-[10px] font-bold text-emerald-400">${p.totalGoals}</span>`;
-else if(c.id === 'totalAssists') content = `<span class="text-[10px] font-bold text-sky-400">${p.totalAssists}</span>`;
+                                else if(c.id === 'totalGoals') content = `<span class="text-[10px] font-bold text-emerald-400">${p.totalGoals}</span>`;
+                                else if(c.id === 'totalAssists') content = `<span class="text-[10px] font-bold text-sky-400">${p.totalAssists}</span>`;
                                 
-                                let extraClasses = (c.id === 'joinOvr' && squadContext !== 'akademi' && squadContext !== 'milli') || c.id === 'pot' || c.id === 'caps' ? 'border-r-2 border-slate-500 shadow-[2px_0_5px_rgba(0,0,0,0.4)]' : 'border-r border-slate-700/50';
+                                let extraClasses = c.id === 'totalAssists' ? 'border-r-2 border-slate-500 shadow-[2px_0_5px_rgba(0,0,0,0.4)]' : 'border-r border-slate-700/50';
 
                                 resultHtml += `<td class="p-1 ${extraClasses} border-b border-slate-700/50 sticky z-[50] ${rowBgClass} transition-colors text-${c.align} ${c.pl || ''}" style="left: ${c.left}px; width: ${c.w}px; min-width: ${c.w}px; max-width: ${c.w}px;">
                                             ${content}
