@@ -888,6 +888,33 @@
         </div>
     </div>
     
+    <!-- Modal: Müsabaka Tablosu Toplu Ekleme -->
+    <div id="tournament-table-bulk-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[100] fade-in backdrop-blur-sm">
+        <div class="bg-slate-800 p-6 rounded-xl border border-slate-600 w-[95%] max-w-2xl shadow-2xl relative">
+            <button onclick="closeTournamentTableBulkModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+
+            <h3 class="text-xl font-bold mb-2 text-white" id="tt-bulk-title">Lig Tablosunu Toplu Ekle</h3>
+            <p class="text-sm text-slate-400 mb-4">
+                Her satıra bir takım gelecek şekilde, aşağıdaki sıraya göre virgülle ayırarak yapıştırın:<br>
+                <span class="text-emerald-400 font-mono text-xs bg-slate-900 px-2 py-1 rounded inline-block mt-2">Sıra, Takım Adı, Puan, Oynanan, Galibiyet, Beraberlik, Mağlubiyet, Atılan, Yenilen, Averaj</span>
+                <br><span class="text-[11px] text-slate-500 mt-1 block">Bu liste, tablodaki mevcut tüm satırların yerine geçer.</span>
+            </p>
+
+            <div class="mb-4">
+                <textarea id="tt-bulk-input" rows="10" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-3 text-white font-mono text-sm placeholder-slate-600 focus:outline-none focus:border-emerald-500 hide-scrollbar" placeholder="Örnek:&#10;1, Galatasaray, 90, 34, 28, 6, 0, 85, 55, 30&#10;2, Fenerbahçe, 82, 34, 25, 7, 2, 78, 40, 38"></textarea>
+            </div>
+
+            <div class="flex justify-end gap-3">
+                <button onclick="closeTournamentTableBulkModal()" class="px-5 py-2.5 rounded-lg bg-slate-700 text-white font-medium hover:bg-slate-600 transition-colors">İptal</button>
+                <button onclick="processTournamentTableBulkInput()" class="px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition-colors">
+                    <i class="fa-solid fa-list-ol mr-2"></i>Listeyi Ekle
+                </button>
+            </div>
+        </div>
+    </div>
+    
     <!-- Custom Autocomplete Dropdown Container (Global) -->
     <div id="custom-autocomplete-dropdown" class="absolute z-[300] bg-slate-800 border border-slate-600 rounded-lg shadow-xl w-48 max-h-48 overflow-y-auto hidden flex-col py-1 text-sm text-white hide-scrollbar"></div>
 

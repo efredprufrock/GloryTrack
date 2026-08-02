@@ -1008,7 +1008,7 @@ function handleSyncClick() {
             'opponent-editor-modal', 'group-editor-modal', 'player-info-modal',
             'player-cell-modal', 'match-editor-modal', 'season-stats-modal',
             'league-team-modal', 'league-team-bulk-modal', 'league-cell-modal', 'transfer-editor-modal', 'fixture-match-modal', 'match-result-modal',
-            'fixture-bulk-modal', 'squad-bulk-modal'
+            'fixture-bulk-modal', 'squad-bulk-modal', 'tournament-table-bulk-modal'
         ];
         const MODAL_CLOSE_FNS = {
             'trophy-modal': () => closeTrophyModal(),
@@ -1027,7 +1027,8 @@ function handleSyncClick() {
             'fixture-match-modal': () => closeFixtureModal(),
             'match-result-modal': () => closeMatchResultModal(),
             'fixture-bulk-modal': () => closeFixtureBulkModal(),
-            'squad-bulk-modal': () => closeSquadBulkModal()
+            'squad-bulk-modal': () => closeSquadBulkModal(),
+            'tournament-table-bulk-modal': () => closeTournamentTableBulkModal()
         };
 
         document.addEventListener('keydown', function(e) {
@@ -4689,6 +4690,31 @@ function closeTransferModal() {
                  : '<span class="text-[10px] font-bold text-slate-400 bg-slate-700 px-1.5 py-0.5 rounded">TAR</span>';
         }
 
+        // YENİ: Turnuva isimlerini kısaltmalara çeviren motor (filtre butonlarında yer kazanmak için)
+        const TOURNAMENT_ABBR = {
+            'Tümü': 'T',
+            'Süper Lig': 'SL',
+            'Türkiye Kupası': 'TK',
+            'Türkiye Süper Kupası': 'TSK',
+            'Şampiyonlar Ligi': 'ŞL',
+            'Avrupa Ligi': 'AL',
+            'Konferans Ligi': 'KL',
+            'UEFA Süper Kupa': 'USK',
+            'Pre-Season Friendly': 'PF',
+            'Sezon Öncesi Hazırlık': 'SÖH',
+            'Dünya Kupası': 'DK',
+            'Avrupa Şampiyonası': 'AŞ',
+            'Dostluk Maçı': 'DM'
+        };
+
+        function getTournamentAbbr(name) {
+            if (!name) return '-';
+            if (TOURNAMENT_ABBR[name]) return TOURNAMENT_ABBR[name];
+            // Bilinmeyen/özel turnuva isimleri için: her kelimenin baş harfini al (örn. "Yaz Kupası" -> "YK")
+            const initials = name.trim().split(/\s+/).map(w => w.charAt(0).toUpperCase()).join('');
+            return initials.slice(0, 4) || name.slice(0, 3).toUpperCase();
+        }
+
 // Takım isminden logosunu bulan yardımcı motor
         function getTeamLogoByName(name) {
             if (!name || name === '-') return '';
@@ -4719,9 +4745,22 @@ function closeTransferModal() {
         }
 
         function toggleFixtureRowExpand(matchId) {
-            if (expandedFixtureMatchIds.has(matchId)) expandedFixtureMatchIds.delete(matchId);
-            else expandedFixtureMatchIds.add(matchId);
-            renderFixturePanel();
+            const detailsRow = document.getElementById(`fx-details-${matchId}`);
+            const chevron = document.getElementById(`fx-chevron-${matchId}`);
+            const mainRow = document.getElementById(`fx-row-${matchId}`);
+            if (!detailsRow) return;
+
+            const nowHidden = detailsRow.classList.toggle('hidden');
+
+            if (nowHidden) {
+                expandedFixtureMatchIds.delete(matchId);
+                if (chevron) { chevron.classList.remove('fa-chevron-down'); chevron.classList.add('fa-chevron-right'); }
+                if (mainRow) mainRow.classList.remove('bg-slate-800/40');
+            } else {
+                expandedFixtureMatchIds.add(matchId);
+                if (chevron) { chevron.classList.remove('fa-chevron-right'); chevron.classList.add('fa-chevron-down'); }
+                if (mainRow) mainRow.classList.add('bg-slate-800/40');
+            }
         }
 
         // Fikstür/gol detaylarında oyuncu fotoğrafını bulmak için: kulüp veya milli, hangi kadroda kayıtlıysa oradan çeker
@@ -4773,6 +4812,8 @@ function formatShortPlayerName(name) {
             saveToLocalStorage(); // Sayfayı yenilemeden sessizce kaydeder (Kullanıcının imleç odağı bozulmaz)
         }
 
+        const KNOCKOUT_DEFAULT_TYPES = ['Şampiyonlar Ligi', 'Avrupa Ligi', 'Konferans Ligi', 'Dünya Kupası', 'Avrupa Şampiyonası', 'Türkiye Kupası'];
+
         function addCustomTournament() {
             const type = document.getElementById('custom-tour-select').value;
             if(!customTournamentsData[activeFixtureSeason]) customTournamentsData[activeFixtureSeason] = [];
@@ -4780,12 +4821,47 @@ function formatShortPlayerName(name) {
             customTournamentsData[activeFixtureSeason].push({
                 id: 'ct_' + Date.now(),
                 type: type,
+                tableEnabled: true,
+                knockoutEnabled: KNOCKOUT_DEFAULT_TYPES.includes(type),
                 table: [
                     { rank: '1', name: 'Takım Adı', pld: '0', gd: '0', pts: '0' },
                     { rank: '2', name: 'Takım Adı', pld: '0', gd: '0', pts: '0' }
                 ],
                 knockouts: [] // Sabit alanlar yerine dinamik diziye geçildi
             });
+            saveToLocalStorage();
+            renderFixturePanel();
+        }
+
+        function toggleTournamentTable(tourId, enable) {
+            const tour = customTournamentsData[activeFixtureSeason].find(t => t.id === tourId);
+            if (!tour) return;
+            if (enable) {
+                tour.tableEnabled = true;
+                if (!tour.table || tour.table.length === 0) {
+                    tour.table = [
+                        { rank: '1', name: 'Takım Adı', pld: '0', gd: '0', pts: '0' },
+                        { rank: '2', name: 'Takım Adı', pld: '0', gd: '0', pts: '0' }
+                    ];
+                }
+            } else {
+                if (!confirm('Grup / Lig tablosu bölümünü silmek istediğinize emin misiniz?')) return;
+                tour.tableEnabled = false;
+            }
+            saveToLocalStorage();
+            renderFixturePanel();
+        }
+
+        function toggleTournamentKnockouts(tourId, enable) {
+            const tour = customTournamentsData[activeFixtureSeason].find(t => t.id === tourId);
+            if (!tour) return;
+            if (enable) {
+                tour.knockoutEnabled = true;
+                if (!tour.knockouts) tour.knockouts = [];
+            } else {
+                if (!confirm('Eleme Aşamaları bölümünü silmek istediğinize emin misiniz?')) return;
+                tour.knockoutEnabled = false;
+            }
             saveToLocalStorage();
             renderFixturePanel();
         }
@@ -4804,6 +4880,64 @@ function formatShortPlayerName(name) {
                 tour.table.push({ rank: (tour.table.length+1).toString(), name: 'Yeni Takım', pld: '0', gd: '0', pts: '0' });
                 saveToLocalStorage();
                 renderFixturePanel();
+            }
+        }
+
+        let activeBulkTournamentId = null;
+
+        function openTournamentTableBulkModal(tourId) {
+            activeBulkTournamentId = tourId;
+            const tour = customTournamentsData[activeFixtureSeason].find(t => t.id === tourId);
+            document.getElementById('tt-bulk-title').innerText = `${tour ? tour.type : ''} - Toplu Ekle`;
+            document.getElementById('tt-bulk-input').value = '';
+
+            const modal = document.getElementById('tournament-table-bulk-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeTournamentTableBulkModal() {
+            const modal = document.getElementById('tournament-table-bulk-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function processTournamentTableBulkInput() {
+            const text = document.getElementById('tt-bulk-input').value;
+            if (!text.trim()) { alert('Lütfen eklenecek takım listesini girin!'); return; }
+
+            const tour = customTournamentsData[activeFixtureSeason].find(t => t.id === activeBulkTournamentId);
+            if (!tour) { alert('Tablo bulunamadı!'); return; }
+
+            const lines = text.split('\n');
+            const newRows = [];
+
+            lines.forEach(line => {
+                if (!line.trim()) return;
+                const parts = line.split(',').map(s => s.trim());
+                if (parts.length >= 10) {
+                    newRows.push({
+                        rank: parts[0],
+                        name: parts[1],
+                        pts: parts[2],
+                        pld: parts[3],
+                        w: parts[4],
+                        d: parts[5],
+                        l: parts[6],
+                        gf: parts[7],
+                        ga: parts[8],
+                        gd: parts[9]
+                    });
+                }
+            });
+
+            if (newRows.length > 0) {
+                tour.table = newRows; // Toplu ekleme mevcut tabloyu tamamen yeni listeyle değiştirir
+                saveToLocalStorage();
+                closeTournamentTableBulkModal();
+                renderFixturePanel();
+            } else {
+                alert('Geçerli formatta takım bulunamadı. Lütfen "Sıra, Takım Adı, Puan, Oynanan, Galibiyet, Beraberlik, Mağlubiyet, Atılan, Yenilen, Averaj" formatına uyduğunuzdan emin olun.');
             }
         }
 
@@ -4885,18 +5019,18 @@ function formatShortPlayerName(name) {
             `).join('');
 
             const filterHtml = `
-                <button onclick="setFixtureFilter('')"
+                <button onclick="setFixtureFilter('')" title="Tümü"
                     class="px-3 py-1 rounded-full text-xs font-bold border transition-all whitespace-nowrap
                            ${!filterTour ? 'bg-slate-500 text-white border-slate-400' : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white'}">
-                    Tümü (${matches.length})
+                    ${getTournamentAbbr('Tümü')} (${matches.length})
                 </button>
                 ${[...new Set(matches.map(m => m.tournament).filter(Boolean))].map(t => {
                     const cnt = matches.filter(m => m.tournament === t).length;
                     const safeTour = t.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-                    return `<button onclick="setFixtureFilter('${safeTour}')"
+                    return `<button onclick="setFixtureFilter('${safeTour}')" title="${t}"
                         class="px-3 py-1 rounded-full text-xs font-bold border transition-all whitespace-nowrap
                                ${filterTour === t ? 'bg-emerald-700 text-white border-emerald-500' : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white'}">
-                        ${t} (${cnt})
+                        ${getTournamentAbbr(t)} (${cnt})
                     </button>`;
                 }).join('')}
             `;
@@ -4938,14 +5072,20 @@ function formatShortPlayerName(name) {
                                          'bg-slate-900 border-slate-700 text-slate-400';
 
                     let scorersList = '';
+                    let scorersPlain = '';
                     if (m.events && m.events.length > 0) {
-                        const ourGoals = m.events.filter(ev => ev.type === 'US');
-                        if (ourGoals.length) {
-                            scorersList = ourGoals.map(ev => {
-                                const min = ev.min ? `${ev.min}'` : '';
-                                const ast = ev.assist ? ` <span class="assist-text font-bold">(${ev.assist})</span>` : '';
-                                return `<span class="goal-text text-[10px] font-black">⚽ ${min} ${ev.scorer}${ast}</span>`;
-                            }).join(' <span class="text-slate-500 font-bold mx-1">|</span> ');
+                        const namedGoals = m.events.filter(ev => ev.scorer);
+                        if (namedGoals.length) {
+                            scorersPlain = namedGoals.map(ev => formatShortPlayerName(ev.scorer)).join(', ');
+                            scorersList = namedGoals.map(ev => {
+                                const isUs = ev.type === 'US';
+                                // Bize aitse yeşil top ikonu, rakibe aitse kırmızı top ikonu
+                                const icon = isUs
+                                    ? '<i class="fa-solid fa-futbol text-emerald-500 text-[8px] mr-0.5"></i>'
+                                    : '<i class="fa-solid fa-futbol text-red-500 text-[8px] mr-0.5"></i>';
+                                const colorClass = isUs ? 'goal-text' : 'text-red-400';
+                                return `<span class="${colorClass} text-[10px] font-bold whitespace-nowrap">${icon}${escapeHtml(formatShortPlayerName(ev.scorer))}</span>`;
+                            }).join('<span class="text-slate-600 mx-1">·</span>');
                         }
                     }
 
@@ -4954,11 +5094,42 @@ function formatShortPlayerName(name) {
                     const tournamentBg = getTournamentBgClass(m.tournament);
                     const isExpanded = expandedFixtureMatchIds.has(m.id);
 
+                    // Detay içeriği artık her satır için önceden üretiliyor (expanded olsun olmasın)
+                    let eventsListHtml = '';
+                    if (m.events && m.events.length > 0) {
+                        const isHomeUs = isOurTeam(m.home);
+                        const ourLogo = isHomeUs ? homeLogo : awayLogo;
+                        const oppLogo = isHomeUs ? awayLogo : homeLogo;
+
+                        eventsListHtml = m.events.map(ev => {
+                            const eventTeamLogo = ev.type === 'US' ? ourLogo : oppLogo;
+                            const scorerPhoto = getPlayerPhotoByName(ev.scorer);
+                            const scorerImg = scorerPhoto
+                                    ? `<img src="${scorerPhoto}" class="w-6 h-6 rounded-full object-cover border border-slate-700 shrink-0">`
+                                    : `<div class="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-[9px] font-bold shrink-0">${escapeHtml((ev.scorer || '?').charAt(0))}</div>`;
+
+                            return `
+                                <div class="flex items-center gap-1.5 bg-slate-900/60 border border-slate-700/50 rounded-lg px-1.5 py-1 min-w-0">
+                                    <div class="relative shrink-0 w-5 h-5">
+                                        ${eventTeamLogo ? `<img src="${eventTeamLogo}" class="w-5 h-5 object-contain">` : '<div class="w-5 h-5"></div>'}
+                                        <span class="absolute -bottom-1 -right-1.5 text-[7px] font-black text-white bg-slate-950 border border-slate-700 rounded px-[3px] leading-tight">${ev.min ? ev.min + "'" : '-'}</span>
+                                    </div>
+                                    ${scorerImg}
+                                    <div class="flex-1 min-w-0">
+                                        <div class="text-[10px] font-black text-white truncate leading-tight">${formatShortPlayerName(ev.scorer) || 'BİLİNMİYOR'}</div>
+                                        ${ev.assist ? `<div class="text-[8px] font-bold text-blue-400 truncate leading-tight">${formatShortPlayerName(ev.assist)}</div>` : ''}
+                                    </div>
+                                </div>`;
+                        }).join('');
+                    } else {
+                        eventsListHtml = `<div class="text-center text-slate-500 text-xs py-3 col-span-2"><i class="fa-solid fa-circle-info mr-1"></i>Bu maç için henüz gol/asist detayı girilmedi.</div>`;
+                    }
+
                     matchRowsHtml += `
-                        <tr class="fixture-compact-row ${tournamentBg} transition-colors group cursor-pointer border-b border-slate-700/40 ${rowResultClass} ${isExpanded ? 'bg-slate-800/40' : ''}" onclick="toggleFixtureRowExpand('${m.id}')">
+                        <tr id="fx-row-${m.id}" class="fixture-compact-row ${tournamentBg} transition-colors group cursor-pointer border-b border-slate-700/40 ${rowResultClass} ${isExpanded ? 'bg-slate-800/40' : ''}" onclick="toggleFixtureRowExpand('${m.id}')">
                             <td class="p-1 text-center w-8">
                                 <div class="flex items-center justify-center gap-1">
-                                    <i class="fa-solid ${isExpanded ? 'fa-chevron-down' : 'fa-chevron-right'} text-[8px] text-slate-500 group-hover:text-emerald-400 transition-transform"></i>
+                                    <i id="fx-chevron-${m.id}" class="fa-solid ${isExpanded ? 'fa-chevron-down' : 'fa-chevron-right'} text-[8px] text-slate-500 group-hover:text-emerald-400 transition-transform"></i>
                                     <span class="text-emerald-500 text-xs font-black">${m.matchNo || '-'}</span>
                                 </div>
                             </td>
@@ -4982,54 +5153,21 @@ function formatShortPlayerName(name) {
                                     ${awayLogo ? `<img src="${awayLogo}" alt="${m.away}" class="w-6 h-6 object-contain">` : '-'}
                                 </div>
                             </td>
-                            <td class="p-1 text-[9px] text-slate-400 min-w-[120px]" title="${scorersList.replace(/<[^>]*>?/gm, '')}">
-                                <div class="goal-events-cell">${scorersList}</div>
+                            <td class="p-1 text-left text-[9px] text-slate-400 min-w-[120px]" title="${scorersPlain}">
+                                <div class="goal-events-cell text-left">${scorersList}</div>
+                            </td>
+                        </tr>
+                        <tr id="fx-details-${m.id}" class="bg-slate-950/60 fade-in ${isExpanded ? '' : 'hidden'}">
+                            <td colspan="7" class="p-3 border-b border-slate-700/60">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"><i class="fa-solid fa-futbol mr-1 text-emerald-500"></i>Gol & Asist Detayları</span>
+                                    <button onclick="event.stopPropagation(); openMatchResultModal('${activeFixtureSeason}', '${m.id}')" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-emerald-400 px-2 py-1 rounded transition-colors"><i class="fa-solid fa-pen mr-1"></i>Düzenle</button>
+                                </div>
+                                <div class="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                                    ${eventsListHtml}
+                                </div>
                             </td>
                         </tr>`;
-
-                    if (isExpanded) {
-                        let eventsListHtml = '';
-                        if (m.events && m.events.length > 0) {
-                            const isHomeUs = isOurTeam(m.home);
-                            const ourLogo = isHomeUs ? homeLogo : awayLogo;
-                            const oppLogo = isHomeUs ? awayLogo : homeLogo;
-
-                            eventsListHtml = m.events.map(ev => {
-                                // Golün ait olduğu takımın logosu: Bizim golümüzse bizim logo, rakip golüyse (kendi kalesine dahil) rakip logosu
-                                const eventTeamLogo = ev.type === 'US' ? ourLogo : oppLogo;
-                                const scorerPhoto = getPlayerPhotoByName(ev.scorer);
-                                const scorerImg = scorerPhoto
-                                    ? `<img src="${scorerPhoto}" class="w-8 h-8 rounded-full object-cover border border-slate-700 shrink-0">`
-                                    : `<div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-[10px] font-bold shrink-0">${escapeHtml((ev.scorer || '?').charAt(0))}</div>`;
-
-                                return `
-                                    <div class="flex items-center gap-3 bg-slate-900/60 border border-slate-700/50 rounded-lg px-3 py-2">
-                                        ${eventTeamLogo ? `<img src="${eventTeamLogo}" class="w-6 h-6 object-contain shrink-0">` : '<div class="w-6 h-6 shrink-0"></div>'}
-                                        <span class="text-[10px] font-black text-slate-400 w-8 text-center shrink-0">${ev.min ? ev.min + "'" : '-'}</span>
-                                        ${scorerImg}
-                                        <div class="flex-1 min-w-0">
-                                            <div class="text-xs font-black text-white truncate">${formatShortPlayerName(ev.scorer) || 'BİLİNMİYOR'}</div>
-                                            ${ev.assist ? `<div class="text-[10px] font-bold text-blue-400 truncate">${formatShortPlayerName(ev.assist)}</div>` : ''}
-                                        </div>
-                                    </div>`;
-                            }).join('');
-                        } else {
-                            eventsListHtml = `<div class="text-center text-slate-500 text-xs py-3 col-span-2"><i class="fa-solid fa-circle-info mr-1"></i>Bu maç için henüz gol/asist detayı girilmedi.</div>`;
-                        }
-
-                        matchRowsHtml += `
-                            <tr class="bg-slate-950/60 fade-in">
-                                <td colspan="7" class="p-3 border-b border-slate-700/60">
-                                    <div class="flex justify-between items-center mb-2">
-                                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"><i class="fa-solid fa-futbol mr-1 text-emerald-500"></i>Gol & Asist Detayları</span>
-                                        <button onclick="event.stopPropagation(); openMatchResultModal('${activeFixtureSeason}', '${m.id}')" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-emerald-400 px-2 py-1 rounded transition-colors"><i class="fa-solid fa-pen mr-1"></i>Düzenle</button>
-                                    </div>
-                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                        ${eventsListHtml}
-                                    </div>
-                                </td>
-                            </tr>`;
-                    }
                 });
             }
 
@@ -5132,20 +5270,62 @@ function formatShortPlayerName(name) {
                                 if (cTours.length === 0) return `<div class="text-center text-slate-500 text-sm mt-10">Henüz bu sezon için müsabaka tablosu eklenmedi.<br>Yukarıdan seçip ekleyebilirsiniz.</div>`;
                                 
                                 return cTours.map(tour => {
-                                    const isKnockout = ['Şampiyonlar Ligi', 'Avrupa Ligi', 'Konferans Ligi', 'Dünya Kupası', 'Avrupa Şampiyonası', 'Türkiye Kupası'].includes(tour.type);
-                                    
-                                    let tableRows = tour.table.map((row, idx) => `
-                                        <tr class="border-b border-slate-800 bg-slate-800/20 hover:bg-slate-800/50 transition-colors">
-                                            <td class="p-1.5 text-slate-400 font-bold w-8 text-center outline-none focus:bg-slate-700 cursor-text rounded" contenteditable="true" onblur="updateCustomTournament('${tour.id}', ${idx}, 'rank', this)">${row.rank}</td>
-                                            <td class="p-1.5 font-bold text-white outline-none focus:bg-slate-700 cursor-text rounded" contenteditable="true" onblur="updateCustomTournament('${tour.id}', ${idx}, 'name', this)">${row.name}</td>
-                                            <td class="p-1.5 text-center text-slate-300 w-8 outline-none focus:bg-slate-700 cursor-text rounded" contenteditable="true" onblur="updateCustomTournament('${tour.id}', ${idx}, 'pld', this)">${row.pld}</td>
-                                            <td class="p-1.5 text-center text-slate-300 w-10 outline-none focus:bg-slate-700 cursor-text rounded" contenteditable="true" onblur="updateCustomTournament('${tour.id}', ${idx}, 'gd', this)">${row.gd}</td>
-                                            <td class="p-1.5 text-center font-bold text-emerald-400 w-10 outline-none focus:bg-slate-700 cursor-text rounded" contenteditable="true" onblur="updateCustomTournament('${tour.id}', ${idx}, 'pts', this)">${row.pts}</td>
-                                        </tr>
-                                    `).join('');
+                                    // Geriye dönük uyumluluk: eski kayıtlarda bu bayraklar yoksa, mevcut veriye göre makul bir varsayılan uygula
+                                    const tableOn = tour.tableEnabled !== false;
+                                    const knockoutOn = tour.knockoutEnabled !== undefined
+                                        ? tour.knockoutEnabled
+                                        : (KNOCKOUT_DEFAULT_TYPES.includes(tour.type) || (tour.knockouts && tour.knockouts.length > 0));
 
+                                    // --- GRUP / LİG TABLOSU BÖLÜMÜ ---
+                                    let tableSectionHtml = '';
+                                    if (tableOn) {
+                                        let tableRows = (tour.table || []).map((row, idx) => `
+                                            <tr class="border-b border-slate-800 bg-slate-800/20 hover:bg-slate-800/50 transition-colors">
+                                                <td class="p-1.5 text-slate-400 font-bold w-8 text-center outline-none focus:bg-slate-700 cursor-text rounded" contenteditable="true" onblur="updateCustomTournament('${tour.id}', ${idx}, 'rank', this)">${row.rank}</td>
+                                                <td class="p-1.5 font-bold text-white outline-none focus:bg-slate-700 cursor-text rounded" contenteditable="true" onblur="updateCustomTournament('${tour.id}', ${idx}, 'name', this)">${row.name}</td>
+                                                <td class="p-1.5 text-center text-slate-300 w-8 outline-none focus:bg-slate-700 cursor-text rounded" contenteditable="true" onblur="updateCustomTournament('${tour.id}', ${idx}, 'pld', this)">${row.pld}</td>
+                                                <td class="p-1.5 text-center text-slate-300 w-10 outline-none focus:bg-slate-700 cursor-text rounded" contenteditable="true" onblur="updateCustomTournament('${tour.id}', ${idx}, 'gd', this)">${row.gd}</td>
+                                                <td class="p-1.5 text-center font-bold text-emerald-400 w-10 outline-none focus:bg-slate-700 cursor-text rounded" contenteditable="true" onblur="updateCustomTournament('${tour.id}', ${idx}, 'pts', this)">${row.pts}</td>
+                                            </tr>
+                                        `).join('');
+
+                                        tableSectionHtml = `
+                                            <div class="mb-1">
+                                                <div class="flex justify-between items-center mb-1 gap-2">
+                                                    <span class="text-[10px] text-slate-400 font-bold uppercase truncate"><i class="fa-solid fa-table-list mr-1"></i>Grup / Lig Tablosu</span>
+                                                    <div class="flex gap-1 shrink-0">
+                                                        <button onclick="openTournamentTableBulkModal('${tour.id}')" class="text-[9px] bg-indigo-900/50 hover:bg-indigo-800 text-indigo-300 px-2 py-0.5 rounded transition-colors" title="Toplu Ekle"><i class="fa-solid fa-list-ol mr-1"></i>Toplu</button>
+                                                        <button onclick="addRowToCustomTournament('${tour.id}')" class="text-[9px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-0.5 rounded transition-colors" title="Satır Ekle"><i class="fa-solid fa-plus"></i></button>
+                                                        <button onclick="toggleTournamentTable('${tour.id}', false)" class="text-[9px] bg-red-900/40 hover:bg-red-800 text-red-300 px-2 py-0.5 rounded transition-colors" title="Bu Bölümü Sil"><i class="fa-solid fa-trash"></i></button>
+                                                    </div>
+                                                </div>
+                                                <table class="w-full text-[11px] text-left text-slate-300 mb-1">
+                                                    <thead class="text-[9px] text-slate-400 uppercase bg-slate-900">
+                                                        <tr>
+                                                            <th class="p-1 border-slate-700 text-center">Sıra</th>
+                                                            <th class="p-1 border-slate-700">Takım</th>
+                                                            <th class="p-1 border-slate-700 text-center">O</th>
+                                                            <th class="p-1 border-slate-700 text-center">Av</th>
+                                                            <th class="p-1 border-slate-700 text-center font-bold text-white">P</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        ${tableRows}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        `;
+                                    } else {
+                                        tableSectionHtml = `
+                                            <button onclick="toggleTournamentTable('${tour.id}', true)" class="w-full text-[10px] bg-slate-800/60 hover:bg-slate-800 text-slate-400 hover:text-emerald-400 border border-dashed border-slate-700 rounded py-2 mb-2 transition-colors">
+                                                <i class="fa-solid fa-plus mr-1"></i>Grup / Lig Tablosu Ekle
+                                            </button>
+                                        `;
+                                    }
+
+                                    // --- ELEME AŞAMALARI BÖLÜMÜ ---
                                     let knockoutHtml = '';
-                                    if(isKnockout) {
+                                    if (knockoutOn) {
                                         // Eski statik verileri yeni dinamik yapıya geçirme (Geriye dönük uyumluluk)
                                         if (!tour.knockouts) {
                                             tour.knockouts = [];
@@ -5174,38 +5354,33 @@ function formatShortPlayerName(name) {
 
                                         knockoutHtml = `
                                         <div class="bg-slate-950 rounded-lg border border-slate-700 p-2 text-xs mt-3 shadow-inner">
-                                            <div class="flex justify-between items-center mb-2 border-b border-slate-800 pb-1">
-                                                <span class="text-[10px] text-slate-400 font-bold uppercase"><i class="fa-solid fa-sitemap mr-1"></i>Eleme Aşamaları</span>
-                                                <button onclick="addKnockoutMatch('${tour.id}')" class="text-[9px] bg-slate-800 hover:bg-slate-700 text-emerald-400 px-2 py-0.5 rounded transition-colors"><i class="fa-solid fa-plus mr-1"></i>Tur Ekle</button>
+                                            <div class="flex justify-between items-center mb-2 border-b border-slate-800 pb-1 gap-2">
+                                                <span class="text-[10px] text-slate-400 font-bold uppercase truncate"><i class="fa-solid fa-sitemap mr-1"></i>Eleme Aşamaları</span>
+                                                <div class="flex gap-1 shrink-0">
+                                                    <button onclick="addKnockoutMatch('${tour.id}')" class="text-[9px] bg-slate-800 hover:bg-slate-700 text-emerald-400 px-2 py-0.5 rounded transition-colors"><i class="fa-solid fa-plus mr-1"></i>Tur Ekle</button>
+                                                    <button onclick="toggleTournamentKnockouts('${tour.id}', false)" class="text-[9px] bg-red-900/40 hover:bg-red-800 text-red-300 px-2 py-0.5 rounded transition-colors" title="Bu Bölümü Sil"><i class="fa-solid fa-trash"></i></button>
+                                                </div>
                                             </div>
                                             <div class="space-y-2">
                                                 ${koRows}
                                                 ${tour.knockouts.length === 0 ? '<div class="text-[10px] text-slate-500 italic px-2">Henüz eleme maçı eklenmedi.</div>' : ''}
                                             </div>
                                         </div>`;
+                                    } else {
+                                        knockoutHtml = `
+                                            <button onclick="toggleTournamentKnockouts('${tour.id}', true)" class="w-full text-[10px] bg-slate-800/60 hover:bg-slate-800 text-slate-400 hover:text-emerald-400 border border-dashed border-slate-700 rounded py-2 mt-2 transition-colors">
+                                                <i class="fa-solid fa-plus mr-1"></i>Eleme Aşamaları Ekle
+                                            </button>
+                                        `;
                                     }
 
                                     return `
                                     <div class="relative group/tour bg-slate-950 p-2 rounded-lg border border-slate-700 shadow-sm">
-                                        <button onclick="removeCustomTournament('${tour.id}')" class="absolute -top-2 -right-2 bg-red-600 hover:bg-red-500 text-white w-5 h-5 rounded-full text-[10px] flex items-center justify-center opacity-0 group-hover/tour:opacity-100 transition-opacity z-10 shadow-lg" title="Tabloyu Sil"><i class="fa-solid fa-times"></i></button>
-                                        <h4 class="text-sm font-bold text-emerald-400 mb-2 border-b border-slate-800 pb-1 flex justify-between items-center">
+                                        <button onclick="removeCustomTournament('${tour.id}')" class="absolute -top-2 -right-2 bg-red-600 hover:bg-red-500 text-white w-5 h-5 rounded-full text-[10px] flex items-center justify-center opacity-0 group-hover/tour:opacity-100 transition-opacity z-10 shadow-lg" title="Tüm Kartı Sil"><i class="fa-solid fa-times"></i></button>
+                                        <h4 class="text-sm font-bold text-emerald-400 mb-2 border-b border-slate-800 pb-1 truncate">
                                             ${tour.type}
-                                            <button onclick="addRowToCustomTournament('${tour.id}')" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-0.5 rounded transition-colors"><i class="fa-solid fa-plus mr-1"></i>Satır Ekle</button>
                                         </h4>
-                                        <table class="w-full text-[11px] text-left text-slate-300 mb-1">
-                                            <thead class="text-[9px] text-slate-400 uppercase bg-slate-900">
-                                                <tr>
-                                                    <th class="p-1 border-slate-700 text-center">Sıra</th>
-                                                    <th class="p-1 border-slate-700">Takım</th>
-                                                    <th class="p-1 border-slate-700 text-center">O</th>
-                                                    <th class="p-1 border-slate-700 text-center">Av</th>
-                                                    <th class="p-1 border-slate-700 text-center font-bold text-white">P</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                ${tableRows}
-                                            </tbody>
-                                        </table>
+                                        ${tableSectionHtml}
                                         ${knockoutHtml}
                                     </div>`;
                                 }).join('');
@@ -5294,7 +5469,7 @@ function formatShortPlayerName(name) {
                         lastPlayedRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }
                 }
-            }, 100);
+            }, 100);            
         }
 
         function switchFixtureSeason(season) {
