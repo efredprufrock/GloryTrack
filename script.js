@@ -4534,8 +4534,12 @@ function closeTransferModal() {
                 if (isExp) {
                     tours.forEach((t, i) => {
                         const isLast = (i === tours.length - 1);
-                        th2 += `<th class="p-2 border-r border-b border-slate-700 bg-slate-900 text-[9px] cursor-pointer hover:text-white text-green-400/80 group/th" onclick="sortStats('${context}', 't_${season}_${t}_goals')"><div class="max-w-[70px] truncate mx-auto" title="${t}">${t}</div>G ${getSortIcon('t_'+season+'_'+t+'_goals')}</th>`;
-                        th2 += `<th class="p-2 border-r border-b ${isLast ? 'border-slate-500 border-r-2' : 'border-slate-700'} bg-slate-900 text-[9px] cursor-pointer hover:text-white text-blue-400/80 group/th" onclick="sortStats('${context}', 't_${season}_${t}_assists')"><div class="max-w-[70px] truncate mx-auto" title="${t}">${t}</div>A ${getSortIcon('t_'+season+'_'+t+'_assists')}</th>`;
+                        const tLogo = getCompetitionLogo(t);
+                        const labelHtml = tLogo
+                            ? `<img src="${tLogo}" alt="${escapeHtml(t)}" title="${escapeHtml(t)}" class="w-5 h-5 object-contain mx-auto">`
+                            : `<div class="max-w-[70px] truncate mx-auto" title="${t}">${t}</div>`;
+                        th2 += `<th class="p-2 border-r border-b border-slate-700 bg-slate-900 text-[9px] cursor-pointer hover:text-white text-green-400/80 group/th" onclick="sortStats('${context}', 't_${season}_${t}_goals')">${labelHtml}G ${getSortIcon('t_'+season+'_'+t+'_goals')}</th>`;
+                        th2 += `<th class="p-2 border-r border-b ${isLast ? 'border-slate-500 border-r-2' : 'border-slate-700'} bg-slate-900 text-[9px] cursor-pointer hover:text-white text-blue-400/80 group/th" onclick="sortStats('${context}', 't_${season}_${t}_assists')">${labelHtml}A ${getSortIcon('t_'+season+'_'+t+'_assists')}</th>`;
                     });
                 }
             });
@@ -4552,10 +4556,46 @@ function closeTransferModal() {
                 rowsHTML = `<tr><td colspan="100%" class="text-center p-8 text-slate-500">Resmi bir gol veya asist verisi bulunmuyor.</td></tr>`;
             } else {
                 players.forEach((p, idx) => {
+
+                    // --- YENİ: Sütun bazlı en yüksek değerleri hesapla (parlaklık/altın parlama için) ---
+let maxOverallGoals = 0, maxOverallAssists = 0;
+let maxSeasonGoals = {}, maxSeasonAssists = {};
+let maxTourGoals = {}, maxTourAssists = {};
+
+players.forEach(p => {
+    if (p.overallGoals > maxOverallGoals) maxOverallGoals = p.overallGoals;
+    if (p.overallAssists > maxOverallAssists) maxOverallAssists = p.overallAssists;
+
+    seasonsList.forEach(season => {
+        const pSeason = p.seasons[season];
+        if (!pSeason) return;
+        if (!maxSeasonGoals[season] || pSeason.totalGoals > maxSeasonGoals[season]) maxSeasonGoals[season] = pSeason.totalGoals;
+        if (!maxSeasonAssists[season] || pSeason.totalAssists > maxSeasonAssists[season]) maxSeasonAssists[season] = pSeason.totalAssists;
+
+        (seasonsData[season] || []).forEach(t => {
+            const pt = pSeason.tournaments[t];
+            if (!pt) return;
+            if (!maxTourGoals[season]) maxTourGoals[season] = {};
+            if (!maxTourAssists[season]) maxTourAssists[season] = {};
+            if (!maxTourGoals[season][t] || pt.goals > maxTourGoals[season][t]) maxTourGoals[season][t] = pt.goals;
+            if (!maxTourAssists[season][t] || pt.assists > maxTourAssists[season][t]) maxTourAssists[season][t] = pt.assists;
+        });
+    });
+});
+
+function getChipTierClass(val, max) {
+    if (!val || val <= 0) return 'chip-tier-zero';
+    if (max > 0 && val === max) return 'chip-glow-max';
+    const ratio = max > 0 ? val / max : 0;
+    if (ratio >= 0.7) return 'chip-tier-bright';
+    if (ratio >= 0.4) return 'chip-tier-mid';
+    return 'chip-tier-dim';
+}
+
                     sums.overallGoals += p.overallGoals;
                     sums.overallAssists += p.overallAssists;
                     
-                    let photoHtml = p.photoUrl ? `<img src="${p.photoUrl}" class="w-8 h-8 rounded-full inline-block mr-2.5 object-cover bg-slate-800 shadow-sm border-2 border-slate-700">` : `<div class="w-8 h-8 rounded-full inline-flex items-center justify-center bg-slate-700 border-2 border-slate-600 shadow-sm text-xs font-bold mr-2.5">${p.name.charAt(0)}</div>`;
+                    let photoHtml = p.photoUrl ? `<img src="${p.photoUrl}" class="w-6 h-6 rounded-full inline-block mr-2.5 object-cover bg-slate-800 shadow-sm border-2 border-slate-700">` : `<div class="w-6 h-6 rounded-full inline-flex items-center justify-center bg-slate-700 border-2 border-slate-600 shadow-sm text-xs font-bold mr-2.5">${p.name.charAt(0)}</div>`;
                     let flagHtml = p.countryCode ? `<img src="https://flagcdn.com/24x18/${p.countryCode.toLowerCase()}.png" class="w-5 h-auto mx-auto shadow-sm rounded-sm">` : '-';
                     
                     rowsHTML += `<tr class="hover:bg-slate-800/80 transition-colors group">`;
@@ -4564,8 +4604,8 @@ function closeTransferModal() {
                     rowsHTML += `<td class="p-2 border-r border-b border-slate-700/50 text-center bg-slate-900 group-hover:bg-slate-800 sticky z-[10]" style="left: 0px; width: ${wNo}px; min-width: ${wNo}px; max-width: ${wNo}px;"><span class="stats-rank-badge ${rankCls}">${idx + 1}</span></td>`;
                     rowsHTML += `<td class="p-2 border-r border-b border-slate-700/50 text-center bg-slate-900 group-hover:bg-slate-800 sticky z-[10]" style="left: ${lPos}px; width: ${wPos}px; min-width: ${wPos}px; max-width: ${wPos}px;">${p.pos === 'UNK' ? '<span class="text-slate-600">-</span>' : `<span class="stats-pos-pill pos-${p.pos}">${p.pos}</span>`}</td>`;
                     rowsHTML += `<td class="p-2 border-r border-b border-slate-700/50 text-left font-bold text-sm bg-slate-900 group-hover:bg-slate-800 sticky z-[10]" style="left: ${lName}px; width: ${wName}px; min-width: ${wName}px; max-width: ${wName}px;">
-    <div class="flex items-center cursor-pointer hover:text-emerald-400 transition-colors" data-pname="${escapeHtml(p.name)}" onclick="openStatsPlayerProfile(this)" title="Profili Görüntüle">${photoHtml}<span class="truncate">${p.name}</span></div>
-</td>`;
+                        <div class="flex items-center cursor-pointer hover:text-emerald-400 transition-colors" data-pname="${escapeHtml(p.name)}" onclick="openStatsPlayerProfile(this)" title="Profili Görüntüle">${photoHtml}<span class="truncate">${p.name}</span></div>
+                    </td>`;
                     if (isKulup) {
                         rowsHTML += `<td class="p-2 border-r border-b border-slate-700/50 text-center bg-slate-900 group-hover:bg-slate-800 sticky z-[10]" style="left: ${lCountry}px; width: ${wCountry}px; min-width: ${wCountry}px; max-width: ${wCountry}px;">${flagHtml}</td>`;
                     }
@@ -4579,8 +4619,8 @@ function closeTransferModal() {
                         sums.seasons[season].goals += pSeason.totalGoals;
                         sums.seasons[season].assists += pSeason.totalAssists;
                         
-                        rowsHTML += `<td class="p-2 border-r border-b border-slate-700/50 text-center bg-green-900/5">${pSeason.totalGoals ? `<span class="stats-chip stats-chip-goal">${pSeason.totalGoals}</span>` : '<span class="text-slate-700">-</span>'}</td>`;
-                        rowsHTML += `<td class="p-2 border-r border-b ${isExp ? 'border-slate-700/50' : 'border-slate-500 border-r-2'} text-center bg-blue-900/5">${pSeason.totalAssists ? `<span class="stats-chip stats-chip-assist">${pSeason.totalAssists}</span>` : '<span class="text-slate-700">-</span>'}</td>`;
+                        rowsHTML += `<td class="p-2 border-r border-b border-slate-700/50 text-center bg-green-900/5">${pSeason.totalGoals ? `<span class="stats-chip stats-chip-goal ${getChipTierClass(pSeason.totalGoals, maxSeasonGoals[season])}">${pSeason.totalGoals}</span>` : '<span class="text-slate-700">-</span>'}</td>`;
+                        rowsHTML += `<td class="p-2 border-r border-b ${isExp ? 'border-slate-700/50' : 'border-slate-500 border-r-2'} text-center bg-blue-900/5">${pSeason.totalAssists ? `<span class="stats-chip stats-chip-assist ${getChipTierClass(pSeason.totalAssists, maxSeasonAssists[season])}">${pSeason.totalAssists}</span>` : '<span class="text-slate-700">-</span>'}</td>`;
                         
                         if (isExp) {
                             tours.forEach((t, i) => {
@@ -4593,15 +4633,13 @@ function closeTransferModal() {
                                 sums.seasons[season].tours[t].goals += tGoals;
                                 sums.seasons[season].tours[t].assists += tAssists;
                                 
-                                rowsHTML += `<td class="p-2 border-r border-b border-slate-700/50 text-center bg-green-900/5 hover:bg-green-900/30 transition-colors">${tGoals ? `<span class="stats-chip stats-chip-goal" style="min-width:20px;font-size:10px;">${tGoals}</span>` : '<span class="text-slate-700">-</span>'}</td>`;
-                                rowsHTML += `<td class="p-2 border-b border-r ${isLast ? 'border-slate-500 border-r-2' : 'border-slate-700/50'} text-center bg-blue-900/5 hover:bg-blue-900/30 transition-colors">${tAssists ? `<span class="stats-chip stats-chip-assist" style="min-width:20px;font-size:10px;">${tAssists}</span>` : '<span class="text-slate-700">-</span>'}</td>`;
-                            });
+                                rowsHTML += `<td class="p-2 border-r border-b border-slate-700/50 text-center bg-green-900/5 hover:bg-green-900/30 transition-colors">${tGoals ? `<span class="stats-chip-goal-tour ${getChipTierClass(tGoals, (maxTourGoals[season] && maxTourGoals[season][t]) || 0)}">${tGoals}</span>` : '<span class="text-slate-700">-</span>'}</td>`;
+                                rowsHTML += `<td class="p-2 border-b border-r ${isLast ? 'border-slate-500 border-r-2' : 'border-slate-700/50'} text-center bg-blue-900/5 hover:bg-blue-900/30 transition-colors">${tAssists ? `<span class="stats-chip-assist-tour ${getChipTierClass(tAssists, (maxTourAssists[season] && maxTourAssists[season][t]) || 0)}">${tAssists}</span>` : '<span class="text-slate-700">-</span>'}</td>`;                                rowsHTML += `<td class="p-2 border-b border-r ${isLast ? 'border-slate-500 border-r-2' : 'border-slate-700/50'} text-center bg-blue-900/5 hover:bg-blue-900/30 transition-colors">${tAssists ? `<span class="stats-chip-assist-tour">${tAssists}</span>` : '<span class="text-slate-700">-</span>'}</td>`;                        });
                         }
                     });
                     
-                    rowsHTML += `<td class="p-2 border-r border-b border-slate-700/50 text-center bg-emerald-900/10"><span class="stats-chip stats-chip-goal-total">${p.overallGoals}</span></td>`;
-                    rowsHTML += `<td class="p-2 border-b border-slate-700/50 text-center bg-emerald-900/10"><span class="stats-chip stats-chip-assist-total">${p.overallAssists}</span></td>`;
-                    rowsHTML += `</tr>`;
+                    rowsHTML += `<td class="p-2 border-r border-b border-slate-700/50 text-center bg-emerald-900/10"><span class="stats-chip stats-chip-goal-total ${getChipTierClass(p.overallGoals, maxOverallGoals)}">${p.overallGoals}</span></td>`;
+                    rowsHTML += `<td class="p-2 border-b border-slate-700/50 text-center bg-emerald-900/10"><span class="stats-chip stats-chip-assist-total ${getChipTierClass(p.overallAssists, maxOverallAssists)}">${p.overallAssists}</span></td>`;                    rowsHTML += `</tr>`;
                 });
             }
 

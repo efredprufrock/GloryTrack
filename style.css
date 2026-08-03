@@ -276,8 +276,53 @@ body.theme-light .group-row:hover .bg-row-FWD, body.theme-light .group-row:hover
 }
 .stats-chip-goal { background: rgba(52,211,153,0.12); color: #34d399; }
 .stats-chip-assist { background: rgba(96,165,250,0.12); color: #60a5fa; }
-.stats-chip-goal-total { background: rgba(52,211,153,0.22); color: #6ee7b7; font-size: 13px; }
-.stats-chip-assist-total { background: rgba(96,165,250,0.22); color: #93c5fd; font-size: 13px; }
+.stats-chip-goal-total {
+    background: rgba(15,23,42,0.6);
+    color: #34d399;
+    font-size: 13px;
+    font-weight: 900;
+    border: 1.5px solid rgba(52,211,153,0.5);
+    border-radius: 8px;
+    box-shadow: 0 0 6px rgba(52,211,153,0.15);
+}
+.stats-chip-assist-total {
+    background: rgba(15,23,42,0.6);
+    color: #60a5fa;
+    font-size: 13px;
+    font-weight: 900;
+    border: 1.5px solid rgba(96,165,250,0.5);
+    border-radius: 8px;
+    box-shadow: 0 0 6px rgba(96,165,250,0.15);
+}
+
+/* --- Sayı Yoğunluk Seviyeleri (Parlaklık) --- */
+.chip-tier-bright { filter: brightness(1.2) saturate(1.1); }
+.chip-tier-mid    { filter: brightness(0.85); opacity: 0.85; }
+.chip-tier-dim    { filter: brightness(0.6); opacity: 0.5; }
+.chip-tier-zero   { filter: brightness(0.3); opacity: 0.25; }
+
+/* --- En Yüksek Değer: Altın Parlama --- */
+.chip-glow-max {
+    box-shadow: 0 0 10px 2px currentColor, inset 0 0 4px currentColor;
+    font-weight: 900 !important;
+    filter: brightness(1.3) saturate(1.2) !important;
+}
+
+/* Turnuva bazlı (detay) hücreler: dolu değil, ince çerçeveli "ghost" görünüm */
+.stats-chip-goal-tour {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 20px; padding: 1px 5px; border-radius: 999px; font-weight: 700; font-size: 10px;
+    background: transparent;
+    border: 1px solid rgba(52,211,153,0.35);
+    color: #6ee7b7;
+}
+.stats-chip-assist-tour {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 20px; padding: 1px 5px; border-radius: 999px; font-weight: 700; font-size: 10px;
+    background: transparent;
+    border: 1px solid rgba(96,165,250,0.35);
+    color: #93c5fd;
+}
 
 .modern-stats-table tbody tr:nth-child(even) td { background-color: rgba(255,255,255,0.012); }
 
@@ -287,8 +332,8 @@ body.theme-light .group-row:hover .bg-row-FWD, body.theme-light .group-row:hover
     border-left: none !important;
     border-right: none !important;
     border-top: none !important;
-    border-bottom: 1px solid rgba(148, 163, 184, 0.15) !important; /* Çok hafif yatay çizgi */
-    padding: 14px 10px !important; /* Hücreleri genişlet (Excel sıkışıklığını alır) */
+    border-bottom: 1px solid rgba(148, 163, 184, 0.15) !important;
+    padding: 7px 10px !important;
     vertical-align: middle;
 }
 
