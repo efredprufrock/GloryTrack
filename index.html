@@ -77,7 +77,7 @@
                 <div class="bg-slate-900/50 p-3.5 rounded-lg border border-slate-700">
                     <label class="block text-left text-sm font-bold text-yellow-500 mb-2"><i class="fa-solid fa-crown mr-1"></i> Şampiyon Takım</label>
                     <div class="flex gap-2 mb-2">
-                        <input type="text" id="champ-name-input" class="w-full bg-slate-950 border border-slate-600 rounded px-3 py-2 text-white focus:outline-none focus:border-yellow-500" placeholder="Takım Adı" list="global-team-datalist">
+                        <input type="text" id="champ-name-input" class="w-full bg-slate-950 border border-slate-600 rounded px-3 py-2 text-white focus:outline-none focus:border-yellow-500" placeholder="Takım Adı" list="global-team-datalist" onchange="autoFillTeamLogo(this, 'champ-url-input')">
                         <button onclick="searchTeamLogos('champ')" class="bg-blue-600 hover:bg-blue-500 px-3 rounded text-white whitespace-nowrap" title="Logoları Ara"><i class="fa-solid fa-search"></i></button>
                         <a href="https://football-logos.cc/" target="_blank" class="bg-indigo-600 hover:bg-indigo-500 flex items-center justify-center px-3 rounded text-white transition-colors" title="Football-Logos'ta Ara"><i class="fa-solid fa-globe"></i></a>
                     </div>
@@ -92,7 +92,7 @@
                 <div class="bg-slate-900/50 p-3.5 rounded-lg border border-slate-700">
                     <label class="block text-left text-sm font-bold text-slate-300 mb-2"><i class="fa-solid fa-medal mr-1"></i> İkinci Takım</label>
                     <div class="flex gap-2 mb-2">
-                        <input type="text" id="runner-name-input" class="w-full bg-slate-950 border border-slate-600 rounded px-3 py-2 text-white" placeholder="Takım Adı" list="global-team-datalist">
+                        <input type="text" id="runner-name-input" class="w-full bg-slate-950 border border-slate-600 rounded px-3 py-2 text-white" placeholder="Takım Adı" list="global-team-datalist" onchange="autoFillTeamLogo(this, 'runner-url-input')">
                         <button onclick="searchTeamLogos('runner')" class="bg-blue-600 hover:bg-blue-500 px-3 rounded text-white whitespace-nowrap" title="Logoları Ara"><i class="fa-solid fa-search"></i></button>
                         <a href="https://football-logos.cc/" target="_blank" class="bg-indigo-600 hover:bg-indigo-500 flex items-center justify-center px-3 rounded text-white transition-colors" title="Football-Logos'ta Ara"><i class="fa-solid fa-globe"></i></a>
                     </div>
@@ -167,7 +167,7 @@
                     <div>
                         <label class="block text-left text-sm font-medium text-slate-300 mb-1">Takım Adı</label>
                         <div class="flex gap-2 mb-2">
-                            <input type="text" id="managed-name-input" class="w-full bg-slate-950 border border-slate-600 rounded-lg px-4 py-2 text-white" list="global-team-datalist">
+                            <input type="text" id="managed-name-input" class="w-full bg-slate-950 border border-slate-600 rounded-lg px-4 py-2 text-white" list="global-team-datalist" onchange="autoFillTeamLogo(this, 'managed-url-input')">
                             <button onclick="searchTeamLogos('managed')" class="bg-blue-600 hover:bg-blue-500 px-3 rounded text-white whitespace-nowrap" title="Logoları Ara"><i class="fa-solid fa-search"></i></button>
                             <a href="https://football-logos.cc/" target="_blank" class="bg-indigo-600 hover:bg-indigo-500 flex items-center justify-center px-3 rounded text-white transition-colors" title="Football-Logos'ta Ara"><i class="fa-solid fa-globe"></i></a>
                         </div>
@@ -195,7 +195,7 @@
                     <div>
                         <label class="block text-left text-sm font-medium text-slate-300 mb-1">Ülke / Milli Takım Adı</label>
                         <div class="flex gap-2 mb-2">
-                            <input type="text" id="national-name-input" class="w-full bg-slate-950 border border-slate-600 rounded-lg px-4 py-2 text-white" placeholder="Örn: Türkiye" list="global-team-datalist">
+                            <input type="text" id="national-name-input" class="w-full bg-slate-950 border border-slate-600 rounded-lg px-4 py-2 text-white" placeholder="Örn: Türkiye" list="global-team-datalist" onchange="autoFillTeamLogo(this, 'national-url-input')">
                             <button onclick="searchTeamLogos('national')" class="bg-blue-600 hover:bg-blue-500 px-3 rounded text-white whitespace-nowrap" title="Logoları Ara"><i class="fa-solid fa-search"></i></button>
                         </div>
                         <div id="national-logo-results" class="flex gap-2 overflow-x-auto hidden py-2 mb-2 hide-scrollbar bg-slate-950/50 rounded px-2 items-center border border-slate-700/50"></div>
@@ -243,7 +243,7 @@
                 <div>
                     <label class="block text-left text-sm font-medium text-slate-300 mb-1">Takım Adı</label>
                     <div class="flex gap-2 mb-2">
-                        <input type="text" id="opp-name-input" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white" list="global-team-datalist">
+                        <input type="text" id="opp-name-input" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white" list="global-team-datalist" onchange="autoFillTeamLogo(this, 'opp-url-input')">
                         <button onclick="searchTeamLogos('opp')" class="bg-blue-600 hover:bg-blue-500 px-3 rounded text-white whitespace-nowrap" title="Logoları Ara"><i class="fa-solid fa-search"></i></button>
                         <a href="https://football-logos.cc/" target="_blank" class="bg-indigo-600 hover:bg-indigo-500 flex items-center justify-center px-3 rounded text-white transition-colors" title="Football-Logos'ta Ara"><i class="fa-solid fa-globe"></i></a>
                     </div>
@@ -526,7 +526,7 @@
                         <div class="bg-slate-900/50 p-3 rounded-lg border border-slate-700">
                             <label class="block text-left text-xs font-medium text-slate-400 mb-1">Oynadığı Kulüp</label>
                             <div class="flex gap-2 mb-2">
-                                <input type="text" id="pi-team-name-input" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white outline-none focus:border-emerald-500" placeholder="Örn: Galatasaray" list="global-team-datalist">
+                                <input type="text" id="pi-team-name-input" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white outline-none focus:border-emerald-500" placeholder="Örn: Galatasaray" list="global-team-datalist" onchange="autoFillTeamLogo(this, 'pi-team-url-input')">
                                 <button type="button" onclick="searchTeamLogos('pi-team')" class="bg-blue-600 hover:bg-blue-500 px-3 rounded text-white whitespace-nowrap" title="Logoları Ara"><i class="fa-solid fa-search"></i></button>
                             </div>
                             <div id="pi-team-logo-results" class="flex gap-2 overflow-x-auto hidden py-2 mb-2 hide-scrollbar bg-slate-950/50 rounded px-2 items-center border border-slate-700/50"></div>

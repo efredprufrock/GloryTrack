@@ -6636,3 +6636,22 @@ function highlightFormationAutocompleteItem(items) {
         items[formationAutocompleteFocusIndex].scrollIntoView({ block: 'nearest' });
     }
 }
+
+// --- OTOMATİK LOGO TAMAMLAMA ---
+function autoFillTeamLogo(nameInputElem, urlInputId) {
+    const teamName = nameInputElem.value.trim();
+    if (!teamName) return;
+
+    // team-tournament-data.js içindeki FC26_TEAM_DATABASE dizisinde tam eşleşme ara
+    const teamData = FC26_TEAM_DATABASE.find(t => 
+        typeof t === 'object' && t.name && t.name.toLowerCase() === teamName.toLowerCase()
+    );
+
+    // Eğer takım bulunduysa ve logosu varsa URL alanına yazdır
+    if (teamData && teamData.logo) {
+        const urlInput = document.getElementById(urlInputId);
+        if (urlInput) {
+            urlInput.value = teamData.logo;
+        }
+    }
+}
