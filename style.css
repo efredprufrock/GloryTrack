@@ -74,9 +74,9 @@
         .age-t9 { color: #d8b4fe; } /* 36-50 Purple */
 
         .pos-GK { color: #eab308; }
-        .pos-DEF, .pos-CB, .pos-LB, .pos-RB { color: #60a5fa; }
-        .pos-MID, .pos-DM, .pos-CM, .pos-LM, .pos-RM, .pos-AM { color: #4ade80; }
-        .pos-FWD, .pos-LW, .pos-RW, .pos-ST { color: #f87171; }
+        .pos-DEF, .pos-CB, .pos-LB, .pos-RB, .pos-LWB, .pos-RWB { color: #60a5fa; }
+        .pos-MID, .pos-DM, .pos-CM, .pos-LM, .pos-RM, .pos-AM, .pos-CAM { color: #4ade80; }
+        .pos-FWD, .pos-LW, .pos-RW, .pos-ST, .pos-CF { color: #f87171; }
         
         .bg-row-GK { background-color: #1f2420; }
         .bg-row-DEF { background-color: #121c2e; }

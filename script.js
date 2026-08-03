@@ -173,7 +173,12 @@ const TR_EN = {
     "Planı Kaydet": "Save Plan",
     "Veriyi Kaydet": "Save Data",
     "Oyuncular": "Players",
-    "Excel'den kopyaladığınız veya virgülle ayırdığınız maç listesini aşağıya yapıştırın.": "Paste the match list you copied from Excel or separated by commas below."
+    "Excel'den kopyaladığınız veya virgülle ayırdığınız maç listesini aşağıya yapıştırın.": "Paste the match list you copied from Excel or separated by commas below.",
+    "Toplu Maç Ekle": "Bulk Add Caps",
+    "Toplu Milli Maç (Cap) Ekle": "Bulk Add National Caps",
+    "Maça çıkan oyuncuların isimlerini her satıra bir isim gelecek şekilde yapıştırın.": "Paste the names of the players who played, one name per line.",
+    "Listede eşleşen her oyuncunun forma sayısı (caps) 1 artırılacaktır.": "The caps count of each matched player will be incremented by 1.",
+    "Maç Sayılarını Artır": "Increase Caps",
 };
 
 const EN_TR = Object.fromEntries(Object.entries(TR_EN).map(([tr, en]) => [en, tr]));
@@ -331,6 +336,7 @@ function escapeHtml(str) {
         let activeGroupInfo = { context: null, groupType: null, groupIndex: null };
         let activeMatchInfo = { season: null, oppId: null, oppName: null };
         let activeMatchesTemp = [];
+        let formations = { astakim: null, milli: null };
 
         // Squad State
         let squadContext = 'astakim';
@@ -628,7 +634,7 @@ function getFlagIcon(countryCode) {
             return {
                 seasonsList, trophyData, tournamentsList, managedTeams, opponentsConfig,
                 matchDataStore, playerRoles, squadData, leagueHistoryData, transferData, fixtureData, isSetupComplete,
-                euroLeaguesData, customTournamentsData, competitionLogos
+                euroLeaguesData, customTournamentsData, competitionLogos, formations
             };
         }
 
@@ -669,6 +675,7 @@ function getFlagIcon(countryCode) {
             if (data.customTournamentsData) customTournamentsData = data.customTournamentsData;
             if (data.isSetupComplete !== undefined) isSetupComplete = data.isSetupComplete;
             if (data.competitionLogos) competitionLogos = data.competitionLogos;
+            if (data.formations) formations = data.formations;
 
             // Geriye dönük uyumluluk: eski yedeklerde "milli" kadrosu bulunmayabilir
             if (!squadData.milli) squadData.milli = [];
@@ -858,7 +865,7 @@ function handleSyncClick() {
 
             // Milli takım maçları için gol/asist girerken SADECE Milli kadrosunu göster.
             // Kulüp maçlarında ise SADECE kulüp (As Takım + Akademi) kadrosunu göster.
-            if (activeMain === 'maclar' && matchContext === 'milli') {
+            if ((activeMain === 'maclar' && matchContext === 'milli') || (activeMain === 'kadro' && squadContext === 'milli')) {
                 mockPlayers = [...new Set(milli)].sort();
             } else {
                 mockPlayers = [...new Set([...astakim, ...akademi])].sort();
@@ -1010,7 +1017,7 @@ function handleSyncClick() {
             'opponent-editor-modal', 'group-editor-modal', 'player-info-modal',
             'player-cell-modal', 'match-editor-modal', 'season-stats-modal',
             'league-team-modal', 'league-team-bulk-modal', 'league-cell-modal', 'transfer-editor-modal', 'fixture-match-modal', 'match-result-modal',
-            'fixture-bulk-modal', 'squad-bulk-modal', 'tournament-table-bulk-modal'
+            'fixture-bulk-modal', 'squad-bulk-modal', 'tournament-table-bulk-modal', 'national-caps-bulk-modal', 'formation-modal'
         ];
         const MODAL_CLOSE_FNS = {
             'trophy-modal': () => closeTrophyModal(),
@@ -1030,7 +1037,9 @@ function handleSyncClick() {
             'match-result-modal': () => closeMatchResultModal(),
             'fixture-bulk-modal': () => closeFixtureBulkModal(),
             'squad-bulk-modal': () => closeSquadBulkModal(),
-            'tournament-table-bulk-modal': () => closeTournamentTableBulkModal()
+            'tournament-table-bulk-modal': () => closeTournamentTableBulkModal(),
+            'national-caps-bulk-modal': () => closeNationalCapsBulkModal(),
+            'formation-modal': () => closeFormationModal()
         };
 
         document.addEventListener('keydown', function(e) {
@@ -2998,9 +3007,12 @@ function handleFileUpload(event, type) {
             let html = `
                 <div class="w-full flex justify-between items-center mb-3 px-2 shrink-0">
                     <div class="flex items-center gap-3">
-                        <h3 class="text-2xl font-bold text-white">${squadContext === 'astakim' ? 'As Takım' : (squadContext === 'akademi' ? 'Akademi' : 'Milli Takım')} Gelişim Takibi</h3>
-                        <button onclick="openPlayerInfoModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-lg"><i class="fa-solid fa-user-plus mr-1"></i>Oyuncu Ekle</button>
-                        <button onclick="openSquadBulkModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-lg"><i class="fa-solid fa-list-ol mr-1"></i>Toplu Ekle</button>
+                        <h3 class="text-2xl font-bold text-white flex items-center gap-2">
+                            ${squadContext === 'astakim' ? 'As Takım' : (squadContext === 'akademi' ? 'Akademi' : 'Milli Takım')} Gelişim Takibi
+                            ${(squadContext === 'astakim' || squadContext === 'milli') ? `<button onclick="openFormationModal()" class="text-sm bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-600 rounded px-2 py-1 transition-colors shadow-sm" title="İlk 11 Dizilişi"><i class="fa-solid fa-chess-board mr-1"></i>İlk 11</button>` : ''}
+                        </h3>
+                        <button onclick="openPlayerInfoModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-lg"><i class="fa-solid fa-user-plus mr-1"></i>Oyuncu Ekle</button>                        <button onclick="openSquadBulkModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-lg"><i class="fa-solid fa-list-ol mr-1"></i>Toplu Ekle</button>
+                        ${squadContext === 'milli' ? `<button onclick="openNationalCapsBulkModal()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-lg"><i class="fa-solid fa-shirt mr-1"></i>Toplu Maç Ekle</button>` : ''}
                     </div>
                     <div class="flex items-center gap-4">
                         ${getScaleSelectorHtml()}
@@ -3324,6 +3336,7 @@ p.totalAssists = gs ? gs.overallAssists : 0;
             } else {
                 alert('Geçerli formatta oyuncu bulunamadı. Lütfen "Pozisyon, İsim, Ülke, Yaş, Reyting" formatına uyduğunuzdan emin olun.');
             }
+                         
         }
 
         // Automatically fetch and assign a player photo by name if URL is empty
@@ -6050,3 +6063,433 @@ function formatShortPlayerName(name) {
             });
         }
 
+        // --- MİLLİ TAKIM TOPLU CAP EKLEME ---
+function openNationalCapsBulkModal() {
+    document.getElementById('national-caps-bulk-input').value = '';
+    const modal = document.getElementById('national-caps-bulk-modal');
+    modal.classList.remove('hidden'); 
+    modal.classList.add('flex');
+}
+
+function closeNationalCapsBulkModal() {
+    const modal = document.getElementById('national-caps-bulk-modal');
+    modal.classList.add('hidden'); 
+    modal.classList.remove('flex');
+}
+
+function processNationalCapsBulkInput() {
+    const text = document.getElementById('national-caps-bulk-input').value;
+    if (!text.trim()) { alert('Lütfen oyuncu isimlerini girin!'); return; }
+
+    const lines = text.split('\n');
+    let updatedCount = 0;
+    let notFound = [];
+
+    lines.forEach(line => {
+        const name = line.trim();
+        if (!name) return;
+        
+        // Milli kadroda ismi bul (büyük/küçük harf duyarsız)
+        const player = squadData.milli.find(p => (p.name || '').toLowerCase() === name.toLowerCase());
+        if (player) {
+            player.caps = (parseInt(player.caps) || 0) + 1;
+            updatedCount++;
+        } else {
+            notFound.push(name);
+        }
+    });
+
+    if (updatedCount > 0) {
+        saveToLocalStorage();
+        renderSquadGrid();
+        closeNationalCapsBulkModal();
+        let msg = `${updatedCount} oyuncunun milli takım maç sayısı (caps) 1 artırıldı!`;
+        if (notFound.length > 0) {
+            msg += `\n\nŞu oyuncular kadroda bulunamadı:\n${notFound.join(', ')}`;
+        }
+        alert(msg);
+    } else {
+        alert('Listede eşleşen hiçbir oyuncu bulunamadı. İsimleri kontrol edip tekrar deneyin.');
+    }
+}
+
+// --- İLK 11 FORMASYON SİSTEMİ ---
+const defaultFormation = [
+    { x: 50, y: 88, name: '', pos: 'GK' },
+    { x: 20, y: 70, name: '', pos: 'LB' },
+    { x: 38, y: 75, name: '', pos: 'CB' },
+    { x: 62, y: 75, name: '', pos: 'CB' },
+    { x: 80, y: 70, name: '', pos: 'RB' },
+    { x: 35, y: 50, name: '', pos: 'CM' },
+    { x: 65, y: 50, name: '', pos: 'CM' },
+    { x: 20, y: 25, name: '', pos: 'LW' },
+    { x: 50, y: 30, name: '', pos: 'CAM' },
+    { x: 80, y: 25, name: '', pos: 'RW' },
+    { x: 50, y: 12, name: '', pos: 'ST' }
+];
+
+let activeFormationContext = null;
+let tempFormation = [];
+let isDraggingFormationNode = false;
+let draggedNodeIndex = null;
+let activeFormationNodeIndex = null;
+
+function openFormationModal() {
+    activeFormationContext = squadContext;
+    document.getElementById('formation-title').innerText = (squadContext === 'astakim' ? 'As Takım' : 'Milli Takım') + ' İlk 11';
+    
+    if (!formations) formations = { astakim: null, milli: null };
+    if (!formations[activeFormationContext]) {
+        formations[activeFormationContext] = JSON.parse(JSON.stringify(defaultFormation));
+    }
+    tempFormation = JSON.parse(JSON.stringify(formations[activeFormationContext]));
+    
+    // Eski kayıtlarda pozisyon yoksa varsayılanı ata
+    tempFormation.forEach((node, idx) => {
+        if (node.pos === undefined || node.pos === '') {
+            node.pos = defaultFormation[idx] ? defaultFormation[idx].pos : 'POS';
+        }
+    });
+    
+    updateMockPlayers(); 
+    renderFormationNodes();
+    closeFormationSelector();
+    
+    const modal = document.getElementById('formation-modal');
+    modal.classList.remove('hidden'); 
+    modal.classList.add('flex');
+}
+
+function closeFormationModal() {
+    const modal = document.getElementById('formation-modal');
+    modal.classList.add('hidden'); 
+    modal.classList.remove('flex');
+}
+
+function saveFormation() {
+    formations[activeFormationContext] = JSON.parse(JSON.stringify(tempFormation));
+    saveToLocalStorage();
+    closeFormationModal();
+}
+
+function resetFormation() {
+    if(confirm('Dizilişi ve oyuncuları sıfırlamak istediğinize emin misiniz?')) {
+        tempFormation = JSON.parse(JSON.stringify(defaultFormation));
+        renderFormationNodes();
+        closeFormationSelector();
+    }
+}
+
+function renderFormationNodes() {
+    const container = document.getElementById('formation-nodes');
+    container.innerHTML = '';
+    
+    tempFormation.forEach((node, index) => {
+        let pPhoto = '';
+        let pNameDisplay = node.name ? escapeHtml(formatShortPlayerName(node.name)) : 'Seç';
+        
+        if (node.name) pPhoto = getPlayerPhotoByName(node.name);
+
+        let photoHtml = pPhoto 
+            ? `<img src="${pPhoto}" class="w-[72px] h-[72px] rounded-full object-cover border-[5px] border-slate-900 bg-slate-900 shadow-lg draggable-none" draggable="false">` 
+            : `<div class="w-[72px] h-[72px] rounded-full bg-slate-800 border-[5px] border-slate-600 flex items-center justify-center text-xl font-black text-white shadow-lg">${node.name ? node.name.charAt(0).toUpperCase() : '+'}</div>`;
+
+        const nodeEl = document.createElement('div');
+        nodeEl.className = 'absolute flex flex-col items-center justify-center cursor-grab active:cursor-grabbing transform -translate-x-1/2 -translate-y-1/2 z-10 group hover:z-20';
+        nodeEl.style.left = node.x + '%';
+        nodeEl.style.top = node.y + '%';
+        
+        nodeEl.innerHTML = `
+            ${photoHtml}
+            <div id="node-pos-badge-${index}" class="relative -mt-1 z-40 bg-slate-900 pos-${node.pos || 'POS'} text-[11px] font-black px-2 py-[1px] rounded border border-slate-600 shadow-md pointer-events-none tracking-wider">${node.pos || 'POS'}</div>
+            <div class="mt-0 bg-black/80 text-white text-sm font-bold px-3 py-1 rounded truncate max-w-[150px] border border-white/10 pointer-events-none relative z-30">${pNameDisplay}</div>
+            <div class="absolute -top-1 -right-3 bg-blue-600 hover:bg-blue-500 text-white w-8 h-8 rounded-full text-sm flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer shadow-xl transition-opacity z-50" onclick="promptFormationPlayer(${index}, event)" title="Düzenle"><i class="fa-solid fa-pen"></i></div>
+        `;
+
+        nodeEl.addEventListener('mousedown', (e) => startDragNode(e, index, nodeEl));
+        nodeEl.addEventListener('touchstart', (e) => startDragNode(e.touches[0], index, nodeEl), {passive: false});
+
+        container.appendChild(nodeEl);
+    });
+}
+
+function promptFormationPlayer(index, event) {
+    event.stopPropagation();
+    activeFormationNodeIndex = index;
+    const selector = document.getElementById('formation-player-selector');
+    const input = document.getElementById('formation-player-input');
+    const posInput = document.getElementById('formation-pos-input');
+    
+    input.value = tempFormation[index].name || '';
+    posInput.value = tempFormation[index].pos || '';
+    
+    let x = tempFormation[index].x;
+    let y = tempFormation[index].y;
+    
+    let leftOffset = x < 50 ? 'calc(' + x + '% + 45px)' : 'calc(' + x + '% - 265px)';
+    let topOffset = y < 50 ? 'calc(' + y + '% + 25px)' : 'calc(' + y + '% - 115px)';
+    
+    selector.style.left = leftOffset;
+    selector.style.top = topOffset;
+    
+    selector.classList.remove('hidden');
+    
+    // Açıldığında doğrudan pozisyona göre öneri yapsın diye manuel tetikliyoruz
+    triggerFormationAutocomplete(input.value);
+    setTimeout(() => input.focus(), 50);
+}
+
+function applyFormationPlayer() {
+    if (activeFormationNodeIndex !== null) {
+        tempFormation[activeFormationNodeIndex].name = document.getElementById('formation-player-input').value.trim();
+        tempFormation[activeFormationNodeIndex].pos = document.getElementById('formation-pos-input').value.trim().toUpperCase();
+        renderFormationNodes();
+    }
+    closeFormationSelector();
+}
+
+function clearFormationPlayer() {
+    if (activeFormationNodeIndex !== null) {
+        tempFormation[activeFormationNodeIndex].name = '';
+        document.getElementById('formation-player-input').value = '';
+        // Pos temizlenmiyor, sadece isim siliniyor ki mevki sabit kalsın.
+        renderFormationNodes();
+    }
+    closeFormationSelector();
+}
+
+function applyFormationPlayer() {
+    if (activeFormationNodeIndex !== null) {
+        tempFormation[activeFormationNodeIndex].name = document.getElementById('formation-player-input').value.trim();
+        renderFormationNodes();
+    }
+    closeFormationSelector();
+}
+
+function clearFormationPlayer() {
+    if (activeFormationNodeIndex !== null) {
+        tempFormation[activeFormationNodeIndex].name = '';
+        renderFormationNodes();
+    }
+    closeFormationSelector();
+}
+
+function closeFormationSelector() {
+    const selector = document.getElementById('formation-player-selector');
+    if (selector) selector.classList.add('hidden');
+    activeFormationNodeIndex = null;
+}
+
+function startDragNode(e, index, nodeEl) {
+    if (e.target.closest('.fa-pen') || e.target.closest('button')) return;
+    
+    isDraggingFormationNode = true;
+    draggedNodeIndex = index;
+    closeFormationSelector(); 
+    
+    nodeEl.classList.add('cursor-grabbing');
+    nodeEl.classList.remove('cursor-grab');
+
+    const container = document.getElementById('pitch-container');
+    const rect = container.getBoundingClientRect();
+
+    function onMove(ev) {
+        if (!isDraggingFormationNode) return;
+        ev.preventDefault(); 
+        
+        let clientX = ev.clientX || (ev.touches && ev.touches[0].clientX);
+        let clientY = ev.clientY || (ev.touches && ev.touches[0].clientY);
+        
+        let x = ((clientX - rect.left) / rect.width) * 100;
+        let y = ((clientY - rect.top) / rect.height) * 100;
+        
+        if(x < 2) x = 2; if(x > 98) x = 98;
+        if(y < 2) y = 2; if(y > 98) y = 98;
+
+        tempFormation[draggedNodeIndex].x = x;
+        tempFormation[draggedNodeIndex].y = y;
+        
+        nodeEl.style.left = x + '%';
+        nodeEl.style.top = y + '%';
+    }
+
+    function onEnd() {
+        if (!isDraggingFormationNode) return;
+        isDraggingFormationNode = false;
+        draggedNodeIndex = null;
+        
+        nodeEl.classList.remove('cursor-grabbing');
+        nodeEl.classList.add('cursor-grab');
+        
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onEnd);
+        document.removeEventListener('touchmove', onMove);
+        document.removeEventListener('touchend', onEnd);
+    }
+
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onEnd);
+    document.addEventListener('touchmove', onMove, {passive: false});
+    document.addEventListener('touchend', onEnd);
+}
+
+function showFormationList() {
+    // Sadece ismi atanmış olan oyuncuları filtrele
+    const players = tempFormation.filter(node => node.name && node.name.trim() !== '');
+    
+    if (players.length === 0) {
+        alert('Sahada henüz oyuncu bulunmuyor.');
+        return;
+    }
+    
+    // Numaralı bir liste metni oluştur
+    const listText = players.map((node, index) => `${node.name}`).join('\n');
+    
+    // Panoya (clipboard) kopyala ve kullanıcıya göster
+    navigator.clipboard.writeText(listText).then(() => {
+        alert(`İlk 11 listesi panoya kopyalandı!\n\n${listText}`);
+    }).catch(err => {
+        // Eğer tarayıcı panoya kopyalamaya izin vermezse sadece listeyi göster
+        alert(`İlk 11 Listesi:\n\n${listText}`);
+    });
+}
+
+// --- FORMASYON ÖZEL OTOMATİK TAMAMLAMA MOTORU ---
+let formationAutocompleteFocusIndex = -1;
+
+function triggerFormationAutocomplete(val) {
+    formationAutocompleteFocusIndex = -1;
+    const dropdown = document.getElementById('formation-autocomplete-dropdown');
+    const posVal = document.getElementById('formation-pos-input').value.trim().toUpperCase();
+    
+    // Doğru kadroyu çek (Milli vs Kulüp)
+    let squadPls = activeFormationContext === 'milli' ? (squadData.milli || []) : [...(squadData.astakim || []), ...(squadData.akademi || [])];
+    squadPls = squadPls.filter(p => p.name);
+
+    let matches = [];
+
+    // Eğer input boşsa, belirtilen mevki ve o mevki grubuna yakın oyuncuları öner
+    if (val.trim() === '') {
+        const similarPositions = {
+            'GK': ['GK'],
+            'CB': ['CB', 'LB', 'RB', 'DM'],
+            'LB': ['LB', 'LWB', 'CB', 'LM'],
+            'RB': ['RB', 'RWB', 'CB', 'RM'],
+            'LWB': ['LWB', 'LB', 'LM'],
+            'RWB': ['RWB', 'RB', 'RM'],
+            'DM': ['DM', 'CM', 'CB'],
+            'CM': ['CM', 'DM', 'AM'],
+            'AM': ['AM', 'CM', 'LM', 'RM', 'CAM'],
+            'CAM': ['CAM', 'AM', 'CM', 'LM', 'RM', 'ST'],
+            'LM': ['LM', 'LW', 'LWB', 'RM', 'AM'],
+            'RM': ['RM', 'RW', 'RWB', 'LM', 'AM'],
+            'LW': ['LW', 'LM', 'RW', 'ST', 'LF', 'CF'],
+            'RW': ['RW', 'RM', 'LW', 'ST', 'RF', 'CF'],
+            'ST': ['ST', 'CF', 'LW', 'RW'],
+            'CF': ['CF', 'ST', 'CAM', 'LW', 'RW']
+        };
+
+        let allowedPos = similarPositions[posVal] || [posVal];
+        
+        matches = squadPls.filter(p => {
+            if (!p.pos) return false;
+            return allowedPos.includes(p.pos.toUpperCase());
+        });
+
+        matches.sort((a, b) => (parseInt(b.joinOvr) || 0) - (parseInt(a.joinOvr) || 0));
+        
+    } else {
+        matches = squadPls.filter(p => p.name.toLowerCase().includes(val.toLowerCase()));
+        
+        // --- YENİ: Eğer kullanıcı tam olarak doğru ismi yazdıysa (veya sildikçe eşleşiyorsa), mevkiyi otomatik güncelle ---
+        const exactMatch = matches.find(p => p.name.toLowerCase() === val.toLowerCase().trim());
+        if (exactMatch && exactMatch.pos) {
+            document.getElementById('formation-pos-input').value = exactMatch.pos;
+        }
+    }
+
+    if (matches.length === 0) {
+        dropdown.classList.add('hidden');
+        dropdown.classList.remove('flex');
+        return;
+    }
+
+    dropdown.innerHTML = matches.map(p => `
+        <div class="formation-ac-item px-3 py-2 border-b border-slate-700/50 hover:bg-emerald-600 cursor-pointer transition-colors flex justify-between items-center" onclick="selectFormationAutocomplete('${escapeHtml(p.name)}', '${p.pos}')">
+            <span class="font-bold text-xs truncate">${escapeHtml(p.name)}</span>
+            <span class="text-[9px] font-black text-slate-300 bg-slate-900/50 px-1.5 py-0.5 rounded border border-slate-700 pos-${p.pos}">${p.pos}</span>
+        </div>
+    `).join('');
+    
+    dropdown.classList.remove('hidden');
+    dropdown.classList.add('flex');
+}
+
+function liveUpdateNodePos(val) {
+    if (activeFormationNodeIndex !== null) {
+        const badge = document.getElementById(`node-pos-badge-${activeFormationNodeIndex}`);
+        if (badge) {
+            const upperVal = val.toUpperCase() || 'POS';
+            badge.innerText = upperVal;
+            badge.className = `relative -mt-1 z-40 bg-slate-900 pos-${upperVal} text-[11px] font-black px-2 py-[1px] rounded border border-slate-600 shadow-md pointer-events-none tracking-wider`;
+        }
+    }
+}
+
+function selectFormationAutocomplete(name, pos) {
+    document.getElementById('formation-player-input').value = name;
+    if (pos && pos !== 'undefined' && pos !== 'null') {
+        document.getElementById('formation-pos-input').value = pos;
+        liveUpdateNodePos(pos);
+    }
+    document.getElementById('formation-autocomplete-dropdown').classList.add('hidden');
+    document.getElementById('formation-autocomplete-dropdown').classList.remove('flex');
+}
+
+// Menü dışına tıklanınca açılır listeyi kapat
+document.addEventListener('click', function(e) {
+    const dropdown = document.getElementById('formation-autocomplete-dropdown');
+    if (dropdown && !e.target.closest('#formation-player-selector')) {
+        dropdown.classList.add('hidden');
+        dropdown.classList.remove('flex');
+    }
+});
+
+// --- YENİ: Klavye (Ok Tuşları + Enter) ile Formasyon Pop-up'ında Seçim Yapma Desteği ---
+document.addEventListener('keydown', function(e) {
+    const dropdown = document.getElementById('formation-autocomplete-dropdown');
+    if (!dropdown || dropdown.classList.contains('hidden')) return;
+
+    const items = dropdown.querySelectorAll('.formation-ac-item');
+    if (items.length === 0) return;
+
+    if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        formationAutocompleteFocusIndex++;
+        if (formationAutocompleteFocusIndex >= items.length) formationAutocompleteFocusIndex = 0;
+        highlightFormationAutocompleteItem(items);
+    } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        formationAutocompleteFocusIndex--;
+        if (formationAutocompleteFocusIndex < 0) formationAutocompleteFocusIndex = items.length - 1;
+        highlightFormationAutocompleteItem(items);
+    } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (formationAutocompleteFocusIndex > -1) {
+            items[formationAutocompleteFocusIndex].click();
+        } else if (items.length > 0) {
+            items[0].click();
+        }
+    } else if (e.key === 'Escape') {
+        dropdown.classList.add('hidden');
+        dropdown.classList.remove('flex');
+    }
+});
+
+function highlightFormationAutocompleteItem(items) {
+    items.forEach(i => i.classList.remove('bg-emerald-600', 'text-white'));
+    if (formationAutocompleteFocusIndex > -1 && items[formationAutocompleteFocusIndex]) {
+        items[formationAutocompleteFocusIndex].classList.add('bg-emerald-600', 'text-white');
+        items[formationAutocompleteFocusIndex].scrollIntoView({ block: 'nearest' });
+    }
+}
