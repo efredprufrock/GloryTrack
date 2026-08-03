@@ -289,7 +289,7 @@ function escapeHtml(str) {
         let isSetupComplete = false;
         let activeSub = null;
         let activeTertiary = null;
-        let fileUploads = { champ: null, runner: null, tournament: null, managed: null, opp: null, setup: null, 'pi-photo': null, 'pi-team': null };
+        let fileUploads = { champ: null, runner: null, tournament: null, managed: null, opp: null, setup: null, 'pi-photo': null, 'pi-team': null, cl: null };
 
         // Trophies State
         let trophyData = {}; 
@@ -374,6 +374,7 @@ function escapeHtml(str) {
         // fixtureData[season] = [ { id, date, tournament, home, away, homeScore, awayScore, events:[{min,type,scorer,assist}] }, ... ]
         let fixtureData = {};
         let euroLeaguesData = {};
+        let competitionLogos = {};
         let customTournamentsData = {};
         let activeFixtureSeason = null;
         let activeFixtureMatchId = null;
@@ -627,7 +628,7 @@ function getFlagIcon(countryCode) {
             return {
                 seasonsList, trophyData, tournamentsList, managedTeams, opponentsConfig,
                 matchDataStore, playerRoles, squadData, leagueHistoryData, transferData, fixtureData, isSetupComplete,
-                euroLeaguesData, customTournamentsData
+                euroLeaguesData, customTournamentsData, competitionLogos
             };
         }
 
@@ -667,6 +668,7 @@ function getFlagIcon(countryCode) {
             if (data.euroLeaguesData) euroLeaguesData = data.euroLeaguesData;
             if (data.customTournamentsData) customTournamentsData = data.customTournamentsData;
             if (data.isSetupComplete !== undefined) isSetupComplete = data.isSetupComplete;
+            if (data.competitionLogos) competitionLogos = data.competitionLogos;
 
             // Geriye dönük uyumluluk: eski yedeklerde "milli" kadrosu bulunmayabilir
             if (!squadData.milli) squadData.milli = [];
@@ -4715,6 +4717,77 @@ function closeTransferModal() {
             return initials.slice(0, 4) || name.slice(0, 3).toUpperCase();
         }
 
+        function getCompetitionLogo(name) {
+            if (!name) return null;
+            // 1. Öncelik: Fikstür panelinde özel olarak atanmış logo
+            if (competitionLogos && competitionLogos[name]) return competitionLogos[name];
+            // 2. Yoksa: Kupalar panelindeki turnuva listesiyle isim eşleşmesi (büyük/küçük harf duyarsız)
+            const match = tournamentsList.find(t => t.name.toLowerCase() === name.toLowerCase());
+            return match ? match.logoUrl : null;
+        }
+
+let activeCompetitionLogoName = null;
+
+function updateCompetitionLogoPreview() {
+    const url = document.getElementById('cl-url-input').value.trim();
+    const img = document.getElementById('cl-preview-img');
+    const placeholder = document.getElementById('cl-preview-placeholder');
+    if (url && url !== "Yerel Dosya Seçildi") {
+        img.src = url;
+        img.classList.remove('hidden');
+        placeholder.classList.add('hidden');
+    } else {
+        img.classList.add('hidden');
+        placeholder.classList.remove('hidden');
+    }
+}
+
+function openCompetitionLogoModal(tournamentName) {
+    if (!tournamentName) return;
+    activeCompetitionLogoName = tournamentName;
+    document.getElementById('cl-modal-subtitle').innerText = tournamentName;
+    document.getElementById('cl-name-input').value = tournamentName;
+
+    document.getElementById('cl-url-input').value = getCompetitionLogo(tournamentName) || '';
+
+    fileUploads.cl = null;
+    document.getElementById('cl-file-input').value = '';
+    document.getElementById('cl-upload-btn').classList.replace('text-emerald-400', 'text-slate-300');
+    document.getElementById('cl-logo-results').innerHTML = '';
+    document.getElementById('cl-logo-results').classList.add('hidden');
+
+    updateCompetitionLogoPreview();
+
+    const modal = document.getElementById('competition-logo-modal');
+    modal.classList.remove('hidden'); modal.classList.add('flex');
+}
+
+function closeCompetitionLogoModal() {
+    document.getElementById('competition-logo-modal').classList.add('hidden');
+    document.getElementById('competition-logo-modal').classList.remove('flex');
+}
+
+function saveCompetitionLogo() {
+    if (!activeCompetitionLogoName) return;
+    const url = document.getElementById('cl-url-input').value.trim();
+    const finalLogo = fileUploads.cl || (url !== "Yerel Dosya Seçildi" ? url : null);
+
+    if (!finalLogo) { alert('Lütfen bir logo URL girin, dosya yükleyin veya arama sonuçlarından seçin!'); return; }
+
+    competitionLogos[activeCompetitionLogoName] = finalLogo;
+    saveToLocalStorage();
+    closeCompetitionLogoModal();
+    renderFixturePanel();
+}
+
+function clearCompetitionLogo() {
+    if (!activeCompetitionLogoName) return;
+    delete competitionLogos[activeCompetitionLogoName];
+    saveToLocalStorage();
+    closeCompetitionLogoModal();
+    renderFixturePanel();
+}
+
 // Takım isminden logosunu bulan yardımcı motor
         function getTeamLogoByName(name) {
             if (!name || name === '-') return '';
@@ -5079,12 +5152,9 @@ function formatShortPlayerName(name) {
                             scorersPlain = namedGoals.map(ev => formatShortPlayerName(ev.scorer)).join(', ');
                             scorersList = namedGoals.map(ev => {
                                 const isUs = ev.type === 'US';
-                                // Bize aitse yeşil top ikonu, rakibe aitse kırmızı top ikonu
-                                const icon = isUs
-                                    ? '<i class="fa-solid fa-futbol text-emerald-500 text-[8px] mr-0.5"></i>'
-                                    : '<i class="fa-solid fa-futbol text-red-500 text-[8px] mr-0.5"></i>';
                                 const colorClass = isUs ? 'goal-text' : 'text-red-400';
-                                return `<span class="${colorClass} text-[10px] font-bold whitespace-nowrap">${icon}${escapeHtml(formatShortPlayerName(ev.scorer))}</span>`;
+                                const minuteStr = ev.min ? `${escapeHtml(ev.min)}'` : '-';
+                                return `<span class="${colorClass} text-[10px] font-bold whitespace-nowrap inline-block"><span class="text-slate-400 font-mono font-normal">${minuteStr}</span>&nbsp;${escapeHtml(formatShortPlayerName(ev.scorer))}</span>`;
                             }).join('<span class="text-slate-600 mx-1">·</span>');
                         }
                     }
@@ -5125,6 +5195,15 @@ function formatShortPlayerName(name) {
                         eventsListHtml = `<div class="text-center text-slate-500 text-xs py-3 col-span-2"><i class="fa-solid fa-circle-info mr-1"></i>Bu maç için henüz gol/asist detayı girilmedi.</div>`;
                     }
 
+                    const tourLogo = getCompetitionLogo(m.tournament);
+                    const safeTourJs = (m.tournament || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+                    const tourCellContent = tourLogo
+                        ? `<div class="w-7 h-7 mx-auto rounded-full bg-slate-700/70 border border-slate-600/60 p-1 flex items-center justify-center shadow-sm overflow-hidden"><img src="${tourLogo}" alt="${escapeHtml(m.tournament||'')}" class="w-full h-full object-contain"></div>`
+                        : `<span class="truncate block">${m.tournament || '-'}</span>`;
+                    const logoBtnHtml = m.tournament
+                        ? `<button onclick="event.stopPropagation(); openCompetitionLogoModal('${safeTourJs}')" class="text-slate-500 hover:text-yellow-400" title="Logo Ekle/Değiştir"><i class="fa-solid fa-image text-[8px]"></i></button>`
+                        : '';
+
                     matchRowsHtml += `
                         <tr id="fx-row-${m.id}" class="fixture-compact-row ${tournamentBg} transition-colors group cursor-pointer border-b border-slate-700/40 ${rowResultClass} ${isExpanded ? 'bg-slate-800/40' : ''}" onclick="toggleFixtureRowExpand('${m.id}')">
                             <td class="p-1 text-center w-8">
@@ -5133,9 +5212,14 @@ function formatShortPlayerName(name) {
                                     <span class="text-emerald-500 text-xs font-black">${m.matchNo || '-'}</span>
                                 </div>
                             </td>
-                            <td class="p-1 text-slate-300 text-[10px] font-bold w-24 truncate" title="${m.tournament || ''}">
-                                ${m.tournament || '-'}
-                                <button onclick="event.stopPropagation(); openFixtureModal('${activeFixtureSeason}', '${m.id}')" class="ml-1 opacity-0 group-hover:opacity-100 text-slate-500 hover:text-blue-400 transition-opacity" title="Fikstürü Düzenle"><i class="fa-solid fa-pen text-[9px]"></i></button>
+                            <td class="p-1 text-slate-300 text-[10px] font-bold w-16" title="${m.tournament || ''}">
+                                <div class="flex items-center justify-center gap-1">
+                                    ${tourCellContent}
+                                    <div class="flex flex-col opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                                        ${logoBtnHtml}
+                                        <button onclick="event.stopPropagation(); openFixtureModal('${activeFixtureSeason}', '${m.id}')" class="text-slate-500 hover:text-blue-400" title="Fikstürü Düzenle"><i class="fa-solid fa-pen text-[8px]"></i></button>
+                                    </div>
+                                </div>
                             </td>
                             <td class="p-1 w-10 text-center">${getGroundLabel(m.ground)}</td>
                             <td class="p-1 text-right" title="${m.home || ''}">
