@@ -4504,10 +4504,16 @@ function closeTransferModal() {
 
             let th1 = `
                 <tr>
-                    <th rowspan="2" class="p-2 border-r border-b border-slate-700 bg-slate-950 z-[20] text-center text-slate-500 sticky" style="left: 0px; width: ${wNo}px; min-width: ${wNo}px; max-width: ${wNo}px;">#</th>
-                    <th rowspan="2" class="p-2 border-r border-b border-slate-700 bg-slate-950 z-[20] cursor-pointer hover:text-white transition-colors sticky group/th" style="left: ${lPos}px; width: ${wPos}px; min-width: ${wPos}px; max-width: ${wPos}px;" onclick="sortStats('${context}', 'pos')">Mevki ${getSortIcon('pos')}</th>
-                    <th rowspan="2" class="p-2 border-r border-b border-slate-700 bg-slate-950 z-[20] cursor-pointer hover:text-white transition-colors text-left sticky group/th" style="left: ${lName}px; width: ${wName}px; min-width: ${wName}px; max-width: ${wName}px;" onclick="sortStats('${context}', 'name')">Oyuncu ${getSortIcon('name')}</th>
-                    ${isKulup ? `<th rowspan="2" class="p-2 border-r border-b border-slate-700 bg-slate-950 z-[20] cursor-pointer hover:text-white transition-colors text-center sticky group/th" style="left: ${lCountry}px; width: ${wCountry}px; min-width: ${wCountry}px; max-width: ${wCountry}px;" onclick="sortStats('${context}', 'countryCode')">Ülke ${getSortIcon('countryCode')}</th>` : ''}
+                    <th rowspan="2" class="p-2 border-r border-b border-slate-700 bg-slate-950 z-[20] text-center text-slate-500 sticky align-middle" style="left: 0px; width: ${wNo}px; min-width: ${wNo}px; max-width: ${wNo}px;">#</th>
+                    <th rowspan="2" class="p-2 border-r border-b border-slate-700 bg-slate-950 z-[20] cursor-pointer transition-colors sticky group/th align-middle" style="left: ${lPos}px; width: ${wPos}px; min-width: ${wPos}px; max-width: ${wPos}px;" onclick="sortStats('${context}', 'pos')" title="Mevkiye Göre Sırala">
+                        <div class="flex items-center justify-center text-emerald-400 group-hover/th:text-white transition-colors"><i class="fa-solid fa-street-view text-sm"></i>${getSortIcon('pos')}</div>
+                    </th>
+                    <th rowspan="2" class="p-2 border-r border-b border-slate-700 bg-slate-950 z-[20] cursor-pointer transition-colors text-left sticky group/th align-middle" style="left: ${lName}px; width: ${wName}px; min-width: ${wName}px; max-width: ${wName}px;" onclick="sortStats('${context}', 'name')" title="İsme Göre Sırala">
+                        <div class="flex items-center justify-start pl-1 text-emerald-400 group-hover/th:text-white transition-colors"><i class="fa-solid fa-font text-sm"></i>${getSortIcon('name')}</div>
+                    </th>
+                    ${isKulup ? `<th rowspan="2" class="p-2 border-r border-b border-slate-700 bg-slate-950 z-[20] cursor-pointer transition-colors text-center sticky group/th align-middle" style="left: ${lCountry}px; width: ${wCountry}px; min-width: ${wCountry}px; max-width: ${wCountry}px;" onclick="sortStats('${context}', 'countryCode')" title="Ülkeye Göre Sırala">
+                        <div class="flex items-center justify-center text-emerald-400 group-hover/th:text-white transition-colors"><i class="fa-solid fa-globe text-sm"></i>${getSortIcon('countryCode')}</div>
+                    </th>` : ''}
             `;
             
             let th2 = `<tr>`;
@@ -4518,11 +4524,11 @@ function closeTransferModal() {
                 const colspan = isExp ? 2 + (tours.length * 2) : 2;
                 
                 th1 += `
-                    <th colspan="${colspan}" class="p-2 border-r border-b ${isExp ? 'border-slate-700' : 'border-slate-500 border-r-2'} bg-slate-900 text-emerald-400">
+                    <th colspan="${colspan}" class="p-2 border-r border-b ${isExp ? 'border-slate-700' : 'border-slate-500 border-r-2'} bg-slate-900 text-emerald-400 align-middle">
                         <div class="flex items-center justify-center gap-2">
-                            <span>${season}</span>
-                            <button onclick="toggleStatsExpand('${context}', '${season}')" class="text-slate-400 hover:text-white transition-colors bg-slate-800 p-1 px-2 rounded border border-slate-700 hover:border-emerald-500" title="${isExp ? 'Daralt' : 'Turnuva Detayları'}">
-                                <i class="fa-solid ${isExp ? 'fa-angles-left' : 'fa-angles-right'} text-xs"></i>
+                            <span class="bg-slate-950/60 text-emerald-400 px-2 py-0.5 rounded font-black shadow-inner tracking-widest text-[10px] border border-slate-700/50">${season}</span>
+                            <button onclick="toggleStatsExpand('${context}', '${season}')" class="text-slate-400 hover:text-emerald-400 transition-all bg-slate-800 hover:bg-slate-700 w-5 h-5 flex items-center justify-center rounded-full shadow border border-slate-600 hover:border-emerald-500/50 group" title="${isExp ? 'Daralt' : 'Turnuva Detayları'}">
+                                <i class="fa-solid ${isExp ? 'fa-angle-left' : 'fa-angle-right'} text-[9px] group-hover:scale-110 transition-transform"></i>
                             </button>
                         </div>
                     </th>
@@ -4545,7 +4551,14 @@ function closeTransferModal() {
             });
 
             // Genel Toplam Sütunları
-            th1 += `<th colspan="2" class="p-2 border-b border-slate-700 bg-emerald-900/30 text-emerald-400">GENEL TOPLAM</th></tr>`;
+            // Genel Toplam Sütunları
+            th1 += `
+                <th colspan="2" class="p-2 border-b border-slate-700 bg-gradient-to-t from-emerald-900/20 to-transparent text-emerald-500 font-black tracking-[0.15em] text-[10px] uppercase align-middle">
+                    <div class="flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-chart-line opacity-70"></i> GENEL TOPLAM
+                    </div>
+                </th></tr>
+            `;
             th2 += `<th class="p-2 border-r border-b border-slate-700 bg-emerald-900/20 text-[10px] cursor-pointer hover:text-white text-green-400 group/th" onclick="sortStats('${context}', 'overall_goals')">G ${getSortIcon('overall_goals')}</th>`;
             th2 += `<th class="p-2 border-b border-slate-700 bg-emerald-900/20 text-[10px] cursor-pointer hover:text-white text-blue-400 group/th" onclick="sortStats('${context}', 'overall_assists')">A ${getSortIcon('overall_assists')}</th></tr>`;
 
@@ -4676,11 +4689,14 @@ function getChipTierClass(val, max) {
             footerHTML += `<td class="p-3 border-slate-700 text-center text-blue-400 text-xl bg-emerald-950">${sums.overallAssists}</td>`;
             footerHTML += `</tr>`;
 
+            const headerBgClass = isKulup ? 'bg-emerald-900/30 border-emerald-800' : 'bg-red-900/30 border-red-800';
+            const headerTextClass = isKulup ? 'text-emerald-400' : 'text-red-400';
+
             return `
                 <div class="flex-1 bg-slate-900 border border-slate-700 rounded-xl flex flex-col overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.4)] h-full">
-                    <div class="p-3 bg-slate-950 border-b border-slate-700 flex justify-between items-center shrink-0">
-                        <h4 class="font-bold text-white text-base md:text-lg flex items-center gap-2">
-                            ${isKulup ? '<i class="fa-solid fa-shield-halved text-emerald-500"></i>' : '<i class="fa-solid fa-flag text-red-500"></i>'}
+                    <div class="p-3 ${headerBgClass} border-b flex justify-between items-center shrink-0">
+                        <h4 class="font-bold ${headerTextClass} text-base md:text-lg flex items-center gap-2">
+                            ${isKulup ? '<i class="fa-solid fa-shield-halved"></i>' : '<i class="fa-solid fa-flag"></i>'}
                             ${title}
                         </h4>
                     </div>
