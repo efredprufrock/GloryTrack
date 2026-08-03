@@ -1094,6 +1094,7 @@ function handleSyncClick() {
             }
             selectMainMenu('sezonlar'); // <--- YENİ: Varsayılan açılış artık Fikstür (Sezonlar) paneli oldu
             applyStoredLanguage();
+            if (typeof populateGlobalNameDatalists === 'function') populateGlobalNameDatalists();
             
             if (initFirebase()) {
                 fbAuth.onAuthStateChanged(function(user) {
@@ -2927,24 +2928,27 @@ function handleFileUpload(event, type) {
             const getMacroGroupForPos = (pos) => macroGroupMap[getGroupForPos(pos)] || 'MID';
 
             const staticCols = [
-                { id: 'pos', label: 'Mevki', w: 40, align: 'center' },
-                { id: 'name', label: 'İsim Soyisim', w: 180, align: 'left', pl: 'pl-3' },
-                { id: 'countryCode', label: 'Ülke', w: 40, align: 'center' },
-                { id: 'joinAge', label: 'Yaş', w: 35, align: 'center' },
-                { id: 'joinOvr', label: 'OVR', w: 40, align: 'center' },
-                { id: 'growth', label: '+/-', w: 45, align: 'center' } // YENİ: Gelişim sütunu
+                { id: 'pos', label: '<i class="fa-solid fa-street-view text-sm"></i>', title: 'Mevki', w: 40, align: 'center' },
+                { id: 'name', label: '<div class="flex items-center gap-1.5"><i class="fa-solid fa-font text-sm"></i><span>İsim Soyisim</span></div>', title: 'İsim Soyisim', w: 180, align: 'left', pl: 'pl-3' },
+                { id: 'countryCode', label: '<i class="fa-solid fa-globe text-sm"></i>', title: 'Ülke', w: 40, align: 'center' },
+                { id: 'joinAge', label: '<i class="fa-solid fa-user-clock text-sm"></i>', title: 'Yaş', w: 35, align: 'center' },
+                { id: 'joinOvr', label: '<i class="fa-solid fa-star text-sm"></i>', title: 'OVR', w: 40, align: 'center' },
+                { id: 'growth', label: '<i class="fa-solid fa-chart-line text-sm"></i>', title: 'Gelişim (+/-)', w: 45, align: 'center' }
             ];
             
             if (squadContext === 'akademi') {
-                staticCols.push({ id: 'pot', label: 'POT', w: 45, align: 'center' });
+                staticCols.push({ id: 'pot', label: '<i class="fa-solid fa-bolt text-sm"></i>', title: 'Potansiyel (POT)', w: 45, align: 'center' });
             } else if (squadContext === 'milli') {
-                staticCols.push({ id: 'teamName', label: 'Kulüp', w: 55, align: 'center' });
-                staticCols.push({ id: 'caps', label: 'Forma', w: 45, align: 'center' });
+                staticCols.push({ id: 'teamName', label: '<i class="fa-solid fa-shield-halved text-sm"></i>', title: 'Kulüp', w: 55, align: 'center' });
+                staticCols.push({ id: 'caps', label: '<i class="fa-solid fa-shirt text-sm"></i>', title: 'Forma Sayısı (Caps)', w: 45, align: 'center' });
             }
-            // ↓↓↓ these two lines must be OUTSIDE/AFTER the if/else, unindented from it
-                staticCols.push({ id: 'totalGoals', label: 'Gol', w: 40, align: 'center' });
-                staticCols.push({ id: 'totalAssists', label: 'Asist', w: 40, align: 'center' });
             
+            if (squadContext !== 'akademi') {
+                staticCols.push({ id: 'totalGoals', label: '<i class="fa-solid fa-futbol text-sm"></i>', title: 'Gol', w: 40, align: 'center' });
+                staticCols.push({ id: 'totalAssists', label: '<i class="fa-solid fa-shoe-prints text-sm"></i>', title: 'Asist', w: 40, align: 'center' });
+            }
+            
+            const lastColId = staticCols[staticCols.length - 1].id;
             let accW = 0;
             staticCols.forEach(c => { c.left = accW; accW += c.w; });
             const btnLeft = accW;
@@ -3025,9 +3029,9 @@ function handleFileUpload(event, type) {
             `;
             
             staticCols.forEach(c => {
-                let borderRight = c.id === 'totalAssists' ? 'border-r-2 border-slate-500' : 'border-r border-slate-700';
-                html += `<th rowspan="2" class="p-1 ${borderRight} border-b border-slate-700 sticky bg-slate-950 z-[70] text-[10px] font-bold text-slate-400 cursor-pointer hover:text-white transition-colors" onclick="sortSquad('${c.id}')" style="left: ${c.left}px; width: ${c.w}px; min-width: ${c.w}px; max-width: ${c.w}px;">
-                            ${c.label} <i class="fa-solid fa-sort ml-0.5 opacity-50"></i>
+                let borderRight = c.id === lastColId ? 'border-r-2 border-slate-500' : 'border-r border-slate-700';
+                html += `<th rowspan="2" class="p-1 ${borderRight} border-b border-slate-700 sticky bg-slate-950 z-[70] text-[10px] font-bold text-slate-400 cursor-pointer hover:text-white transition-colors text-center" onclick="sortSquad('${c.id}')" style="left: ${c.left}px; width: ${c.w}px; min-width: ${c.w}px; max-width: ${c.w}px;" title="${c.title || ''}">
+                            <div class="flex items-center justify-center gap-1">${c.label} <i class="fa-solid fa-sort opacity-50 text-[9px]"></i></div>
                         </th>`;
             });
 
@@ -3060,13 +3064,17 @@ function handleFileUpload(event, type) {
                 let archivedPlayers = players.filter(p => p.isArchived);
 
                 const renderPlayerList = (list, isArchivedSection) => {
+                    // Sütunların en yüksek değerlerini bulmak için sayaçlar
+                    let maxCaps = 0, maxGoals = 0, maxAssists = 0;
+
                     // YENİ: Listeyi render etmeden önce her oyuncunun "güncel" yaşını ve OVR'sini geçmişe bakarak hesapla
                     list.forEach(p => {
                         p.currentAge = p.joinAge;
                         p.currentOvr = p.joinOvr;
                         const gs = goalAssistMap[(p.name || '').toLowerCase()];
-p.totalGoals = gs ? gs.overallGoals : 0;
-p.totalAssists = gs ? gs.overallAssists : 0;
+                        p.totalGoals = gs ? gs.overallGoals : 0;
+                        p.totalAssists = gs ? gs.overallAssists : 0;
+                        
                         // Geçmişten günümüze (sondan başa) doğru tarama yap
                         for (let i = seasonsList.length - 1; i >= 0; i--) {
                             let s = seasonsList[i];
@@ -3083,6 +3091,12 @@ p.totalAssists = gs ? gs.overallAssists : 0;
                                 }
                             }
                         }
+                        
+                        // Oyuncunun değerlerini kontrol et ve max değerleri güncelle
+                        let pCaps = parseInt(p.caps) || 0;
+                        if (pCaps > maxCaps) maxCaps = pCaps;
+                        if (p.totalGoals > maxGoals) maxGoals = p.totalGoals;
+                        if (p.totalAssists > maxAssists) maxAssists = p.totalAssists;
                     });
 
                     let resultHtml = '';
@@ -3148,13 +3162,45 @@ p.totalAssists = gs ? gs.overallAssists : 0;
                                     
                                     content = `<div class="flex items-center justify-center w-full h-full">${deltaHtml}</div>`;
                                 }
-                                else if(c.id === 'pot') content = `<span class="text-[10px] font-bold text-emerald-300">${p.pot || '-'}</span>`;
-                                else if(c.id === 'teamName') content = p.teamLogo ? `<img src="${p.teamLogo}" title="${escapeHtml(p.teamName||'')}" class="w-7 h-7 object-contain mx-auto rounded bg-slate-200/10 p-0.5">` : `<span class="text-[9px] text-slate-500">-</span>`;
-                                else if(c.id === 'caps') content = `<span class="text-[10px] font-bold text-blue-300">${p.caps || 0}</span>`;
-                                else if(c.id === 'totalGoals') content = `<span class="text-[10px] font-bold text-emerald-400">${p.totalGoals}</span>`;
-                                else if(c.id === 'totalAssists') content = `<span class="text-[10px] font-bold text-sky-400">${p.totalAssists}</span>`;
+                                else if(c.id === 'pot') {
+                                    // En güncel dönemi bulmak için tablodaki sütun sırasına göre sağdan sola tarıyoruz
+                                    let latestPot = '';
+                                    
+                                    // seasonsList (eskiden yeniye doğru sıralı)
+                                    for (let i = seasonsList.length - 1; i >= 0; i--) {
+                                        let s = seasonsList[i];
+                                        if (p.history && p.history[s]) {
+                                            // Tabloda en sağda (en güncel) yaz dönemi (t1) yer alır, önce ona bak
+                                            if (p.history[s]['t1_acadPot']) { latestPot = p.history[s]['t1_acadPot']; break; }
+                                            // Sonra kış dönemi (t2)'ye bak
+                                            if (p.history[s]['t2_acadPot']) { latestPot = p.history[s]['t2_acadPot']; break; }
+                                        }
+                                    }
+                                    
+                                    // Eğer hiçbir dönemde pot girilmemişse, ilk kayıtlı veya join pot değerini kullan
+                                    if (!latestPot) latestPot = p.joinPot || p.pot || '';
+                                    
+                                    p.pot = latestPot; // Ana objeyi güncelle
+                                    content = `<span class="text-[10px] font-bold text-emerald-300">${latestPot || '-'}</span>`;
+                                }
+                                else if(c.id === 'teamName') {
+                                    content = p.teamLogo ? `<img src="${p.teamLogo}" title="${escapeHtml(p.teamName||'')}" class="w-7 h-7 object-contain mx-auto rounded bg-slate-200/10 p-0.5">` : `<span class="text-[9px] text-slate-500">-</span>`;
+                                }
+                                else if(c.id === 'caps') {
+                                    let v = parseInt(p.caps) || 0;
+                                    let colorClass = (maxCaps > 0 && v === maxCaps) ? 'text-amber-300 drop-shadow-[0_0_4px_#f59e0b] drop-shadow-[0_0_12px_#f59e0b] brightness-125 font-black' : 'text-blue-300';
+                                    content = `<span class="text-[10px] font-bold ${colorClass}">${v}</span>`;
+                                }
+                                else if(c.id === 'totalGoals') {
+                                    let colorClass = (maxGoals > 0 && p.totalGoals === maxGoals) ? 'text-amber-300 drop-shadow-[0_0_4px_#f59e0b] drop-shadow-[0_0_12px_#f59e0b] brightness-125 font-black' : 'text-emerald-400';
+                                    content = `<span class="text-[10px] font-bold ${colorClass}">${p.totalGoals}</span>`;
+                                }
+                                else if(c.id === 'totalAssists') {
+                                    let colorClass = (maxAssists > 0 && p.totalAssists === maxAssists) ? 'text-amber-300 drop-shadow-[0_0_4px_#f59e0b] drop-shadow-[0_0_12px_#f59e0b] brightness-125 font-black' : 'text-sky-400';
+                                    content = `<span class="text-[10px] font-bold ${colorClass}">${p.totalAssists}</span>`;
+                                }
                                 
-                                let extraClasses = c.id === 'totalAssists' ? 'border-r-2 border-slate-500 shadow-[2px_0_5px_rgba(0,0,0,0.4)]' : 'border-r border-slate-700/50';
+                                let extraClasses = c.id === lastColId ? 'border-r-2 border-slate-500 shadow-[2px_0_5px_rgba(0,0,0,0.4)]' : 'border-r border-slate-700/50';
 
                                 resultHtml += `<td class="p-1 ${extraClasses} border-b border-slate-700/50 sticky z-[50] ${rowBgClass} transition-colors text-${c.align} ${c.pl || ''}" style="left: ${c.left}px; width: ${c.w}px; min-width: ${c.w}px; max-width: ${c.w}px;">
                                             ${content}
@@ -3182,9 +3228,24 @@ p.totalAssists = gs ? gs.overallAssists : 0;
                                     </div>` : '';
                                 resultHtml += `<td class="p-0 border-r border-b border-slate-700/50 hover:bg-slate-800/80 align-middle cursor-pointer text-center transition-colors ${s2CellBg}" onclick="openPlayerCellModal('${p.id}', '${season}', 's2')">${s2Str}</td>`;
 
-                                resultHtml += `<td class="p-1 text-center border-r border-b border-slate-700/50 align-middle cursor-pointer transition-colors hover:bg-slate-800/80 ${t2CellBg}" onclick="openPlayerCellModal('${p.id}', '${season}', 't2')" title="${sData.t2 || ''}">
-                                            ${getTrBadge(sData.t2Type, sData.t2)}
-                                         </td>`;
+                                const renderAcadOrTrCell = (cellKey, cellTypeBg) => {
+                                    if (squadContext === 'akademi') {
+                                        let potVal = sData[`${cellKey}_acadPot`];
+                                        // Mevkiye göre hücre arka plan sınıfını otomatik belirle (GK: orange, DEF: blue, MID: green, FWD: red)
+                                        let macroPos = getMacroGroupForPos(p.pos);
+                                        let posBgMap = { GK: 'bg-orange-600/30', DEF: 'bg-blue-600/30', MID: 'bg-green-600/30', FWD: 'bg-red-600/30' };
+                                        let acadBg = potVal ? (posBgMap[macroPos] || cellTypeBg) : cellTypeBg;
+                                        
+                                        let cellDisplay = potVal ? `<span class="text-[9px] font-black text-emerald-400 bg-slate-950/90 border border-emerald-600/70 px-1.5 py-[1px] rounded shadow-inner">${potVal}</span>` : '';
+                                        return `<td class="p-1 text-center border-r border-b border-slate-700/50 align-middle cursor-pointer transition-colors hover:bg-slate-800/80 ${acadBg}" onclick="openPlayerCellModal('${p.id}', '${season}', '${cellKey}')">${cellDisplay}</td>`;
+                                    } else {
+                                        return `<td class="p-1 text-center border-r border-b border-slate-700/50 align-middle cursor-pointer transition-colors hover:bg-slate-800/80 ${cellTypeBg}" onclick="openPlayerCellModal('${p.id}', '${season}', '${cellKey}')" title="${sData[cellKey] || ''}">
+                                                    ${getTrBadge(sData[`${cellKey}Type`], sData[cellKey])}
+                                                 </td>`;
+                                    }
+                                };
+
+                                resultHtml += renderAcadOrTrCell('t2', t2CellBg);
                                          
                                 // YENİ: S1 (İlk Yarı) için OVR Farkı Hesaplama
                                 let s1Prev = getPrevOvr(p, season, 's1');
@@ -3197,9 +3258,7 @@ p.totalAssists = gs ? gs.overallAssists : 0;
                                     </div>` : '';
                                 resultHtml += `<td class="p-0 border-r border-b border-slate-700/50 hover:bg-slate-800/80 align-middle cursor-pointer text-center transition-colors ${s1CellBg}" onclick="openPlayerCellModal('${p.id}', '${season}', 's1')">${s1Str}</td>`;
                                 
-                                resultHtml += `<td class="p-1 text-center border-r border-b border-slate-700/50 align-middle cursor-pointer transition-colors hover:bg-slate-800/80 ${t1CellBg}" onclick="openPlayerCellModal('${p.id}', '${season}', 't1')" title="${sData.t1 || ''}">
-                                            ${getTrBadge(sData.t1Type, sData.t1)}
-                                         </td>`;
+                                resultHtml += renderAcadOrTrCell('t1', t1CellBg);
                             });
                             resultHtml += `</tr>`;
                         });
@@ -3664,11 +3723,19 @@ async function autoFetchPlayerPhoto(playerName, urlInputId) {
             
             document.getElementById('pc-form-transfer').classList.add('hidden');
             document.getElementById('pc-form-stat').classList.add('hidden');
+            const acadPotBox = document.getElementById('pc-form-acad-pot');
+            if (acadPotBox) acadPotBox.classList.add('hidden');
             
             if (type === 't1' || type === 't2') {
-                document.getElementById('pc-form-transfer').classList.remove('hidden');
-                document.getElementById('pc-tr-type').value = sData[`${type}Type`] || 'none';
-                document.getElementById('pc-tr-note').value = sData[type] || '';
+                if (squadContext === 'akademi') {
+                    if (acadPotBox) acadPotBox.classList.remove('hidden');
+                    document.getElementById('pc-acad-pot-input').value = sData[`${type}_acadPot`] || '';
+                    setTimeout(() => document.getElementById('pc-acad-pot-input').focus(), 50);
+                } else {
+                    document.getElementById('pc-form-transfer').classList.remove('hidden');
+                    document.getElementById('pc-tr-type').value = sData[`${type}Type`] || 'none';
+                    document.getElementById('pc-tr-note').value = sData[type] || '';
+                }
             } else {
                 document.getElementById('pc-form-stat').classList.remove('hidden');
                 
@@ -3700,8 +3767,12 @@ async function autoFetchPlayerPhoto(playerName, urlInputId) {
             let sData = p.history[activePlayerSeason];
             
             if (activeCellType === 't1' || activeCellType === 't2') {
-                sData[`${activeCellType}Type`] = document.getElementById('pc-tr-type').value;
-                sData[activeCellType] = document.getElementById('pc-tr-note').value.trim();
+                if (squadContext === 'akademi') {
+                    sData[`${activeCellType}_acadPot`] = document.getElementById('pc-acad-pot-input').value.trim();
+                } else {
+                    sData[`${activeCellType}Type`] = document.getElementById('pc-tr-type').value;
+                    sData[activeCellType] = document.getElementById('pc-tr-note').value.trim();
+                }
             } else {
                 sData[`${activeCellType}a`] = document.getElementById('pc-st-age').value;
                 sData[`${activeCellType}o`] = document.getElementById('pc-st-ovr').value;
@@ -4660,9 +4731,10 @@ function getChipTierClass(val, max) {
                                 sums.seasons[season].tours[t].assists += tAssists;
                                 
                                 rowsHTML += `<td class="p-2 border-r border-b border-slate-700/50 text-center bg-green-900/5 hover:bg-green-900/30 transition-colors">${tGoals ? `<span class="stats-chip-goal-tour ${getChipTierClass(tGoals, (maxTourGoals[season] && maxTourGoals[season][t]) || 0)}">${tGoals}</span>` : '<span class="text-slate-700">-</span>'}</td>`;
-                                rowsHTML += `<td class="p-2 border-b border-r ${isLast ? 'border-slate-500 border-r-2' : 'border-slate-700/50'} text-center bg-blue-900/5 hover:bg-blue-900/30 transition-colors">${tAssists ? `<span class="stats-chip-assist-tour ${getChipTierClass(tAssists, (maxTourAssists[season] && maxTourAssists[season][t]) || 0)}">${tAssists}</span>` : '<span class="text-slate-700">-</span>'}</td>`;                                rowsHTML += `<td class="p-2 border-b border-r ${isLast ? 'border-slate-500 border-r-2' : 'border-slate-700/50'} text-center bg-blue-900/5 hover:bg-blue-900/30 transition-colors">${tAssists ? `<span class="stats-chip-assist-tour">${tAssists}</span>` : '<span class="text-slate-700">-</span>'}</td>`;                        });
-                        }
-                    });
+                                rowsHTML += `<td class="p-2 border-b border-r ${isLast ? 'border-slate-500 border-r-2' : 'border-slate-700/50'} text-center bg-blue-900/5 hover:bg-blue-900/30 transition-colors">${tAssists ? `<span class="stats-chip-assist-tour ${getChipTierClass(tAssists, (maxTourAssists[season] && maxTourAssists[season][t]) || 0)}">${tAssists}</span>` : '<span class="text-slate-700">-</span>'}</td>`;                        }
+                    
+                            )}
+                            });
                     
                     rowsHTML += `<td class="p-2 border-r border-b border-slate-700/50 text-center bg-emerald-900/10"><span class="stats-chip stats-chip-goal-total ${getChipTierClass(p.overallGoals, maxOverallGoals)}">${p.overallGoals}</span></td>`;
                     rowsHTML += `<td class="p-2 border-b border-slate-700/50 text-center bg-emerald-900/10"><span class="stats-chip stats-chip-assist-total ${getChipTierClass(p.overallAssists, maxOverallAssists)}">${p.overallAssists}</span></td>`;                    rowsHTML += `</tr>`;
@@ -5380,13 +5452,13 @@ function formatShortPlayerName(name) {
                                 <table class="w-full border-separate border-spacing-0 text-xs min-w-[500px]">
                                     <thead class="bg-slate-900 sticky top-0 z-10">
                                         <tr class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">
-                                            <th class="p-2 text-center border-b border-slate-700 w-8">#</th>
-                                            <th class="p-2 text-left border-b border-slate-700 w-24">Müsabaka</th>
-                                            <th class="p-2 text-center border-b border-slate-700 w-10">Zemin</th>
-                                            <th class="p-2 text-right border-b border-slate-700">Ev</th>
-                                            <th class="p-2 text-center border-b border-slate-700 w-16">Skor</th>
-                                            <th class="p-2 text-left border-b border-slate-700">Dep</th>
-                                            <th class="p-2 text-left border-b border-slate-700">Goller</th>
+                                            <th class="p-2 text-center border-b border-slate-700 w-8" title="Maç No">#</th>
+                                            <th class="p-2 text-center border-b border-slate-700 w-24" title="Müsabaka"><i class="fa-solid fa-trophy"></i></th>
+                                            <th class="p-2 text-center border-b border-slate-700 w-10" title="Zemin"><i class="fa-solid fa-map-pin"></i></th>
+                                            <th class="p-2 text-center border-b border-slate-700" title="Ev Sahibi"><i class="fa-solid fa-house"></i></th>
+                                            <th class="p-2 text-center border-b border-slate-700 w-16" title="Skor"><i class="fa-solid fa-futbol"></i></th>
+                                            <th class="p-2 text-center border-b border-slate-700" title="Deplasman"><i class="fa-solid fa-plane-departure"></i></th>
+                                            <th class="p-2 text-center border-b border-slate-700" title="Goller & Asistler"><i class="fa-solid fa-list-ul"></i></th>
                                         </tr>
                                     </thead>
                                     <tbody>
