@@ -5094,19 +5094,23 @@ function formatShortPlayerName(name) {
             const filterHtml = `
                 <button onclick="setFixtureFilter('')" title="Tümü"
                     class="px-3 py-1 rounded-full text-xs font-bold border transition-all whitespace-nowrap
-                           ${!filterTour ? 'bg-slate-500 text-white border-slate-400' : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white'}">
-                    ${getTournamentAbbr('Tümü')} (${matches.length})
-                </button>
-                ${[...new Set(matches.map(m => m.tournament).filter(Boolean))].map(t => {
-                    const cnt = matches.filter(m => m.tournament === t).length;
-                    const safeTour = t.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-                    return `<button onclick="setFixtureFilter('${safeTour}')" title="${t}"
-                        class="px-3 py-1 rounded-full text-xs font-bold border transition-all whitespace-nowrap
-                               ${filterTour === t ? 'bg-emerald-700 text-white border-emerald-500' : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white'}">
-                        ${getTournamentAbbr(t)} (${cnt})
-                    </button>`;
-                }).join('')}
-            `;
+                        ${!filterTour ? 'bg-slate-500 text-white border-slate-400' : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white'}">
+                T (${matches.length})
+            </button>
+            ${[...new Set(matches.map(m => m.tournament).filter(Boolean))].map(t => {
+                const cnt = matches.filter(m => m.tournament === t).length;
+                const safeTour = t.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+                const tLogo = getCompetitionLogo(t);
+                const labelHtml = tLogo
+                    ? `<img src="${tLogo}" alt="${escapeHtml(t)}" class="w-4 h-4 object-contain inline-block align-middle">`
+                    : getTournamentAbbr(t);
+                return `<button onclick="setFixtureFilter('${safeTour}')" title="${t}"
+                    class="px-3 py-1 rounded-full text-xs font-bold border transition-all whitespace-nowrap flex items-center gap-1.5
+                        ${filterTour === t ? 'bg-emerald-700 text-white border-emerald-500' : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white'}">
+                    ${labelHtml} <span>(${cnt})</span>
+                </button>`;
+            }).join('')}
+        `;
 
             let matchRowsHtml = '';
             if (filtered.length === 0) {
