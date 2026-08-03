@@ -1017,7 +1017,7 @@ function handleSyncClick() {
             'opponent-editor-modal', 'group-editor-modal', 'player-info-modal',
             'player-cell-modal', 'match-editor-modal', 'season-stats-modal',
             'league-team-modal', 'league-team-bulk-modal', 'league-cell-modal', 'transfer-editor-modal', 'fixture-match-modal', 'match-result-modal',
-            'fixture-bulk-modal', 'squad-bulk-modal', 'tournament-table-bulk-modal', 'national-caps-bulk-modal', 'formation-modal'
+            'fixture-bulk-modal', 'squad-bulk-modal', 'tournament-table-bulk-modal', 'national-caps-bulk-modal', 'formation-modal', 'euro-leagues-bulk-modal'
         ];
         const MODAL_CLOSE_FNS = {
             'trophy-modal': () => closeTrophyModal(),
@@ -1039,6 +1039,7 @@ function handleSyncClick() {
             'squad-bulk-modal': () => closeSquadBulkModal(),
             'tournament-table-bulk-modal': () => closeTournamentTableBulkModal(),
             'national-caps-bulk-modal': () => closeNationalCapsBulkModal(),
+            'euro-leagues-bulk-modal': () => closeEuroLeaguesBulkModal(),
             'formation-modal': () => closeFormationModal()
         };
 
@@ -3163,24 +3164,24 @@ function handleFileUpload(event, type) {
                                     content = `<div class="flex items-center justify-center w-full h-full">${deltaHtml}</div>`;
                                 }
                                 else if(c.id === 'pot') {
-                                    // En güncel dönemi bulmak için tablodaki sütun sırasına göre sağdan sola tarıyoruz
-                                    let latestPot = '';
-                                    
-                                    // seasonsList (eskiden yeniye doğru sıralı)
-                                    for (let i = seasonsList.length - 1; i >= 0; i--) {
-                                        let s = seasonsList[i];
-                                        if (p.history && p.history[s]) {
-                                            // Tabloda en sağda (en güncel) yaz dönemi (t1) yer alır, önce ona bak
-                                            if (p.history[s]['t1_acadPot']) { latestPot = p.history[s]['t1_acadPot']; break; }
-                                            // Sonra kış dönemi (t2)'ye bak
-                                            if (p.history[s]['t2_acadPot']) { latestPot = p.history[s]['t2_acadPot']; break; }
-                                        }
-                                    }
-                                    
-                                    // Eğer hiçbir dönemde pot girilmemişse, ilk kayıtlı veya join pot değerini kullan
-                                    if (!latestPot) latestPot = p.joinPot || p.pot || '';
-                                    
-                                    p.pot = latestPot; // Ana objeyi güncelle
+    // En güncel dönemi bulmak için tablodaki sütun sırasına göre sağdan sola tarıyoruz
+    let latestPot = '';
+    
+    // seasonsList (eskiden yeniye doğru sıralı)
+    for (let i = seasonsList.length - 1; i >= 0; i--) {
+        let s = seasonsList[i];
+        if (p.history && p.history[s]) {
+            // KIŞ TR. (t2) sezon içinde YAZ TR. (t1)'den daha güncel bir dönemdir, önce ona bak
+            if (p.history[s]['t2_acadPot']) { latestPot = p.history[s]['t2_acadPot']; break; }
+            // Bulunamadıysa yaz dönemine (t1) bak
+            if (p.history[s]['t1_acadPot']) { latestPot = p.history[s]['t1_acadPot']; break; }
+        }
+    }
+    
+    // Eğer hiçbir dönemde pot girilmemişse, ilk kayıtlı veya join pot değerini kullan
+    if (!latestPot) latestPot = p.joinPot || p.pot || '';
+    
+    p.pot = latestPot; // Ana objeyi güncelle
                                     content = `<span class="text-[10px] font-bold text-emerald-300">${latestPot || '-'}</span>`;
                                 }
                                 else if(c.id === 'teamName') {
@@ -5016,12 +5017,90 @@ function formatShortPlayerName(name) {
         }
 
         // --- MÜSABAKA & AVRUPA LİGLERİ DÜZENLEME MOTORU ---
-        
+
+        // Tüm panelde (render + toplu ekleme) tek kaynaktan kullanılan lig listesi
+        const EURO_LEAGUES_LIST = [
+            { name: 'Premier League', flag: 'gb-eng' },
+            { name: 'Serie A', flag: 'it' },
+            { name: 'La Liga', flag: 'es' },
+            { name: 'Bundesliga', flag: 'de' },
+            { name: 'Ligue 1', flag: 'fr' },
+            { name: 'Liga Portugal', flag: 'pt' },
+            { name: 'Eredivisie', flag: 'nl' },
+            { name: 'Belgian 1A Pro League', flag: 'be' },
+            { name: 'Scottish Premiership', flag: 'gb-sct' },
+            { name: 'Norwegian Eliteserien', flag: 'no' },
+            { name: 'Swedish Allsvenskan', flag: 'se' },
+            { name: 'Romanian Liga I', flag: 'ro' }
+        ];
+
         function updateEuroLeague(season, league, index, field, element) {
             if (!euroLeaguesData[season]) euroLeaguesData[season] = {};
             if (!euroLeaguesData[season][league]) euroLeaguesData[season][league] = [{},{},{},{}];
             euroLeaguesData[season][league][index][field] = element.innerText.trim();
             saveToLocalStorage(); // Sayfayı yenilemeden sessizce kaydeder (Kullanıcının imleç odağı bozulmaz)
+        }
+
+        // --- AVRUPA LİGLERİ TOPLU EKLEME ---
+        function openEuroLeaguesBulkModal() {
+            document.getElementById('el-bulk-subtitle').innerText = activeFixtureSeason + ' Sezonu';
+            document.getElementById('el-bulk-input').value = '';
+            const modal = document.getElementById('euro-leagues-bulk-modal');
+            modal.classList.remove('hidden'); modal.classList.add('flex');
+        }
+
+        function closeEuroLeaguesBulkModal() {
+            const modal = document.getElementById('euro-leagues-bulk-modal');
+            modal.classList.add('hidden'); modal.classList.remove('flex');
+        }
+
+        function processEuroLeaguesBulkInput() {
+            const text = document.getElementById('el-bulk-input').value;
+            if (!text.trim()) { alert('Lütfen eklenecek verileri girin!'); return; }
+
+            if (!euroLeaguesData[activeFixtureSeason]) euroLeaguesData[activeFixtureSeason] = {};
+            const seasonData = euroLeaguesData[activeFixtureSeason];
+
+            const lines = text.split('\n');
+            let addedCount = 0;
+            const unmatchedLeagues = new Set();
+            const touchedLeagues = new Set(); // Bu içe aktarmada dokunulan ligleri sıfırdan başlatmak için
+
+            lines.forEach(line => {
+                if (!line.trim()) return;
+                const parts = line.split(',').map(s => s.trim());
+                if (parts.length < 2) return;
+
+                const rawLeague = parts[0];
+                const teamName = parts[1];
+                const pts = parts[2] || '';
+                if (!teamName) return;
+
+                const matchedLeague = EURO_LEAGUES_LIST.find(l => l.name.toLowerCase() === rawLeague.toLowerCase());
+                if (!matchedLeague) { unmatchedLeagues.add(rawLeague); return; }
+
+                if (!touchedLeagues.has(matchedLeague.name)) {
+                    seasonData[matchedLeague.name] = [{}, {}, {}, {}];
+                    touchedLeagues.add(matchedLeague.name);
+                }
+
+                const slot = seasonData[matchedLeague.name].findIndex(s => !s.name);
+                if (slot === -1) return; // Bu lig için zaten 4 takım girilmiş, fazlasını yoksay
+
+                seasonData[matchedLeague.name][slot] = { name: teamName, pts: pts || '0 P' };
+                addedCount++;
+            });
+
+            if (addedCount > 0) {
+                saveToLocalStorage();
+                closeEuroLeaguesBulkModal();
+                renderFixturePanel();
+                let msg = `${addedCount} takım başarıyla eklendi!`;
+                if (unmatchedLeagues.size > 0) msg += `\n\nEşleşmeyen lig adları (kontrol edin):\n${[...unmatchedLeagues].join(', ')}`;
+                alert(msg);
+            } else {
+                alert('Geçerli formatta veri bulunamadı. Lütfen "Lig Adı, Takım Adı, Puan" formatına uyduğunuzdan emin olun.\n\nGeçerli lig adları:\n' + EURO_LEAGUES_LIST.map(l => l.name).join(', '));
+            }
         }
 
         const KNOCKOUT_DEFAULT_TYPES = ['Şampiyonlar Ligi', 'Avrupa Ligi', 'Konferans Ligi', 'Dünya Kupası', 'Avrupa Şampiyonası', 'Türkiye Kupası'];
@@ -5618,26 +5697,18 @@ function formatShortPlayerName(name) {
 
                     <!-- 3. SAĞ PANEL: DİĞER LİGLER (İlk 4) -->
                     <div class="flex flex-col bg-slate-900 border border-slate-700 rounded-xl overflow-hidden shadow-lg h-full min-h-[550px] xl:min-h-0">
-                        <div class="bg-slate-800 border-b border-slate-700 p-3 shrink-0 flex justify-between items-center">
+                        <div class="bg-slate-800 border-b border-slate-700 p-3 shrink-0 flex justify-between items-center flex-wrap gap-2">
                             <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-globe mr-2 text-blue-400"></i>Avrupa Ligleri (İlk 4)</h3>
-                            <span class="text-[9px] text-slate-400 font-bold uppercase"><i class="fa-solid fa-pen mr-1"></i>Tıkla ve Düzenle</span>
+                            <div class="flex items-center gap-2">
+                                <button onclick="openEuroLeaguesBulkModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-2 py-1 rounded text-[10px] font-bold transition-colors shadow flex items-center gap-1">
+                                    <i class="fa-solid fa-list-ol"></i> Toplu Ekle
+                                </button>
+                                <span class="text-[9px] text-slate-400 font-bold uppercase hidden lg:inline"><i class="fa-solid fa-pen mr-1"></i>Tıkla ve Düzenle</span>
+                            </div>
                         </div>
                         <div class="p-4 overflow-y-auto custom-scrollbar h-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2 gap-4 content-start">
                             
-                            ${[
-                                { name: 'Premier League', flag: 'gb-eng' },
-                                { name: 'Serie A', flag: 'it' },
-                                { name: 'La Liga', flag: 'es' },
-                                { name: 'Bundesliga', flag: 'de' },
-                                { name: 'Ligue 1', flag: 'fr' },
-                                { name: 'Liga Portugal', flag: 'pt' },
-                                { name: 'Eredivisie', flag: 'nl' },
-                                { name: 'Belgian 1A Pro League', flag: 'be' },
-                                { name: 'Scottish Premiership', flag: 'gb-sct' },
-                                { name: 'Norwegian Eliteserien', flag: 'no' },
-                                { name: 'Swedish Allsvenskan', flag: 'se' },
-                                { name: 'Romanian Liga I', flag: 'ro' }
-                            ].map(league => {
+                            ${EURO_LEAGUES_LIST.map(league => {
                                 const lData = (euroLeaguesData[activeFixtureSeason] && euroLeaguesData[activeFixtureSeason][league.name]) ? euroLeaguesData[activeFixtureSeason][league.name] : [{},{},{},{}];
                                 
                                 return `

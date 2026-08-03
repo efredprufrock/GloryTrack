@@ -991,6 +991,40 @@
         </div>
     </div>
 
+    <!-- Modal: Avrupa Ligleri Toplu Ekle -->
+    <div id="euro-leagues-bulk-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[100] fade-in backdrop-blur-sm">
+        <div class="bg-slate-800 p-6 rounded-xl border border-slate-600 w-[95%] max-w-2xl shadow-2xl relative flex flex-col">
+            <button onclick="closeEuroLeaguesBulkModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white z-10">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+
+            <h3 class="text-xl font-bold mb-1 text-white">Avrupa Ligleri Toplu Ekle</h3>
+            <p class="text-xs text-blue-400 font-bold mb-4" id="el-bulk-subtitle"></p>
+
+            <div class="mb-4 bg-slate-900 p-4 rounded-lg border border-slate-700">
+                <p class="text-sm text-slate-300 mb-2">Her satıra bir takım gelecek şekilde, aşağıdaki sıraya göre virgülle ayırarak yapıştırın. Bir ligin ilk 4 satırı sırasıyla 1.-4. sıraya yerleşir.</p>
+                <p class="text-[11px] text-slate-400 font-mono bg-slate-950 p-2 rounded border border-slate-800">
+                    Lig Adı, Takım Adı, Puan<br>
+                    Örnek: Premier League, Liverpool, 45 P<br>
+                    Örnek: Premier League, Arsenal, 42 P<br>
+                    Örnek: La Liga, Real Madrid, 40 P
+                </p>
+                <p class="text-[10px] text-slate-500 mt-2">Geçerli lig adları: Premier League, Serie A, La Liga, Bundesliga, Ligue 1, Liga Portugal, Eredivisie, Belgian 1A Pro League, Scottish Premiership, Norwegian Eliteserien, Swedish Allsvenskan, Romanian Liga I</p>
+            </div>
+
+            <div class="mb-4">
+                <textarea id="el-bulk-input" rows="10" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-3 text-white font-mono text-sm placeholder-slate-600 focus:outline-none focus:border-blue-500 hide-scrollbar" placeholder="Örnek:&#10;Premier League, Liverpool, 45 P&#10;Premier League, Arsenal, 42 P&#10;La Liga, Real Madrid, 40 P&#10;La Liga, Barcelona, 38 P"></textarea>
+            </div>
+
+            <div class="flex justify-end gap-3">
+                <button onclick="closeEuroLeaguesBulkModal()" class="px-5 py-2.5 rounded-lg bg-slate-700 text-white font-medium hover:bg-slate-600 transition-colors">İptal</button>
+                <button onclick="processEuroLeaguesBulkInput()" class="px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold transition-colors">
+                    <i class="fa-solid fa-list-ol mr-2"></i>Listeyi Ekle
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal: İlk 11 Formasyon -->
     <div id="formation-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[100] fade-in backdrop-blur-sm">
         <div class="bg-slate-800 p-4 sm:p-6 rounded-xl border border-slate-600 w-[95%] max-w-2xl shadow-2xl relative flex flex-col h-[90vh]">
