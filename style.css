@@ -377,3 +377,18 @@ body.theme-light .modern-stats-table tbody tr:last-child td {
 body.theme-light .modern-stats-table tbody tr:hover td {
     background-color: rgba(153, 27, 27, 0.03) !important; /* Açık temada satır hover efekti */
 }
+
+/* --- Quick Fixture Bar (2nd vertical sidebar) --- */
+#quick-fixture-bar {
+    width: 87px;
+    transition: width 0.2s ease;
+}
+#quick-fixture-bar.qfb-collapsed {
+    width: 0px;
+    border-right-width: 0;
+}
+#quick-fixture-bar.qfb-collapsed #qfb-list {
+    display: none;
+}
+.qfb-item img { pointer-events: none; }
+

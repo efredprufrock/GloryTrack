@@ -48,6 +48,16 @@
         </nav>
     </aside>
 
+    <!-- İkinci Dikey Bar: Hızlı Fikstür Şeridi -->
+    <aside id="quick-fixture-bar" class="bg-slate-950 border-r border-slate-800 flex flex-col shrink-0 z-[55] overflow-hidden">
+        <div id="qfb-list" class="flex-1 overflow-y-auto hide-scrollbar px-1.5 py-2 space-y-1.5"></div>
+    </aside>
+    <button onclick="toggleQuickFixtureBar()" id="qfb-handle" class="w-4 shrink-0 bg-slate-950 hover:bg-slate-800 border-r border-slate-800 flex items-start justify-center pt-3 text-slate-500 hover:text-emerald-400 transition-colors z-[56]" title="Fikstür Şeridini Aç/Kapat">
+        <i class="fa-solid fa-chevron-left text-[10px]" id="qfb-toggle-icon" style="transition: transform 0.2s ease;"></i>
+    </button>
+
+    <!-- Ana İçerik Konteyneri -->
+
     <!-- Ana İçerik Konteyneri -->
     <div class="flex-1 flex flex-col min-w-0 h-full relative">
         <div id="submenu-container" class="bg-slate-900 border-b border-slate-800 hidden fade-in shrink-0">

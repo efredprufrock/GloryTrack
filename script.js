@@ -830,6 +830,7 @@ function handleSyncClick() {
             else if (activeMain === 'golasist') renderStatsPanel();
             else if (activeMain === 'sezonlar') renderFixturePanel();
             else if (activeMain === 'ayarlar') renderSettingsPanel();
+            renderQuickFixtureBar();
         }
 
         function queueCloudSave() {
@@ -1095,6 +1096,8 @@ function handleSyncClick() {
             }
             selectMainMenu('sezonlar'); // <--- YENİ: Varsayılan açılış artık Fikstür (Sezonlar) paneli oldu
             applyStoredLanguage();
+            applyQfbCollapsedState();
+            renderQuickFixtureBar();
             if (typeof populateGlobalNameDatalists === 'function') populateGlobalNameDatalists();
             
             if (initFirebase()) {
@@ -4804,6 +4807,121 @@ function getChipTierClass(val, max) {
             `;
         }
 
+        // --- HIZLI FİKSTÜR ŞERİDİ (2. Dikey Bar) ---
+function qfbGetAllMatches() {
+    let all = [];
+    seasonsList.forEach(season => {
+        const matches = (fixtureData[season] || []).slice().sort((a, b) => (parseInt(a.matchNo) || 999) - (parseInt(b.matchNo) || 999));
+        matches.forEach(m => all.push({ ...m, season }));
+    });
+    return all;
+}
+
+function renderQuickFixtureBar() {
+    const container = document.getElementById('qfb-list');
+    if (!container) return;
+
+    const teamName = managedTeams.kulup.name || '';
+    const nationalTeamName = managedTeams.milli.name || '';
+    const isOurTeam = (name) => name === teamName || (nationalTeamName && name === nationalTeamName);
+
+    const allMatches = qfbGetAllMatches();
+
+    if (allMatches.length === 0) {
+        container.innerHTML = `<div class="text-center text-slate-600 text-[9px] py-4 px-1">Maç yok</div>`;
+        return;
+    }
+
+    let lastPlayedIdx = -1;
+    container.innerHTML = allMatches.map((m, idx) => {
+        const hsDisplay = (m.homeScore !== '' && m.homeScore !== null && m.homeScore !== undefined) ? m.homeScore : '-';
+        const asDisplay = (m.awayScore !== '' && m.awayScore !== null && m.awayScore !== undefined) ? m.awayScore : '-';
+        const hs = parseInt(m.homeScore), as = parseInt(m.awayScore);
+        let resultLetter = '';
+        if (!isNaN(hs) && !isNaN(as)) {
+            lastPlayedIdx = idx;
+            const isHome = isOurTeam(m.home), isAway = isOurTeam(m.away);
+            if (isHome) resultLetter = hs > as ? 'W' : (hs < as ? 'L' : 'D');
+            else if (isAway) resultLetter = as > hs ? 'W' : (as < hs ? 'L' : 'D');
+        }
+        const scoreBgClass = resultLetter === 'W' ? 'bg-green-600 border-green-500 text-white' :
+                              resultLetter === 'D' ? 'bg-orange-500 border-orange-400 text-white' :
+                              resultLetter === 'L' ? 'bg-red-600 border-red-500 text-white' :
+                              'bg-slate-800 border-slate-700 text-slate-400';
+        const homeLogo = getTeamLogoByName(m.home);
+        const awayLogo = getTeamLogoByName(m.away);
+
+        return `
+            <div id="qfb-item-${idx}" class="qfb-item flex flex-row items-center justify-center gap-1 bg-slate-900 hover:bg-slate-800 rounded-lg p-1 cursor-pointer border border-slate-800 transition-colors" onclick="qfbOpenMatch('${m.season}','${m.id}')" title="${escapeHtml(m.home)} vs ${escapeHtml(m.away)} (${m.season})">
+                <img src="${homeLogo}" class="w-[19px] h-[19px] object-contain shrink-0" alt="">
+                <span class="text-[9px] font-black rounded px-1 py-0.5 border ${scoreBgClass} shrink-0 whitespace-nowrap leading-none">${hsDisplay}:${asDisplay}</span>
+                <img src="${awayLogo}" class="w-[19px] h-[19px] object-contain shrink-0" alt="">
+            </div>
+        `;
+    }).join('');
+
+    if (!container.dataset.scrollBound) {
+        container.addEventListener('scroll', updateQfbFadeMask);
+        container.dataset.scrollBound = '1';
+    }
+
+    setTimeout(() => {
+        const targetIdx = lastPlayedIdx !== -1 ? lastPlayedIdx : allMatches.length - 1;
+        const targetEl = document.getElementById(`qfb-item-${targetIdx}`);
+        if (targetEl) targetEl.scrollIntoView({ behavior: 'auto', block: 'center' });
+        updateQfbFadeMask();
+    }, 50);
+}
+
+function updateQfbFadeMask() {
+    const el = document.getElementById('qfb-list');
+    if (!el) return;
+
+    const atTop = el.scrollTop <= 2;
+    const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 2;
+
+    let mask;
+    if (atTop && atBottom) {
+        mask = 'linear-gradient(to bottom, black 0, black 100%)';
+    } else if (atTop) {
+        mask = 'linear-gradient(to bottom, black 0, black calc(100% - 60px), transparent 100%)';
+    } else if (atBottom) {
+        mask = 'linear-gradient(to bottom, transparent 0, black 60px, black 100%)';
+    } else {
+        mask = 'linear-gradient(to bottom, transparent 0, black 60px, black calc(100% - 60px), transparent 100%)';
+    }
+
+    el.style.webkitMaskImage = mask;
+    el.style.maskImage = mask;
+}
+
+function qfbOpenMatch(season, matchId) {
+    // Panel değiştirmeden, kullanıcının o an içinde bulunduğu ekranda kalarak
+    // sadece maç sonucu modalını açar. Modal DOM'da global olduğundan
+    // hangi panel aktif olursa olsun sorunsuz çalışır.
+    openMatchResultModal(season, matchId);
+}
+
+function toggleQuickFixtureBar() {
+    const bar = document.getElementById('quick-fixture-bar');
+    const icon = document.getElementById('qfb-toggle-icon');
+    bar.classList.toggle('qfb-collapsed');
+    const collapsed = bar.classList.contains('qfb-collapsed');
+    if (icon) icon.style.transform = collapsed ? 'rotate(180deg)' : 'rotate(0deg)';
+    localStorage.setItem('fc26_qfb_collapsed', collapsed ? '1' : '0');
+}
+
+function applyQfbCollapsedState() {
+    const bar = document.getElementById('quick-fixture-bar');
+    const icon = document.getElementById('qfb-toggle-icon');
+    // Varsayılan: kapalı. Sadece kullanıcı daha önce bilinçli olarak açtıysa ('0') açık kalır.
+    const shouldBeOpen = localStorage.getItem('fc26_qfb_collapsed') === '0';
+    if (bar && !shouldBeOpen) {
+        bar.classList.add('qfb-collapsed');
+        if (icon) icon.style.transform = 'rotate(180deg)';
+    }
+}
+
 
         // =====================================================================
         // --- FİKSTÜR PANELİ ---
@@ -5878,6 +5996,7 @@ function formatShortPlayerName(name) {
             saveToLocalStorage();
             closeFixtureModal();
             renderFixturePanel();
+            renderQuickFixtureBar();
         }
 
         function deleteFixtureMatch() {
@@ -5889,6 +6008,7 @@ function formatShortPlayerName(name) {
             saveToLocalStorage();
             closeFixtureModal();
             renderFixturePanel();
+        renderQuickFixtureBar();
         }
 
         function openMatchResultModal(season, matchId) {
@@ -5940,6 +6060,7 @@ function formatShortPlayerName(name) {
             saveToLocalStorage();
             closeMatchResultModal();
             renderFixturePanel();
+            renderQuickFixtureBar();
         }
 
         function addFixtureEvent() {
@@ -6017,6 +6138,7 @@ function formatShortPlayerName(name) {
             }
             saveToLocalStorage();
             renderFixturePanel();
+            renderQuickFixtureBar();
         }
 
         function saveBulkFixtures() {
@@ -6078,6 +6200,7 @@ function formatShortPlayerName(name) {
                     saveToLocalStorage();
                     closeFixtureBulkModal();
                     renderFixturePanel();
+                    renderQuickFixtureBar();
                 } else {
                     alert('Geçerli formatta maç bulunamadı. Lütfen "Maç No, Müsabaka, Ev, Deplasman" formatında girin.');
                 }
