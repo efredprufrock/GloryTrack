@@ -34,6 +34,15 @@ const TR_EN = {
     "Dil / Language": "Language / Dil",
     "Dil Değiştir / Switch Language": "Switch Language / Dil Değiştir",
     "Takımı Düzenle": "Edit Team",
+    "Tema Rengi": "Theme Color",
+    "Her renk için hem koyu hem açık tema mevcuttur. Sol menüdeki gündüz/gece butonuyla ikisi arasında geçiş yapabilirsiniz.": "Each color has both a dark and a light theme. Use the day/night button in the left menu to switch between them.",
+    "Kırmızı": "Red",
+    "Sarı": "Yellow",
+    "Mavi": "Blue",
+    "Turuncu": "Orange",
+    "Bej - Kahve": "Beige - Brown",
+    "Gri - Antrasit": "Gray - Anthracite",
+    "Yeşil": "Green",
     "Lütfen bir alt kategori seçin.": "Please select a sub-category.",
 
     // Alt menüler
@@ -182,6 +191,39 @@ const TR_EN = {
 };
 
 const EN_TR = Object.fromEntries(Object.entries(TR_EN).map(([tr, en]) => [en, tr]));
+
+const THEME_FAMILIES = [
+    { id: 'red', label: 'Kırmızı', light: '#dc2626', dark: '#7f1d1d' },
+    { id: 'yellow', label: 'Sarı', light: '#facc15', dark: '#854d0e' },
+    { id: 'blue', label: 'Mavi', light: '#3b82f6', dark: '#1e3a8a' },
+    { id: 'orange', label: 'Turuncu', light: '#fb923c', dark: '#9a3412' },
+    { id: 'beige', label: 'Bej - Kahve', light: '#e8dcc0', dark: '#5c2e0d' },
+    { id: 'gray', label: 'Gri - Antrasit', light: '#cbd5e1', dark: '#1e293b' },
+    { id: 'green', label: 'Yeşil', light: '#34d399', dark: '#065f46' }
+];
+
+function renderThemeFamilySwatches() {
+    const container = document.getElementById('theme-family-swatches');
+    if (!container) return;
+    const active = localStorage.getItem('fc26_theme_family') || 'green';
+    container.innerHTML = THEME_FAMILIES.map(f => `
+        <button type="button" onclick="setThemeFamily('${f.id}')" title="${f.label}"
+            class="flex flex-col items-center gap-1.5 p-2 rounded-lg border transition-all ${active === f.id ? 'border-emerald-500 bg-slate-800' : 'border-slate-700 bg-slate-900 hover:border-slate-500'}">
+            <span class="w-7 h-7 rounded-full block shadow-inner border border-black/20" style="background: linear-gradient(135deg, ${f.light} 50%, ${f.dark} 50%);"></span>
+            <span class="text-[9px] font-bold ${active === f.id ? 'text-emerald-400' : 'text-slate-400'} text-center leading-tight">${f.label}</span>
+        </button>
+    `).join('');
+}
+
+function setThemeFamily(familyId) {
+    document.body.setAttribute('data-theme-family', familyId);
+    localStorage.setItem('fc26_theme_family', familyId);
+    renderThemeFamilySwatches();
+}
+
+function applyStoredThemeFamily() {
+    document.body.setAttribute('data-theme-family', localStorage.getItem('fc26_theme_family') || 'green');
+}
 
 let currentLang = localStorage.getItem('fc26_lang') || 'tr';
 const I18N_ATTRS = ['placeholder', 'title', 'aria-label'];
@@ -1086,6 +1128,7 @@ function handleSyncClick() {
         }
 
         window.onload = function() {
+            applyStoredThemeFamily();
             if (loadFromLocalStorage()) {
                 if(managedTeams.kulup && managedTeams.kulup.logoUrl) {
                     document.getElementById('sidebar-team-logo').src = managedTeams.kulup.logoUrl;
@@ -2266,6 +2309,8 @@ function handleFileUpload(event, type) {
             document.getElementById('national-upload-btn').classList.replace('text-emerald-400', 'text-slate-300');
             document.getElementById('national-logo-results').classList.add('hidden');
             
+            renderThemeFamilySwatches();
+
             const modal = document.getElementById('managed-team-modal');
             modal.classList.remove('hidden'); modal.classList.add('flex');
         }
