@@ -378,7 +378,10 @@ function escapeHtml(str) {
         let activeGroupInfo = { context: null, groupType: null, groupIndex: null };
         let activeMatchInfo = { season: null, oppId: null, oppName: null };
         let activeMatchesTemp = [];
-        let formations = { astakim: null, milli: null };
+        let formations = { astakim: { ilk11: null, yedek: null, rezerv: null }, milli: { ilk11: null, yedek: null, rezerv: null } };
+        let activeFormationType = 'ilk11';
+        let tempFormationsAll = { ilk11: null, yedek: null, rezerv: null };
+        const KADRO_TYPE_LABELS = { ilk11: 'İlk 11', yedek: 'Yedek', rezerv: 'Rezerv' };
 
         // Squad State
         let squadContext = 'astakim';
@@ -717,7 +720,21 @@ function getFlagIcon(countryCode) {
             if (data.customTournamentsData) customTournamentsData = data.customTournamentsData;
             if (data.isSetupComplete !== undefined) isSetupComplete = data.isSetupComplete;
             if (data.competitionLogos) competitionLogos = data.competitionLogos;
-            if (data.formations) formations = data.formations;
+            if (data.formations) {
+                formations = data.formations;
+                ['astakim', 'milli'].forEach(ctx => {
+                    if (Array.isArray(formations[ctx])) {
+                        // Eski format: doğrudan İlk 11 dizisiydi -> yeni yapıya taşı
+                        formations[ctx] = { ilk11: formations[ctx], yedek: null, rezerv: null };
+                    } else if (!formations[ctx] || typeof formations[ctx] !== 'object') {
+                        formations[ctx] = { ilk11: null, yedek: null, rezerv: null };
+                    } else {
+                        if (formations[ctx].ilk11 === undefined) formations[ctx].ilk11 = null;
+                        if (formations[ctx].yedek === undefined) formations[ctx].yedek = null;
+                        if (formations[ctx].rezerv === undefined) formations[ctx].rezerv = null;
+                    }
+                });
+            }
 
             // Geriye dönük uyumluluk: eski yedeklerde "milli" kadrosu bulunmayabilir
             if (!squadData.milli) squadData.milli = [];
@@ -3062,7 +3079,7 @@ function handleFileUpload(event, type) {
                     <div class="flex items-center gap-3">
                         <h3 class="text-2xl font-bold text-white flex items-center gap-2">
                             ${squadContext === 'astakim' ? 'As Takım' : (squadContext === 'akademi' ? 'Akademi' : 'Milli Takım')} Gelişim Takibi
-                            ${(squadContext === 'astakim' || squadContext === 'milli') ? `<button onclick="openFormationModal()" class="text-sm bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-600 rounded px-2 py-1 transition-colors shadow-sm" title="İlk 11 Dizilişi"><i class="fa-solid fa-chess-board mr-1"></i>İlk 11</button>` : ''}
+                            ${(squadContext === 'astakim' || squadContext === 'milli') ? `<button onclick="openFormationModal('ilk11')" class="text-sm bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-600 rounded px-2 py-1.5 transition-colors shadow-sm flex items-center justify-center w-8 h-8" title="Kadrolar"><i class="fa-solid fa-people-group"></i></button>` : ''}
                         </h3>
                         <button onclick="openPlayerInfoModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-lg"><i class="fa-solid fa-user-plus mr-1"></i>Oyuncu Ekle</button>                        <button onclick="openSquadBulkModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-lg"><i class="fa-solid fa-list-ol mr-1"></i>Toplu Ekle</button>
                         ${squadContext === 'milli' ? `<button onclick="openNationalCapsBulkModal()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-lg"><i class="fa-solid fa-shirt mr-1"></i>Toplu Maç Ekle</button>` : ''}
@@ -6109,6 +6126,7 @@ function formatShortPlayerName(name) {
         }
 
         function addFixtureEvent() {
+            syncFixtureEvents();
             fixtureEventsTemp.push({ min: '', type: 'US', scorer: '', assist: '' });
             renderFixtureEvents();
         }
@@ -6445,15 +6463,34 @@ let isDraggingFormationNode = false;
 let draggedNodeIndex = null;
 let activeFormationNodeIndex = null;
 
-function openFormationModal() {
+function toggleKadrolarMenu(e) {
+    e.stopPropagation();
+    const dd = document.getElementById('kadrolar-dropdown');
+    if (dd) dd.classList.toggle('hidden');
+}
+function closeKadrolarMenu() {
+    const dd = document.getElementById('kadrolar-dropdown');
+    if (dd) dd.classList.add('hidden');
+}
+document.addEventListener('click', function(e) {
+    const wrapper = document.getElementById('kadrolar-menu-wrapper');
+    if (wrapper && !wrapper.contains(e.target)) closeKadrolarMenu();
+});
+
+function openFormationModal(kadroType = 'ilk11') {
     activeFormationContext = squadContext;
-    document.getElementById('formation-title').innerText = (squadContext === 'astakim' ? 'As Takım' : 'Milli Takım') + ' İlk 11';
+    activeFormationType = kadroType;
+    document.getElementById('formation-title').innerText = (squadContext === 'astakim' ? 'As Takım' : 'Milli Takım') + ' Kadroları';
     
-    if (!formations) formations = { astakim: null, milli: null };
-    if (!formations[activeFormationContext]) {
-        formations[activeFormationContext] = JSON.parse(JSON.stringify(defaultFormation));
-    }
-    tempFormation = JSON.parse(JSON.stringify(formations[activeFormationContext]));
+    if (!formations) formations = { astakim: { ilk11: null, yedek: null, rezerv: null }, milli: { ilk11: null, yedek: null, rezerv: null } };
+    if (!formations[activeFormationContext]) formations[activeFormationContext] = { ilk11: null, yedek: null, rezerv: null };
+
+    tempFormationsAll = {
+        ilk11: JSON.parse(JSON.stringify(formations[activeFormationContext].ilk11 || defaultFormation)),
+        yedek: JSON.parse(JSON.stringify(formations[activeFormationContext].yedek || defaultFormation)),
+        rezerv: JSON.parse(JSON.stringify(formations[activeFormationContext].rezerv || defaultFormation))
+    };
+    tempFormation = tempFormationsAll[activeFormationType];
     
     // Eski kayıtlarda pozisyon yoksa varsayılanı ata
     tempFormation.forEach((node, idx) => {
@@ -6463,12 +6500,38 @@ function openFormationModal() {
     });
     
     updateMockPlayers(); 
+    renderFormationTabs();
     renderFormationNodes();
     closeFormationSelector();
     
     const modal = document.getElementById('formation-modal');
     modal.classList.remove('hidden'); 
     modal.classList.add('flex');
+}
+
+function switchFormationType(type) {
+    closeFormationSelector();
+    activeFormationType = type;
+    tempFormation = tempFormationsAll[type];
+    tempFormation.forEach((node, idx) => {
+        if (node.pos === undefined || node.pos === '') {
+            node.pos = defaultFormation[idx] ? defaultFormation[idx].pos : 'POS';
+        }
+    });
+    renderFormationTabs();
+    renderFormationNodes();
+}
+
+function renderFormationTabs() {
+    ['ilk11', 'yedek', 'rezerv'].forEach(t => {
+        const btn = document.getElementById('ftab-' + t);
+        if (!btn) return;
+        if (t === activeFormationType) {
+            btn.className = 'formation-tab-btn px-3 py-1 rounded-full text-xs font-bold border transition-all bg-emerald-600 text-white border-emerald-500';
+        } else {
+            btn.className = 'formation-tab-btn px-3 py-1 rounded-full text-xs font-bold border transition-all bg-slate-800 text-slate-400 border-slate-700 hover:border-emerald-500/50 hover:text-white';
+        }
+    });
 }
 
 function closeFormationModal() {
@@ -6478,17 +6541,71 @@ function closeFormationModal() {
 }
 
 function saveFormation() {
-    formations[activeFormationContext] = JSON.parse(JSON.stringify(tempFormation));
+    if (!formations[activeFormationContext]) formations[activeFormationContext] = { ilk11: null, yedek: null, rezerv: null };
+    formations[activeFormationContext].ilk11 = tempFormationsAll.ilk11;
+    formations[activeFormationContext].yedek = tempFormationsAll.yedek;
+    formations[activeFormationContext].rezerv = tempFormationsAll.rezerv;
     saveToLocalStorage();
     closeFormationModal();
 }
 
 function resetFormation() {
-    if(confirm('Dizilişi ve oyuncuları sıfırlamak istediğinize emin misiniz?')) {
-        tempFormation = JSON.parse(JSON.stringify(defaultFormation));
+    if(confirm('Bu sekmedeki (' + (KADRO_TYPE_LABELS[activeFormationType] || activeFormationType) + ') dizilişi ve oyuncuları sıfırlamak istediğinize emin misiniz?')) {
+        tempFormationsAll[activeFormationType] = JSON.parse(JSON.stringify(defaultFormation));
+        tempFormation = tempFormationsAll[activeFormationType];
         renderFormationNodes();
         closeFormationSelector();
     }
+}
+
+const AGE_TIER_COLORS = [
+    { max: 15, color: '#60a5fa' }, { max: 18, color: '#93c5fd' }, { max: 21, color: '#4ade80' },
+    { max: 24, color: '#86efac' }, { max: 26, color: '#d9f99d' }, { max: 29, color: '#fde047' },
+    { max: 32, color: '#fdba74' }, { max: 35, color: '#fca5a5' }, { max: 999, color: '#d8b4fe' }
+];
+function getAgeColor(age) {
+    const n = parseInt(age) || 0;
+    const tier = AGE_TIER_COLORS.find(t => n <= t.max);
+    return tier ? tier.color : '#d8b4fe';
+}
+
+const OVR_TIER_COLORS = [
+    { min: 95, color: '#1e3a8a' }, { min: 90, color: '#3b82f6' }, { min: 85, color: '#15803d' },
+    { min: 80, color: '#4ade80' }, { min: 75, color: '#a3e635' }, { min: 70, color: '#facc15' },
+    { min: 65, color: '#fb923c' }, { min: 60, color: '#c2410c' }, { min: 55, color: '#ef4444' },
+    { min: 50, color: '#7f1d1d' }, { min: 0,  color: '#7e22ce' }
+];
+function getOvrColor(ovr) {
+    const n = parseInt(ovr) || 0;
+    const tier = OVR_TIER_COLORS.find(t => n >= t.min);
+    return tier ? tier.color : '#7e22ce';
+}
+
+// Formasyon panelinde gösterilecek "güncel" yaş/OVR - squad grid'deki aynı mantık
+function getPlayerCurrentStatsByName(name, context) {
+    if (!name) return { age: null, ovr: null };
+    let pool = context === 'milli' ? (squadData.milli || []) : [...(squadData.astakim || []), ...(squadData.akademi || [])];
+    const p = pool.find(pl => (pl.name || '').toLowerCase() === name.trim().toLowerCase());
+    if (!p) return { age: null, ovr: null };
+
+    let currentAge = p.joinAge;
+    let currentOvr = p.joinOvr;
+    for (let i = seasonsList.length - 1; i >= 0; i--) {
+        let s = seasonsList[i];
+        if (p.history && p.history[s]) {
+            if (p.history[s].s2a || p.history[s].s2o) {
+                if (p.history[s].s2a) currentAge = p.history[s].s2a;
+                if (p.history[s].s2o) currentOvr = p.history[s].s2o;
+                break;
+            }
+            if (p.history[s].s1a || p.history[s].s1o) {
+                if (p.history[s].s1a) currentAge = p.history[s].s1a;
+                if (p.history[s].s1o) currentOvr = p.history[s].s1o;
+                break;
+            }
+        }
+    }
+    return { age: currentAge, ovr: currentOvr };
 }
 
 function renderFormationNodes() {
@@ -6505,6 +6622,21 @@ function renderFormationNodes() {
             ? `<img src="${pPhoto}" class="w-[72px] h-[72px] rounded-full object-cover border-[5px] border-slate-900 bg-slate-900 shadow-lg draggable-none" draggable="false">` 
             : `<div class="w-[72px] h-[72px] rounded-full bg-slate-800 border-[5px] border-slate-600 flex items-center justify-center text-xl font-black text-white shadow-lg">${node.name ? node.name.charAt(0).toUpperCase() : '+'}</div>`;
 
+        let ageOvrHtml = '';
+        if (node.name) {
+            const stats = getPlayerCurrentStatsByName(node.name, activeFormationContext);
+            const ageColor = getAgeColor(stats.age);
+            const ovrColor = getOvrColor(stats.ovr);
+            ageOvrHtml = `
+                <span class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black text-black border-2 border-slate-900 shadow-md shrink-0" style="background-color:${ageColor}" title="Yaş">${stats.age || '-'}</span>
+            `;
+            var ovrBadgeHtml = `
+                <span class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black text-black border-2 border-slate-900 shadow-md shrink-0" style="background-color:${ovrColor}" title="OVR">${stats.ovr || '-'}</span>
+            `;
+        } else {
+            var ovrBadgeHtml = '';
+        }
+
         const nodeEl = document.createElement('div');
         nodeEl.className = 'absolute flex flex-col items-center justify-center cursor-grab active:cursor-grabbing transform -translate-x-1/2 -translate-y-1/2 z-10 group hover:z-20';
         nodeEl.style.left = node.x + '%';
@@ -6512,7 +6644,11 @@ function renderFormationNodes() {
         
         nodeEl.innerHTML = `
             ${photoHtml}
-            <div id="node-pos-badge-${index}" class="relative -mt-1 z-40 bg-slate-900 pos-${node.pos || 'POS'} text-[11px] font-black px-2 py-[1px] rounded border border-slate-600 shadow-md pointer-events-none tracking-wider">${node.pos || 'POS'}</div>
+            <div class="relative -mt-1 z-40 flex items-center gap-1 pointer-events-none">
+                ${ageOvrHtml}
+                <div id="node-pos-badge-${index}" class="bg-slate-900 pos-${node.pos || 'POS'} text-[11px] font-black px-2 py-[1px] rounded border border-slate-600 shadow-md tracking-wider">${node.pos || 'POS'}</div>
+                ${ovrBadgeHtml}
+            </div>
             <div class="mt-0 bg-black/80 text-white text-sm font-bold px-3 py-1 rounded truncate max-w-[150px] border border-white/10 pointer-events-none relative z-30">${pNameDisplay}</div>
             <div class="absolute -top-1 -right-3 bg-blue-600 hover:bg-blue-500 text-white w-8 h-8 rounded-full text-sm flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer shadow-xl transition-opacity z-50" onclick="promptFormationPlayer(${index}, event)" title="Düzenle"><i class="fa-solid fa-pen"></i></div>
         `;

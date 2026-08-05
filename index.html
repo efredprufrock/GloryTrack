@@ -1047,8 +1047,13 @@
         <div class="bg-slate-800 p-4 sm:p-6 rounded-xl border border-slate-600 w-[95%] max-w-2xl shadow-2xl relative flex flex-col h-[90vh]">
             <button onclick="closeFormationModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white z-10"><i class="fa-solid fa-xmark text-xl"></i></button>
             <h3 class="text-xl font-bold mb-1 text-white" id="formation-title">İlk 11</h3>
+            <div class="flex gap-2 mb-3 shrink-0" id="formation-type-tabs">
+                <button onclick="switchFormationType('ilk11')" id="ftab-ilk11" class="formation-tab-btn px-3 py-1 rounded-full text-xs font-bold border transition-all">İLK 11</button>
+                <button onclick="switchFormationType('yedek')" id="ftab-yedek" class="formation-tab-btn px-3 py-1 rounded-full text-xs font-bold border transition-all">YEDEK</button>
+                <button onclick="switchFormationType('rezerv')" id="ftab-rezerv" class="formation-tab-btn px-3 py-1 rounded-full text-xs font-bold border transition-all">REZERV</button>
+            </div>
             <p class="text-xs text-slate-400 mb-4 shrink-0">Oyuncuları sahada sürükleyerek dizebilirsiniz. İsim atamak için oyuncu noktasının yanındaki kalem ikonuna tıklayın.</p>
-            
+                       
             <div class="flex-1 relative bg-green-800 rounded-lg border-2 border-white/30 overflow-hidden select-none" id="pitch-container">
                 <!-- Sahaya çizilen çizgiler -->
                 <div class="absolute inset-0 pointer-events-none border-[3px] border-white/30 m-4 rounded-sm"></div>
