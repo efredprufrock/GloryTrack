@@ -6862,7 +6862,7 @@ function triggerFormationAutocomplete(val) {
     }
 
     dropdown.innerHTML = matches.map(p => `
-        <div class="formation-ac-item px-3 py-2 border-b border-slate-700/50 hover:bg-emerald-600 cursor-pointer transition-colors flex justify-between items-center" onclick="selectFormationAutocomplete('${escapeHtml(p.name)}', '${p.pos}')">
+        <div class="formation-ac-item px-3 py-2 border-b border-slate-700/50 hover:bg-emerald-600 cursor-pointer transition-colors flex justify-between items-center" data-pname="${escapeHtml(p.name)}" data-ppos="${escapeHtml(p.pos || '')}" onclick="selectFormationAutocomplete(this.dataset.pname, this.dataset.ppos)">
             <span class="font-bold text-xs truncate">${escapeHtml(p.name)}</span>
             <span class="text-[9px] font-black text-slate-300 bg-slate-900/50 px-1.5 py-0.5 rounded border border-slate-700 pos-${p.pos}">${p.pos}</span>
         </div>
