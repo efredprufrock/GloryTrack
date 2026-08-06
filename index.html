@@ -474,12 +474,15 @@
                     </div>
                 </div>
                 
-                <div class="flex justify-between w-full gap-3">
-                    <button id="btn-view-archive" type="button" onclick="toggleArchivePlayer()" class="px-4 py-2.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 font-medium text-sm flex-1 transition-colors">
+                <div class="flex justify-between w-full gap-2">
+                    <button id="btn-view-archive" type="button" onclick="toggleArchivePlayer()" class="px-3 py-2.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 font-medium text-xs sm:text-sm flex-1 transition-colors whitespace-nowrap">
                         <i class="fa-solid fa-box-archive mr-1"></i> Arşive Taşı
                     </button>
-                    <button type="button" onclick="togglePlayerEditMode()" class="px-4 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm flex-1 transition-colors shadow-lg">
-                        <i class="fa-solid fa-pen mr-1"></i> Profili Düzenle
+                    <button id="btn-view-promote" type="button" onclick="promotePlayer()" class="hidden px-3 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm flex-1 transition-colors shadow-lg whitespace-nowrap">
+                        <i class="fa-solid fa-arrow-up mr-1"></i> Yükselt
+                    </button>
+                    <button type="button" onclick="togglePlayerEditMode()" class="px-3 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs sm:text-sm flex-1 transition-colors shadow-lg whitespace-nowrap">
+                        <i class="fa-solid fa-pen mr-1"></i> Düzenle
                     </button>
                 </div>
             </div>
@@ -588,6 +591,7 @@
                         <option value="none">Boş / Normal Not</option>
                         <option value="continue" class="text-slate-400 font-bold">Devam (Kadroda Kaldı)</option>
                         <option value="in" class="text-emerald-400 font-bold">Takıma Katıldı (Gelen)</option>
+                        <option value="academy" class="text-cyan-400 font-bold">Altyapıdan Geldi</option>
                         <option value="renew" class="text-purple-400 font-bold">Sözleşme Yeniledi</option>
                         <option value="loan_in" class="text-blue-400 font-bold">Kiralık Gelen</option>
                         <option value="loan_out" class="text-orange-400 font-bold">Kiralık Giden</option>
@@ -595,8 +599,17 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-300 mb-1">Açıklama Notu</label>
-                    <input type="text" id="pc-tr-note" class="w-full bg-slate-900 border border-slate-600 rounded p-2.5 text-sm text-white outline-none focus:border-emerald-500" placeholder="Örn: FENERBAHÇE ->" autocomplete="off">
+                    <label class="block text-xs font-bold text-slate-300 mb-1">Takım Adı / Açıklama Notu</label>
+                    <div class="flex gap-2 mb-2">
+                        <input type="text" id="pc-tr-name-input" class="w-full bg-slate-900 border border-slate-600 rounded p-2.5 text-sm text-white outline-none focus:border-emerald-500" placeholder="Örn: WATFORD" autocomplete="off" list="global-team-datalist" onchange="if(typeof autoFillTeamLogo === 'function') autoFillTeamLogo(this, 'pc-tr-url-input')">
+                        <button onclick="searchTeamLogos('pc-tr')" class="bg-blue-600 hover:bg-blue-500 px-3 rounded text-white whitespace-nowrap" title="Logoları Ara"><i class="fa-solid fa-search"></i></button>
+                    </div>
+                    <div id="pc-tr-logo-results" class="flex gap-2 overflow-x-auto hidden py-2 mb-2 hide-scrollbar bg-slate-950/50 rounded px-2 items-center border border-slate-700/50"></div>
+                    <div class="flex gap-2">
+                        <input type="text" id="pc-tr-url-input" class="flex-1 bg-slate-900 border border-slate-600 rounded p-2 text-xs text-white outline-none focus:border-emerald-500" placeholder="Logo URL (Varsa metin yerine logo görünür)">
+                        <input type="file" id="pc-tr-file-input" class="hidden" accept="image/*" onchange="handleFileUpload(event, 'pc-tr')">
+                        <button type="button" id="pc-tr-upload-btn" onclick="document.getElementById('pc-tr-file-input').click()" class="bg-slate-700 px-3 py-2 rounded text-slate-300"><i class="fa-solid fa-folder-open"></i></button>
+                    </div>
                 </div>
             </div>
 

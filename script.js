@@ -163,6 +163,7 @@ const TR_EN = {
     "Kiralık Giden": "Outgoing Loan",
     "Devam (Kadroda Kaldı)": "Continuing (Stayed in Squad)",
     "Sözleşme Yeniledi": "Renewed Contract",
+    "Altyapıdan Geldi": "From Academy",
     "Transfer Ekle": "Add Transfer",
     "Takıma Katıldı (Gelen)": "Joined Team (In)",
     "Takımdan Ayrıldı (Giden)": "Left Team (Out)",
@@ -3052,19 +3053,32 @@ function handleFileUpload(event, type) {
                 return `<span class="age-badge ${colorClass}">${age}</span>`;
             };
 
-            const getTrBadge = (type, text) => {
-                if (type === 'continue') return '';
-                if (!text) return '';
+            const getTrBadge = (type, text, logo) => {
+                if (type === 'continue' || type === 'none') return '';
+                
+                // Eğer metin ve logo yoksa normalde rozet çizilmez, ama "academy" seçiliyse tek başına ikon çizilmesine izin veriyoruz
+                if (!text && !logo && type !== 'academy') return '';
+                
                 let bg = 'bg-slate-700 text-slate-300 border-slate-600';
                 let icon = '';
                 
-                if (type === 'in') { bg = 'bg-emerald-600 text-white border-emerald-500 shadow-sm'; icon = '<i class="fa-solid fa-arrow-right-to-bracket mr-1"></i>'; }
-                if (type === 'out') { bg = 'bg-red-600 text-white border-red-500 shadow-sm'; icon = '<i class="fa-solid fa-arrow-right-from-bracket mr-1"></i>'; }
-                if (type === 'renew') { bg = 'bg-purple-600 text-white border-purple-500 shadow-sm'; icon = '<i class="fa-solid fa-file-signature mr-1"></i>'; }
-                if (type === 'loan_in') { bg = 'bg-blue-600 text-white border-blue-500 shadow-sm'; icon = '<i class="fa-solid fa-handshake-angle mr-1"></i>'; }
-                if (type === 'loan_out') { bg = 'bg-orange-600 text-white border-orange-500 shadow-sm'; icon = '<i class="fa-solid fa-paper-plane mr-1"></i>'; }
+                if (type === 'in') { bg = 'bg-emerald-600 text-white border-emerald-500 shadow-sm'; icon = '<i class="fa-solid fa-arrow-right-to-bracket"></i>'; }
+                if (type === 'academy') { bg = 'bg-cyan-600 text-white border-cyan-500 shadow-sm'; icon = '<i class="fa-solid fa-graduation-cap"></i>'; }
+                if (type === 'out') { bg = 'bg-red-600 text-white border-red-500 shadow-sm'; icon = '<i class="fa-solid fa-arrow-right-from-bracket"></i>'; }
+                if (type === 'renew') { bg = 'bg-purple-600 text-white border-purple-500 shadow-sm'; icon = '<i class="fa-solid fa-file-signature"></i>'; }
+                if (type === 'loan_in') { bg = 'bg-blue-600 text-white border-blue-500 shadow-sm'; icon = '<i class="fa-solid fa-handshake-angle"></i>'; }
+                if (type === 'loan_out') { bg = 'bg-orange-600 text-white border-orange-500 shadow-sm'; icon = '<i class="fa-solid fa-paper-plane"></i>'; }
                 
-                return `<div class="inline-block px-1.5 py-[1px] rounded font-bold border truncate text-[9px] max-w-full ${bg}">${icon}${text}</div>`;
+                let contentHtml = '';
+                if (logo) {
+                    contentHtml = `<img src="${logo}" title="${escapeHtml(text || '')}" class="h-3 w-auto object-contain bg-white/20 rounded-[2px] px-0.5" style="max-width:24px;">`;
+                } else if (text) {
+                    contentHtml = `<span>${text}</span>`;
+                }
+
+                // inline-flex ve gap-1 kullanıldığı için içerik boş olduğunda (sadece ikon varsa)
+                // fazladan boşluk oluşmaz, ikon otomatik olarak mükemmel ortalanır.
+                return `<div class="inline-flex items-center gap-1 px-1.5 py-[2px] rounded font-bold border truncate text-[9px] max-w-full ${bg}">${icon}${contentHtml}</div>`;
             };
 
             const getTdBackground = (type, text, stripColor) => {
@@ -3126,8 +3140,9 @@ function handleFileUpload(event, type) {
             if (players.length === 0) {
                 html += `<tr><td colspan="100%" class="p-4 text-center text-slate-500">Kayıtlı oyuncu bulunmuyor.</td></tr>`;
             } else {
-                let activePlayers = players.filter(p => !p.isArchived);
-                let archivedPlayers = players.filter(p => p.isArchived);
+                let activePlayers = players.filter(p => !p.isArchived && !p.isPromoted);
+                let archivedPlayers = players.filter(p => p.isArchived && !p.isPromoted);
+                let promotedPlayers = players.filter(p => p.isPromoted);
 
                 const renderPlayerList = (list, isArchivedSection) => {
                     // Sütunların en yüksek değerlerini bulmak için sayaçlar
@@ -3306,7 +3321,7 @@ function handleFileUpload(event, type) {
                                         return `<td class="p-1 text-center border-r border-b border-slate-700/50 align-middle cursor-pointer transition-colors hover:bg-slate-800/80 ${acadBg}" onclick="openPlayerCellModal('${p.id}', '${season}', '${cellKey}')">${cellDisplay}</td>`;
                                     } else {
                                         return `<td class="p-1 text-center border-r border-b border-slate-700/50 align-middle cursor-pointer transition-colors hover:bg-slate-800/80 ${cellTypeBg}" onclick="openPlayerCellModal('${p.id}', '${season}', '${cellKey}')" title="${sData[cellKey] || ''}">
-                                                    ${getTrBadge(sData[`${cellKey}Type`], sData[cellKey])}
+                                                    ${getTrBadge(sData[`${cellKey}Type`], sData[cellKey], sData[`${cellKey}Logo`])}
                                                  </td>`;
                                     }
                                 };
@@ -3333,6 +3348,18 @@ function handleFileUpload(event, type) {
                 };
 
                 html += renderPlayerList(activePlayers, false);
+
+                if (promotedPlayers.length > 0) {
+                    html += `
+                        <tr>
+                            <td colspan="100%" class="h-14 bg-slate-900 border-y-2 border-slate-600 shadow-inner align-middle text-center relative overflow-hidden">
+                                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-emerald-900/40 to-transparent"></div>
+                                <span class="relative z-10 text-sm font-black text-emerald-400 tracking-[0.3em]"><i class="fa-solid fa-arrow-up mr-2"></i>PROMOTED</span>
+                            </td>
+                        </tr>
+                    `;
+                    html += renderPlayerList(promotedPlayers, true);
+                }
 
                 if (archivedPlayers.length > 0) {
                     html += `
@@ -3645,12 +3672,25 @@ async function autoFetchPlayerPhoto(playerName, urlInputId) {
 
                 // Arşiv butonu durumu (Görüntüleme Ekranı)
                 const archBtnView = document.getElementById('btn-view-archive');
-                if(p.isArchived) {
-                    archBtnView.innerHTML = '<i class="fa-solid fa-box-open mr-1"></i> Arşivden Çıkar';
-                    archBtnView.className = 'px-4 py-2.5 rounded-lg bg-blue-900/50 hover:bg-blue-800 text-blue-200 font-medium text-sm flex-1 transition-colors';
+                if (p.isPromoted) {
+                    archBtnView.classList.add('hidden');
                 } else {
-                    archBtnView.innerHTML = '<i class="fa-solid fa-box-archive mr-1"></i> Arşive Taşı';
-                    archBtnView.className = 'px-4 py-2.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 font-medium text-sm flex-1 transition-colors';
+                    archBtnView.classList.remove('hidden');
+                    if(p.isArchived) {
+                        archBtnView.innerHTML = '<i class="fa-solid fa-box-open mr-1"></i> Arşivden Çıkar';
+                        archBtnView.className = 'px-3 py-2.5 rounded-lg bg-blue-900/50 hover:bg-blue-800 text-blue-200 font-medium text-xs sm:text-sm flex-1 transition-colors whitespace-nowrap';
+                    } else {
+                        archBtnView.innerHTML = '<i class="fa-solid fa-box-archive mr-1"></i> Arşive Taşı';
+                        archBtnView.className = 'px-3 py-2.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 font-medium text-xs sm:text-sm flex-1 transition-colors whitespace-nowrap';
+                    }
+                }
+                
+                // Yükselt (Promote) butonu durumu
+                const promoteBtnView = document.getElementById('btn-view-promote');
+                if (squadContext === 'akademi' && !p.isPromoted) {
+                    promoteBtnView.classList.remove('hidden');
+                } else {
+                    promoteBtnView.classList.add('hidden');
                 }
              
 
@@ -3769,6 +3809,27 @@ async function autoFetchPlayerPhoto(playerName, urlInputId) {
             }
         }
 
+        function promotePlayer() {
+            if(confirm("Oyuncuyu As Takıma yükseltmek istediğinize emin misiniz? (Oyuncu Akademi listesinde 'PROMOTED' bölümüne alınır ve As Takım kadrosuna kopyalanır.)")) {
+                let p = squadData[squadContext].find(pl => pl.id === activePlayerId);
+                if(p) {
+                    p.isPromoted = true;
+                    // Kopyasını As Takıma ekle
+                    let newPlayer = JSON.parse(JSON.stringify(p));
+                    newPlayer.id = 'p_' + Date.now();
+                    newPlayer.isPromoted = false;
+                    newPlayer.isArchived = false;
+                    newPlayer.role = playerRoles['astakim'] ? (playerRoles['astakim'][0] || 'Rotasyon') : 'Rotasyon';
+                    if (!squadData['astakim']) squadData['astakim'] = [];
+                    squadData['astakim'].push(newPlayer);
+                    
+                    saveToLocalStorage();
+                    closePlayerInfoModal();
+                    renderSquadGrid();
+                }
+            }
+        }
+
         function openPlayerCellModal(id, season, type) {
             activePlayerId = id;
             activePlayerSeason = season;
@@ -3800,7 +3861,14 @@ async function autoFetchPlayerPhoto(playerName, urlInputId) {
                 } else {
                     document.getElementById('pc-form-transfer').classList.remove('hidden');
                     document.getElementById('pc-tr-type').value = sData[`${type}Type`] || 'none';
-                    document.getElementById('pc-tr-note').value = sData[type] || '';
+                    document.getElementById('pc-tr-name-input').value = sData[type] || '';
+                    document.getElementById('pc-tr-url-input').value = sData[`${type}Logo`] || '';
+                    
+                    fileUploads['pc-tr'] = null;
+                    document.getElementById('pc-tr-file-input').value = '';
+                    document.getElementById('pc-tr-upload-btn').classList.replace('text-emerald-400', 'text-slate-300');
+                    document.getElementById('pc-tr-logo-results').innerHTML = '';
+                    document.getElementById('pc-tr-logo-results').classList.add('hidden');
                 }
             } else {
                 document.getElementById('pc-form-stat').classList.remove('hidden');
@@ -3837,7 +3905,10 @@ async function autoFetchPlayerPhoto(playerName, urlInputId) {
                     sData[`${activeCellType}_acadPot`] = document.getElementById('pc-acad-pot-input').value.trim();
                 } else {
                     sData[`${activeCellType}Type`] = document.getElementById('pc-tr-type').value;
-                    sData[activeCellType] = document.getElementById('pc-tr-note').value.trim();
+                    sData[activeCellType] = document.getElementById('pc-tr-name-input').value.trim();
+                    
+                    let urlVal = document.getElementById('pc-tr-url-input').value.trim();
+                    sData[`${activeCellType}Logo`] = fileUploads['pc-tr'] || (urlVal !== "Yerel Dosya Seçildi" && urlVal !== "Yerel Dosya Yüklendi (Sıkıştırıldı)" ? urlVal : null);
                 }
             } else {
                 sData[`${activeCellType}a`] = document.getElementById('pc-st-age').value;
