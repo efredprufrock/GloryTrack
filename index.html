@@ -966,6 +966,42 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal: Toplu Yaş / OVR Girişi -->
+    <div id="bulk-stat-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[100] fade-in backdrop-blur-sm">
+        <div class="bg-slate-800 p-6 rounded-xl border border-slate-600 w-[95%] max-w-lg shadow-2xl relative max-h-[90vh] flex flex-col">
+            <button onclick="closeBulkStatModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white z-10"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <h3 class="text-xl font-bold mb-1 text-white" id="bs-modal-title">Toplu Yaş / OVR Girişi</h3>
+            <p class="text-sm text-emerald-400 mb-4" id="bs-modal-subtitle">Sezon - Dönem</p>
+
+            <div id="bs-players-container" class="space-y-2 overflow-y-auto pr-1 flex-1 hide-scrollbar">
+                <!-- JS ile doldurulacak -->
+            </div>
+
+            <div class="flex justify-end gap-3 mt-4 pt-4 border-t border-slate-700 shrink-0">
+                <button onclick="closeBulkStatModal()" class="px-5 py-2.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-medium transition-colors">İptal</button>
+                <button onclick="saveBulkStatModal()" class="px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition-colors">Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Lig Tarihi Toplu Puan Girişi -->
+    <div id="bulk-league-pts-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[100] fade-in backdrop-blur-sm">
+        <div class="bg-slate-800 p-6 rounded-xl border border-slate-600 w-[95%] max-w-lg shadow-2xl relative max-h-[90vh] flex flex-col">
+            <button onclick="closeBulkLeaguePtsModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white z-10"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <h3 class="text-xl font-bold mb-1 text-white">Toplu Puan Girişi</h3>
+            <p class="text-sm text-emerald-400 mb-4" id="blp-modal-subtitle">Sezon</p>
+
+            <div id="blp-teams-container" class="space-y-1.5 overflow-y-auto pr-1 flex-1 hide-scrollbar">
+                <!-- JS ile doldurulacak -->
+            </div>
+
+            <div class="flex justify-end gap-3 mt-4 pt-4 border-t border-slate-700 shrink-0">
+                <button onclick="closeBulkLeaguePtsModal()" class="px-5 py-2.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-medium transition-colors">İptal</button>
+                <button onclick="saveBulkLeaguePtsModal()" class="px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition-colors">Kaydet</button>
+            </div>
+        </div>
+    </div>
     
     <!-- Modal: Müsabaka Tablosu Toplu Ekleme -->
     <div id="tournament-table-bulk-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[100] fade-in backdrop-blur-sm">

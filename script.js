@@ -397,6 +397,8 @@ function escapeHtml(str) {
         let activePlayerId = null;
         let activePlayerSeason = null;
         let activeCellType = '';
+        let activeBulkStatSeason = null;
+        let activeBulkStatCellKey = null;
 
         // League History State
         let leagueHistoryData = [
@@ -408,6 +410,7 @@ function escapeHtml(str) {
         let leagueSort = { field: 'total', asc: false };
         let highlightedLeagueTeamId = null;
         let currentSortedLeagueTeams = [];
+        let activeBulkLeagueSeason = null;
 
         // Gol ve Asist State
         let statExpanded = { kulup: {}, milli: {} };
@@ -1078,7 +1081,7 @@ function handleSyncClick() {
             'opponent-editor-modal', 'group-editor-modal', 'player-info-modal',
             'player-cell-modal', 'match-editor-modal', 'season-stats-modal',
             'league-team-modal', 'league-team-bulk-modal', 'league-cell-modal', 'transfer-editor-modal', 'fixture-match-modal', 'match-result-modal',
-            'fixture-bulk-modal', 'squad-bulk-modal', 'tournament-table-bulk-modal', 'national-caps-bulk-modal', 'formation-modal', 'euro-leagues-bulk-modal'
+            'fixture-bulk-modal', 'squad-bulk-modal', 'tournament-table-bulk-modal', 'national-caps-bulk-modal', 'formation-modal', 'euro-leagues-bulk-modal', 'bulk-stat-modal', 'bulk-league-pts-modal'
         ];
         const MODAL_CLOSE_FNS = {
             'trophy-modal': () => closeTrophyModal(),
@@ -1101,7 +1104,9 @@ function handleSyncClick() {
             'tournament-table-bulk-modal': () => closeTournamentTableBulkModal(),
             'national-caps-bulk-modal': () => closeNationalCapsBulkModal(),
             'euro-leagues-bulk-modal': () => closeEuroLeaguesBulkModal(),
-            'formation-modal': () => closeFormationModal()
+            'formation-modal': () => closeFormationModal(),
+            'bulk-stat-modal': () => closeBulkStatModal(),
+            'bulk-league-pts-modal': () => closeBulkLeaguePtsModal()
         };
 
         document.addEventListener('keydown', function(e) {
@@ -3127,12 +3132,14 @@ function handleFileUpload(event, type) {
             });
             html += `</tr><tr>`;
 
+            const bulkStatBtn = (season, cellKey) => `<button onclick="event.stopPropagation(); openBulkStatModal('${season.replace(/'/g,"\\'")}', '${cellKey}')" class="text-slate-400 hover:text-emerald-400 transition-colors" title="Toplu Yaş/OVR Gir"><i class="fa-solid fa-bolt text-[9px]"></i></button>`;
+
             squadSeasons.forEach(season => {
                 html += `
-                    <th class="p-1 border-r border-b border-slate-700 bg-slate-900 text-[9px] font-bold text-slate-300 min-w-[70px]">HAZ-ŞUB</th>
-                    <th class="p-1 border-r border-b border-slate-700 bg-orange-900/30 text-[9px] font-bold text-orange-300 min-w-[90px]">KIŞ TR.</th>
-                    <th class="p-1 border-r border-b border-slate-700 bg-slate-900 text-[9px] font-bold text-slate-300 min-w-[70px]">ARA-EYL</th>
-                    <th class="p-1 border-r border-b border-slate-700 bg-blue-900/30 text-[9px] font-bold text-blue-300 min-w-[90px]">YAZ TR.</th>
+                    <th class="p-1 border-r border-b border-slate-700 bg-slate-900 text-[9px] font-bold text-slate-300 min-w-[70px]"><div class="flex items-center justify-center gap-1.5">HAZ-ŞUB ${bulkStatBtn(season, 's2')}</div></th>
+                    <th class="p-1 border-r border-b border-slate-700 bg-orange-900/30 text-[9px] font-bold text-orange-300 min-w-[90px]"><div class="flex items-center justify-center gap-1.5">KIŞ TR. ${bulkStatBtn(season, 't2')}</div></th>
+                    <th class="p-1 border-r border-b border-slate-700 bg-slate-900 text-[9px] font-bold text-slate-300 min-w-[70px]"><div class="flex items-center justify-center gap-1.5">ARA-EYL ${bulkStatBtn(season, 's1')}</div></th>
+                    <th class="p-1 border-r border-b border-slate-700 bg-blue-900/30 text-[9px] font-bold text-blue-300 min-w-[90px]"><div class="flex items-center justify-center gap-1.5">YAZ TR. ${bulkStatBtn(season, 't1')}</div></th>
                 `;
             });
             html += `</tr></thead><tbody>`;
@@ -3292,54 +3299,53 @@ function handleFileUpload(event, type) {
 
                             squadSeasons.forEach(season => {
                                 const sData = (p.history && p.history[season]) ? p.history[season] : {};
-                                
-                                let s2CellBg = sData.s2a || sData.s2o ? group.strip : 'bg-transparent';
-                                let t2CellBg = getTdBackground(sData.t2Type, sData.t2, group.strip);
-                                let s1CellBg = sData.s1a || sData.s1o ? group.strip : 'bg-transparent';
-                                let t1CellBg = getTdBackground(sData.t1Type, sData.t1, group.strip);
 
-                                // YENİ: S2 (İkinci Yarı) için OVR Farkı Hesaplama
-                                let s2Prev = getPrevOvr(p, season, 's2');
-                                let s2Delta = getDeltaHtml(sData.s2o, s2Prev);
-                                let s2Str = (sData.s2a || sData.s2o) ? `
-                                    <div class="flex items-center justify-center w-full h-full">
-                                        <span class="text-[10px] text-slate-300 font-mono drop-shadow-md mr-1.5">${sData.s2a || ''}</span>
-                                        ${renderOvrBadge(sData.s2o)}
-                                        ${s2Delta}
-                                    </div>` : '';
-                                resultHtml += `<td class="p-0 border-r border-b border-slate-700/50 hover:bg-slate-800/80 align-middle cursor-pointer text-center transition-colors ${s2CellBg}" onclick="openPlayerCellModal('${p.id}', '${season}', 's2')">${s2Str}</td>`;
+                                const getSeasonCellBg = (cellKey) => {
+                                    const hasStat = sData[`${cellKey}a`] || sData[`${cellKey}o`];
+                                    const hasTrType = sData[`${cellKey}Type`] && sData[`${cellKey}Type`] !== 'none';
+                                    const hasTrText = sData[cellKey] && sData[cellKey].trim() !== '';
+                                    const hasAcadPot = sData[`${cellKey}_acadPot`];
 
-                                const renderAcadOrTrCell = (cellKey, cellTypeBg) => {
-                                    if (squadContext === 'akademi') {
-                                        let potVal = sData[`${cellKey}_acadPot`];
-                                        // Mevkiye göre hücre arka plan sınıfını otomatik belirle (GK: orange, DEF: blue, MID: green, FWD: red)
+                                    if (squadContext === 'akademi' && hasAcadPot) {
                                         let macroPos = getMacroGroupForPos(p.pos);
                                         let posBgMap = { GK: 'bg-orange-600/30', DEF: 'bg-blue-600/30', MID: 'bg-green-600/30', FWD: 'bg-red-600/30' };
-                                        let acadBg = potVal ? (posBgMap[macroPos] || cellTypeBg) : cellTypeBg;
-                                        
-                                        let cellDisplay = potVal ? `<span class="text-[9px] font-black text-emerald-400 bg-slate-950/90 border border-emerald-600/70 px-1.5 py-[1px] rounded shadow-inner">${potVal}</span>` : '';
-                                        return `<td class="p-1 text-center border-r border-b border-slate-700/50 align-middle cursor-pointer transition-colors hover:bg-slate-800/80 ${acadBg}" onclick="openPlayerCellModal('${p.id}', '${season}', '${cellKey}')">${cellDisplay}</td>`;
-                                    } else {
-                                        return `<td class="p-1 text-center border-r border-b border-slate-700/50 align-middle cursor-pointer transition-colors hover:bg-slate-800/80 ${cellTypeBg}" onclick="openPlayerCellModal('${p.id}', '${season}', '${cellKey}')" title="${sData[cellKey] || ''}">
-                                                    ${getTrBadge(sData[`${cellKey}Type`], sData[cellKey], sData[`${cellKey}Logo`])}
-                                                 </td>`;
+                                        return posBgMap[macroPos] || group.strip;
                                     }
+                                    if (hasStat || hasTrType || hasTrText || hasAcadPot) return group.strip;
+                                    return 'bg-transparent';
                                 };
 
-                                resultHtml += renderAcadOrTrCell('t2', t2CellBg);
-                                         
-                                // YENİ: S1 (İlk Yarı) için OVR Farkı Hesaplama
-                                let s1Prev = getPrevOvr(p, season, 's1');
-                                let s1Delta = getDeltaHtml(sData.s1o, s1Prev);
-                                let s1Str = (sData.s1a || sData.s1o) ? `
-                                    <div class="flex items-center justify-center w-full h-full">
-                                        <span class="text-[10px] text-slate-300 font-mono drop-shadow-md mr-1.5">${sData.s1a || ''}</span>
-                                        ${renderOvrBadge(sData.s1o)}
-                                        ${s1Delta}
-                                    </div>` : '';
-                                resultHtml += `<td class="p-0 border-r border-b border-slate-700/50 hover:bg-slate-800/80 align-middle cursor-pointer text-center transition-colors ${s1CellBg}" onclick="openPlayerCellModal('${p.id}', '${season}', 's1')">${s1Str}</td>`;
-                                
-                                resultHtml += renderAcadOrTrCell('t1', t1CellBg);
+                                const renderTrOrAcadBadge = (cellKey) => {
+                                    if (squadContext === 'akademi' && (cellKey === 't1' || cellKey === 't2')) {
+                                        let potVal = sData[`${cellKey}_acadPot`];
+                                        return potVal ? `<span class="text-[9px] font-black text-emerald-400 bg-slate-950/90 border border-emerald-600/70 px-1.5 py-[1px] rounded shadow-inner">${potVal}</span>` : '';
+                                    }
+                                    return getTrBadge(sData[`${cellKey}Type`], sData[cellKey], sData[`${cellKey}Logo`]) || '';
+                                };
+
+                                const renderSeasonCell = (cellKey) => {
+                                    const bg = getSeasonCellBg(cellKey);
+                                    const age = sData[`${cellKey}a`];
+                                    const ovr = sData[`${cellKey}o`];
+                                    const prevKey = (cellKey === 't1') ? 's1' : (cellKey === 't2') ? 's2' : cellKey;
+                                    const prevOvr = getPrevOvr(p, season, prevKey);
+                                    const delta = getDeltaHtml(ovr, prevOvr);
+                                    const trBadge = renderTrOrAcadBadge(cellKey);
+
+                                    const content = `
+                                        <div class="flex items-center justify-center gap-1.5 w-full h-3">
+                                            <span class="text-[10px] text-slate-300 font-mono drop-shadow-md">${age || ''}</span>
+                                            ${renderOvrBadge(ovr)}
+                                            ${delta}
+                                            ${trBadge}
+                                        </div>`;
+                                    return `<td class="p-0 border-r border-b border-slate-700/50 hover:bg-slate-800/80 align-middle cursor-pointer text-center transition-colors ${bg}" onclick="openPlayerCellModal('${p.id}', '${season}', '${cellKey}')">${content}</td>`;
+                                };
+
+                                resultHtml += renderSeasonCell('s2');
+                                resultHtml += renderSeasonCell('t2');
+                                resultHtml += renderSeasonCell('s1');
+                                resultHtml += renderSeasonCell('t1');
                             });
                             resultHtml += `</tr>`;
                         });
@@ -3847,40 +3853,37 @@ async function autoFetchPlayerPhoto(playerName, urlInputId) {
             
             document.getElementById('pc-title').innerText = titles[type];
             document.getElementById('pc-subtitle').innerText = `${p.name} - ${season} Sezonu`;
-            
-            document.getElementById('pc-form-transfer').classList.add('hidden');
-            document.getElementById('pc-form-stat').classList.add('hidden');
+
             const acadPotBox = document.getElementById('pc-form-acad-pot');
-            if (acadPotBox) acadPotBox.classList.add('hidden');
-            
-            if (type === 't1' || type === 't2') {
-                if (squadContext === 'akademi') {
-                    if (acadPotBox) acadPotBox.classList.remove('hidden');
-                    document.getElementById('pc-acad-pot-input').value = sData[`${type}_acadPot`] || '';
-                    setTimeout(() => document.getElementById('pc-acad-pot-input').focus(), 50);
-                } else {
-                    document.getElementById('pc-form-transfer').classList.remove('hidden');
-                    document.getElementById('pc-tr-type').value = sData[`${type}Type`] || 'none';
-                    document.getElementById('pc-tr-name-input').value = sData[type] || '';
-                    document.getElementById('pc-tr-url-input').value = sData[`${type}Logo`] || '';
-                    
-                    fileUploads['pc-tr'] = null;
-                    document.getElementById('pc-tr-file-input').value = '';
-                    document.getElementById('pc-tr-upload-btn').classList.replace('text-emerald-400', 'text-slate-300');
-                    document.getElementById('pc-tr-logo-results').innerHTML = '';
-                    document.getElementById('pc-tr-logo-results').classList.add('hidden');
-                }
+            const isAcadTransferSlot = (squadContext === 'akademi' && (type === 't1' || type === 't2'));
+
+            if (isAcadTransferSlot) {
+                if (acadPotBox) acadPotBox.classList.remove('hidden');
+                document.getElementById('pc-acad-pot-input').value = sData[`${type}_acadPot`] || '';
             } else {
-                document.getElementById('pc-form-stat').classList.remove('hidden');
-                
-                // YENİ: Eğer yaş daha önce kaydedilmemişse, otomatik hesaplayıp kutuya yerleştiriyoruz.
-                let ageVal = sData[`${type}a`];
-                if (!ageVal) ageVal = getExpectedAge(p, season, type);
-                
-                document.getElementById('pc-st-age').value = ageVal || '';
-                document.getElementById('pc-st-ovr').value = sData[`${type}o`] || '';
-                
-                // OVR kutusuna otomatik odaklan (Kullanıcı yaşla uğraşmadan direkt reytingi yazabilsin)
+                if (acadPotBox) acadPotBox.classList.add('hidden');
+            }
+
+            // Artık her hücre tipinde (Transfer veya Gelişim) hem Yaş/OVR hem Transfer bilgisi birlikte girilebiliyor
+            document.getElementById('pc-form-stat').classList.remove('hidden');
+            const prevKey = (type === 't1') ? 's1' : (type === 't2') ? 's2' : type;
+            let ageVal = sData[`${type}a`];
+            if (!ageVal) ageVal = getExpectedAge(p, season, prevKey);
+            document.getElementById('pc-st-age').value = ageVal || '';
+            document.getElementById('pc-st-ovr').value = sData[`${type}o`] || '';
+
+            document.getElementById('pc-form-transfer').classList.remove('hidden');
+            document.getElementById('pc-tr-type').value = sData[`${type}Type`] || 'none';
+            document.getElementById('pc-tr-name-input').value = sData[type] || '';
+            document.getElementById('pc-tr-url-input').value = sData[`${type}Logo`] || '';
+
+            fileUploads['pc-tr'] = null;
+            document.getElementById('pc-tr-file-input').value = '';
+            document.getElementById('pc-tr-upload-btn').classList.replace('text-emerald-400', 'text-slate-300');
+            document.getElementById('pc-tr-logo-results').innerHTML = '';
+            document.getElementById('pc-tr-logo-results').classList.add('hidden');
+
+            if (!isAcadTransferSlot) {
                 setTimeout(() => document.getElementById('pc-st-ovr').focus(), 50);
             }
             
@@ -3899,25 +3902,110 @@ async function autoFetchPlayerPhoto(playerName, urlInputId) {
             if(!p.history[activePlayerSeason]) p.history[activePlayerSeason] = {};
             
             let sData = p.history[activePlayerSeason];
-            
-            if (activeCellType === 't1' || activeCellType === 't2') {
-                if (squadContext === 'akademi') {
-                    sData[`${activeCellType}_acadPot`] = document.getElementById('pc-acad-pot-input').value.trim();
-                } else {
-                    sData[`${activeCellType}Type`] = document.getElementById('pc-tr-type').value;
-                    sData[activeCellType] = document.getElementById('pc-tr-name-input').value.trim();
-                    
-                    let urlVal = document.getElementById('pc-tr-url-input').value.trim();
-                    sData[`${activeCellType}Logo`] = fileUploads['pc-tr'] || (urlVal !== "Yerel Dosya Seçildi" && urlVal !== "Yerel Dosya Yüklendi (Sıkıştırıldı)" ? urlVal : null);
-                }
-            } else {
-                sData[`${activeCellType}a`] = document.getElementById('pc-st-age').value;
-                sData[`${activeCellType}o`] = document.getElementById('pc-st-ovr').value;
+            const type = activeCellType;
+            const isAcadTransferSlot = (squadContext === 'akademi' && (type === 't1' || type === 't2'));
+
+            if (isAcadTransferSlot) {
+                sData[`${type}_acadPot`] = document.getElementById('pc-acad-pot-input').value.trim();
             }
+
+            // Gelişim (Yaş / OVR) - artık her hücre tipinde kaydedilir
+            sData[`${type}a`] = document.getElementById('pc-st-age').value;
+            sData[`${type}o`] = document.getElementById('pc-st-ovr').value;
+
+            // Transfer bilgisi - artık her hücre tipinde kaydedilir
+            sData[`${type}Type`] = document.getElementById('pc-tr-type').value;
+            sData[type] = document.getElementById('pc-tr-name-input').value.trim();
+            let urlVal = document.getElementById('pc-tr-url-input').value.trim();
+            sData[`${type}Logo`] = fileUploads['pc-tr'] || (urlVal !== "Yerel Dosya Seçildi" && urlVal !== "Yerel Dosya Yüklendi (Sıkıştırıldı)" ? urlVal : null);
             
             saveToLocalStorage();
             closePlayerCellModal();
             renderSquadGrid();
+        }
+
+        function openBulkStatModal(season, cellKey) {
+            activeBulkStatSeason = season;
+            activeBulkStatCellKey = cellKey;
+
+            const titles = { 't1': 'YAZ Transfer Dönemi', 's1': 'Eylül - Aralık Gelişimi', 't2': 'KIŞ Transfer Dönemi', 's2': 'Şubat - Haziran Gelişimi' };
+            document.getElementById('bs-modal-title').innerText = 'Toplu Yaş / OVR Girişi';
+            document.getElementById('bs-modal-subtitle').innerText = `${season} Sezonu - ${titles[cellKey] || cellKey}`;
+
+            renderBulkStatRows();
+
+            const modal = document.getElementById('bulk-stat-modal');
+            modal.classList.remove('hidden'); modal.classList.add('flex');
+        }
+
+        function closeBulkStatModal() {
+            document.getElementById('bulk-stat-modal').classList.add('hidden');
+            document.getElementById('bulk-stat-modal').classList.remove('flex');
+        }
+
+        function renderBulkStatRows() {
+            const container = document.getElementById('bs-players-container');
+            const players = (squadData[squadContext] || []).filter(p => !p.isPromoted);
+            const season = activeBulkStatSeason;
+            const cellKey = activeBulkStatCellKey;
+
+            if (players.length === 0) {
+                container.innerHTML = `<div class="text-center text-slate-500 text-sm py-6">Bu kadroda oyuncu bulunmuyor.</div>`;
+                return;
+            }
+
+            container.innerHTML = players.map(p => {
+                const sData = (p.history && p.history[season]) ? p.history[season] : {};
+                let ageVal = sData[`${cellKey}a`];
+                if (!ageVal) {
+                    const prevKey = (cellKey === 't1') ? 's1' : (cellKey === 't2') ? 's2' : cellKey;
+                    ageVal = getExpectedAge(p, season, prevKey);
+                }
+                const ovrVal = sData[`${cellKey}o`] || '';
+                const photoHtml = p.photoUrl
+                    ? `<img src="${p.photoUrl}" class="w-8 h-8 rounded-full object-cover bg-slate-800 shrink-0">`
+                    : `<div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold shrink-0">${escapeHtml((p.name || '?').charAt(0))}</div>`;
+
+                return `
+                    <div class="flex items-center gap-2 bg-slate-900 border border-slate-700 rounded-lg p-2" data-player-id="${p.id}">
+                        ${photoHtml}
+                        <span class="flex-1 text-sm font-bold text-white truncate">${escapeHtml(p.name)}</span>
+                        <span class="text-[10px] font-black pos-${p.pos} bg-slate-950 border border-slate-700 rounded px-1.5 py-0.5">${p.pos || ''}</span>
+                        <input type="number" class="bs-age-input w-14 bg-slate-950 border border-slate-600 rounded p-1.5 text-center text-white outline-none focus:border-emerald-500 appearance-none" placeholder="Yaş" value="${ageVal || ''}" autocomplete="off">
+                        <input type="number" class="bs-ovr-input w-14 bg-slate-950 border border-slate-600 rounded p-1.5 text-center text-emerald-400 font-bold outline-none focus:border-emerald-500 appearance-none" placeholder="OVR" value="${ovrVal}" autocomplete="off">
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function saveBulkStatModal() {
+            const season = activeBulkStatSeason;
+            const cellKey = activeBulkStatCellKey;
+            const rows = document.querySelectorAll('#bs-players-container [data-player-id]');
+            let updatedCount = 0;
+
+            rows.forEach(row => {
+                const id = row.getAttribute('data-player-id');
+                const age = row.querySelector('.bs-age-input').value.trim();
+                const ovr = row.querySelector('.bs-ovr-input').value.trim();
+                if (!age && !ovr) return;
+
+                const p = squadData[squadContext].find(pl => pl.id === id);
+                if (!p) return;
+                if (!p.history) p.history = {};
+                if (!p.history[season]) p.history[season] = {};
+                if (age) p.history[season][`${cellKey}a`] = age;
+                if (ovr) p.history[season][`${cellKey}o`] = ovr;
+                updatedCount++;
+            });
+
+            if (updatedCount > 0) {
+                saveToLocalStorage();
+                closeBulkStatModal();
+                renderSquadGrid();
+            } else {
+                alert('Hiçbir oyuncu için yaş veya OVR girilmedi.');
+            }
         }
 
         // --- LİG TARİHİ TABLOSU VE GRAFİĞİ ---
@@ -3988,7 +4076,13 @@ async function autoFetchPlayerPhoto(playerName, urlInputId) {
             `;
             
             seasonsList.forEach(season => {
-                html += `<th class="p-2 border-r border-b border-slate-700 text-center font-bold text-emerald-400 cursor-pointer hover:text-white transition-colors" onclick="sortLeague('${season}')">${season} <i class="fa-solid fa-sort ml-1 opacity-50 text-[10px]"></i></th>`;
+                const safeSeason = season.replace(/'/g,"\\'");
+                html += `<th class="p-2 border-r border-b border-slate-700 text-center font-bold text-emerald-400">
+                            <div class="flex items-center justify-center gap-1.5">
+                                <span class="cursor-pointer hover:text-white transition-colors" onclick="sortLeague('${season}')">${season} <i class="fa-solid fa-sort ml-1 opacity-50 text-[10px]"></i></span>
+                                <button onclick="event.stopPropagation(); openBulkLeaguePtsModal('${safeSeason}')" class="text-slate-400 hover:text-emerald-300 transition-colors" title="Toplu Puan Gir"><i class="fa-solid fa-bolt text-[9px]"></i></button>
+                            </div>
+                         </th>`;
             });
 
             html += `                   <th class="p-2 border-b border-slate-700 text-center font-black text-emerald-500 bg-emerald-900/20 cursor-pointer hover:text-emerald-300 transition-colors" onclick="sortLeague('total')">TOTAL <i class="fa-solid fa-sort ml-1 opacity-50 text-[10px]"></i></th>
@@ -4284,6 +4378,70 @@ async function autoFetchPlayerPhoto(playerName, urlInputId) {
             saveToLocalStorage();
             closeLeagueCellModal();
             renderLeagueHistory();
+        }
+
+        function openBulkLeaguePtsModal(season) {
+            activeBulkLeagueSeason = season;
+            document.getElementById('blp-modal-subtitle').innerText = `${season} Sezonu`;
+            renderBulkLeaguePtsRows();
+
+            const modal = document.getElementById('bulk-league-pts-modal');
+            modal.classList.remove('hidden'); modal.classList.add('flex');
+        }
+
+        function closeBulkLeaguePtsModal() {
+            document.getElementById('bulk-league-pts-modal').classList.add('hidden');
+            document.getElementById('bulk-league-pts-modal').classList.remove('flex');
+        }
+
+        function renderBulkLeaguePtsRows() {
+            const container = document.getElementById('blp-teams-container');
+            const season = activeBulkLeagueSeason;
+
+            if (leagueHistoryData.length === 0) {
+                container.innerHTML = `<div class="text-center text-slate-500 text-sm py-6">Kayıtlı takım bulunmuyor.</div>`;
+                return;
+            }
+
+            const teamsSorted = [...leagueHistoryData].sort((a, b) => a.name.localeCompare(b.name, 'tr'));
+
+            container.innerHTML = teamsSorted.map(team => {
+                const ptsVal = (team.history[season] && team.history[season].pts) ? team.history[season].pts : '';
+                return `
+                    <div class="flex items-center gap-2 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1" data-team-id="${team.id}">
+                        <div class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: ${team.color}"></div>
+                        <span class="flex-1 text-xs font-bold text-white truncate">${escapeHtml(team.name)}</span>
+                        <input type="number" class="blp-pts-input w-16 bg-slate-950 border border-slate-600 rounded p-1 text-center text-emerald-400 text-sm font-bold outline-none focus:border-emerald-500 appearance-none" placeholder="Puan" value="${ptsVal}" autocomplete="off">
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function saveBulkLeaguePtsModal() {
+            const season = activeBulkLeagueSeason;
+            const rows = document.querySelectorAll('#blp-teams-container [data-team-id]');
+            let updatedCount = 0;
+
+            rows.forEach(row => {
+                const id = row.getAttribute('data-team-id');
+                const pts = row.querySelector('.blp-pts-input').value.trim();
+                if (pts === '') return;
+
+                const team = leagueHistoryData.find(t => t.id === id);
+                if (!team) return;
+                if (!team.history) team.history = {};
+                if (!team.history[season]) team.history[season] = {};
+                team.history[season].pts = pts;
+                updatedCount++;
+            });
+
+            if (updatedCount > 0) {
+                saveToLocalStorage();
+                closeBulkLeaguePtsModal();
+                renderLeagueHistory();
+            } else {
+                alert('Hiçbir takım için puan girilmedi.');
+            }
         }
 
         // --- TRANSFER PANELİ ---
@@ -5679,14 +5837,14 @@ function formatShortPlayerName(name) {
 
                     matchRowsHtml += `
                         <tr id="fx-row-${m.id}" class="fixture-compact-row ${tournamentBg} transition-colors group cursor-pointer border-b border-slate-700/40 ${rowResultClass} ${isExpanded ? 'bg-slate-800/40' : ''}" onclick="toggleFixtureRowExpand('${m.id}')">
-                            <td class="p-1 text-center w-8">
-                                <div class="flex items-center justify-center gap-1">
+                            <td class="p-0.5 text-center w-5">
+                                <div class="flex items-center justify-center gap-0.5">
                                     <i id="fx-chevron-${m.id}" class="fa-solid ${isExpanded ? 'fa-chevron-down' : 'fa-chevron-right'} text-[8px] text-slate-500 group-hover:text-emerald-400 transition-transform"></i>
                                     <span class="text-emerald-500 text-xs font-black">${m.matchNo || '-'}</span>
                                 </div>
                             </td>
-                            <td class="p-1 text-slate-300 text-[10px] font-bold w-16" title="${m.tournament || ''}">
-                                <div class="flex items-center justify-center gap-1">
+                            <td class="p-0.5 text-slate-300 text-[10px] font-bold w-9" title="${m.tournament || ''}">
+                                <div class="flex items-center justify-center gap-0.5">
                                     ${tourCellContent}
                                     <div class="flex flex-col opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                                         ${logoBtnHtml}
@@ -5694,7 +5852,7 @@ function formatShortPlayerName(name) {
                                     </div>
                                 </div>
                             </td>
-                            <td class="p-1 w-10 text-center">${getGroundLabel(m.ground)}</td>
+                            <td class="p-0.5 w-6 text-center">${getGroundLabel(m.ground)}</td>
                             <td class="p-1 text-right" title="${m.home || ''}">
                                 <div class="flex justify-end items-center h-full">
                                     ${homeLogo ? `<img src="${homeLogo}" alt="${m.home}" class="w-6 h-6 object-contain">` : '-'}
@@ -5782,9 +5940,9 @@ function formatShortPlayerName(name) {
                                 <table class="w-full border-separate border-spacing-0 text-xs min-w-[500px]">
                                     <thead class="bg-slate-900 sticky top-0 z-10">
                                         <tr class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">
-                                            <th class="p-2 text-center border-b border-slate-700 w-8" title="Maç No">#</th>
-                                            <th class="p-2 text-center border-b border-slate-700 w-24" title="Müsabaka"><i class="fa-solid fa-trophy"></i></th>
-                                            <th class="p-2 text-center border-b border-slate-700 w-10" title="Zemin"><i class="fa-solid fa-map-pin"></i></th>
+                                            <th class="p-0.5 text-center border-b border-slate-700 w-5" title="Maç No">#</th>
+                                            <th class="p-0.5 text-center border-b border-slate-700 w-9" title="Müsabaka"><i class="fa-solid fa-trophy"></i></th>
+                                            <th class="p-0.5 text-center border-b border-slate-700 w-6" title="Zemin"><i class="fa-solid fa-map-pin"></i></th>
                                             <th class="p-2 text-center border-b border-slate-700" title="Ev Sahibi"><i class="fa-solid fa-house"></i></th>
                                             <th class="p-2 text-center border-b border-slate-700 w-16" title="Skor"><i class="fa-solid fa-futbol"></i></th>
                                             <th class="p-2 text-center border-b border-slate-700" title="Deplasman"><i class="fa-solid fa-plane-departure"></i></th>
@@ -6152,8 +6310,12 @@ function formatShortPlayerName(name) {
             if (!match) return;
 
             document.getElementById('mr-modal-subtitle').textContent = `${season} Sezonu - ${match.tournament || 'Diğer'} Müsabakası`;
-            document.getElementById('mr-home-label').textContent = match.home;
-            document.getElementById('mr-away-label').textContent = match.away;
+            
+            const homeLogo = getTeamLogoByName(match.home);
+            const awayLogo = getTeamLogoByName(match.away);
+            
+            document.getElementById('mr-home-label').innerHTML = `<img src="${homeLogo}" title="${escapeHtml(match.home)}" class="h-12 w-auto object-contain ml-auto drop-shadow-md">`;
+            document.getElementById('mr-away-label').innerHTML = `<img src="${awayLogo}" title="${escapeHtml(match.away)}" class="h-12 w-auto object-contain mr-auto drop-shadow-md">`;
 
             document.getElementById('mr-home-score').value = match.homeScore !== '' ? match.homeScore : '';
             document.getElementById('mr-away-score').value = match.awayScore !== '' ? match.awayScore : '';
