@@ -3067,7 +3067,7 @@ function handleFileUpload(event, type) {
                 let bg = 'bg-slate-700 text-slate-300 border-slate-600';
                 let icon = '';
                 
-                if (type === 'in') { bg = 'bg-emerald-600 text-white border-emerald-500 shadow-sm'; icon = '<i class="fa-solid fa-arrow-right-to-bracket"></i>'; }
+                if (type === 'in') { bg = 'bg-green-600 text-white border-green-500 shadow-sm'; icon = '<i class="fa-solid fa-arrow-right-to-bracket"></i>'; }
                 if (type === 'academy') { bg = 'bg-cyan-600 text-white border-cyan-500 shadow-sm'; icon = '<i class="fa-solid fa-graduation-cap"></i>'; }
                 if (type === 'out') { bg = 'bg-red-600 text-white border-red-500 shadow-sm'; icon = '<i class="fa-solid fa-arrow-right-from-bracket"></i>'; }
                 if (type === 'renew') { bg = 'bg-purple-600 text-white border-purple-500 shadow-sm'; icon = '<i class="fa-solid fa-file-signature"></i>'; }
@@ -3333,11 +3333,17 @@ function handleFileUpload(event, type) {
                                     const trBadge = renderTrOrAcadBadge(cellKey);
 
                                     const content = `
-                                        <div class="flex items-center justify-center gap-1.5 w-full h-3">
-                                            <span class="text-[10px] text-slate-300 font-mono drop-shadow-md">${age || ''}</span>
-                                            ${renderOvrBadge(ovr)}
-                                            ${delta}
-                                            ${trBadge}
+                                        <div class="grid grid-cols-[1fr_24px_1fr] items-center gap-1.5 w-full h-full min-h-[26px] px-1">
+                                            <div class="flex justify-end items-center scale-75 origin-right">
+                                                ${renderAgeBadge(age)}
+                                            </div>
+                                            <div class="flex justify-center items-center shrink-0">
+                                                ${renderOvrBadge(ovr)}
+                                            </div>
+                                            <div class="flex justify-start items-center gap-1">
+                                                ${delta}
+                                                ${trBadge}
+                                            </div>
                                         </div>`;
                                     return `<td class="p-0 border-r border-b border-slate-700/50 hover:bg-slate-800/80 align-middle cursor-pointer text-center transition-colors ${bg}" onclick="openPlayerCellModal('${p.id}', '${season}', '${cellKey}')">${content}</td>`;
                                 };
