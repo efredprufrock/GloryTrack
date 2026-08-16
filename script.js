@@ -4195,29 +4195,39 @@ async function autoFetchPlayerPhoto(playerName, urlInputId) {
 
         function renderBulkStatRows() {
             const container = document.getElementById('bs-players-container');
-            // Sadece aktif kadroyu al (arşivlenenleri gizle)
-            const players = (squadData[squadContext] || []).filter(p => !p.isPromoted && !p.isArchived);
+            
+            // Kaydırma çubuğunu kalıcı olarak gizle
+            container.style.scrollbarWidth = 'none';
+            container.style.msOverflowStyle = 'none';
+            if (!document.getElementById('force-hide-scroll-bulk')) {
+                const style = document.createElement('style');
+                style.id = 'force-hide-scroll-bulk';
+                style.innerHTML = '#bs-players-container::-webkit-scrollbar { display: none; }';
+                document.head.appendChild(style);
+            }
+
+            const allPlayers = squadData[squadContext] || [];
             const season = activeBulkStatSeason;
             const cellKey = activeBulkStatCellKey;
 
-            if (players.length === 0) {
+            if (allPlayers.length === 0) {
                 container.innerHTML = `<div class="text-center text-slate-500 text-sm py-6">Bu kadroda oyuncu bulunmuyor.</div>`;
                 return;
             }
 
-            // Ana kadro paneliyle aynı mevkisel gruplama kuralı
+            // Kadro paneliyle birebir aynı mevkisel sıralama
             const validGroups = ['GK', 'CB', 'LB', 'RB', 'DM', 'CM', 'AM', 'LM', 'RM', 'LW', 'RW', 'ST'];
             const getGroupForPos = (pos) => {
                 const upperPos = (pos || '').toUpperCase().trim();
                 return validGroups.includes(upperPos) ? upperPos : 'CM';
             };
 
-            // Sıralama motoru için istatistikleri ve güncel OVR/Yaşları çek
             const statsCtx = squadContext === 'milli' ? 'milli' : 'kulup';
             const goalAssistMap = {};
-            getStatsData(statsCtx).stats.forEach(s => { goalAssistMap[s.name.toLowerCase()] = s; });
+            getStatsData(statsCtx).stats.forEach(s => { goalAssistMap[(s.name || '').toLowerCase()] = s; });
 
-            players.forEach(p => {
+            // Güncel Yaş ve OVR hesaplaması (Ana tablo ile eşleşmesi için)
+            allPlayers.forEach(p => {
                 p.currentAge = p.joinAge;
                 p.currentOvr = p.joinOvr;
                 const gs = goalAssistMap[(p.name || '').toLowerCase()];
@@ -4241,57 +4251,65 @@ async function autoFetchPlayerPhoto(playerName, urlInputId) {
                 }
             });
 
-            let html = '';
+            const renderList = (list) => {
+                let listHtml = '';
+                validGroups.forEach(groupId => {
+                    let groupPlayers = list.filter(p => getGroupForPos(p.pos) === groupId);
+                    if (groupPlayers.length === 0) return;
 
-            // Oyuncuları gruplara ayırarak ve belirlenen seçime göre sıralayarak listele
-            validGroups.forEach(groupId => {
-                let groupPlayers = players.filter(p => getGroupForPos(p.pos) === groupId);
-                if (groupPlayers.length === 0) return;
+                    groupPlayers.sort((a, b) => {
+                        let valA = a[squadSort.field]; let valB = b[squadSort.field];
+                        if (squadSort.field === 'joinOvr') { valA = Number(a.currentOvr || 0); valB = Number(b.currentOvr || 0); } 
+                        else if (squadSort.field === 'joinAge') { valA = Number(a.currentAge || 0); valB = Number(b.currentAge || 0); } 
+                        else if (squadSort.field === 'caps') { valA = Number(a.caps || 0); valB = Number(b.caps || 0); } 
+                        else if (squadSort.field === 'totalGoals') { valA = Number(a.totalGoals || 0); valB = Number(b.totalGoals || 0); } 
+                        else if (squadSort.field === 'totalAssists') { valA = Number(a.totalAssists || 0); valB = Number(b.totalAssists || 0); } 
+                        else { valA = (valA || '').toString().toLowerCase(); valB = (valB || '').toString().toLowerCase(); }
+                        
+                        if (valA < valB) return squadSort.asc ? -1 : 1;
+                        if (valA > valB) return squadSort.asc ? 1 : -1;
+                        return 0;
+                    });
 
-                groupPlayers.sort((a, b) => {
-                    let valA = a[squadSort.field]; let valB = b[squadSort.field];
-                    if (squadSort.field === 'joinOvr') {
-                        valA = Number(a.currentOvr || 0); valB = Number(b.currentOvr || 0);
-                    } else if (squadSort.field === 'joinAge') {
-                        valA = Number(a.currentAge || 0); valB = Number(b.currentAge || 0);
-                    } else if (squadSort.field === 'caps') {
-                        valA = Number(a.caps || 0); valB = Number(b.caps || 0);
-                    } else if (squadSort.field === 'totalGoals') {
-                        valA = Number(a.totalGoals || 0); valB = Number(b.totalGoals || 0);
-                    } else if (squadSort.field === 'totalAssists') {
-                        valA = Number(a.totalAssists || 0); valB = Number(b.totalAssists || 0);
-                    } else {
-                        valA = (valA || '').toString().toLowerCase(); valB = (valB || '').toString().toLowerCase();
-                    }
-                    
-                    if (valA < valB) return squadSort.asc ? -1 : 1;
-                    if (valA > valB) return squadSort.asc ? 1 : -1;
-                    return 0;
+                    listHtml += groupPlayers.map(p => {
+                        const sData = (p.history && p.history[season]) ? p.history[season] : {};
+                        let ageVal = sData[`${cellKey}a`];
+                        if (!ageVal) {
+                            const prevKey = (cellKey === 't1') ? 's1' : (cellKey === 't2') ? 's2' : cellKey;
+                            ageVal = getExpectedAge(p, season, prevKey);
+                        }
+                        const ovrVal = sData[`${cellKey}o`] || '';
+                        const photoHtml = p.photoUrl
+                            ? `<img src="${p.photoUrl}" class="w-8 h-8 rounded-full object-cover bg-slate-800 shrink-0">`
+                            : `<div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold shrink-0">${escapeHtml((p.name || '?').charAt(0))}</div>`;
+
+                        return `
+                            <div class="flex items-center gap-2 bg-slate-900 border border-slate-700 rounded-lg p-2" data-player-id="${p.id}">
+                                ${photoHtml}
+                                <span class="flex-1 text-sm font-bold text-white truncate">${escapeHtml(p.name)}</span>
+                                <span class="text-[10px] font-black pos-${p.pos} bg-slate-950 border border-slate-700 rounded px-1.5 py-0.5">${p.pos || ''}</span>
+                                <input type="number" class="bs-age-input w-14 bg-slate-950 border border-slate-600 rounded p-1.5 text-center text-white outline-none focus:border-emerald-500 appearance-none" placeholder="Yaş" value="${ageVal || ''}" autocomplete="off">
+                                <input type="number" class="bs-ovr-input w-14 bg-slate-950 border border-slate-600 rounded p-1.5 text-center text-emerald-400 font-bold outline-none focus:border-emerald-500 appearance-none" placeholder="OVR" value="${ovrVal}" autocomplete="off">
+                            </div>
+                        `;
+                    }).join('');
                 });
+                return listHtml;
+            };
 
-                html += groupPlayers.map(p => {
-                    const sData = (p.history && p.history[season]) ? p.history[season] : {};
-                    let ageVal = sData[`${cellKey}a`];
-                    if (!ageVal) {
-                        const prevKey = (cellKey === 't1') ? 's1' : (cellKey === 't2') ? 's2' : cellKey;
-                        ageVal = getExpectedAge(p, season, prevKey);
-                    }
-                    const ovrVal = sData[`${cellKey}o`] || '';
-                    const photoHtml = p.photoUrl
-                        ? `<img src="${p.photoUrl}" class="w-8 h-8 rounded-full object-cover bg-slate-800 shrink-0">`
-                        : `<div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold shrink-0">${escapeHtml((p.name || '?').charAt(0))}</div>`;
+            let activePlayers = allPlayers.filter(p => !p.isArchived && !p.isPromoted);
+            let archivedPlayers = allPlayers.filter(p => p.isArchived && !p.isPromoted);
+            let promotedPlayers = allPlayers.filter(p => p.isPromoted);
 
-                    return `
-                        <div class="flex items-center gap-2 bg-slate-900 border border-slate-700 rounded-lg p-2" data-player-id="${p.id}">
-                            ${photoHtml}
-                            <span class="flex-1 text-sm font-bold text-white truncate">${escapeHtml(p.name)}</span>
-                            <span class="text-[10px] font-black pos-${p.pos} bg-slate-950 border border-slate-700 rounded px-1.5 py-0.5">${p.pos || ''}</span>
-                            <input type="number" class="bs-age-input w-14 bg-slate-950 border border-slate-600 rounded p-1.5 text-center text-white outline-none focus:border-emerald-500 appearance-none" placeholder="Yaş" value="${ageVal || ''}" autocomplete="off">
-                            <input type="number" class="bs-ovr-input w-14 bg-slate-950 border border-slate-600 rounded p-1.5 text-center text-emerald-400 font-bold outline-none focus:border-emerald-500 appearance-none" placeholder="OVR" value="${ovrVal}" autocomplete="off">
-                        </div>
-                    `;
-                }).join('');
-            });
+            let html = renderList(activePlayers);
+            if (promotedPlayers.length > 0) {
+                html += `<div class="text-[10px] font-black text-emerald-400 tracking-widest uppercase mt-4 mb-2 border-b border-slate-700 pb-1"><i class="fa-solid fa-arrow-up mr-1"></i>PROMOTED</div>`;
+                html += renderList(promotedPlayers);
+            }
+            if (archivedPlayers.length > 0) {
+                html += `<div class="text-[10px] font-black text-slate-400 tracking-widest uppercase mt-4 mb-2 border-b border-slate-700 pb-1"><i class="fa-solid fa-box-archive mr-1"></i>TAKIMDAN AYRILANLAR / ARŞİV</div>`;
+                html += renderList(archivedPlayers);
+            }
 
             container.innerHTML = html;
         }

@@ -603,3 +603,12 @@ body.theme-light[data-theme-family="green"] input, body.theme-light[data-theme-f
 body.theme-light[data-theme-family="green"] .main-btn.border-emerald-500 { background-color: #cdeedd !important; border-color: #059669 !important; color: #059669 !important; }
 body.theme-light[data-theme-family="green"] .sub-btn.bg-emerald-600 { background-color: #059669 !important; color: #fff !important; border-color: #059669 !important; }
 body.theme-light[data-theme-family="green"] *::selection { background-color: #059669 !important; color: white !important; }
+
+/* Kaydırma çubuğunu tamamen gizler ama kaydırma işlevini korur */
+.hide-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.hide-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
