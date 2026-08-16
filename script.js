@@ -321,6 +321,7 @@ function escapeHtml(str) {
         let currentScale = '1';
 
         const menuConfig = {
+            anasayfa: { title: "Ana Sayfa", submenus: [] },
             kupalar: { title: "Kupalar", submenus: [] },
             maclar: { title: "Maçlar", submenus: [{ id: "maclar-kulup", label: "Kulüp" }, { id: "maclar-milli", label: "Milli" }]},
             kadro: { title: "Kadro", submenus: [{ id: "kadro-astakim", label: "As Takım" }, { id: "kadro-akademi", label: "Akademi" }, { id: "kadro-milli", label: "Milli" }]},
@@ -885,7 +886,8 @@ function handleSyncClick() {
             if (managedTeams.kulup && managedTeams.kulup.logoUrl) {
                 document.getElementById('sidebar-team-logo').src = managedTeams.kulup.logoUrl;
             }
-            if (activeMain === 'kupalar') renderTrophiesGrid();
+            if (activeMain === 'anasayfa') renderHomePanel();
+            else if (activeMain === 'kupalar') renderTrophiesGrid();
             else if (activeMain === 'maclar') renderMatchesGrid();
             else if (activeMain === 'kadro') renderSquadGrid();
             else if (activeMain === 'ligtarihi') renderLeagueHistory();
@@ -1160,7 +1162,7 @@ function handleSyncClick() {
                 // İlk defa giren birini kurulum ekranı yerine direkt içeri al
                 isSetupComplete = true;
             }
-            selectMainMenu('sezonlar'); // <--- YENİ: Varsayılan açılış artık Fikstür (Sezonlar) paneli oldu
+            selectMainMenu('anasayfa'); // <--- Varsayılan açılış artık Ana Sayfa paneli
             applyStoredLanguage();
             applyQfbCollapsedState();
             renderQuickFixtureBar();
@@ -1535,7 +1537,9 @@ function handleFileUpload(event, type) {
 
             renderSubmenus(); hideTertiaryMenu();
             
-            if (menuId === 'kupalar') {
+            if (menuId === 'anasayfa') {
+                renderHomePanel();
+            } else if (menuId === 'kupalar') {
                 renderTrophiesGrid();
             } else if (menuId === 'maclar') {
                 matchContext = 'kulup';
@@ -1636,7 +1640,7 @@ function handleFileUpload(event, type) {
         }
         function updateContentArea(htmlContent) {
             const contentArea = document.getElementById('content-area');
-            if(activeMain !== 'kupalar' && activeMain !== 'maclar' && activeMain !== 'kadro' && activeMain !== 'ligtarihi' && activeMain !== 'transfer' && activeMain !== 'golasist' && activeMain !== 'sezonlar' && activeMain !== 'ayarlar') {
+            if(activeMain !== 'anasayfa' && activeMain !== 'kupalar' && activeMain !== 'maclar' && activeMain !== 'kadro' && activeMain !== 'ligtarihi' && activeMain !== 'transfer' && activeMain !== 'golasist' && activeMain !== 'sezonlar' && activeMain !== 'ayarlar') {
                 contentArea.classList.add('items-center', 'justify-center');
             } else {
                 contentArea.classList.remove('items-center', 'justify-center');
@@ -1791,6 +1795,246 @@ function handleFileUpload(event, type) {
                     location.reload();
                 }
             }
+        }
+
+        let homeGlobalContext = 'kulup';
+        let homeSquadContext = 'astakim';
+        let homeStatsContext = 'kulup';
+        let homeFixtureContext = 'both';
+        let homeStatsSort = { field: 'goals', asc: false };
+
+        function setHomeGlobalContext(ctx) {
+            homeGlobalContext = ctx;
+            homeSquadContext = ctx === 'kulup' ? 'astakim' : 'milli';
+            homeStatsContext = ctx;
+            if (homeFixtureContext !== 'both') homeFixtureContext = ctx;
+            renderHomePanel();
+        }
+
+        function toggleHomeFixtureBoth() {
+            homeFixtureContext = homeFixtureContext === 'both' ? homeGlobalContext : 'both';
+            renderHomePanel();
+        }
+
+        function homeSetStatsSort(field) {
+            if (homeStatsSort.field === field) homeStatsSort.asc = !homeStatsSort.asc;
+            else { homeStatsSort.field = field; homeStatsSort.asc = false; }
+            renderHomePanel();
+        }
+
+        function renderHomeFirst11(context) {
+            const formData = formations && formations[context] ? formations[context].ilk11 : null;
+            if (!formData || !Array.isArray(formData) || !formData.some(n => n.name)) {
+                return '<div class="text-center text-slate-500 text-sm py-6">Bu kadro için henüz İlk 11 belirlenmedi.<br><span class="text-xs">Kadro panelinden "Kadrolar" ikonuna tıklayarak oluşturabilirsiniz.</span></div>';
+            }
+
+            const nodesHtml = formData.filter(node => node.name).map(node => {
+                const photo = getPlayerPhotoByName(node.name);
+                const photoHtml = photo
+                    ? `<img src="${photo}" class="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover border-[3px] border-slate-900 bg-slate-900 shadow-lg">`
+                    : `<div class="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-slate-700 border-[3px] border-slate-900 flex items-center justify-center text-sm font-black text-white shadow-lg">${escapeHtml((node.name || '?').charAt(0).toUpperCase())}</div>`;
+
+                return `
+                    <div class="absolute flex flex-col items-center transform -translate-x-1/2 -translate-y-1/2" style="left:${node.x}%; top:${node.y}%;">
+                        ${photoHtml}
+                        <div class="mt-1 flex items-center gap-1">
+                            <span class="pos-${node.pos || ''} bg-slate-950/90 text-[10px] font-black px-1.5 py-[1px] rounded border border-slate-700">${escapeHtml(node.pos || '')}</span>
+                        </div>
+                        <div class="mt-1 bg-black/80 text-white text-[10px] font-bold px-2 py-[2px] rounded truncate max-w-[100px] border border-white/10">${escapeHtml(formatShortPlayerName(node.name))}</div>
+                    </div>
+                `;
+            }).join('');
+
+            return `
+                <div class="relative w-full h-full min-h-0 bg-green-800 rounded-lg border-2 border-white/30 overflow-hidden">
+                    <div class="absolute inset-0 pointer-events-none border-[2px] border-white/25 m-2 rounded-sm"></div>
+                    <div class="absolute top-1/2 left-2 right-2 h-px bg-white/25 -translate-y-1/2"></div>
+                    <div class="absolute top-1/2 left-1/2 w-14 h-14 border-[2px] border-white/25 rounded-full -translate-x-1/2 -translate-y-1/2"></div>
+                    <div class="absolute top-1/2 left-1/2 w-1.5 h-1.5 bg-white/35 rounded-full -translate-x-1/2 -translate-y-1/2"></div>
+                    <div class="absolute bottom-2 left-1/2 w-28 h-16 border-[2px] border-white/25 -translate-x-1/2 border-b-0"></div>
+                    <div class="absolute bottom-2 left-1/2 w-14 h-7 border-[2px] border-white/25 -translate-x-1/2 border-b-0"></div>
+                    <div class="absolute top-2 left-1/2 w-28 h-16 border-[2px] border-white/25 -translate-x-1/2 border-t-0"></div>
+                    <div class="absolute top-2 left-1/2 w-14 h-7 border-[2px] border-white/25 -translate-x-1/2 border-t-0"></div>
+                    ${nodesHtml}
+                </div>
+            `;
+        }
+
+        function renderHomeTopScorers(context) {
+            const season = seasonsList[seasonsList.length - 1];
+            if (!season) return { headerHtml: '', bodyHtml: '<div class="text-center text-slate-500 text-sm py-6">Kayıtlı sezon bulunmuyor.</div>' };
+            const data = getStatsData(context);
+            const list = data.stats.map(p => ({
+                name: p.name,
+                photoUrl: p.photoUrl,
+                goals: p.seasons[season] ? p.seasons[season].totalGoals : 0,
+                assists: p.seasons[season] ? p.seasons[season].totalAssists : 0
+            })).filter(p => p.goals > 0 || p.assists > 0);
+
+            const field = homeStatsSort.field;
+            const asc = homeStatsSort.asc;
+            list.sort((a, b) => {
+                const primary = asc ? (a[field] - b[field]) : (b[field] - a[field]);
+                if (primary !== 0) return primary;
+                const other = field === 'goals' ? 'assists' : 'goals';
+                return b[other] - a[other];
+            });
+            const top = list;
+
+            const sortIcon = (f) => {
+                if (homeStatsSort.field !== f) return '<i class="fa-solid fa-sort text-[8px] ml-1 opacity-50"></i>';
+                return homeStatsSort.asc ? '<i class="fa-solid fa-chevron-up text-[8px] ml-1"></i>' : '<i class="fa-solid fa-chevron-down text-[8px] ml-1"></i>';
+            };
+
+            const headerHtml = `
+                <div class="flex items-center gap-2 px-2 pb-1.5">
+                    <span class="w-5"></span>
+                    <span class="w-8"></span>
+                    <span class="flex-1"></span>
+                    <button onclick="homeSetStatsSort('goals')" class="text-[10px] font-bold text-emerald-400 hover:text-emerald-300 flex items-center transition-colors">GOL${sortIcon('goals')}</button>
+                    <button onclick="homeSetStatsSort('assists')" class="text-[10px] font-bold text-blue-400 hover:text-blue-300 flex items-center transition-colors ml-2">ASİST${sortIcon('assists')}</button>
+                </div>
+            `;
+
+            if (top.length === 0) return { headerHtml: '', bodyHtml: `<div class="text-center text-slate-500 text-sm py-6">${escapeHtml(season)} sezonu için gol/asist verisi bulunmuyor.</div>` };
+
+            const maxGoals = Math.max(0, ...top.map(p => p.goals));
+            const maxAssists = Math.max(0, ...top.map(p => p.assists));
+
+            const bodyHtml = top.map((p, idx) => {
+                const rankCls = idx === 0 ? 'text-amber-300' : idx === 1 ? 'text-slate-300' : idx === 2 ? 'text-orange-400' : 'text-slate-500';
+                const photoHtml = p.photoUrl
+                    ? `<img src="${p.photoUrl}" class="w-8 h-8 rounded-full object-cover bg-slate-800 border border-slate-700">`
+                    : `<div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold">${escapeHtml((p.name || '?').charAt(0))}</div>`;
+                const goalsGlow = (p.goals > 0 && p.goals === maxGoals) ? 'text-glow-max' : '';
+                const assistsGlow = (p.assists > 0 && p.assists === maxAssists) ? 'text-glow-max' : '';
+                return `<div class="flex items-center gap-2 bg-slate-900/60 border border-slate-700/50 rounded-lg px-2 py-1.5">
+                    <span class="w-5 text-center text-xs font-black ${rankCls}">${idx + 1}</span>
+                    ${photoHtml}
+                    <span class="flex-1 text-sm font-bold text-white truncate text-left">${escapeHtml(p.name)}</span>
+                    <span class="text-xs font-black text-emerald-400 w-12 text-right inline-flex items-center justify-end gap-1 ${goalsGlow}"><i class="fa-solid fa-futbol"></i>${p.goals}</span>
+                    <span class="text-xs font-black text-blue-400 w-14 text-right inline-flex items-center justify-end gap-1 ${assistsGlow}"><i class="fa-solid fa-shoe-prints"></i>${p.assists}</span>
+                </div>`;
+            }).join('');
+
+            return { headerHtml, bodyHtml };
+        }
+
+        function homeGetFilteredMatches(context) {
+            const clubName = managedTeams.kulup.name || '';
+            const nationalName = managedTeams.milli.name || '';
+            const all = qfbGetAllMatches();
+            if (context === 'both') return all;
+            const teamName = context === 'milli' ? nationalName : clubName;
+            return all.filter(m => m.home === teamName || m.away === teamName);
+        }
+
+        function renderHomeFixtures(context) {
+            const matches = homeGetFilteredMatches(context);
+            const hasScore = (m) => m.homeScore !== '' && m.homeScore !== null && m.homeScore !== undefined && m.awayScore !== '' && m.awayScore !== null && m.awayScore !== undefined;
+            const played = matches.filter(hasScore);
+            const upcoming = matches.filter(m => !hasScore(m));
+
+            const last4 = played.slice(-4);
+            const nextMatch = upcoming[0] || null;
+            const next4 = upcoming.slice(0, 4);
+
+            const clubName = managedTeams.kulup.name || '';
+            const nationalName = managedTeams.milli.name || '';
+            const isOurTeam = (name) => name === clubName || name === nationalName;
+
+            const renderMatchRow = (m, highlight) => {
+                const homeLogo = getTeamLogoByName(m.home);
+                const awayLogo = getTeamLogoByName(m.away);
+                const hs = hasScore(m) ? m.homeScore : '-';
+                const as = hasScore(m) ? m.awayScore : '-';
+                const tourLogo = getCompetitionLogo(m.tournament);
+                const tourHtml = tourLogo
+                    ? `<img src="${tourLogo}" alt="${escapeHtml(m.tournament || '')}" title="${escapeHtml(m.tournament || '')}" class="w-6 h-6 object-contain">`
+                    : `<span class="text-[10px] text-slate-400 truncate max-w-[70px]" title="${escapeHtml(m.tournament || '')}">${escapeHtml(m.tournament || '')}</span>`;
+
+                let resultClass = '';
+                if (hasScore(m)) {
+                    const hsNum = parseInt(m.homeScore), asNum = parseInt(m.awayScore);
+                    if (!isNaN(hsNum) && !isNaN(asNum)) {
+                        let letter = '';
+                        if (isOurTeam(m.home)) letter = hsNum > asNum ? 'W' : (hsNum < asNum ? 'L' : 'D');
+                        else if (isOurTeam(m.away)) letter = asNum > hsNum ? 'W' : (asNum < hsNum ? 'L' : 'D');
+                        if (letter) resultClass = `frow-${letter}`;
+                    }
+                }
+
+                return `<div onclick="qfbOpenMatch('${m.season}','${m.id}')" class="grid grid-cols-[auto_1fr_auto] items-center gap-3 ${resultClass || 'bg-slate-900/60'} hover:brightness-125 cursor-pointer border ${highlight ? 'border-emerald-600/60' : 'border-slate-700/50'} rounded-lg px-3 py-3 transition-all" title="Skor / gol-asist girmek için tıklayın">
+                    <div class="flex items-center gap-2 w-20">
+                        <span class="text-[10px] text-slate-500 font-bold shrink-0">${escapeHtml(m.season)}</span>
+                        ${tourHtml}
+                    </div>
+                    <div class="flex items-center justify-center gap-3">
+                        <img src="${homeLogo}" class="w-8 h-8 object-contain">
+                        <span class="score-display ${resultClass ? 'score-' + resultClass.replace('frow-', '') : 'text-white'} text-base font-black w-14 text-center">${hs}:${as}</span>
+                        <img src="${awayLogo}" class="w-8 h-8 object-contain">
+                    </div>
+                    <span class="w-5"></span>
+                </div>`;
+            };
+
+            let html = '';
+            html += `<div class="mb-3"><h5 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Son 4 Maç</h5><div class="space-y-1.5">${last4.length ? last4.map(m => renderMatchRow(m, false)).join('') : '<div class="text-center text-slate-500 text-xs py-2">Oynanmış maç yok.</div>'}</div></div>`;
+            html += `<div class="mb-3"><h5 class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest mb-1.5">Sıradaki Maç</h5><div class="space-y-1.5">${nextMatch ? renderMatchRow(nextMatch, true) : '<div class="text-center text-slate-500 text-xs py-2">Planlanmış maç yok.</div>'}</div></div>`;
+            html += `<div><h5 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Sonraki 4 Maç</h5><div class="space-y-1.5">${next4.length ? next4.map(m => renderMatchRow(m, false)).join('') : '<div class="text-center text-slate-500 text-xs py-2">Planlanmış maç yok.</div>'}</div></div>`;
+            return html;
+        }
+
+        function renderHomePanel() {
+            const season = seasonsList[seasonsList.length - 1];
+
+            const html = `
+                <div class="w-full flex flex-col sm:flex-row justify-between items-center mb-4 px-2 shrink-0 relative gap-3 sm:gap-0">
+                    <h3 class="text-2xl font-bold text-white self-start sm:self-auto"><i class="fa-solid fa-house text-emerald-500 mr-2"></i>Ana Sayfa</h3>
+                    
+                    <!-- Ortalanmış Kulüp / Milli Seçici -->
+                    <div class="sm:absolute sm:left-1/2 sm:-translate-x-1/2 flex gap-1 bg-slate-900 rounded-full border border-slate-700 p-1 shadow-lg z-10">
+                        <button onclick="setHomeGlobalContext('kulup')" class="px-6 py-1.5 rounded-full text-xs font-bold transition-colors ${homeGlobalContext === 'kulup' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}">Kulüp</button>
+                        <button onclick="setHomeGlobalContext('milli')" class="px-6 py-1.5 rounded-full text-xs font-bold transition-colors ${homeGlobalContext === 'milli' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}">Milli</button>
+                    </div>
+                    
+                    <div class="hidden sm:block"></div> <!-- Flex dengesi için boş div -->
+                </div>
+                <div class="w-full flex-1 grid grid-cols-1 xl:grid-cols-3 gap-4 overflow-y-auto xl:overflow-hidden hide-scrollbar px-2 pb-4">
+
+                    <div class="flex flex-col bg-slate-900 border border-slate-700 rounded-xl overflow-hidden shadow-lg h-full min-h-[400px] xl:min-h-0">
+                        <div class="bg-slate-800 border-b border-slate-700 p-3 shrink-0 flex justify-between items-center flex-wrap gap-2">
+                            <h4 class="text-sm font-bold text-white"><i class="fa-solid fa-people-group text-emerald-400 mr-1.5"></i>İlk 11</h4>
+                        </div>
+                        <div class="flex-1 overflow-hidden p-3 min-h-0">
+                            ${renderHomeFirst11(homeSquadContext)}
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col bg-slate-900 border border-slate-700 rounded-xl overflow-hidden shadow-lg h-full min-h-[400px] xl:min-h-0">
+                        <div class="bg-slate-800 border-b border-slate-700 p-3 shrink-0 flex justify-between items-center flex-wrap gap-2">
+                            <h4 class="text-sm font-bold text-white"><i class="fa-solid fa-calendar-days text-emerald-400 mr-1.5"></i>Maçlar</h4>
+                            <div class="flex gap-1 bg-slate-900 rounded-full border border-slate-700 p-1">
+                                <button onclick="toggleHomeFixtureBoth()" class="px-3 py-1 rounded-full text-[10px] font-bold transition-colors ${homeFixtureContext === 'both' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}">Tümü</button>
+                            </div>
+                        </div>
+                        <div class="flex-1 overflow-y-auto p-3 hide-scrollbar">
+                            ${renderHomeFixtures(homeFixtureContext)}
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col bg-slate-900 border border-slate-700 rounded-xl overflow-hidden shadow-lg h-full min-h-[400px] xl:min-h-0">
+                        <div class="bg-slate-800 border-b border-slate-700 p-3 shrink-0 flex justify-between items-center flex-wrap gap-2">
+                            <h4 class="text-sm font-bold text-white"><i class="fa-solid fa-futbol text-emerald-400 mr-1.5"></i>Gol Kralları <span class="text-[9px] text-slate-500 font-normal">(${escapeHtml(season || '')})</span></h4>
+                        </div>
+                        <div class="flex-1 overflow-y-auto p-3 hide-scrollbar">
+                            ${(() => { const r = renderHomeTopScorers(homeStatsContext); return r.headerHtml + `<div class="space-y-1.5">${r.bodyHtml}</div>`; })()}
+                        </div>
+                    </div>
+
+                </div>
+            `;
+            updateContentArea(html);
         }
 
         // --- KUPALAR TABLOSU ---
@@ -4505,7 +4749,10 @@ async function autoFetchPlayerPhoto(playerName, urlInputId) {
                                 ${photoHtml}
                                 <div class="flex-1 min-w-0">
                                     <div class="flex justify-between items-start">
-                                        <h4 class="font-bold text-white text-sm truncate">${escapeHtml(t.name)} <span class="text-[10px] text-slate-400 font-normal ml-1 border border-slate-600 rounded px-1">${escapeHtml(t.season)}</span></h4>
+                                        <h4 class="font-bold text-white text-sm truncate">
+                                            <span class="hover:text-emerald-400 transition-colors" data-pname="${escapeHtml(t.name)}" onclick="event.stopPropagation(); openStatsPlayerProfile(this)" title="Profili Görüntüle">${escapeHtml(t.name)}</span> 
+                                            <span class="text-[10px] text-slate-400 font-normal ml-1 border border-slate-600 rounded px-1 pointer-events-none">${escapeHtml(t.season)}</span>
+                                        </h4>
                                         <span class="font-bold text-sm ${feeColor} whitespace-nowrap">${feeText}</span>
                                     </div>
                                     <div class="flex justify-between items-end mt-1 text-[11px] text-slate-400">
@@ -6360,7 +6607,7 @@ function formatShortPlayerName(name) {
 
             saveToLocalStorage();
             closeMatchResultModal();
-            renderFixturePanel();
+            rerenderCurrentPanel();
             renderQuickFixtureBar();
         }
 
