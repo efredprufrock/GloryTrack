@@ -1937,7 +1937,7 @@ function handleFileUpload(event, type) {
 
             const last4 = played.slice(-4);
             const nextMatch = upcoming[0] || null;
-            const next4 = upcoming.slice(0, 4);
+            const next4 = upcoming.slice(1, 5);
 
             const clubName = managedTeams.kulup.name || '';
             const nationalName = managedTeams.milli.name || '';
@@ -5565,20 +5565,50 @@ function qfbOpenMatch(season, matchId) {
 function toggleQuickFixtureBar() {
     const bar = document.getElementById('quick-fixture-bar');
     const icon = document.getElementById('qfb-toggle-icon');
+    const handle = document.getElementById('qfb-handle');
+    
     bar.classList.toggle('qfb-collapsed');
-    const collapsed = bar.classList.contains('qfb-collapsed');
-    if (icon) icon.style.transform = collapsed ? 'rotate(180deg)' : 'rotate(0deg)';
-    localStorage.setItem('fc26_qfb_collapsed', collapsed ? '1' : '0');
+    
+    // Mobil için absolute positioning aç/kapa
+    if (window.innerWidth < 640) {
+        if (bar.classList.contains('-translate-x-full')) {
+            bar.classList.remove('-translate-x-full');
+            bar.classList.add('translate-x-0');
+            if (handle) handle.style.transform = 'translateX(87px)';
+            if (icon) icon.className = 'fa-solid fa-chevron-left text-[10px]';
+        } else {
+            bar.classList.add('-translate-x-full');
+            bar.classList.remove('translate-x-0');
+            if (handle) handle.style.transform = 'translateX(0)';
+            if (icon) icon.className = 'fa-solid fa-chevron-right text-[10px]';
+        }
+    } else {
+        const collapsed = bar.classList.contains('qfb-collapsed');
+        if (icon) icon.className = collapsed ? 'fa-solid fa-chevron-right text-[10px]' : 'fa-solid fa-chevron-left text-[10px]';
+        localStorage.setItem('fc26_qfb_collapsed', collapsed ? '1' : '0');
+    }
 }
 
 function applyQfbCollapsedState() {
     const bar = document.getElementById('quick-fixture-bar');
     const icon = document.getElementById('qfb-toggle-icon');
-    // Varsayılan: kapalı. Sadece kullanıcı daha önce bilinçli olarak açtıysa ('0') açık kalır.
+    const handle = document.getElementById('qfb-handle');
     const shouldBeOpen = localStorage.getItem('fc26_qfb_collapsed') === '0';
-    if (bar && !shouldBeOpen) {
-        bar.classList.add('qfb-collapsed');
-        if (icon) icon.style.transform = 'rotate(180deg)';
+    
+    if (window.innerWidth < 640) {
+         // Mobilde varsayılan olarak kapalı kalsın ve yer kaplamasın
+         if(bar) bar.classList.add('qfb-collapsed', '-translate-x-full');
+         if(bar) bar.classList.remove('translate-x-0');
+         if(handle) handle.style.transform = 'translateX(0)';
+         if(icon) icon.className = 'fa-solid fa-chevron-right text-[10px]';
+    } else {
+         if (bar && !shouldBeOpen) {
+             bar.classList.add('qfb-collapsed');
+             if(icon) icon.className = 'fa-solid fa-chevron-right text-[10px]';
+         } else {
+             bar.classList.remove('qfb-collapsed');
+             if(icon) icon.className = 'fa-solid fa-chevron-left text-[10px]';
+         }
     }
 }
 
