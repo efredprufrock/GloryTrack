@@ -3407,7 +3407,7 @@ function handleFileUpload(event, type) {
                         p.totalGoals = gs ? gs.overallGoals : 0;
                         p.totalAssists = gs ? gs.overallAssists : 0;
                         
-                        // Geçmişten günümüze (sondan başa) doğru tarama yap
+                        // Geçmişten günümüze (sondan başa) doğru tarama yap (t2 ve t1 eklendi)
                         for (let i = seasonsList.length - 1; i >= 0; i--) {
                             let s = seasonsList[i];
                             if (p.history && p.history[s]) {
@@ -3416,9 +3416,19 @@ function handleFileUpload(event, type) {
                                     if (p.history[s].s2o) p.currentOvr = p.history[s].s2o;
                                     break;
                                 }
+                                if (p.history[s].t2o || p.history[s].t2a) {
+                                    if (p.history[s].t2a) p.currentAge = p.history[s].t2a;
+                                    if (p.history[s].t2o) p.currentOvr = p.history[s].t2o;
+                                    break;
+                                }
                                 if (p.history[s].s1o || p.history[s].s1a) {
                                     if (p.history[s].s1a) p.currentAge = p.history[s].s1a;
                                     if (p.history[s].s1o) p.currentOvr = p.history[s].s1o;
+                                    break;
+                                }
+                                if (p.history[s].t1o || p.history[s].t1a) {
+                                    if (p.history[s].t1a) p.currentAge = p.history[s].t1a;
+                                    if (p.history[s].t1o) p.currentOvr = p.history[s].t1o;
                                     break;
                                 }
                             }
@@ -3879,7 +3889,7 @@ async function autoFetchPlayerPhoto(playerName, urlInputId) {
                 let currentAge = p.joinAge;
                 let currentOvr = p.joinOvr;
                 
-                // Oyuncunun geçmişini tarayarak en güncel verilerini bulalım
+                // Oyuncunun geçmişini tarayarak en güncel verilerini bulalım (t2 ve t1 eklendi)
                 for (let i = seasonsList.length - 1; i >= 0; i--) {
                     let s = seasonsList[i];
                     if (p.history && p.history[s]) {
@@ -3888,9 +3898,19 @@ async function autoFetchPlayerPhoto(playerName, urlInputId) {
                             if (p.history[s].s2o) currentOvr = p.history[s].s2o;
                             break;
                         }
+                        if (p.history[s].t2a || p.history[s].t2o) {
+                            if (p.history[s].t2a) currentAge = p.history[s].t2a;
+                            if (p.history[s].t2o) currentOvr = p.history[s].t2o;
+                            break;
+                        }
                         if (p.history[s].s1a || p.history[s].s1o) {
                             if (p.history[s].s1a) currentAge = p.history[s].s1a;
                             if (p.history[s].s1o) currentOvr = p.history[s].s1o;
+                            break;
+                        }
+                        if (p.history[s].t1a || p.history[s].t1o) {
+                            if (p.history[s].t1a) currentAge = p.history[s].t1a;
+                            if (p.history[s].t1o) currentOvr = p.history[s].t1o;
                             break;
                         }
                     }
@@ -4242,9 +4262,19 @@ async function autoFetchPlayerPhoto(playerName, urlInputId) {
                             if (p.history[s].s2o) p.currentOvr = p.history[s].s2o;
                             break;
                         }
+                        if (p.history[s].t2o || p.history[s].t2a) {
+                            if (p.history[s].t2a) p.currentAge = p.history[s].t2a;
+                            if (p.history[s].t2o) p.currentOvr = p.history[s].t2o;
+                            break;
+                        }
                         if (p.history[s].s1o || p.history[s].s1a) {
                             if (p.history[s].s1a) p.currentAge = p.history[s].s1a;
                             if (p.history[s].s1o) p.currentOvr = p.history[s].s1o;
+                            break;
+                        }
+                        if (p.history[s].t1o || p.history[s].t1a) {
+                            if (p.history[s].t1a) p.currentAge = p.history[s].t1a;
+                            if (p.history[s].t1o) p.currentOvr = p.history[s].t1o;
                             break;
                         }
                     }
