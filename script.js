@@ -4195,7 +4195,8 @@ async function autoFetchPlayerPhoto(playerName, urlInputId) {
 
         function renderBulkStatRows() {
             const container = document.getElementById('bs-players-container');
-            const players = (squadData[squadContext] || []).filter(p => !p.isPromoted);
+            // Sadece aktif kadroyu al (arşivlenenleri gizle)
+            const players = (squadData[squadContext] || []).filter(p => !p.isPromoted && !p.isArchived);
             const season = activeBulkStatSeason;
             const cellKey = activeBulkStatCellKey;
 
@@ -4204,28 +4205,95 @@ async function autoFetchPlayerPhoto(playerName, urlInputId) {
                 return;
             }
 
-            container.innerHTML = players.map(p => {
-                const sData = (p.history && p.history[season]) ? p.history[season] : {};
-                let ageVal = sData[`${cellKey}a`];
-                if (!ageVal) {
-                    const prevKey = (cellKey === 't1') ? 's1' : (cellKey === 't2') ? 's2' : cellKey;
-                    ageVal = getExpectedAge(p, season, prevKey);
-                }
-                const ovrVal = sData[`${cellKey}o`] || '';
-                const photoHtml = p.photoUrl
-                    ? `<img src="${p.photoUrl}" class="w-8 h-8 rounded-full object-cover bg-slate-800 shrink-0">`
-                    : `<div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold shrink-0">${escapeHtml((p.name || '?').charAt(0))}</div>`;
+            // Ana kadro paneliyle aynı mevkisel gruplama kuralı
+            const validGroups = ['GK', 'CB', 'LB', 'RB', 'DM', 'CM', 'AM', 'LM', 'RM', 'LW', 'RW', 'ST'];
+            const getGroupForPos = (pos) => {
+                const upperPos = (pos || '').toUpperCase().trim();
+                return validGroups.includes(upperPos) ? upperPos : 'CM';
+            };
 
-                return `
-                    <div class="flex items-center gap-2 bg-slate-900 border border-slate-700 rounded-lg p-2" data-player-id="${p.id}">
-                        ${photoHtml}
-                        <span class="flex-1 text-sm font-bold text-white truncate">${escapeHtml(p.name)}</span>
-                        <span class="text-[10px] font-black pos-${p.pos} bg-slate-950 border border-slate-700 rounded px-1.5 py-0.5">${p.pos || ''}</span>
-                        <input type="number" class="bs-age-input w-14 bg-slate-950 border border-slate-600 rounded p-1.5 text-center text-white outline-none focus:border-emerald-500 appearance-none" placeholder="Yaş" value="${ageVal || ''}" autocomplete="off">
-                        <input type="number" class="bs-ovr-input w-14 bg-slate-950 border border-slate-600 rounded p-1.5 text-center text-emerald-400 font-bold outline-none focus:border-emerald-500 appearance-none" placeholder="OVR" value="${ovrVal}" autocomplete="off">
-                    </div>
-                `;
-            }).join('');
+            // Sıralama motoru için istatistikleri ve güncel OVR/Yaşları çek
+            const statsCtx = squadContext === 'milli' ? 'milli' : 'kulup';
+            const goalAssistMap = {};
+            getStatsData(statsCtx).stats.forEach(s => { goalAssistMap[s.name.toLowerCase()] = s; });
+
+            players.forEach(p => {
+                p.currentAge = p.joinAge;
+                p.currentOvr = p.joinOvr;
+                const gs = goalAssistMap[(p.name || '').toLowerCase()];
+                p.totalGoals = gs ? gs.overallGoals : 0;
+                p.totalAssists = gs ? gs.overallAssists : 0;
+
+                for (let i = seasonsList.length - 1; i >= 0; i--) {
+                    let s = seasonsList[i];
+                    if (p.history && p.history[s]) {
+                        if (p.history[s].s2o || p.history[s].s2a) {
+                            if (p.history[s].s2a) p.currentAge = p.history[s].s2a;
+                            if (p.history[s].s2o) p.currentOvr = p.history[s].s2o;
+                            break;
+                        }
+                        if (p.history[s].s1o || p.history[s].s1a) {
+                            if (p.history[s].s1a) p.currentAge = p.history[s].s1a;
+                            if (p.history[s].s1o) p.currentOvr = p.history[s].s1o;
+                            break;
+                        }
+                    }
+                }
+            });
+
+            let html = '';
+
+            // Oyuncuları gruplara ayırarak ve belirlenen seçime göre sıralayarak listele
+            validGroups.forEach(groupId => {
+                let groupPlayers = players.filter(p => getGroupForPos(p.pos) === groupId);
+                if (groupPlayers.length === 0) return;
+
+                groupPlayers.sort((a, b) => {
+                    let valA = a[squadSort.field]; let valB = b[squadSort.field];
+                    if (squadSort.field === 'joinOvr') {
+                        valA = Number(a.currentOvr || 0); valB = Number(b.currentOvr || 0);
+                    } else if (squadSort.field === 'joinAge') {
+                        valA = Number(a.currentAge || 0); valB = Number(b.currentAge || 0);
+                    } else if (squadSort.field === 'caps') {
+                        valA = Number(a.caps || 0); valB = Number(b.caps || 0);
+                    } else if (squadSort.field === 'totalGoals') {
+                        valA = Number(a.totalGoals || 0); valB = Number(b.totalGoals || 0);
+                    } else if (squadSort.field === 'totalAssists') {
+                        valA = Number(a.totalAssists || 0); valB = Number(b.totalAssists || 0);
+                    } else {
+                        valA = (valA || '').toString().toLowerCase(); valB = (valB || '').toString().toLowerCase();
+                    }
+                    
+                    if (valA < valB) return squadSort.asc ? -1 : 1;
+                    if (valA > valB) return squadSort.asc ? 1 : -1;
+                    return 0;
+                });
+
+                html += groupPlayers.map(p => {
+                    const sData = (p.history && p.history[season]) ? p.history[season] : {};
+                    let ageVal = sData[`${cellKey}a`];
+                    if (!ageVal) {
+                        const prevKey = (cellKey === 't1') ? 's1' : (cellKey === 't2') ? 's2' : cellKey;
+                        ageVal = getExpectedAge(p, season, prevKey);
+                    }
+                    const ovrVal = sData[`${cellKey}o`] || '';
+                    const photoHtml = p.photoUrl
+                        ? `<img src="${p.photoUrl}" class="w-8 h-8 rounded-full object-cover bg-slate-800 shrink-0">`
+                        : `<div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold shrink-0">${escapeHtml((p.name || '?').charAt(0))}</div>`;
+
+                    return `
+                        <div class="flex items-center gap-2 bg-slate-900 border border-slate-700 rounded-lg p-2" data-player-id="${p.id}">
+                            ${photoHtml}
+                            <span class="flex-1 text-sm font-bold text-white truncate">${escapeHtml(p.name)}</span>
+                            <span class="text-[10px] font-black pos-${p.pos} bg-slate-950 border border-slate-700 rounded px-1.5 py-0.5">${p.pos || ''}</span>
+                            <input type="number" class="bs-age-input w-14 bg-slate-950 border border-slate-600 rounded p-1.5 text-center text-white outline-none focus:border-emerald-500 appearance-none" placeholder="Yaş" value="${ageVal || ''}" autocomplete="off">
+                            <input type="number" class="bs-ovr-input w-14 bg-slate-950 border border-slate-600 rounded p-1.5 text-center text-emerald-400 font-bold outline-none focus:border-emerald-500 appearance-none" placeholder="OVR" value="${ovrVal}" autocomplete="off">
+                        </div>
+                    `;
+                }).join('');
+            });
+
+            container.innerHTML = html;
         }
 
         function saveBulkStatModal() {
