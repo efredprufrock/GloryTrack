@@ -82,15 +82,15 @@
         .pos-FWD, .pos-LW, .pos-RW, .pos-ST, .pos-CF { color: #f87171; }
         
         .bg-row-GK { background-color: #1f2420; }
-        .bg-row-DEF { background-color: #121c2e; }
+        .bg-row-DEF { background-color: #162846; }
         .bg-row-MID { background-color: #12241d; }
         .bg-row-FWD { background-color: #23171a; }
         
         .group-row:hover .bg-row-GK, .group-row:hover.bg-row-GK { background-color: #2a302a; }
-        .group-row:hover .bg-row-DEF, .group-row:hover.bg-row-DEF { background-color: #1a263d; }
+        .group-row:hover .bg-row-DEF, .group-row:hover.bg-row-DEF { background-color: #1f365c; }
         .group-row:hover .bg-row-MID, .group-row:hover.bg-row-MID { background-color: #1a3027; }
         .group-row:hover .bg-row-FWD, .group-row:hover.bg-row-FWD { background-color: #2e1f23; }
-
+        
         /* --- YENİ EKLENEN BÖLÜM: Mevki Grup Arka Planları (Tailwind JIT Çözümü) --- */
         .bg-orange-600\/30 { background-color: rgba(234, 88, 12, 0.3) !important; }
         .bg-blue-600\/30 { background-color: rgba(37, 99, 235, 0.3) !important; }
@@ -611,4 +611,12 @@ body.theme-light[data-theme-family="green"] *::selection { background-color: #05
 .hide-scrollbar {
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
+}
+
+/* Kadro tablosunda sabit (sticky) sütunların (Mevki/İsim vb.) arkasından
+   kaydırılan sezon sütunlarının (Yaş/OVR) görünmesini/sızmasını engeller */
+#content-area table td[style*="left:"],
+#content-area table th[style*="left:"] {
+    z-index: 55 !important;
+    background-clip: padding-box;
 }

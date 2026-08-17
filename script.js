@@ -394,6 +394,12 @@ function escapeHtml(str) {
         };
         let squadData = { astakim: [], akademi: [], milli: [] };
         let squadSort = { field: 'joinOvr', asc: false };
+        let squadColumnsCollapsed = false;
+
+        function toggleSquadColumnsCollapse() {
+            squadColumnsCollapsed = !squadColumnsCollapsed;
+            renderSquadGrid();
+        }
         
         let activePlayerId = null;
         let activePlayerSeason = null;
@@ -3243,32 +3249,47 @@ function handleFileUpload(event, type) {
             };
             const getMacroGroupForPos = (pos) => macroGroupMap[getGroupForPos(pos)] || 'MID';
 
-            const staticCols = [
-                { id: 'pos', label: '<i class="fa-solid fa-street-view text-sm"></i>', title: 'Mevki', w: 40, align: 'center' },
-                { id: 'name', label: '<div class="flex items-center gap-1.5"><i class="fa-solid fa-font text-sm"></i><span>İsim Soyisim</span></div>', title: 'İsim Soyisim', w: 180, align: 'left', pl: 'pl-3' },
-                { id: 'countryCode', label: '<i class="fa-solid fa-globe text-sm"></i>', title: 'Ülke', w: 40, align: 'center' },
-                { id: 'joinAge', label: '<i class="fa-solid fa-user-clock text-sm"></i>', title: 'Yaş', w: 35, align: 'center' },
-                { id: 'joinOvr', label: '<i class="fa-solid fa-star text-sm"></i>', title: 'OVR', w: 40, align: 'center' },
-                { id: 'growth', label: '<i class="fa-solid fa-chart-line text-sm"></i>', title: 'Gelişim (+/-)', w: 45, align: 'center' }
-            ];
-            
-            if (squadContext === 'akademi') {
-                staticCols.push({ id: 'pot', label: '<i class="fa-solid fa-bolt text-sm"></i>', title: 'Potansiyel (POT)', w: 45, align: 'center' });
-            } else if (squadContext === 'milli') {
-                staticCols.push({ id: 'teamName', label: '<i class="fa-solid fa-shield-halved text-sm"></i>', title: 'Kulüp', w: 55, align: 'center' });
-                staticCols.push({ id: 'caps', label: '<i class="fa-solid fa-shirt text-sm"></i>', title: 'Forma Sayısı (Caps)', w: 45, align: 'center' });
+            // Find the longest name in the current roster to set dynamic column width
+            let maxNameLength = 10; // Fallback minimum length
+            if (players && players.length > 0) {
+                players.forEach(p => {
+                    if (p.name && p.name.length > maxNameLength) {
+                        maxNameLength = p.name.length;
+                    }
+                });
             }
-            
-            if (squadContext !== 'akademi') {
-                staticCols.push({ id: 'totalGoals', label: '<i class="fa-solid fa-futbol text-sm"></i>', title: 'Gol', w: 40, align: 'center' });
-                staticCols.push({ id: 'totalAssists', label: '<i class="fa-solid fa-shoe-prints text-sm"></i>', title: 'Asist', w: 40, align: 'center' });
+            // Base 45px (for player photo + padding) + approx 5px per character
+            let dynamicNameWidth = Math.floor(45 + (maxNameLength * 4));
+
+            const staticCols = [
+                { id: 'pos', label: '<i class="fa-solid fa-street-view text-sm"></i>', title: 'Mevki', w: 26, align: 'center' },
+                { id: 'name', label: '<div class="flex items-center gap-1.5"><i class="fa-solid fa-font text-sm"></i><span>İsim Soyisim</span></div>', title: 'İsim Soyisim', w: dynamicNameWidth, align: 'left', pl: 'pl-1' },
+                { id: 'countryCode', label: '<i class="fa-solid fa-globe text-sm"></i>', title: 'Ülke', w: 20, align: 'center' },
+                { id: 'joinAge', label: '<i class="fa-solid fa-user-clock text-sm"></i>', title: 'Yaş', w: 20, align: 'center' },
+                { id: 'joinOvr', label: '<i class="fa-solid fa-star text-sm"></i>', title: 'OVR', w: 20, align: 'center' }
+            ];
+
+            if (!squadColumnsCollapsed) {
+                staticCols.push({ id: 'growth', label: '<i class="fa-solid fa-chart-line text-sm"></i>', title: 'Gelişim (+/-)', w: 20, align: 'center' });
+
+                if (squadContext === 'akademi') {
+                    staticCols.push({ id: 'pot', label: '<i class="fa-solid fa-bolt text-sm"></i>', title: 'Potansiyel (POT)', w: 20, align: 'center' });
+                } else if (squadContext === 'milli') {
+                    staticCols.push({ id: 'teamName', label: '<i class="fa-solid fa-shield-halved text-sm"></i>', title: 'Kulüp', w: 20, align: 'center' });
+                    staticCols.push({ id: 'caps', label: '<i class="fa-solid fa-shirt text-sm"></i>', title: 'Forma Sayısı (Caps)', w: 20, align: 'center' });
+                }
+
+                if (squadContext !== 'akademi') {
+                    staticCols.push({ id: 'totalGoals', label: '<i class="fa-solid fa-futbol text-sm"></i>', title: 'Gol', w: 20, align: 'center' });
+                    staticCols.push({ id: 'totalAssists', label: '<i class="fa-solid fa-shoe-prints text-sm"></i>', title: 'Asist', w: 20, align: 'center' });
+                }
             }
             
             const lastColId = staticCols[staticCols.length - 1].id;
             let accW = 0;
             staticCols.forEach(c => { c.left = accW; accW += c.w; });
             const btnLeft = accW;
-            const btnW = 35;
+            const btnW = 20;
 
             const renderOvrBadge = (ovr) => {
                 if(!ovr) return '';
@@ -3344,7 +3365,10 @@ function handleFileUpload(event, type) {
                             ${squadContext === 'astakim' ? 'As Takım' : (squadContext === 'akademi' ? 'Akademi' : 'Milli Takım')} Gelişim Takibi
                             ${(squadContext === 'astakim' || squadContext === 'milli') ? `<button onclick="openFormationModal('ilk11')" class="text-sm bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-600 rounded px-2 py-1.5 transition-colors shadow-sm flex items-center justify-center w-8 h-8" title="Kadrolar"><i class="fa-solid fa-people-group"></i></button>` : ''}
                         </h3>
-                        <button onclick="openPlayerInfoModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-lg"><i class="fa-solid fa-user-plus mr-1"></i>Oyuncu Ekle</button>                        <button onclick="openSquadBulkModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-lg"><i class="fa-solid fa-list-ol mr-1"></i>Toplu Ekle</button>
+                        <button onclick="openSquadBulkModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-lg"><i class="fa-solid fa-list-ol mr-1"></i>Toplu Ekle</button>
+                        <button onclick="toggleSquadColumnsCollapse()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-lg" title="Ülke/Yaş/OVR/Gelişim/Gol/Asist sütunlarını gizle veya göster">
+                            <i class="fa-solid ${squadColumnsCollapsed ? 'fa-chevron-right' : 'fa-chevron-left'} mr-1"></i>${squadColumnsCollapsed ? 'Sütunları Göster' : 'Sütunları Daralt'}
+                        </button>
                         ${squadContext === 'milli' ? `<button onclick="openNationalCapsBulkModal()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-lg"><i class="fa-solid fa-shirt mr-1"></i>Toplu Maç Ekle</button>` : ''}
                     </div>
                     <div class="flex items-center gap-4">
@@ -3364,10 +3388,6 @@ function handleFileUpload(event, type) {
                         </th>`;
             });
 
-            html += `<th rowspan="2" class="p-1 border-r-2 border-b border-slate-500 sticky bg-slate-950 z-[70] text-center shadow-[2px_0_5px_rgba(0,0,0,0.3)]" style="left: ${btnLeft}px; width: ${btnW}px; min-width: ${btnW}px;">
-                        <button onclick="addNewSeason()" class="text-emerald-500 hover:text-emerald-400" title="Sola Yeni Sezon Ekle"><i class="fa-solid fa-plus-circle text-lg"></i></button>
-                     </th>`;
-
             squadSeasons.forEach(season => {
                 html += `<th colspan="4" class="p-1 border-r border-b border-slate-700 text-center font-black tracking-widest bg-slate-800 text-emerald-500 relative group/season">
                             ${season}
@@ -3380,10 +3400,10 @@ function handleFileUpload(event, type) {
 
             squadSeasons.forEach(season => {
                 html += `
-                    <th class="p-1 border-r border-b border-slate-700 bg-slate-900 text-[9px] font-bold text-slate-300 min-w-[70px]"><div class="flex items-center justify-center gap-1.5">HAZ-ŞUB ${bulkStatBtn(season, 's2')}</div></th>
-                    <th class="p-1 border-r border-b border-slate-700 bg-orange-900/30 text-[9px] font-bold text-orange-300 min-w-[90px]"><div class="flex items-center justify-center gap-1.5">KIŞ TR. ${bulkStatBtn(season, 't2')}</div></th>
-                    <th class="p-1 border-r border-b border-slate-700 bg-slate-900 text-[9px] font-bold text-slate-300 min-w-[70px]"><div class="flex items-center justify-center gap-1.5">ARA-EYL ${bulkStatBtn(season, 's1')}</div></th>
-                    <th class="p-1 border-r border-b border-slate-700 bg-blue-900/30 text-[9px] font-bold text-blue-300 min-w-[90px]"><div class="flex items-center justify-center gap-1.5">YAZ TR. ${bulkStatBtn(season, 't1')}</div></th>
+                    <th class="p-1 border-r border-b border-slate-700 bg-slate-900 text-[9px] font-bold text-slate-300 min-w-[80px] w-[80px] max-w-[80px]"><div class="flex items-center justify-center gap-1.5">HAZ-ŞUB ${bulkStatBtn(season, 's2')}</div></th>
+                    <th class="p-1 border-r border-b border-slate-700 bg-orange-900/30 text-[9px] font-bold text-orange-300 min-w-[80px] w-[80px] max-w-[80px]"><div class="flex items-center justify-center gap-1.5">KIŞ TR. ${bulkStatBtn(season, 't2')}</div></th>
+                    <th class="p-1 border-r border-b border-slate-700 bg-slate-900 text-[9px] font-bold text-slate-300 min-w-[80px] w-[80px] max-w-[80px]"><div class="flex items-center justify-center gap-1.5">ARA-EYL ${bulkStatBtn(season, 's1')}</div></th>
+                    <th class="p-1 border-r border-b border-slate-700 bg-blue-900/30 text-[9px] font-bold text-blue-300 min-w-[80px] w-[80px] max-w-[80px]"><div class="flex items-center justify-center gap-1.5">YAZ TR. ${bulkStatBtn(season, 't1')}</div></th>
                 `;
             });
             html += `</tr></thead><tbody>`;
@@ -3548,8 +3568,6 @@ function handleFileUpload(event, type) {
                                             ${content}
                                          </td>`;
                             });
-                            
-                            resultHtml += `<td class="p-1 border-r-2 border-b border-slate-500 sticky z-[50] ${rowBgClass} transition-colors shadow-[2px_0_5px_rgba(0,0,0,0.4)]" style="left: ${btnLeft}px; width: ${btnW}px; min-width: ${btnW}px;"></td>`;
 
                             squadSeasons.forEach(season => {
                                 const sData = (p.history && p.history[season]) ? p.history[season] : {};
