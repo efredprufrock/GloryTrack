@@ -1936,60 +1936,85 @@ function handleFileUpload(event, type) {
         }
 
         function renderHomeFixtures(context) {
-            const matches = homeGetFilteredMatches(context);
-            const hasScore = (m) => m.homeScore !== '' && m.homeScore !== null && m.homeScore !== undefined && m.awayScore !== '' && m.awayScore !== null && m.awayScore !== undefined;
-            const played = matches.filter(hasScore);
-            const upcoming = matches.filter(m => !hasScore(m));
+    const matches = homeGetFilteredMatches(context);
+    const hasScore = (m) => m.homeScore !== '' && m.homeScore !== null && m.homeScore !== undefined && m.awayScore !== '' && m.awayScore !== null && m.awayScore !== undefined;
+    const played = matches.filter(hasScore);
+    const upcoming = matches.filter(m => !hasScore(m));
 
-            const last4 = played.slice(-4);
-            const nextMatch = upcoming[0] || null;
-            const next4 = upcoming.slice(1, 5);
+    const last4 = played.slice(-4);
+    const nextMatch = upcoming[0] || null;
+    const next4 = upcoming.slice(1, 5);
 
-            const clubName = managedTeams.kulup.name || '';
-            const nationalName = managedTeams.milli.name || '';
-            const isOurTeam = (name) => name === clubName || name === nationalName;
+    const clubName = managedTeams.kulup.name || '';
+    const nationalName = managedTeams.milli.name || '';
+    const isOurTeam = (name) => name === clubName || name === nationalName;
 
-            const renderMatchRow = (m, highlight) => {
-                const homeLogo = getTeamLogoByName(m.home);
-                const awayLogo = getTeamLogoByName(m.away);
-                const hs = hasScore(m) ? m.homeScore : '-';
-                const as = hasScore(m) ? m.awayScore : '-';
-                const tourLogo = getCompetitionLogo(m.tournament);
-                const tourHtml = tourLogo
-                    ? `<img src="${tourLogo}" alt="${escapeHtml(m.tournament || '')}" title="${escapeHtml(m.tournament || '')}" class="w-6 h-6 object-contain">`
-                    : `<span class="text-[10px] text-slate-400 truncate max-w-[70px]" title="${escapeHtml(m.tournament || '')}">${escapeHtml(m.tournament || '')}</span>`;
+    const renderMatchRow = (m, highlight) => {
+        const homeLogo = getTeamLogoByName(m.home);
+        const awayLogo = getTeamLogoByName(m.away);
+        const hs = hasScore(m) ? m.homeScore : '-';
+        const as = hasScore(m) ? m.awayScore : '-';
+        const tourLogo = getCompetitionLogo(m.tournament);
+        const tourHtml = tourLogo
+            ? `<img src="${tourLogo}" alt="${escapeHtml(m.tournament || '')}" title="${escapeHtml(m.tournament || '')}" class="w-6 h-6 object-contain">`
+            : `<span class="text-[10px] text-slate-400 truncate max-w-[70px]" title="${escapeHtml(m.tournament || '')}">${escapeHtml(m.tournament || '')}</span>`;
 
-                let resultClass = '';
-                if (hasScore(m)) {
-                    const hsNum = parseInt(m.homeScore), asNum = parseInt(m.awayScore);
-                    if (!isNaN(hsNum) && !isNaN(asNum)) {
-                        let letter = '';
-                        if (isOurTeam(m.home)) letter = hsNum > asNum ? 'W' : (hsNum < asNum ? 'L' : 'D');
-                        else if (isOurTeam(m.away)) letter = asNum > hsNum ? 'W' : (asNum < hsNum ? 'L' : 'D');
-                        if (letter) resultClass = `frow-${letter}`;
-                    }
-                }
-
-                return `<div onclick="qfbOpenMatch('${m.season}','${m.id}')" class="grid grid-cols-[auto_1fr_auto] items-center gap-3 ${resultClass || 'bg-slate-900/60'} hover:brightness-125 cursor-pointer border ${highlight ? 'border-emerald-600/60' : 'border-slate-700/50'} rounded-lg px-3 py-3 transition-all" title="Skor / gol-asist girmek için tıklayın">
-                    <div class="flex items-center gap-2 w-20">
-                        <span class="text-[10px] text-slate-500 font-bold shrink-0">${escapeHtml(m.season)}</span>
-                        ${tourHtml}
-                    </div>
-                    <div class="flex items-center justify-center gap-3">
-                        <img src="${homeLogo}" class="w-8 h-8 object-contain">
-                        <span class="score-display ${resultClass ? 'score-' + resultClass.replace('frow-', '') : 'text-white'} text-base font-black w-14 text-center">${hs}:${as}</span>
-                        <img src="${awayLogo}" class="w-8 h-8 object-contain">
-                    </div>
-                    <span class="w-5"></span>
-                </div>`;
-            };
-
-            let html = '';
-            html += `<div class="mb-3"><h5 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Son 4 Maç</h5><div class="space-y-1.5">${last4.length ? last4.map(m => renderMatchRow(m, false)).join('') : '<div class="text-center text-slate-500 text-xs py-2">Oynanmış maç yok.</div>'}</div></div>`;
-            html += `<div class="mb-3"><h5 class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest mb-1.5">Sıradaki Maç</h5><div class="space-y-1.5">${nextMatch ? renderMatchRow(nextMatch, true) : '<div class="text-center text-slate-500 text-xs py-2">Planlanmış maç yok.</div>'}</div></div>`;
-            html += `<div><h5 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Sonraki 4 Maç</h5><div class="space-y-1.5">${next4.length ? next4.map(m => renderMatchRow(m, false)).join('') : '<div class="text-center text-slate-500 text-xs py-2">Planlanmış maç yok.</div>'}</div></div>`;
-            return html;
+        let resultClass = '';
+        if (hasScore(m)) {
+            const hsNum = parseInt(m.homeScore), asNum = parseInt(m.awayScore);
+            if (!isNaN(hsNum) && !isNaN(asNum)) {
+                let letter = '';
+                if (isOurTeam(m.home)) letter = hsNum > asNum ? 'W' : (hsNum < asNum ? 'L' : 'D');
+                else if (isOurTeam(m.away)) letter = asNum > hsNum ? 'W' : (asNum < hsNum ? 'L' : 'D');
+                if (letter) resultClass = `frow-${letter}`;
+            }
         }
+
+        // --- YENİ EKLENEN: Rakiple olan son 3 maçın (H2H Form) W/L/D hesaplaması ---
+        const oppName = isOurTeam(m.home) ? m.away : m.home;
+        const h2hMatches = played.filter(pm => (pm.home === oppName || pm.away === oppName) && pm.id !== m.id).slice(-3);
+        
+        let badgesHtml = '<div></div>'; // 3. sütunu doldurmak için boş div[cite: 2]
+        if (h2hMatches.length > 0) {
+            let badges = h2hMatches.map(hm => {
+                const h_isUsHome = isOurTeam(hm.home);
+                const h_hs = parseInt(hm.homeScore);
+                const h_as = parseInt(hm.awayScore);
+                let res = 'D';
+                if (h_isUsHome) {
+                    if (h_hs > h_as) res = 'W';
+                    else if (h_hs < h_as) res = 'L';
+                } else {
+                    if (h_as > h_hs) res = 'W';
+                    else if (h_as < h_hs) res = 'L';
+                }
+                const bgClass = res === 'W' ? 'bg-emerald-500' : (res === 'D' ? 'bg-orange-500' : 'bg-red-500');
+                return `<span class="flex items-center justify-center w-4 h-4 rounded text-[9px] font-black text-white ${bgClass} shadow-sm" title="${hm.season} | ${hm.homeScore}-${hm.awayScore}">${res}</span>`;
+            }).join('');
+            badgesHtml = `<div class="flex items-center justify-end gap-1 ml-auto">${badges}</div>`;
+        }
+
+        // GÖRÜNÜM GÜNCELLEMESİ: grid-cols-[auto_auto_1fr] kullanılarak orta kısım sola hizalandı (justify-start)[cite: 2]
+        return `<div onclick="qfbOpenMatch('${m.season}','${m.id}')" class="grid grid-cols-[auto_auto_1fr] items-center gap-4 sm:gap-6 ${resultClass || 'bg-slate-900/60'} hover:brightness-125 cursor-pointer border ${highlight ? 'border-emerald-600/60' : 'border-slate-700/50'} rounded-lg px-3 py-3 transition-all" title="Skor / gol-asist girmek için tıklayın">
+            <div class="flex items-center gap-2 w-16 sm:w-20">
+                <span class="text-[10px] text-slate-500 font-bold shrink-0">${escapeHtml(m.season)}</span>
+                ${tourHtml}
+            </div>
+            <div class="flex items-center justify-start gap-3">
+                <img src="${homeLogo}" class="w-8 h-8 object-contain">
+                <span class="score-display ${resultClass ? 'score-' + resultClass.replace('frow-', '') : 'text-white'} text-base font-black w-14 text-center">${hs}:${as}</span>
+                <img src="${awayLogo}" class="w-8 h-8 object-contain">
+            </div>
+            ${badgesHtml}
+        </div>`;
+    };
+
+    let html = '';
+    html += `<div class="mb-3"><h5 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Son 4 Maç</h5><div class="space-y-1.5">${last4.length ? last4.map(m => renderMatchRow(m, false)).join('') : '<div class="text-center text-slate-500 text-xs py-2">Oynanmış maç yok.</div>'}</div></div>`;
+    html += `<div class="mb-3"><h5 class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest mb-1.5">Sıradaki Maç</h5><div class="space-y-1.5">${nextMatch ? renderMatchRow(nextMatch, true) : '<div class="text-center text-slate-500 text-xs py-2">Planlanmış maç yok.</div>'}</div></div>`;
+    html += `<div><h5 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Sonraki 4 Maç</h5><div class="space-y-1.5">${next4.length ? next4.map(m => renderMatchRow(m, false)).join('') : '<div class="text-center text-slate-500 text-xs py-2">Planlanmış maç yok.</div>'}</div></div>`;
+    return html;
+}
 
         function renderHomePanel() {
             const season = seasonsList[seasonsList.length - 1];
