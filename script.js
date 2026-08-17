@@ -1949,7 +1949,7 @@ function handleFileUpload(event, type) {
     const nationalName = managedTeams.milli.name || '';
     const isOurTeam = (name) => name === clubName || name === nationalName;
 
-    const renderMatchRow = (m, highlight) => {
+    const renderMatchRow = (m, highlight, isMostRecent = false) => {
         const homeLogo = getTeamLogoByName(m.home);
         const awayLogo = getTeamLogoByName(m.away);
         const hs = hasScore(m) ? m.homeScore : '-';
@@ -1960,6 +1960,8 @@ function handleFileUpload(event, type) {
             : `<span class="text-[10px] text-slate-400 truncate max-w-[70px]" title="${escapeHtml(m.tournament || '')}">${escapeHtml(m.tournament || '')}</span>`;
 
         let resultClass = '';
+        let glowClass = ''; 
+        
         if (hasScore(m)) {
             const hsNum = parseInt(m.homeScore), asNum = parseInt(m.awayScore);
             if (!isNaN(hsNum) && !isNaN(asNum)) {
@@ -1967,16 +1969,22 @@ function handleFileUpload(event, type) {
                 if (isOurTeam(m.home)) letter = hsNum > asNum ? 'W' : (hsNum < asNum ? 'L' : 'D');
                 else if (isOurTeam(m.away)) letter = asNum > hsNum ? 'W' : (asNum < hsNum ? 'L' : 'D');
                 if (letter) resultClass = `frow-${letter}`;
+                
+                if (isMostRecent) {
+                    if (letter === 'W') glowClass = 'shadow-[0_0_15px_rgba(34,197,94,0.4)] border-green-500/60 relative z-10';
+                    else if (letter === 'D') glowClass = 'shadow-[0_0_15px_rgba(249,115,22,0.4)] border-orange-500/60 relative z-10';
+                    else if (letter === 'L') glowClass = 'shadow-[0_0_15px_rgba(239,68,68,0.4)] border-red-500/60 relative z-10';
+                }
             }
         }
 
-        // --- YENİ EKLENEN: Rakiple olan son 3 maçın (H2H Form) W/L/D hesaplaması ---
         const oppName = isOurTeam(m.home) ? m.away : m.home;
-        const h2hMatches = played.filter(pm => (pm.home === oppName || pm.away === oppName) && pm.id !== m.id).slice(-3);
+        // YENİ: reverse() eklenerek en güncel maçın en sola (index 0) gelmesi sağlandı
+        const h2hMatches = played.filter(pm => (pm.home === oppName || pm.away === oppName) && pm.id !== m.id).slice(-3).reverse();
         
-        let badgesHtml = '<div></div>'; // 3. sütunu doldurmak için boş div[cite: 2]
+        let badgesHtml = '<div></div>';
         if (h2hMatches.length > 0) {
-            let badges = h2hMatches.map(hm => {
+            let badges = h2hMatches.map((hm, idx) => {
                 const h_isUsHome = isOurTeam(hm.home);
                 const h_hs = parseInt(hm.homeScore);
                 const h_as = parseInt(hm.awayScore);
@@ -1989,13 +1997,25 @@ function handleFileUpload(event, type) {
                     else if (h_as < h_hs) res = 'L';
                 }
                 const bgClass = res === 'W' ? 'bg-emerald-500' : (res === 'D' ? 'bg-orange-500' : 'bg-red-500');
-                return `<span class="flex items-center justify-center w-4 h-4 rounded text-[9px] font-black text-white ${bgClass} shadow-sm" title="${hm.season} | ${hm.homeScore}-${hm.awayScore}">${res}</span>`;
+                
+                let badgeGlow = 'shadow-sm';
+                // YENİ: reverse edildiği için en güncel maç artık 0. index'te
+                if (idx === 0) { 
+                    if (res === 'W') badgeGlow = 'shadow-[0_0_8px_rgba(16,185,129,0.9)] scale-110 z-10 border border-white/50';
+                    else if (res === 'D') badgeGlow = 'shadow-[0_0_8px_rgba(249,115,22,0.9)] scale-110 z-10 border border-white/50';
+                    else if (res === 'L') badgeGlow = 'shadow-[0_0_8px_rgba(239,68,68,0.9)] scale-110 z-10 border border-white/50';
+                }
+
+                return `<span class="flex items-center justify-center w-4 h-4 rounded text-[9px] font-black text-white ${bgClass} ${badgeGlow}" title="${hm.season} | ${hm.homeScore}-${hm.awayScore}">${res}</span>`;
             }).join('');
-            badgesHtml = `<div class="flex items-center justify-end gap-1 ml-auto">${badges}</div>`;
+            
+            // YENİ: ml-auto ve justify-end kaldırılarak justify-start eklendi (Sola yaslama)
+            badgesHtml = `<div class="flex items-center justify-start gap-1.5">${badges}</div>`;
         }
 
-        // GÖRÜNÜM GÜNCELLEMESİ: grid-cols-[auto_auto_1fr] kullanılarak orta kısım sola hizalandı (justify-start)[cite: 2]
-        return `<div onclick="qfbOpenMatch('${m.season}','${m.id}')" class="grid grid-cols-[auto_auto_1fr] items-center gap-4 sm:gap-6 ${resultClass || 'bg-slate-900/60'} hover:brightness-125 cursor-pointer border ${highlight ? 'border-emerald-600/60' : 'border-slate-700/50'} rounded-lg px-3 py-3 transition-all" title="Skor / gol-asist girmek için tıklayın">
+        const borderClass = isMostRecent ? glowClass : (highlight ? 'border-emerald-600/60' : 'border-slate-700/50');
+
+        return `<div onclick="qfbOpenMatch('${m.season}','${m.id}')" class="grid grid-cols-[auto_auto_1fr] items-center gap-4 sm:gap-6 ${resultClass || 'bg-slate-900/60'} hover:brightness-125 cursor-pointer border ${borderClass} rounded-lg px-3 py-3 transition-all" title="Skor / gol-asist girmek için tıklayın">
             <div class="flex items-center gap-2 w-16 sm:w-20">
                 <span class="text-[10px] text-slate-500 font-bold shrink-0">${escapeHtml(m.season)}</span>
                 ${tourHtml}
@@ -2010,7 +2030,7 @@ function handleFileUpload(event, type) {
     };
 
     let html = '';
-    html += `<div class="mb-3"><h5 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Son 4 Maç</h5><div class="space-y-1.5">${last4.length ? last4.map(m => renderMatchRow(m, false)).join('') : '<div class="text-center text-slate-500 text-xs py-2">Oynanmış maç yok.</div>'}</div></div>`;
+    html += `<div class="mb-3"><h5 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Son 4 Maç</h5><div class="space-y-1.5">${last4.length ? last4.map((m, i) => renderMatchRow(m, false, i === last4.length - 1)).join('') : '<div class="text-center text-slate-500 text-xs py-2">Oynanmış maç yok.</div>'}</div></div>`;
     html += `<div class="mb-3"><h5 class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest mb-1.5">Sıradaki Maç</h5><div class="space-y-1.5">${nextMatch ? renderMatchRow(nextMatch, true) : '<div class="text-center text-slate-500 text-xs py-2">Planlanmış maç yok.</div>'}</div></div>`;
     html += `<div><h5 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Sonraki 4 Maç</h5><div class="space-y-1.5">${next4.length ? next4.map(m => renderMatchRow(m, false)).join('') : '<div class="text-center text-slate-500 text-xs py-2">Planlanmış maç yok.</div>'}</div></div>`;
     return html;
