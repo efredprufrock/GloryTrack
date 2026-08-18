@@ -36,11 +36,11 @@
         <nav class="flex flex-row sm:flex-col items-center w-max sm:w-full h-full sm:h-auto gap-1.5 sm:gap-2 px-2 py-1.5 sm:py-0 sm:pb-2 m-auto sm:m-0">
             <button onclick="selectMainMenu('anasayfa')" id="btn-anasayfa" title="Ana Sayfa" aria-label="Ana Sayfa" class="main-btn h-full sm:h-auto w-auto sm:w-full aspect-square rounded-xl bg-slate-800 hover:bg-slate-700 transition-colors border-2 border-transparent focus:outline-none flex justify-center items-center text-slate-100 shrink-0"><i class="fa-solid fa-house text-lg sm:text-xl"></i></button>
             <button onclick="selectMainMenu('kupalar')" id="btn-kupalar" title="Kupalar" aria-label="Kupalar" class="main-btn h-full sm:h-auto w-auto sm:w-full aspect-square rounded-xl bg-slate-800 hover:bg-slate-700 transition-colors border-2 border-transparent focus:outline-none flex justify-center items-center text-slate-100 shrink-0"><i class="fa-solid fa-trophy text-lg sm:text-xl"></i></button>            
-            <button onclick="selectMainMenu('maclar')" id="btn-maclar" title="Maçlar" aria-label="Maçlar" class="main-btn h-full sm:h-auto w-auto sm:w-full aspect-square rounded-xl bg-slate-800 hover:bg-slate-700 transition-colors border-2 border-transparent focus:outline-none flex justify-center items-center text-slate-100 shrink-0"><i class="fa-solid fa-futbol text-lg sm:text-xl"></i></button>
+            <button onclick="selectMainMenu('maclar')" id="btn-maclar" title="Maçlar" aria-label="Maçlar" class="main-btn h-full sm:h-auto w-auto sm:w-full aspect-square rounded-xl bg-slate-800 hover:bg-slate-700 transition-colors border-2 border-transparent focus:outline-none flex justify-center items-center text-slate-100 shrink-0"><i class="fa-solid fa-chart-simple text-lg sm:text-xl"></i></button>
             <button onclick="selectMainMenu('kadro')" id="btn-kadro" title="Kadro" aria-label="Kadro" class="main-btn h-full sm:h-auto w-auto sm:w-full aspect-square rounded-xl bg-slate-800 hover:bg-slate-700 transition-colors border-2 border-transparent focus:outline-none flex justify-center items-center text-slate-100 shrink-0"><i class="fa-solid fa-users text-lg sm:text-xl"></i></button>
             <button onclick="selectMainMenu('ligtarihi')" id="btn-ligtarihi" title="Lig Tarihi" aria-label="Lig Tarihi" class="main-btn h-full sm:h-auto w-auto sm:w-full aspect-square rounded-xl bg-slate-800 hover:bg-slate-700 transition-colors border-2 border-transparent focus:outline-none flex justify-center items-center text-slate-100 shrink-0"><i class="fa-solid fa-clock-rotate-left text-lg sm:text-xl"></i></button>
             <button onclick="selectMainMenu('transfer')" id="btn-transfer" title="Transfer" aria-label="Transfer" class="main-btn h-full sm:h-auto w-auto sm:w-full aspect-square rounded-xl bg-slate-800 hover:bg-slate-700 transition-colors border-2 border-transparent focus:outline-none flex justify-center items-center text-slate-100 shrink-0"><i class="fa-solid fa-right-left text-lg sm:text-xl"></i></button>
-            <button onclick="selectMainMenu('golasist')" id="btn-golasist" title="Gol-Asist" aria-label="Gol ve Asistler" class="main-btn h-full sm:h-auto w-auto sm:w-full aspect-square rounded-xl bg-slate-800 hover:bg-slate-700 transition-colors border-2 border-transparent focus:outline-none flex justify-center items-center text-slate-100 shrink-0"><i class="fa-solid fa-chart-simple text-lg sm:text-xl"></i></button>
+            <button onclick="selectMainMenu('golasist')" id="btn-golasist" title="Gol-Asist" aria-label="Gol ve Asistler" class="main-btn h-full sm:h-auto w-auto sm:w-full aspect-square rounded-xl bg-slate-800 hover:bg-slate-700 transition-colors border-2 border-transparent focus:outline-none flex justify-center items-center text-slate-100 shrink-0"><i class="fa-solid fa-futbol text-lg sm:text-xl"></i></button>
             <button onclick="selectMainMenu('sezonlar')" id="btn-sezonlar" title="Sezonlar" aria-label="Sezonlar" class="main-btn h-full sm:h-auto w-auto sm:w-full aspect-square rounded-xl bg-slate-800 hover:bg-slate-700 transition-colors border-2 border-transparent focus:outline-none flex justify-center items-center text-slate-100 shrink-0"><i class="fa-solid fa-layer-group text-lg sm:text-xl"></i></button>
             <button onclick="selectMainMenu('ayarlar')" id="btn-ayarlar" title="Ayarlar" aria-label="Ayarlar" class="main-btn h-full sm:h-auto w-auto sm:w-full aspect-square rounded-xl bg-slate-800 hover:bg-slate-700 transition-colors border-2 border-transparent focus:outline-none flex justify-center items-center text-slate-100 shrink-0"><i class="fa-solid fa-gear text-lg sm:text-xl"></i></button>
             <div class="hidden sm:block w-full h-px bg-slate-800 my-1 shrink-0"></div>
@@ -1013,12 +1013,12 @@
             <h3 class="text-xl font-bold mb-2 text-white" id="tt-bulk-title">Lig Tablosunu Toplu Ekle</h3>
             <p class="text-sm text-slate-400 mb-4">
                 Her satıra bir takım gelecek şekilde, aşağıdaki sıraya göre virgülle ayırarak yapıştırın:<br>
-                <span class="text-emerald-400 font-mono text-xs bg-slate-900 px-2 py-1 rounded inline-block mt-2">Sıra, Takım Adı, Puan, Oynanan, Galibiyet, Beraberlik, Mağlubiyet, Atılan, Yenilen, Averaj</span>
+                <span class="text-emerald-400 font-mono text-xs bg-slate-900 px-2 py-1 rounded inline-block mt-2">Sıra, Takım Adı, Oynanan, Galibiyet, Beraberlik, Mağlubiyet, Atılan, Yenilen, Averaj, Puan</span>
                 <br><span class="text-[11px] text-slate-500 mt-1 block">Bu liste, tablodaki mevcut tüm satırların yerine geçer.</span>
             </p>
 
             <div class="mb-4">
-                <textarea id="tt-bulk-input" rows="10" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-3 text-white font-mono text-sm placeholder-slate-600 focus:outline-none focus:border-emerald-500 hide-scrollbar" placeholder="Örnek:&#10;1, Galatasaray, 90, 34, 28, 6, 0, 85, 55, 30&#10;2, Fenerbahçe, 82, 34, 25, 7, 2, 78, 40, 38"></textarea>
+                <textarea id="tt-bulk-input" rows="10" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-3 text-white font-mono text-sm placeholder-slate-600 focus:outline-none focus:border-emerald-500 hide-scrollbar" placeholder="Örnek:&#10;1, Galatasaray, 34, 28, 6, 0, 85, 55, 30, 90&#10;2, Fenerbahçe, 34, 25, 7, 2, 78, 40, 38, 82"></textarea>
             </div>
 
             <div class="flex justify-end gap-3">
@@ -1087,6 +1087,70 @@
                 <button onclick="processEuroLeaguesBulkInput()" class="px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold transition-colors">
                     <i class="fa-solid fa-list-ol mr-2"></i>Listeyi Ekle
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Özel Turnuva Takım Düzenleme -->
+    <div id="custom-tour-team-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[100] fade-in backdrop-blur-sm">
+        <div class="bg-slate-800 p-6 rounded-xl border border-slate-600 w-[90%] max-w-md shadow-2xl relative">
+            <button onclick="closeCustomTourTeamModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <h3 class="text-xl font-bold mb-4 text-white">Takım ve Logoyu Düzenle</h3>
+            <div class="space-y-4 mb-6">
+                <div>
+                    <label class="block text-left text-sm font-medium text-slate-300 mb-1">Takım Adı</label>
+                    <div class="flex gap-2 mb-2">
+                        <input type="text" id="ct-team-name" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white" list="global-team-datalist" onchange="autoFillTeamLogo(this, 'ct-team-url')">
+                        <button onclick="searchTeamLogos('ct-team')" class="bg-blue-600 hover:bg-blue-500 px-3 rounded text-white whitespace-nowrap" title="Logoları Ara"><i class="fa-solid fa-search"></i></button>
+                    </div>
+                    <div id="ct-team-logo-results" class="flex gap-2 overflow-x-auto hidden py-2 mb-2 hide-scrollbar bg-slate-950/50 rounded px-2 items-center border border-slate-700/50"></div>
+                </div>
+                <div>
+                    <label class="block text-left text-sm font-medium text-slate-300 mb-1">Logo URL / Dosya</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="ct-team-url" class="flex-1 bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white text-sm">
+                        <input type="file" id="ct-team-file-input" class="hidden" accept="image/*" onchange="handleFileUpload(event, 'ct-team')">
+                        <button type="button" id="ct-team-upload-btn" onclick="document.getElementById('ct-team-file-input').click()" class="bg-slate-700 px-4 py-2 rounded-lg text-slate-300"><i class="fa-solid fa-upload"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 mt-2">
+                <button onclick="closeCustomTourTeamModal()" class="px-5 py-2.5 rounded-lg bg-slate-700 text-white font-medium">İptal</button>
+                <button onclick="saveCustomTourTeam()" class="px-5 py-2.5 rounded-lg bg-emerald-600 text-white font-bold">Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Eleme Aşaması Takım Seçici -->
+    <div id="ko-team-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[150] fade-in backdrop-blur-sm">
+        <div class="bg-slate-800 p-6 rounded-xl border border-slate-600 w-[90%] max-w-md shadow-2xl relative">
+            <button onclick="closeKoTeamModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <h3 class="text-xl font-bold mb-4 text-white">Takım Seç</h3>
+            <input type="hidden" id="ko-team-tour-id">
+            <input type="hidden" id="ko-team-ko-id">
+            <input type="hidden" id="ko-team-side">
+
+            <div class="space-y-4 mb-6">
+                <div>
+                    <label class="block text-left text-sm font-medium text-slate-300 mb-1">Takım Adı</label>
+                    <div class="flex gap-2 mb-2">
+                        <input type="text" id="ko-team-name-input" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white" list="global-team-datalist" onchange="autoFillTeamLogo(this, 'ko-team-url-input')" placeholder="Örn: Galatasaray" autocomplete="off">
+                        <button onclick="searchTeamLogos('ko-team')" class="bg-blue-600 hover:bg-blue-500 px-3 rounded text-white whitespace-nowrap" title="Logoları Ara"><i class="fa-solid fa-search"></i></button>
+                    </div>
+                    <div id="ko-team-logo-results" class="flex gap-2 overflow-x-auto hidden py-2 mb-2 hide-scrollbar bg-slate-950/50 rounded px-2 items-center border border-slate-700/50"></div>
+                </div>
+                <div>
+                    <label class="block text-left text-sm font-medium text-slate-300 mb-1">Logo URL / Dosya</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="ko-team-url-input" class="flex-1 bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white text-sm" placeholder="Otomatik dolar veya URL girin">
+                        <input type="file" id="ko-team-file-input" class="hidden" accept="image/*" onchange="handleFileUpload(event, 'ko-team')">
+                        <button type="button" id="ko-team-upload-btn" onclick="document.getElementById('ko-team-file-input').click()" class="bg-slate-700 px-4 py-2 rounded-lg text-slate-300"><i class="fa-solid fa-upload"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 mt-2">
+                <button onclick="closeKoTeamModal()" class="px-5 py-2.5 rounded-lg bg-slate-700 text-white font-medium">İptal</button>
+                <button onclick="saveKoTeam()" class="px-5 py-2.5 rounded-lg bg-emerald-600 text-white font-bold">Kaydet</button>
             </div>
         </div>
     </div>

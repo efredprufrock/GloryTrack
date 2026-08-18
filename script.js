@@ -1089,7 +1089,7 @@ function handleSyncClick() {
             'opponent-editor-modal', 'group-editor-modal', 'player-info-modal',
             'player-cell-modal', 'match-editor-modal', 'season-stats-modal',
             'league-team-modal', 'league-team-bulk-modal', 'league-cell-modal', 'transfer-editor-modal', 'fixture-match-modal', 'match-result-modal',
-            'fixture-bulk-modal', 'squad-bulk-modal', 'tournament-table-bulk-modal', 'national-caps-bulk-modal', 'formation-modal', 'euro-leagues-bulk-modal', 'bulk-stat-modal', 'bulk-league-pts-modal'
+            'fixture-bulk-modal', 'squad-bulk-modal', 'tournament-table-bulk-modal', 'national-caps-bulk-modal', 'formation-modal', 'euro-leagues-bulk-modal', 'bulk-stat-modal', 'bulk-league-pts-modal', 'custom-tour-team-modal', 'ko-team-modal'
         ];
         const MODAL_CLOSE_FNS = {
             'trophy-modal': () => closeTrophyModal(),
@@ -1114,7 +1114,9 @@ function handleSyncClick() {
             'euro-leagues-bulk-modal': () => closeEuroLeaguesBulkModal(),
             'formation-modal': () => closeFormationModal(),
             'bulk-stat-modal': () => closeBulkStatModal(),
-            'bulk-league-pts-modal': () => closeBulkLeaguePtsModal()
+            'bulk-league-pts-modal': () => closeBulkLeaguePtsModal(),
+            'custom-tour-team-modal': () => closeCustomTourTeamModal(),
+            'ko-team-modal': () => closeKoTeamModal()
         };
 
         document.addEventListener('keydown', function(e) {
@@ -2092,7 +2094,7 @@ function handleFileUpload(event, type) {
         function renderTrophiesGrid() {
             let html = `
                 <div class="w-full flex justify-between items-center mb-3 px-2 shrink-0">
-                    <h3 class="text-2xl font-bold text-white">Kupalar ve Şampiyonlar Tarihi</h3>
+                    <h3 class="text-2xl font-bold text-white"><i class="fa-solid fa-trophy text-yellow-500"></i></h3>
                     <div class="flex items-center gap-4">
                         <span class="text-sm text-slate-400 hidden md:inline"><i class="fa-solid fa-circle-info mr-1"></i>Hücrelerdeki + butonuna tıklayarak logo ekleyebilirsiniz</span>
                         ${getScaleSelectorHtml()}
@@ -5262,11 +5264,7 @@ function closeTransferModal() {
             const milliData = getStatsData('milli');
 
             let html = `
-                <div class="w-full flex justify-between items-center mb-4 px-2 shrink-0">
-                    <h3 class="text-2xl font-bold text-white"><i class="fa-solid fa-chart-simple text-emerald-500 mr-2"></i>Tüm Zamanlar Gol ve Asist Krallığı</h3>
-                    <div class="text-sm text-slate-400 font-bold hidden sm:block"><i class="fa-solid fa-circle-info mr-1"></i>Sütun başlıklarındaki oklara tıklayarak ilgili sezondaki turnuvalara göz atabilirsiniz.</div>
-                </div>
-                <div class="w-full flex-1 flex flex-col xl:flex-row gap-4 overflow-hidden px-2">
+                <div class="w-full flex-1 flex flex-col xl:flex-row gap-4 overflow-hidden px-2 pt-2">
                     ${renderStatTableHTML('kulup', 'Kulüp İstatistikleri', kulupData.stats, kulupData.seasonsData, statSort.kulup)}
                     ${renderStatTableHTML('milli', 'Milli Takım İstatistikleri', milliData.stats, milliData.seasonsData, statSort.milli)}
                 </div>
@@ -5470,11 +5468,11 @@ function getChipTierClass(val, max) {
 
             // Footer (Genel Toplamlar)
             let footerHTML = `
-                <tr class="bg-slate-950 font-black shadow-[0_-4px_6px_rgba(0,0,0,0.3)]">
-                    <td class="p-3 border-r border-slate-700 sticky left-0 z-[20] bg-slate-950" style="left: 0px; width: ${wNo}px;"></td>
-                    <td class="p-3 border-r border-slate-700 sticky bg-slate-950 z-[20]" style="left: ${lPos}px; width: ${wPos}px;"></td>
-                    <td class="p-3 border-r border-slate-700 sticky bg-slate-950 text-right text-emerald-400 tracking-widest uppercase z-[20] font-black" style="left: ${lName}px; width: ${wName}px;"><i class="fa-solid fa-trophy text-yellow-500 mr-2"></i>TOPLAM</td>
-                    ${isKulup ? `<td class="p-3 border-r border-slate-700 sticky bg-slate-950 z-[20]" style="left: ${lCountry}px; width: ${wCountry}px;"></td>` : ''}
+                <tr class="bg-slate-950 font-black shadow-[0_-4px_6px_rgba(0,0,0,0.3)] relative">
+                    <td class="p-3 border-r border-slate-700 sticky left-0 bg-slate-950" style="left: 0px; width: ${wNo}px; z-index: 99;"></td>
+                    <td class="p-3 border-r border-slate-700 sticky bg-slate-950" style="left: ${lPos}px; width: ${wPos}px; z-index: 99;"></td>
+                    <td class="p-3 border-r border-slate-700 sticky bg-slate-950 text-right text-emerald-400 tracking-widest uppercase font-black" style="left: ${lName}px; width: ${wName}px; z-index: 99;"><i class="fa-solid fa-trophy text-yellow-500 mr-2"></i>TOPLAM</td>
+                    ${isKulup ? `<td class="p-3 border-r border-slate-700 sticky bg-slate-950" style="left: ${lCountry}px; width: ${wCountry}px; z-index: 99;"></td>` : ''}
             `;
 
             seasonsList.forEach(season => {
@@ -5521,7 +5519,7 @@ function getChipTierClass(val, max) {
                             <tbody>
                                 ${rowsHTML}
                             </tbody>
-                            <tfoot class="sticky bottom-0 z-[40]">
+                            <tfoot class="sticky bottom-0" style="z-index: 90;">
                                 ${footerHTML}
                             </tfoot>
                         </table>
@@ -5799,6 +5797,29 @@ function clearCompetitionLogo() {
     renderFixturePanel();
 }
 
+// --- YENİ: Takım adı girildiğinde veritabanından logoyu otomatik çekme (İnput Alanları İçin) ---
+function autoFillTeamLogo(nameInput, urlInputId) {
+    if (!nameInput || !nameInput.value || typeof FC26_TEAM_DATABASE === 'undefined') return;
+    
+    const typedName = nameInput.value.trim().toLowerCase();
+    const urlInput = document.getElementById(urlInputId);
+    if (!urlInput) return;
+
+    const match = FC26_TEAM_DATABASE.find(t => typeof t === 'object' && t.name && t.name.toLowerCase() === typedName);
+    
+    if (match && match.logo) {
+        urlInput.value = match.logo;
+        
+        // Dosya yükleme durumunu ve butonunu sıfırla ki çakışma yapmasın
+        const typePrefix = urlInputId.replace('-url-input', '').replace('-url', '');
+        if (typeof fileUploads !== 'undefined' && fileUploads[typePrefix] !== undefined) {
+            fileUploads[typePrefix] = null;
+            const uploadBtn = document.getElementById(`${typePrefix}-upload-btn`);
+            if (uploadBtn) uploadBtn.classList.replace('text-emerald-400', 'text-slate-300');
+        }
+    }
+}
+
 // Takım isminden logosunu bulan yardımcı motor
         function getTeamLogoByName(name) {
             if (!name || name === '-') return '';
@@ -5823,6 +5844,12 @@ function clearCompetitionLogo() {
                     }
                 }
             });
+
+            // YENİ: FC26 Veritabanından (team-tournament-data.js) genel kontrol et (Fikstür / Maçlar tablosu için)
+            if (!foundLogo && typeof FC26_TEAM_DATABASE !== 'undefined') {
+                const dbMatch = FC26_TEAM_DATABASE.find(t => typeof t === 'object' && t.name && t.name.toLowerCase() === name.toLowerCase());
+                if (dbMatch && dbMatch.logo) foundLogo = dbMatch.logo;
+            }
             
             // Eğer hiçbir yerde yoksa, ismin baş harflerinden otomatik bir logo üret
             return foundLogo || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff`;
@@ -5885,6 +5912,23 @@ function formatShortPlayerName(name) {
             if (name.includes('dostluk maçı')) return 'bg-fuchsia-900/30 hover:bg-fuchsia-800/50'; // Lila
             
             return 'hover:bg-slate-800/80'; // Listede olmayan turnuvalar için varsayılan arka plan
+        }
+
+                // Turnuva ismine göre KART arka plan rengini belirleyen fonksiyon
+        function getCustomTournamentCardBg(tournamentType) {
+            if (!tournamentType) return 'bg-slate-950 border-slate-700';
+            const name = tournamentType.toLowerCase();
+
+            if (name.includes('şampiyonlar ligi'))        return 'bg-blue-950/40 border-blue-900/60';      // Mavi
+            if (name.includes('avrupa ligi'))             return 'bg-orange-950/40 border-orange-900/60';  // Turuncu
+            if (name.includes('konferans ligi'))          return 'bg-emerald-950/40 border-emerald-900/60';// Yeşil
+            if (name.includes('süper lig'))               return 'bg-red-950/50 border-red-900/70';       // Koyu kırmızı
+            if (name.includes('türkiye kupası'))          return 'bg-red-900/30 border-red-800/60';       // Kırmızı
+            if (name.includes('sezon öncesi hazırlık'))   return 'bg-slate-800/40 border-slate-700/60';   // Gri
+            if (name.includes('dünya kupası'))            return 'bg-yellow-900/30 border-yellow-700/60'; // Altın
+            if (name.includes('avrupa şampiyonası'))      return 'bg-purple-950/50 border-purple-900/70'; // Koyu mor
+
+            return 'bg-slate-950 border-slate-700'; // Varsayılan
         }
 
         // --- MÜSABAKA & AVRUPA LİGLERİ DÜZENLEME MOTORU ---
@@ -6036,6 +6080,34 @@ function formatShortPlayerName(name) {
             }
         }
 
+        function toggleCustomTournamentCollapse(tourId) {
+            const tour = customTournamentsData[activeFixtureSeason].find(t => t.id === tourId);
+            if (tour) {
+                tour.collapsed = !tour.collapsed;
+                saveToLocalStorage();
+                
+                // Sayfayı yenilemeden (DOM üzerinden) anında gizle/göster
+                const contentDiv = document.getElementById(`tour-content-${tourId}`);
+                const chevronIcon = document.getElementById(`tour-chevron-${tourId}`);
+                
+                if (contentDiv) {
+                    if (tour.collapsed) {
+                        contentDiv.classList.add('hidden');
+                    } else {
+                        contentDiv.classList.remove('hidden');
+                    }
+                }
+                
+                if (chevronIcon) {
+                    if (tour.collapsed) {
+                        chevronIcon.classList.add('-rotate-90');
+                    } else {
+                        chevronIcon.classList.remove('-rotate-90');
+                    }
+                }
+            }
+        }
+
         function addRowToCustomTournament(id) {
             const tour = customTournamentsData[activeFixtureSeason].find(t => t.id === id);
             if(tour) {
@@ -6078,17 +6150,34 @@ function formatShortPlayerName(name) {
                 if (!line.trim()) return;
                 const parts = line.split(',').map(s => s.trim());
                 if (parts.length >= 10) {
+                    const teamName = parts[1];
+                    let teamLogo = '';
+                    
+                    // 1. FC26 Veritabanından logoyu otomatik bul
+                    if (typeof FC26_TEAM_DATABASE !== 'undefined') {
+                        const dbMatch = FC26_TEAM_DATABASE.find(t => typeof t === 'object' && t.name && t.name.toLowerCase() === teamName.toLowerCase());
+                        if (dbMatch && dbMatch.logo) {
+                            teamLogo = dbMatch.logo;
+                        }
+                    }
+                    
+                    // 2. Veritabanında yoksa genel takım logo bulucuyu kullan (Rakipler vb.)
+                    if (!teamLogo && typeof getTeamLogoByName === 'function') {
+                        teamLogo = getTeamLogoByName(teamName);
+                    }
+
                     newRows.push({
                         rank: parts[0],
-                        name: parts[1],
-                        pts: parts[2],
-                        pld: parts[3],
-                        w: parts[4],
-                        d: parts[5],
-                        l: parts[6],
-                        gf: parts[7],
-                        ga: parts[8],
-                        gd: parts[9]
+                        name: teamName,
+                        logo: teamLogo, // Logo eşleştirmesi eklendi
+                        pld: parts[2],
+                        w: parts[3],
+                        d: parts[4],
+                        l: parts[5],
+                        gf: parts[6],
+                        ga: parts[7],
+                        gd: parts[8],
+                        pts: parts[9]
                     });
                 }
             });
@@ -6099,7 +6188,7 @@ function formatShortPlayerName(name) {
                 closeTournamentTableBulkModal();
                 renderFixturePanel();
             } else {
-                alert('Geçerli formatta takım bulunamadı. Lütfen "Sıra, Takım Adı, Puan, Oynanan, Galibiyet, Beraberlik, Mağlubiyet, Atılan, Yenilen, Averaj" formatına uyduğunuzdan emin olun.');
+                alert('Geçerli formatta veri bulunamadı. Lütfen "Sıra, Takım Adı, Pld, W, D, L, GF, GA, GD, Puan" formatına uyduğunuzdan emin olun.');
             }
         }
 
@@ -6115,13 +6204,80 @@ function formatShortPlayerName(name) {
             }
         }
 
+        let activeCtTourId = null;
+        let activeCtTeamIndex = null;
+
+        function openCustomTourTeamModal(tourId, index) {
+            activeCtTourId = tourId;
+            activeCtTeamIndex = index;
+            
+            const tour = customTournamentsData[activeFixtureSeason].find(t => t.id === tourId);
+            if (!tour) return;
+            const teamData = tour.table[index];
+
+            document.getElementById('ct-team-name').value = (teamData.name === 'Takım Adı' || teamData.name === 'Yeni Takım') ? '' : teamData.name;
+            document.getElementById('ct-team-url').value = teamData.logo || '';
+            
+            fileUploads['ct-team'] = null;
+            document.getElementById('ct-team-file-input').value = '';
+            document.getElementById('ct-team-upload-btn').classList.replace('text-emerald-400', 'text-slate-300');
+            
+            const resultsDiv = document.getElementById('ct-team-logo-results');
+            if (resultsDiv) {
+                resultsDiv.innerHTML = '';
+                resultsDiv.classList.add('hidden');
+            }
+
+            const modal = document.getElementById('custom-tour-team-modal');
+            modal.classList.remove('hidden'); 
+            modal.classList.add('flex');
+        }
+
+        function closeCustomTourTeamModal() {
+            const modal = document.getElementById('custom-tour-team-modal');
+            modal.classList.add('hidden'); 
+            modal.classList.remove('flex');
+        }
+
+        function saveCustomTourTeam() {
+            const tour = customTournamentsData[activeFixtureSeason].find(t => t.id === activeCtTourId);
+            if (!tour) return;
+
+            const name = document.getElementById('ct-team-name').value.trim();
+            const url = document.getElementById('ct-team-url').value.trim();
+            const logo = fileUploads['ct-team'] || (url !== "Yerel Dosya Seçildi" ? url : null);
+
+            tour.table[activeCtTeamIndex].name = name || 'Takım Adı';
+            if (logo) {
+                tour.table[activeCtTeamIndex].logo = logo;
+            } else if (!url) {
+                tour.table[activeCtTeamIndex].logo = ''; 
+            }
+
+            saveToLocalStorage();
+            closeCustomTourTeamModal();
+            renderFixturePanel();
+        }
+
         function addKnockoutMatch(tourId) {
             const tour = customTournamentsData[activeFixtureSeason].find(t => t.id === tourId);
             if(tour) {
                 if(!tour.knockouts) tour.knockouts = [];
-                tour.knockouts.push({ id: 'ko_' + Date.now(), stage: 'Yeni Tur', result: 'Sonuç girin...' });
+                tour.knockouts.push({ id: 'ko_' + Date.now(), stage: 'Son 16', home: '', away: '', homeScore: '', awayScore: '' });
                 saveToLocalStorage();
+                
+                // Ekran zıplamasını engellemek için mevcut kaydırma (scroll) pozisyonunu kaydet
+                const mainScrollY = window.scrollY;
+                const scrollableDiv = document.querySelector('.overflow-y-auto') || document.querySelector('.overflow-auto');
+                const divScrollTop = scrollableDiv ? scrollableDiv.scrollTop : 0;
+
                 renderFixturePanel();
+
+                // DOM güncellendikten hemen sonra pozisyonu pürüzsüzce geri yükle
+                requestAnimationFrame(() => {
+                    window.scrollTo(0, mainScrollY);
+                    if (scrollableDiv) scrollableDiv.scrollTop = divScrollTop;
+                });
             }
         }
 
@@ -6130,17 +6286,240 @@ function formatShortPlayerName(name) {
             if(tour && tour.knockouts) {
                 tour.knockouts = tour.knockouts.filter(k => k.id !== koId);
                 saveToLocalStorage();
+                
+                // Ekran zıplamasını engellemek için mevcut kaydırma (scroll) pozisyonunu kaydet
+                const mainScrollY = window.scrollY;
+                const scrollableDiv = document.querySelector('.overflow-y-auto') || document.querySelector('.overflow-auto');
+                const divScrollTop = scrollableDiv ? scrollableDiv.scrollTop : 0;
+
                 renderFixturePanel();
+
+                // DOM güncellendikten hemen sonra pozisyonu pürüzsüzce geri yükle
+                requestAnimationFrame(() => {
+                    window.scrollTo(0, mainScrollY);
+                    if (scrollableDiv) scrollableDiv.scrollTop = divScrollTop;
+                });
             }
         }
 
-        function updateKnockoutMatch(tourId, koId, field, element) {
+        function updateKnockoutField(tourId, koId, field, element) {
+            const val = element.value;
             const tour = customTournamentsData[activeFixtureSeason].find(t => t.id === tourId);
             if(tour && tour.knockouts) {
                 const ko = tour.knockouts.find(k => k.id === koId);
                 if(ko) {
-                    ko[field] = element.innerText.trim();
+                    ko[field] = val.trim();
                     saveToLocalStorage();
+                    
+                    // Sayfayı YENİLEMEDEN logoyu ve tooltip yazısını (title) anında değiştiriyoruz
+                    if (field === 'home') {
+                        const container = element.nextElementSibling;
+                        const img = container ? container.querySelector('img') : null;
+                        if (img) {
+                            img.src = getTeamLogoByName(val.trim());
+                            img.style.display = 'block';
+                            container.title = val.trim(); // Üzerine gelince görünen ismi güncelle
+                        }
+                    } else if (field === 'away') {
+                        const container = element.previousElementSibling;
+                        const img = container ? container.querySelector('img') : null;
+                        if (img) {
+                            img.src = getTeamLogoByName(val.trim());
+                            img.style.display = 'block';
+                            container.title = val.trim(); // Üzerine gelince görünen ismi güncelle
+                        }
+                    }
+                }
+            }
+        }
+
+        let activeKoTeamElement = null;
+
+        function editKnockoutTeam(tourId, koId, side, currentName, element) {
+            activeKoTeamElement = element;
+            document.getElementById('ko-team-tour-id').value = tourId;
+            document.getElementById('ko-team-ko-id').value = koId;
+            document.getElementById('ko-team-side').value = side;
+            
+            document.getElementById('ko-team-name-input').value = currentName || '';
+            
+            const tour = customTournamentsData[activeFixtureSeason].find(t => t.id === tourId);
+            let currentLogo = '';
+            if (tour && tour.knockouts) {
+                const ko = tour.knockouts.find(k => k.id === koId);
+                if (ko) currentLogo = (side === 'home' ? ko.homeLogo : ko.awayLogo) || getTeamLogoByName(currentName);
+            }
+            document.getElementById('ko-team-url-input').value = currentName ? currentLogo : '';
+            
+            fileUploads['ko-team'] = null;
+            document.getElementById('ko-team-file-input').value = '';
+            const uploadBtn = document.getElementById('ko-team-upload-btn');
+            if(uploadBtn) uploadBtn.classList.replace('text-emerald-400', 'text-slate-300');
+            
+            const resultsDiv = document.getElementById('ko-team-logo-results');
+            if (resultsDiv) {
+                resultsDiv.innerHTML = '';
+                resultsDiv.classList.add('hidden');
+            }
+
+            const modal = document.getElementById('ko-team-modal');
+            modal.classList.remove('hidden'); 
+            modal.classList.add('flex');
+            
+            setTimeout(() => document.getElementById('ko-team-name-input').focus(), 100);
+        }
+
+        function closeKoTeamModal() {
+            const modal = document.getElementById('ko-team-modal');
+            modal.classList.add('hidden'); 
+            modal.classList.remove('flex');
+            activeKoTeamElement = null;
+        }
+
+        function saveKoTeam() {
+            const tourId = document.getElementById('ko-team-tour-id').value;
+            const koId = document.getElementById('ko-team-ko-id').value;
+            const side = document.getElementById('ko-team-side').value;
+            
+            const newName = document.getElementById('ko-team-name-input').value.trim();
+            const customUrl = document.getElementById('ko-team-url-input').value.trim();
+            const uploadedFile = fileUploads['ko-team'];
+            
+            const finalLogo = uploadedFile || (customUrl !== "Yerel Dosya Seçildi" ? customUrl : null);
+
+            const tour = customTournamentsData[activeFixtureSeason].find(t => t.id === tourId);
+            if (tour && tour.knockouts) {
+                const ko = tour.knockouts.find(k => k.id === koId);
+                if (ko) {
+                    ko[side] = newName;
+                    
+                    if (finalLogo) {
+                        if (side === 'home') ko.homeLogo = finalLogo;
+                        else ko.awayLogo = finalLogo;
+                    } else {
+                        if (side === 'home') delete ko.homeLogo;
+                        else delete ko.awayLogo;
+                    }
+
+                    saveToLocalStorage();
+                    
+                    // Sayfayı YENİLEMEDEN DOM'a anında yansıt
+                    if (activeKoTeamElement) {
+                        const safeName = escapeHtml(newName);
+                        activeKoTeamElement.title = safeName;
+                        activeKoTeamElement.setAttribute('onclick', `editKnockoutTeam('${tourId}', '${koId}', '${side}', '${safeName}', this)`);
+                        
+                        if (newName !== '') {
+                            const logoSrc = finalLogo || getTeamLogoByName(newName);
+                            activeKoTeamElement.innerHTML = `<img src="${logoSrc}" class="w-8 h-8 object-contain drop-shadow-md transition-all duration-300" onerror="this.style.display='none'">`;
+                        } else {
+                            activeKoTeamElement.innerHTML = `<i class="fa-solid fa-plus text-slate-600 hover:text-emerald-400 text-lg transition-colors"></i>`;
+                        }
+                    }
+                }
+            }
+            
+            closeKoTeamModal();
+        }
+
+        function openKoScoreModal(tourId, koId) {
+            // Eğer modal HTML içinde yoksa anında yarat
+            if (!document.getElementById('ko-score-modal')) {
+                const modalHtml = `
+                <div id="ko-score-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[150] fade-in backdrop-blur-sm">
+                    <div class="bg-slate-800 p-5 rounded-xl border border-slate-600 w-[90%] max-w-xs shadow-2xl relative text-center">
+                        <button onclick="closeKoScoreModal()" class="absolute top-3 right-3 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+                        <h3 class="text-sm font-bold mb-4 text-white uppercase tracking-widest text-emerald-400">Skorları Gir</h3>
+                        <input type="hidden" id="ko-score-tour-id">
+                        <input type="hidden" id="ko-score-ko-id">
+                        
+                        <div class="space-y-3">
+                            <!-- 1. MAÇ -->
+                            <div class="bg-slate-900 p-3 rounded-lg border border-slate-700">
+                                <label class="block text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-widest border-b border-slate-800 pb-1">1. Maç</label>
+                                <div class="flex items-center justify-center gap-3">
+                                    <img id="ko-score-h1-logo" src="" class="w-6 h-6 object-contain shrink-0 drop-shadow-md">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <input type="number" id="ko-score-h1" class="w-12 bg-slate-950 text-white font-black text-center outline-none border border-slate-600 focus:border-emerald-500 rounded p-1.5 appearance-none" placeholder="-">
+                                        <span class="text-slate-500 font-bold">:</span>
+                                        <input type="number" id="ko-score-a1" class="w-12 bg-slate-950 text-white font-black text-center outline-none border border-slate-600 focus:border-emerald-500 rounded p-1.5 appearance-none" placeholder="-">
+                                    </div>
+                                    <img id="ko-score-a1-logo" src="" class="w-6 h-6 object-contain shrink-0 drop-shadow-md">
+                                </div>
+                            </div>
+                            <!-- 2. MAÇ -->
+                            <div class="bg-slate-900 p-3 rounded-lg border border-slate-700">
+                                <label class="block text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-widest border-b border-slate-800 pb-1">2. Maç (Rövanş)</label>
+                                <div class="flex items-center justify-center gap-3">
+                                    <img id="ko-score-h2-logo" src="" class="w-6 h-6 object-contain shrink-0 drop-shadow-md">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <input type="number" id="ko-score-h2" class="w-12 bg-slate-950 text-white font-black text-center outline-none border border-slate-600 focus:border-emerald-500 rounded p-1.5 appearance-none" placeholder="-">
+                                        <span class="text-slate-500 font-bold">:</span>
+                                        <input type="number" id="ko-score-a2" class="w-12 bg-slate-950 text-white font-black text-center outline-none border border-slate-600 focus:border-emerald-500 rounded p-1.5 appearance-none" placeholder="-">
+                                    </div>
+                                    <img id="ko-score-a2-logo" src="" class="w-6 h-6 object-contain shrink-0 drop-shadow-md">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between gap-2 mt-5">
+                            <button onclick="closeKoScoreModal()" class="px-4 py-2 rounded-lg bg-slate-700 text-white font-medium text-xs w-full">İptal</button>
+                            <button onclick="saveKoScoreModal()" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-colors w-full">Kaydet</button>
+                        </div>
+                    </div>
+                </div>`;
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
+            }
+
+            const tour = customTournamentsData[activeFixtureSeason].find(t => t.id === tourId);
+            if(tour && tour.knockouts) {
+                const ko = tour.knockouts.find(k => k.id === koId);
+                if(ko) {
+                    const hLogo = getTeamLogoByName(ko.home || '');
+                    const aLogo = getTeamLogoByName(ko.away || '');
+
+                    document.getElementById('ko-score-tour-id').value = tourId;
+                    document.getElementById('ko-score-ko-id').value = koId;
+                    document.getElementById('ko-score-h1').value = ko.homeScore !== undefined ? ko.homeScore : '';
+                    document.getElementById('ko-score-a1').value = ko.awayScore !== undefined ? ko.awayScore : '';
+                    document.getElementById('ko-score-h2').value = ko.homeScore2 !== undefined ? ko.homeScore2 : '';
+                    document.getElementById('ko-score-a2').value = ko.awayScore2 !== undefined ? ko.awayScore2 : '';
+
+                    // Logoları dinamik olarak yerleştir (2. maçta ev sahibi ve deplasman yer değiştirir)
+                    document.getElementById('ko-score-h1-logo').src = hLogo;
+                    document.getElementById('ko-score-a1-logo').src = aLogo;
+                    document.getElementById('ko-score-h2-logo').src = aLogo; // Rövanş: Deplasman takımı evinde
+                    document.getElementById('ko-score-a2-logo').src = hLogo; // Rövanş: Ev sahibi deplasmanda
+
+                    const modal = document.getElementById('ko-score-modal');
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                }
+            }
+        }
+
+        function closeKoScoreModal() {
+            const modal = document.getElementById('ko-score-modal');
+            if(modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+
+        function saveKoScoreModal() {
+            const tourId = document.getElementById('ko-score-tour-id').value;
+            const koId = document.getElementById('ko-score-ko-id').value;
+            const tour = customTournamentsData[activeFixtureSeason].find(t => t.id === tourId);
+            if(tour && tour.knockouts) {
+                const ko = tour.knockouts.find(k => k.id === koId);
+                if(ko) {
+                    ko.homeScore = document.getElementById('ko-score-h1').value;
+                    ko.awayScore = document.getElementById('ko-score-a1').value;
+                    ko.homeScore2 = document.getElementById('ko-score-h2').value;
+                    ko.awayScore2 = document.getElementById('ko-score-a2').value;
+                    saveToLocalStorage();
+                    closeKoScoreModal();
+                    renderFixturePanel();
                 }
             }
         }
@@ -6456,15 +6835,34 @@ function formatShortPlayerName(name) {
                                     // --- GRUP / LİG TABLOSU BÖLÜMÜ ---
                                     let tableSectionHtml = '';
                                     if (tableOn) {
-                                        let tableRows = (tour.table || []).map((row, idx) => `
+                                        let tableRows = (tour.table || []).map((row, idx) => {
+                                            // İlk sıra (Lider/Şampiyon) için daha hafif ve zarif parlama (glow) efekti
+                                            const isWinner = (idx === 0);
+                                            const textGlow = isWinner ? 'text-white drop-shadow-[0_0_3px_rgba(255,255,255,0.5)] font-black' : 'text-slate-300';
+                                            const nameGlow = isWinner ? 'text-white drop-shadow-[0_0_3px_rgba(255,255,255,0.5)] font-black' : 'text-white';
+                                            const rankGlow = isWinner ? 'text-emerald-400 drop-shadow-[0_0_3px_rgba(52,211,153,0.6)] font-black' : 'text-slate-400 font-bold';
+
+                                            return `
                                             <tr class="border-b border-slate-800 bg-slate-800/20 hover:bg-slate-800/50 transition-colors">
-                                                <td class="p-1.5 text-slate-400 font-bold w-8 text-center outline-none focus:bg-slate-700 cursor-text rounded" contenteditable="true" onblur="updateCustomTournament('${tour.id}', ${idx}, 'rank', this)">${row.rank}</td>
-                                                <td class="p-1.5 font-bold text-white outline-none focus:bg-slate-700 cursor-text rounded" contenteditable="true" onblur="updateCustomTournament('${tour.id}', ${idx}, 'name', this)">${row.name}</td>
-                                                <td class="p-1.5 text-center text-slate-300 w-8 outline-none focus:bg-slate-700 cursor-text rounded" contenteditable="true" onblur="updateCustomTournament('${tour.id}', ${idx}, 'pld', this)">${row.pld}</td>
-                                                <td class="p-1.5 text-center text-slate-300 w-10 outline-none focus:bg-slate-700 cursor-text rounded" contenteditable="true" onblur="updateCustomTournament('${tour.id}', ${idx}, 'gd', this)">${row.gd}</td>
-                                                <td class="p-1.5 text-center font-bold text-emerald-400 w-10 outline-none focus:bg-slate-700 cursor-text rounded" contenteditable="true" onblur="updateCustomTournament('${tour.id}', ${idx}, 'pts', this)">${row.pts}</td>
+                                                <td class="p-1.5 w-8 text-center outline-none focus:bg-slate-700 cursor-text rounded ${rankGlow}" contenteditable="true" onblur="updateCustomTournament('${tour.id}', ${idx}, 'rank', this)">${row.rank}</td>
+                                                <td class="p-1.5 font-bold rounded cursor-pointer hover:bg-slate-700/80 transition-colors group/edit ${nameGlow}" onclick="openCustomTourTeamModal('${tour.id}', ${idx})" title="Takım ve Logoyu Düzenle">
+                                                    <div class="flex items-center gap-2">
+                                                        <img src="${row.logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(row.name || '?')}&background=random&color=fff&size=32`}" alt="${row.name}" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(row.name || '?')}&background=random&color=fff&size=32'" class="w-5 h-5 rounded-full object-cover shrink-0">
+                                                        <span class="truncate">${row.name}</span>
+                                                        <i class="fa-solid fa-pen text-[10px] text-slate-500 opacity-0 group-hover/edit:opacity-100 transition-opacity ml-auto"></i>
+                                                    </div>
+                                                </td>
+                                                <td class="p-1.5 text-center w-8 outline-none focus:bg-slate-700 cursor-text rounded ${textGlow}" contenteditable="true" onblur="updateCustomTournament('${tour.id}', ${idx}, 'pld', this)">${row.pld}</td>
+                                                <td class="p-1.5 text-center w-8 outline-none focus:bg-slate-700 cursor-text rounded ${textGlow}" contenteditable="true" onblur="updateCustomTournament('${tour.id}', ${idx}, 'w', this)">${row.w || 0}</td>
+                                                <td class="p-1.5 text-center w-8 outline-none focus:bg-slate-700 cursor-text rounded ${textGlow}" contenteditable="true" onblur="updateCustomTournament('${tour.id}', ${idx}, 'd', this)">${row.d || 0}</td>
+                                                <td class="p-1.5 text-center w-8 outline-none focus:bg-slate-700 cursor-text rounded ${textGlow}" contenteditable="true" onblur="updateCustomTournament('${tour.id}', ${idx}, 'l', this)">${row.l || 0}</td>
+                                                <td class="p-1.5 text-center w-8 outline-none focus:bg-slate-700 cursor-text rounded ${textGlow}" contenteditable="true" onblur="updateCustomTournament('${tour.id}', ${idx}, 'gf', this)">${row.gf || 0}</td>
+                                                <td class="p-1.5 text-center w-8 outline-none focus:bg-slate-700 cursor-text rounded ${textGlow}" contenteditable="true" onblur="updateCustomTournament('${tour.id}', ${idx}, 'ga', this)">${row.ga || 0}</td>
+                                                <td class="p-1.5 text-center w-10 outline-none focus:bg-slate-700 cursor-text rounded ${textGlow}" contenteditable="true" onblur="updateCustomTournament('${tour.id}', ${idx}, 'gd', this)">${row.gd}</td>
+                                                <td class="p-1.5 text-center font-black text-[12px] w-10 outline-none focus:bg-slate-700 cursor-text rounded ${textGlow}" contenteditable="true" onblur="updateCustomTournament('${tour.id}', ${idx}, 'pts', this)">${row.pts}</td>
                                             </tr>
-                                        `).join('');
+                                        `;
+                                        }).join('');
 
                                         tableSectionHtml = `
                                             <div class="mb-1">
@@ -6481,9 +6879,14 @@ function formatShortPlayerName(name) {
                                                         <tr>
                                                             <th class="p-1 border-slate-700 text-center">Sıra</th>
                                                             <th class="p-1 border-slate-700">Takım</th>
-                                                            <th class="p-1 border-slate-700 text-center">O</th>
-                                                            <th class="p-1 border-slate-700 text-center">Av</th>
-                                                            <th class="p-1 border-slate-700 text-center font-bold text-white">P</th>
+                                                            <th class="p-1 border-slate-700 text-center">Pl</th>
+                                                            <th class="p-1 border-slate-700 text-center">W</th>
+                                                            <th class="p-1 border-slate-700 text-center">D</th>
+                                                            <th class="p-1 border-slate-700 text-center">L</th>
+                                                            <th class="p-1 border-slate-700 text-center">GF</th>
+                                                            <th class="p-1 border-slate-700 text-center">GA</th>
+                                                            <th class="p-1 border-slate-700 text-center">GD</th>
+                                                            <th class="p-1 border-slate-700 text-center font-bold">Pts</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -6513,21 +6916,112 @@ function formatShortPlayerName(name) {
                                             if (tour.final) tour.knockouts.push({ id: 'ko_f', stage: 'Final', result: tour.final });
                                         }
 
-                                        let koRows = tour.knockouts.map(ko => `
-                                            <div class="flex justify-between items-center border-b border-slate-800/50 pb-1.5 group/ko relative gap-2">
+                                        // Turnuvaya özel metin ve odak renkleri
+                                        let textColorClass = 'text-slate-300';
+                                        let focusBorderClass = 'focus:border-slate-400';
+                                        const tNameLower = (tour.type || '').toLowerCase();
+                                        
+                                        if (tNameLower.includes('şampiyonlar ligi')) { textColorClass = 'text-blue-400'; focusBorderClass = 'focus:border-blue-500'; }
+                                        else if (tNameLower.includes('avrupa ligi')) { textColorClass = 'text-orange-400'; focusBorderClass = 'focus:border-orange-500'; }
+                                        else if (tNameLower.includes('konferans ligi')) { textColorClass = 'text-emerald-400'; focusBorderClass = 'focus:border-emerald-500'; }
+                                        else if (tNameLower.includes('süper lig')) { textColorClass = 'text-red-500'; focusBorderClass = 'focus:border-red-600'; }
+                                        else if (tNameLower.includes('türkiye kupası')) { textColorClass = 'text-red-400'; focusBorderClass = 'focus:border-red-500'; }
+                                        else if (tNameLower.includes('dünya kupası')) { textColorClass = 'text-yellow-500'; focusBorderClass = 'focus:border-yellow-600'; }
+                                        else if (tNameLower.includes('avrupa şampiyonası')) { textColorClass = 'text-purple-400'; focusBorderClass = 'focus:border-purple-500'; }
+
+                                        let koRows = tour.knockouts.map(ko => {
+                                            const hName = ko.home || '';
+                                            const aName = ko.away || '';
+                                            const hScore = ko.homeScore !== undefined ? ko.homeScore : '';
+                                            const aScore = ko.awayScore !== undefined ? ko.awayScore : '';
+                                            const hScore2 = ko.homeScore2 !== undefined ? ko.homeScore2 : '';
+                                            const aScore2 = ko.awayScore2 !== undefined ? ko.awayScore2 : '';
+                                            const stage = ko.stage || 'Son 16';
+                                            
+                                            const hLogo = ko.homeLogo || getTeamLogoByName(hName);
+                                            const aLogo = ko.awayLogo || getTeamLogoByName(aName);
+
+                                            const hasL1 = hScore !== '' && aScore !== '';
+                                            const hasL2 = hScore2 !== '' && aScore2 !== '';
+
+                                            // Final aşaması için altın/sarı parlama efekti sınıfları
+                                            const isFinal = stage === 'Final';
+                                            const rowStyle = isFinal 
+                                                ? 'bg-slate-900 border-yellow-500/50 shadow-[0_0_15px_rgba(234,179,8,0.25)] z-10' 
+                                                : 'bg-slate-900 border-slate-700/50 shadow-sm';
+
+                                            // Kazanan takımın logosunu parlatmak için dinamik sınıflar
+                                            let hLogoStyle = "w-8 h-8 object-contain drop-shadow-md transition-all duration-300";
+                                            let aLogoStyle = "w-8 h-8 object-contain drop-shadow-md transition-all duration-300";
+                                            
+                                            // İki ayaklı maçları destekleyen Toplam (Aggregate) Skor Hesaplaması
+                                            if (hasL1) {
+                                                // Rövanşta takımlar yer değiştirdiği için aScore2 sol tarafın (1. takımın), hScore2 ise sağ tarafın skorudur.
+                                                const hsAgg = parseInt(hScore) + (hasL2 ? parseInt(aScore2) : 0);
+                                                const asAgg = parseInt(aScore) + (hasL2 ? parseInt(hScore2) : 0);
+                                                if (!isNaN(hsAgg) && !isNaN(asAgg)) {
+                                                    if (hsAgg > asAgg) {
+                                                        hLogoStyle += " drop-shadow-[0_0_12px_rgba(52,211,153,0.9)] scale-110 z-10 relative"; 
+                                                    } else if (asAgg > hsAgg) {
+                                                        aLogoStyle += " drop-shadow-[0_0_12px_rgba(52,211,153,0.9)] scale-110 z-10 relative"; 
+                                                    }
+                                                }
+                                            }
+
+                                            // Skor Gösterim Alanı (Yükseklik sabit, içerik değişiyor)
+                                            let scoreDisplayHtml = `<span class="${textColorClass} font-black text-sm tracking-widest">- : -</span>`;
+                                            if (hasL1 && hasL2) {
+                                                // Ana ekranda sol taraf 1. takım olduğu için 2. maçta aScore2 ve hScore2 yer değiştirilerek yazdırılır
+                                                scoreDisplayHtml = `
+                                                    <span class="${textColorClass} font-black text-[10px] leading-tight tracking-wider">${hScore} : ${aScore}</span>
+                                                    <span class="${textColorClass} font-black text-[10px] leading-tight tracking-wider">${aScore2} : ${hScore2}</span>
+                                                `;
+                                            } else if (hasL1) {
+                                                scoreDisplayHtml = `<span class="${textColorClass} font-black text-sm tracking-widest">${hScore} : ${aScore}</span>`;
+                                            }
+
+                                            return `
+                                            <div class="flex flex-col sm:flex-row justify-between items-center border rounded-lg p-2 mb-2 group/ko relative gap-3 transition-all ${rowStyle}">
                                                 
-                                                <!-- Tur İsmi (Düzenlenebilir) -->
-                                                <div class="text-slate-400 font-bold uppercase tracking-widest text-[9px] w-24 shrink-0 flex items-center outline-none focus:bg-slate-800 cursor-text rounded px-1" contenteditable="true" onblur="updateKnockoutMatch('${tour.id}', '${ko.id}', 'stage', this)">
-                                                    <i class="fa-solid fa-bolt text-blue-500 mr-1"></i>${ko.stage}
+                                                <!-- Tur Dropdown (Daraltılmış) -->
+                                                <select class="bg-slate-950 ${textColorClass} font-bold uppercase tracking-widest text-[11px] w-16 text-center rounded px-1 py-1.5 border border-slate-800 outline-none ${focusBorderClass} cursor-pointer" onchange="updateKnockoutField('${tour.id}', '${ko.id}', 'stage', this)">
+                                                    <option value="Son 32" ${stage === 'Son 32' ? 'selected' : ''}>32</option>
+                                                    <option value="Son 16" ${stage === 'Son 16' ? 'selected' : ''}>16</option>
+                                                    <option value="Çeyrek Final" ${stage === 'Çeyrek Final' ? 'selected' : ''}>QF</option>
+                                                    <option value="Yarı Final" ${stage === 'Yarı Final' ? 'selected' : ''}>SF</option>
+                                                    <option value="Final" ${stage === 'Final' ? 'selected' : ''}>F</option>
+                                                    <option value="Üçüncülük" ${stage === 'Üçüncülük' ? 'selected' : ''}>3R</option>
+                                                </select>
+                                                
+                                                <!-- İçerik Paneli -->
+                                                <div class="flex-1 flex items-center justify-center gap-4 w-full">
+                                                    
+                                                    <!-- Ev Sahibi Logo / Ekle Butonu -->
+                                                    <div class="flex items-center justify-end flex-1">
+                                                        <div class="w-10 h-10 flex items-center justify-center shrink-0 cursor-pointer transition-transform hover:scale-110" title="${escapeHtml(hName)}" onclick="editKnockoutTeam('${tour.id}', '${ko.id}', 'home', '${escapeHtml(hName)}', this)">
+                                                            ${hName ? `<img src="${hLogo}" class="${hLogoStyle}" onerror="this.style.display='none'">` : `<i class="fa-solid fa-plus text-slate-600 hover:text-emerald-400 text-lg transition-colors"></i>`}
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Skorlar (Tıklanabilir Sabit Yükseklikli Panel) -->
+                                                    <div class="flex flex-col items-center justify-center shrink-0 bg-slate-950 px-3 min-w-[64px] h-[34px] rounded-lg border border-slate-700 shadow-inner z-10 cursor-pointer hover:border-slate-500 transition-colors" onclick="openKoScoreModal('${tour.id}', '${ko.id}')" title="Skorları Düzenle">
+                                                        ${scoreDisplayHtml}
+                                                    </div>
+
+                                                    <!-- Deplasman Logo / Ekle Butonu -->
+                                                    <div class="flex items-center justify-start flex-1">
+                                                        <div class="w-10 h-10 flex items-center justify-center shrink-0 cursor-pointer transition-transform hover:scale-110" title="${escapeHtml(aName)}" onclick="editKnockoutTeam('${tour.id}', '${ko.id}', 'away', '${escapeHtml(aName)}', this)">
+                                                            ${aName ? `<img src="${aLogo}" class="${aLogoStyle}" onerror="this.style.display='none'">` : `<i class="fa-solid fa-plus text-slate-600 hover:text-emerald-400 text-lg transition-colors"></i>`}
+                                                        </div>
+                                                    </div>
+                                                    
                                                 </div>
                                                 
-                                                <!-- Maç Sonucu (Düzenlenebilir) -->
-                                                <div class="text-white font-medium bg-slate-900 px-2 py-1 rounded border border-slate-800 w-full outline-none focus:bg-slate-700 cursor-text truncate" contenteditable="true" onblur="updateKnockoutMatch('${tour.id}', '${ko.id}', 'result', this)">${ko.result}</div>
-                                                
                                                 <!-- Silme Butonu -->
-                                                <button onclick="removeKnockoutMatch('${tour.id}', '${ko.id}')" class="text-slate-500 hover:text-red-500 opacity-0 group-hover/ko:opacity-100 transition-opacity p-1 shrink-0" title="Turu Sil"><i class="fa-solid fa-trash"></i></button>
+                                                <button onclick="removeKnockoutMatch('${tour.id}', '${ko.id}')" class="text-slate-600 hover:text-red-500 transition-colors p-1.5 rounded-full sm:absolute sm:-right-2 sm:-top-2 sm:bg-slate-900 sm:border border-slate-700 sm:shadow-lg shrink-0" title="Turu Sil"><i class="fa-solid fa-xmark"></i></button>
                                             </div>
-                                        `).join('');
+                                        `;
+                                        }).join('');
 
                                         knockoutHtml = `
                                         <div class="bg-slate-950 rounded-lg border border-slate-700 p-2 text-xs mt-3 shadow-inner">
@@ -6551,14 +7045,17 @@ function formatShortPlayerName(name) {
                                         `;
                                     }
 
+                                    const isCollapsed = tour.collapsed === true;
                                     return `
-                                    <div class="relative group/tour bg-slate-950 p-2 rounded-lg border border-slate-700 shadow-sm">
+                                    <div class="relative group/tour ${getCustomTournamentCardBg(tour.type)} p-2 rounded-lg border shadow-sm">
                                         <button onclick="removeCustomTournament('${tour.id}')" class="absolute -top-2 -right-2 bg-red-600 hover:bg-red-500 text-white w-5 h-5 rounded-full text-[10px] flex items-center justify-center opacity-0 group-hover/tour:opacity-100 transition-opacity z-10 shadow-lg" title="Tüm Kartı Sil"><i class="fa-solid fa-times"></i></button>
-                                        <h4 class="text-sm font-bold text-emerald-400 mb-2 border-b border-slate-800 pb-1 truncate">
-                                            ${tour.type}
+                                        <h4 onclick="toggleCustomTournamentCollapse('${tour.id}')" class="text-sm font-bold text-emerald-400 mb-2 border-b border-slate-800 pb-1 truncate cursor-pointer select-none flex items-center justify-between gap-2">
+                                            <span class="truncate">${tour.type}</span>
+                                            <i id="tour-chevron-${tour.id}" class="fa-solid fa-chevron-down text-[10px] shrink-0 transition-transform duration-200 ${isCollapsed ? '-rotate-90' : ''}"></i>
                                         </h4>
-                                        ${tableSectionHtml}
-                                        ${knockoutHtml}
+                                        <div id="tour-content-${tour.id}" class="transition-all duration-300 ${isCollapsed ? 'hidden' : ''}">
+                                            ${tableSectionHtml}${knockoutHtml}
+                                        </div>
                                     </div>`;
                                 }).join('');
                             })()}
@@ -7653,4 +8150,91 @@ function autoFillTeamLogo(nameInputElem, urlInputId) {
             urlInput.value = teamData.logo;
         }
     }
+}
+
+// --- KUPA VE TURNUVA OTOMATİK SENKRONİZASYONU ---
+function syncTrophiesData() {
+    if (typeof customTournamentsData === 'undefined' || typeof trophiesData === 'undefined' || typeof trophyColumns === 'undefined') return;
+
+    for (const season in customTournamentsData) {
+        const tours = customTournamentsData[season];
+        let trophyRow = trophiesData.find(tr => tr.season === season);
+        
+        if (!trophyRow) continue; 
+
+        tours.forEach(tour => {
+            let champLogo = null;
+            const tType = (tour.type || '').toLowerCase();
+
+            // 1. ELEME AŞAMASI MANTIĞI (Final maçını bul)
+            if (tour.knockouts && tour.knockouts.length > 0) {
+                const finalMatch = tour.knockouts.find(k => k.stage === 'Final' || k.stage === 'F');
+                if (finalMatch) {
+                    const hs1 = parseInt(finalMatch.homeScore);
+                    const as1 = parseInt(finalMatch.awayScore);
+                    const hs2 = parseInt(finalMatch.homeScore2);
+                    const as2 = parseInt(finalMatch.awayScore2);
+                    
+                    const hasL1 = !isNaN(hs1) && !isNaN(as1);
+                    const hasL2 = !isNaN(hs2) && !isNaN(as2);
+                    
+                    if (hasL1) {
+                        const hTotal = hs1 + (hasL2 ? as2 : 0); 
+                        const aTotal = as1 + (hasL2 ? hs2 : 0); 
+                        
+                        if (hTotal > aTotal) champLogo = finalMatch.homeLogo || getTeamLogoByName(finalMatch.home);
+                        else if (aTotal > hTotal) champLogo = finalMatch.awayLogo || getTeamLogoByName(finalMatch.away);
+                    }
+                }
+            }
+            
+            // 2. LİG / GRUP MANTIĞI
+            if (!champLogo && tour.groups && tour.groups.length > 0) {
+                const group = tour.groups[0];
+                if (group.teams && group.teams.length > 0) {
+                    const topTeam = group.teams.find(t => t.rank == 1 || t.rank === '1') || group.teams[0];
+                    if (topTeam && topTeam.name && topTeam.name.trim() !== '' && topTeam.name !== 'Takım Adı') {
+                        if (parseInt(topTeam.p) > 0 || parseInt(topTeam.pts) > 0) {
+                            champLogo = topTeam.logo || getTeamLogoByName(topTeam.name);
+                        }
+                    }
+                }
+            }
+
+            if (champLogo) {
+                // Sütun eşleştirmesini çok daha esnek hale getiriyoruz
+                let matchedCol = trophyColumns.find(c => {
+                    const cName = c.name.toLowerCase();
+                    const cId = c.id.toLowerCase();
+                    
+                    if (tType.includes('türkiye kupası') && (cName.includes('türkiye') || cName.includes('kupa') || cId.includes('turkey') || cId.includes('cup') || cId.includes('tc'))) return true;
+                    if (tType.includes('şampiyonlar') && (cName.includes('şampiyonlar') || cName.includes('champions') || cId.includes('cl') || cId.includes('ucl'))) return true;
+                    if (tType.includes('avrupa ligi') && (cName.includes('avrupa ligi') || cName.includes('europa') || cId.includes('el') || cId.includes('uel'))) return true;
+                    if (tType.includes('konferans') && (cName.includes('konferans') || cName.includes('conference') || cId.includes('ecl'))) return true;
+                    if (tType.includes('süper lig') && (cName.includes('süper lig') || cName.includes('super lig') || cId.includes('sl'))) return true;
+                    if (tType.includes('dünya kupası') && (cName.includes('dünya') || cName.includes('world') || cId.includes('wc'))) return true;
+                    
+                    return cName.includes(tType) || tType.includes(cName);
+                });
+
+                if (matchedCol) {
+                    trophyRow[matchedCol.id] = champLogo;
+                }
+            }
+        });
+    }
+}
+
+// Kod güncellendiğinde mevcut verileri hemen senkronize etmesi için bir kez çalıştırıyoruz
+if (typeof syncTrophiesData === 'function') {
+    syncTrophiesData();
+}
+
+if (!window.isTrophySyncHooked && typeof saveToLocalStorage === 'function') {
+    const originalSave = saveToLocalStorage;
+    saveToLocalStorage = function() {
+        syncTrophiesData(); 
+        originalSave();     
+    };
+    window.isTrophySyncHooked = true;
 }
