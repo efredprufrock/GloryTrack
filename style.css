@@ -673,6 +673,13 @@ body.theme-light[data-theme-family="green"] *::selection { background-color: #05
    SAHA VE OYUNCU KARTLARI (ORANTILI VE MAKSİMUM BOYUT)
    ========================================================= */
 
+   /* Ana Sayfa İlk 11 widget: kartların pitch kutusunun kendi boyutuna göre
+   büyüyüp küçülmesi için container query desteği */
+.home-pitch-container {
+    container-type: size;
+    container-name: homepitch;
+}
+
 /* Futbol sahası ana kapsayıcısı */
 /* Saha Kapsayıcısını Tam Esnek ve Büyük Yapıyoruz */
         .pitch-container {

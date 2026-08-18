@@ -432,12 +432,13 @@
             <!-- GÖRÜNTÜLEME (PROFIL) MODU -->
             <div id="pi-view-section" class="hidden flex-col items-center w-full mt-2">
                 <!-- Fotoğrafı büyütüp (w-36 h-36) negatif margin (-mt-20) ile yukarı taşırdık -->
-                <div class="relative w-36 h-36 mb-4 -mt-20">
+                 <div class="relative w-36 h-36 mb-4 -mt-20 flex items-end justify-center">
                     <!-- Kenarlığı arka planla aynı renk (slate-800) ve kalın (border-[6px]) yaparak şık bir kesik efekti verdik -->
-                    <img id="pi-view-photo" src="" class="w-full h-full object-cover rounded-full border-[6px] border-slate-800 shadow-2xl bg-slate-900" onerror="this.src='https://ui-avatars.com/api/?name=Oyuncu&background=random&color=fff'">
+                    <div class="absolute bottom-0 w-36 h-36 rounded-full border-[6px] border-slate-800 shadow-2xl bg-slate-900"></div>
+                    <img id="pi-view-photo" src="" class="relative z-10 object-cover object-top pointer-events-none drop-shadow-lg" style="width:100%; height:138%;" onerror="this.src='https://ui-avatars.com/api/?name=Oyuncu&background=random&color=fff'">
                     
                     <!-- Bayrağı da yeni boyuta göre hizaladık -->
-                    <div class="absolute bottom-1 right-2 border-[3px] border-slate-800 rounded shadow-md bg-slate-800">
+                    <div class="absolute bottom-1 right-2 border-[3px] border-slate-800 rounded shadow-md bg-slate-800 z-20">
                         <div id="pi-view-flag-container"></div>
                     </div>
                 </div>
@@ -813,7 +814,18 @@
                     <label class="block text-[10px] font-bold text-emerald-400 mb-1 uppercase tracking-widest bg-emerald-900/20 px-2 py-1 rounded inline-block"><i class="fa-solid fa-earth-americas mr-1"></i> Rakip Ülke Kodu</label>
                     <input type="text" id="fm-opp-country" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-sm text-white outline-none focus:border-emerald-500 uppercase placeholder-slate-500" placeholder="Örn: EN, SC, SP, IT (Boş bırakılırsa Yurtiçi sayılır)">
                 </div>
-            </div>
+                <div class="sm:col-span-2">
+                    <label class="block text-xs font-bold text-slate-400 mb-1">Hafta / Aşama (Örn: 14. Hafta, Çeyrek Final)</label>
+                    <input type="text" id="fm-round" list="fm-round-list" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-sm text-white outline-none focus:border-emerald-500" placeholder="Örn: 14. Hafta veya Çeyrek Final">
+                    <datalist id="fm-round-list">
+                        <option value="Grup Aşaması">
+                        <option value="Son 32">
+                        <option value="Son 16">
+                        <option value="Çeyrek Final">
+                        <option value="Yarı Final">
+                        <option value="Final">
+                    </datalist>
+                </div>
 
             <div class="flex items-center gap-3 mb-5 bg-slate-900 rounded-xl p-4 border border-slate-700">
                 <div class="flex-1">
@@ -924,11 +936,11 @@
             <div class="mb-4 bg-slate-900 p-4 rounded-lg border border-slate-700">
                 <p class="text-sm text-slate-300 mb-2">Excel'den kopyaladığınız veya virgülle ayırdığınız maç listesini aşağıya yapıştırın.</p>
                 <p class="text-[11px] text-slate-400 font-mono bg-slate-950 p-2 rounded border border-slate-800">
-                    Sütun Sırası: <span class="text-emerald-400">Maç No</span> | <span class="text-emerald-400">Müsabaka</span> | <span class="text-emerald-400">Ev Sahibi</span> | <span class="text-emerald-400">Deplasman</span> | <span class="text-blue-400">Ülke Kodu (Opsiyonel)</span><br>
-                Örnek: 1, Süper Lig, Galatasaray, Fenerbahçe, TR<br>
-                Örnek: 2, Şampiyonlar Ligi, Juventus, Galatasaray, IT
+                    Sütun Sırası: <span class="text-emerald-400">Maç No</span> | <span class="text-emerald-400">Müsabaka</span> | <span class="text-emerald-400">Ev Sahibi</span> | <span class="text-emerald-400">Deplasman</span> | <span class="text-blue-400">Ülke Kodu (Opsiyonel)</span> | <span class="text-purple-400">Hafta / Aşama (Opsiyonel)</span><br>
+                Örnek: 1, Süper Lig, Galatasaray, Fenerbahçe, TR, 1. Hafta<br>
+                Örnek: 2, Şampiyonlar Ligi, Juventus, Galatasaray, IT, Çeyrek Final
             </p>
-            <textarea id="fb-textarea" rows="10" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-sm text-white outline-none focus:border-emerald-500 font-mono whitespace-pre text-nowrap hide-scrollbar mt-2" placeholder="1, Süper Lig, Galatasaray, Fenerbahçe, TR&#10;2, Şampiyonlar Ligi, Juventus, Galatasaray, IT"></textarea>
+        <textarea id="fb-textarea" rows="10" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-sm text-white outline-none focus:border-emerald-500 font-mono whitespace-pre text-nowrap hide-scrollbar mt-2" placeholder="1, Süper Lig, Galatasaray, Fenerbahçe, TR, 1. Hafta&#10;2, Şampiyonlar Ligi, Juventus, Galatasaray, IT, Çeyrek Final"></textarea>
             </div>
 
             <div class="flex justify-end items-center mt-4 pt-4 border-t border-slate-700 shrink-0 gap-2">

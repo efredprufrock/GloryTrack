@@ -1836,25 +1836,35 @@ function handleFileUpload(event, type) {
                 return '<div class="text-center text-slate-500 text-sm py-6">Bu kadro için henüz İlk 11 belirlenmedi.<br><span class="text-xs">Kadro panelinden "Kadrolar" ikonuna tıklayarak oluşturabilirsiniz.</span></div>';
             }
 
+            // Kartların pitch kutusunun kendi boyutuna (cqmin = konteynerin en/boy'undan küçük olanı) göre
+            // ölçeklenmesi için tüm boyutları container-query birimleriyle (cqmin) veriyoruz.
+            const photoSize = 'clamp(32px, 16cqmin, 100px)';
+            const badgeFont = 'clamp(5px, 3cqmin, 10px)';
+            const badgePad = 'clamp(0px, 0.4cqmin, 2px) clamp(3px, 1.4cqmin, 8px)';
+            const nameFont = 'clamp(6px, 4cqmin, 12px)';
+            const namePad = 'clamp(1px, 0.7cqmin, 4px) clamp(4px, 2cqmin, 11px)';
+
             const nodesHtml = formData.filter(node => node.name).map(node => {
                 const photo = getPlayerPhotoByName(node.name);
-                const photoHtml = photo
-                    ? `<img src="${photo}" class="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover border-[3px] border-slate-900 bg-slate-900 shadow-lg">`
-                    : `<div class="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-slate-700 border-[3px] border-slate-900 flex items-center justify-center text-sm font-black text-white shadow-lg">${escapeHtml((node.name || '?').charAt(0).toUpperCase())}</div>`;
+                    const photoHtml = photo
+                    ? `<div class="relative flex items-end justify-center shrink-0 overflow-visible" style="width:${photoSize}; height:${photoSize};">
+                            <img src="${photo}" class="relative z-10 object-cover object-top pointer-events-none drop-shadow-lg" style="width:88%; height:118%;">
+                       </div>`
+                    : `<div class="rounded-full bg-slate-700 border-[3px] border-slate-900 flex items-center justify-center font-black text-white shadow-lg shrink-0" style="width:${photoSize}; height:${photoSize}; font-size:clamp(10px, 6.5cqmin, 30px);">${escapeHtml((node.name || '?').charAt(0).toUpperCase())}</div>`;
 
                 return `
-                    <div class="absolute flex flex-col items-center transform -translate-x-1/2 -translate-y-1/2" style="left:${node.x}%; top:${node.y}%;">
+                    <div class="absolute flex flex-col items-center transform -translate-x-1/2 -translate-y-1/2" style="left:${node.x}%; top:${node.y}%; width:clamp(64px, 24cqmin, 170px);">
                         ${photoHtml}
-                        <div class="mt-1 flex items-center gap-1">
-                            <span class="pos-${node.pos || ''} bg-slate-950/90 text-[10px] font-black px-1.5 py-[1px] rounded border border-slate-700">${escapeHtml(node.pos || '')}</span>
+                        <div class="flex items-center gap-1" style="margin-top:1px;">
+                            <span class="pos-${node.pos || ''} bg-slate-950/90 font-black rounded border border-slate-700" style="font-size:${badgeFont}; padding:${badgePad};">${node.pos || ''}</span>
                         </div>
-                        <div class="mt-1 bg-black/80 text-white text-[10px] font-bold px-2 py-[2px] rounded truncate max-w-[100px] border border-white/10">${escapeHtml(formatShortPlayerName(node.name))}</div>
+                        <div class="bg-black/80 text-white font-bold rounded whitespace-nowrap border border-white/10" style="font-size:${nameFont}; padding:${namePad}; margin-top:1px;">${escapeHtml(formatShortPlayerName(node.name))}</div>
                     </div>
                 `;
             }).join('');
 
             return `
-                <div class="relative w-full h-full min-h-0 bg-green-800 rounded-lg border-2 border-white/30 overflow-hidden">
+                <div class="home-pitch-container relative w-full h-full min-h-0 bg-green-800 rounded-lg border-2 border-white/30 overflow-hidden">
                     <div class="absolute inset-0 pointer-events-none border-[2px] border-white/25 m-2 rounded-sm"></div>
                     <div class="absolute top-1/2 left-2 right-2 h-px bg-white/25 -translate-y-1/2"></div>
                     <div class="absolute top-1/2 left-1/2 w-14 h-14 border-[2px] border-white/25 rounded-full -translate-x-1/2 -translate-y-1/2"></div>
@@ -1951,7 +1961,7 @@ function handleFileUpload(event, type) {
     const nationalName = managedTeams.milli.name || '';
     const isOurTeam = (name) => name === clubName || name === nationalName;
 
-    const renderMatchRow = (m, highlight, isMostRecent = false) => {
+    const renderMatchRow = (m, highlight) => {
         const homeLogo = getTeamLogoByName(m.home);
         const awayLogo = getTeamLogoByName(m.away);
         const hs = hasScore(m) ? m.homeScore : '-';
@@ -1962,7 +1972,6 @@ function handleFileUpload(event, type) {
             : `<span class="text-[10px] text-slate-400 truncate max-w-[70px]" title="${escapeHtml(m.tournament || '')}">${escapeHtml(m.tournament || '')}</span>`;
 
         let resultClass = '';
-        let glowClass = ''; 
         
         if (hasScore(m)) {
             const hsNum = parseInt(m.homeScore), asNum = parseInt(m.awayScore);
@@ -1971,12 +1980,6 @@ function handleFileUpload(event, type) {
                 if (isOurTeam(m.home)) letter = hsNum > asNum ? 'W' : (hsNum < asNum ? 'L' : 'D');
                 else if (isOurTeam(m.away)) letter = asNum > hsNum ? 'W' : (asNum < hsNum ? 'L' : 'D');
                 if (letter) resultClass = `frow-${letter}`;
-                
-                if (isMostRecent) {
-                    if (letter === 'W') glowClass = 'shadow-[0_0_15px_rgba(34,197,94,0.4)] border-green-500/60 relative z-10';
-                    else if (letter === 'D') glowClass = 'shadow-[0_0_15px_rgba(249,115,22,0.4)] border-orange-500/60 relative z-10';
-                    else if (letter === 'L') glowClass = 'shadow-[0_0_15px_rgba(239,68,68,0.4)] border-red-500/60 relative z-10';
-                }
             }
         }
 
@@ -2015,14 +2018,16 @@ function handleFileUpload(event, type) {
             badgesHtml = `<div class="flex items-center justify-start gap-1.5">${badges}</div>`;
         }
 
-        const borderClass = isMostRecent ? glowClass : (highlight ? 'border-emerald-600/60' : 'border-slate-700/50');
+        const borderClass = highlight
+            ? 'shadow-[0_0_15px_rgba(16,185,129,0.4)] border-emerald-500/60 relative z-10'
+            : 'border-slate-700/50';
 
-        return `<div onclick="qfbOpenMatch('${m.season}','${m.id}')" class="grid grid-cols-[auto_auto_1fr] items-center gap-4 sm:gap-6 ${resultClass || 'bg-slate-900/60'} hover:brightness-125 cursor-pointer border ${borderClass} rounded-lg px-3 py-3 transition-all" title="Skor / gol-asist girmek için tıklayın">
-            <div class="flex items-center gap-2 w-16 sm:w-20">
+        return `<div onclick="qfbOpenMatch('${m.season}','${m.id}')" class="grid grid-cols-[1fr_auto_1fr] items-center gap-4 sm:gap-6 ${resultClass || 'bg-slate-900/60'} hover:brightness-125 cursor-pointer border ${borderClass} rounded-lg px-3 py-3 transition-all" title="Skor / gol-asist girmek için tıklayın">
+            <div class="flex items-center gap-2">
                 <span class="text-[10px] text-slate-500 font-bold shrink-0">${escapeHtml(m.season)}</span>
                 ${tourHtml}
             </div>
-            <div class="flex items-center justify-start gap-3">
+            <div class="flex items-center justify-center gap-3">
                 <img src="${homeLogo}" class="w-8 h-8 object-contain">
                 <span class="score-display ${resultClass ? 'score-' + resultClass.replace('frow-', '') : 'text-white'} text-base font-black w-14 text-center">${hs}:${as}</span>
                 <img src="${awayLogo}" class="w-8 h-8 object-contain">
@@ -2032,7 +2037,7 @@ function handleFileUpload(event, type) {
     };
 
     let html = '';
-    html += `<div class="mb-3"><h5 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Son 4 Maç</h5><div class="space-y-1.5">${last4.length ? last4.map((m, i) => renderMatchRow(m, false, i === last4.length - 1)).join('') : '<div class="text-center text-slate-500 text-xs py-2">Oynanmış maç yok.</div>'}</div></div>`;
+    html += `<div class="mb-3"><h5 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Son 4 Maç</h5><div class="space-y-1.5">${last4.length ? last4.map(m => renderMatchRow(m, false)).join('') : '<div class="text-center text-slate-500 text-xs py-2">Oynanmış maç yok.</div>'}</div></div>`;
     html += `<div class="mb-3"><h5 class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest mb-1.5">Sıradaki Maç</h5><div class="space-y-1.5">${nextMatch ? renderMatchRow(nextMatch, true) : '<div class="text-center text-slate-500 text-xs py-2">Planlanmış maç yok.</div>'}</div></div>`;
     html += `<div><h5 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Sonraki 4 Maç</h5><div class="space-y-1.5">${next4.length ? next4.map(m => renderMatchRow(m, false)).join('') : '<div class="text-center text-slate-500 text-xs py-2">Planlanmış maç yok.</div>'}</div></div>`;
     return html;
@@ -5726,6 +5731,26 @@ function applyQfbCollapsedState() {
             return initials.slice(0, 4) || name.slice(0, 3).toUpperCase();
         }
 
+        const ROUND_ABBR_MAP = {
+            'grup aşaması': 'GA',
+            'son 32': 'L32',
+            'son 16': 'L16',
+            'çeyrek final': 'QF',
+            'yarı final': 'SF',
+            'final': 'F',
+            'üçüncülük': '3rd'
+        };
+
+        function getRoundAbbr(round) {
+            if (!round) return '';
+            const key = round.trim().toLowerCase();
+            if (ROUND_ABBR_MAP[key]) return ROUND_ABBR_MAP[key];
+            // "14. Hafta" / "14 Hafta" -> "14"
+            const weekMatch = round.match(/^(\d+)\s*\.?\s*hafta/i);
+            if (weekMatch) return weekMatch[1];
+            return round.length > 5 ? round.slice(0, 5) : round;
+        }
+
         function getCompetitionLogo(name) {
             if (!name) return null;
             // 1. Öncelik: Fikstür panelinde özel olarak atanmış logo
@@ -6078,6 +6103,18 @@ function formatShortPlayerName(name) {
                 saveToLocalStorage();
                 renderFixturePanel();
             }
+        }
+
+                function moveCustomTournament(id, direction) {
+            const list = customTournamentsData[activeFixtureSeason];
+            if (!list) return;
+            const idx = list.findIndex(t => t.id === id);
+            if (idx === -1) return;
+            const newIdx = idx + direction;
+            if (newIdx < 0 || newIdx >= list.length) return;
+            [list[idx], list[newIdx]] = [list[newIdx], list[idx]];
+            saveToLocalStorage();
+            renderFixturePanel();
         }
 
         function toggleCustomTournamentCollapse(tourId) {
@@ -6584,7 +6621,7 @@ function formatShortPlayerName(name) {
             if (filtered.length === 0) {
                 matchRowsHtml = `
                     <tr>
-                        <td colspan="8" class="p-10 text-center text-slate-500">
+                        <td colspan="9" class="p-10 text-center text-slate-500">
                             <i class="fa-solid fa-calendar-xmark text-3xl mb-3 block text-slate-700"></i>
                             Bu sezon için henüz maç kaydı bulunmuyor.<br>
                             <span class="text-xs mt-1 block">Sağ üstteki "Maç Ekle" butonuyla başlayın.</span>
@@ -6693,6 +6730,7 @@ function formatShortPlayerName(name) {
                                     </div>
                                 </div>
                             </td>
+                            <td class="p-0.5 w-8 text-center">${m.round ? `<span class="inline-block text-[9px] font-black text-slate-300 bg-slate-950/80 border border-slate-700 rounded px-1 py-0.5" title="${escapeHtml(m.round)}">${escapeHtml(getRoundAbbr(m.round))}</span>` : ''}</td>
                             <td class="p-0.5 w-6 text-center">${getGroundLabel(m.ground)}</td>
                             <td class="p-1 text-right" title="${m.home || ''}">
                                 <div class="flex justify-end items-center h-full">
@@ -6735,7 +6773,7 @@ function formatShortPlayerName(name) {
                         <div class="bg-slate-800 border-b border-slate-700 p-2 sm:p-3 shrink-0 flex justify-between items-center flex-wrap gap-2">
                             <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-calendar-days text-emerald-400 mr-2"></i>Fikstür</h3>
                             <div class="flex gap-1.5">
-                                <button onclick="openFixtureBulkModal('${activeFixtureSeason}')" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded text-xs transition-colors shadow flex items-center gap-1.5">
+                                <button type="button" onclick="event.stopPropagation(); window.openFixtureBulkModal('${activeFixtureSeason}');" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded text-xs transition-colors shadow flex items-center gap-1.5">
                                     <i class="fa-solid fa-list-check"></i><span class="hidden sm:inline"> Toplu Ekle</span>
                                 </button>
                                 <button onclick="openFixtureModal('${activeFixtureSeason}', null)" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded text-xs transition-colors shadow flex items-center gap-1.5">
@@ -6782,7 +6820,8 @@ function formatShortPlayerName(name) {
                                     <thead class="bg-slate-900 sticky top-0 z-10">
                                         <tr class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">
                                             <th class="p-0.5 text-center border-b border-slate-700 w-5" title="Maç No">#</th>
-                                            <th class="p-0.5 text-center border-b border-slate-700 w-9" title="Müsabaka"><i class="fa-solid fa-trophy"></i></th>
+                                             <th class="p-0.5 text-center border-b border-slate-700 w-9" title="Müsabaka"><i class="fa-solid fa-trophy"></i></th>
+                                            <th class="p-0.5 text-center border-b border-slate-700 w-8" title="Hafta / Aşama"><i class="fa-solid fa-list-ol"></i></th>
                                             <th class="p-0.5 text-center border-b border-slate-700 w-6" title="Zemin"><i class="fa-solid fa-map-pin"></i></th>
                                             <th class="p-2 text-center border-b border-slate-700" title="Ev Sahibi"><i class="fa-solid fa-house"></i></th>
                                             <th class="p-2 text-center border-b border-slate-700 w-16" title="Skor"><i class="fa-solid fa-futbol"></i></th>
@@ -6825,7 +6864,7 @@ function formatShortPlayerName(name) {
                                 const cTours = customTournamentsData[activeFixtureSeason] || [];
                                 if (cTours.length === 0) return `<div class="text-center text-slate-500 text-sm mt-10">Henüz bu sezon için müsabaka tablosu eklenmedi.<br>Yukarıdan seçip ekleyebilirsiniz.</div>`;
                                 
-                                return cTours.map(tour => {
+                                    return cTours.map((tour, tIdx) => {
                                     // Geriye dönük uyumluluk: eski kayıtlarda bu bayraklar yoksa, mevcut veriye göre makul bir varsayılan uygula
                                     const tableOn = tour.tableEnabled !== false;
                                     const knockoutOn = tour.knockoutEnabled !== undefined
@@ -7048,6 +7087,10 @@ function formatShortPlayerName(name) {
                                     const isCollapsed = tour.collapsed === true;
                                     return `
                                     <div class="relative group/tour ${getCustomTournamentCardBg(tour.type)} p-2 rounded-lg border shadow-sm">
+                                        <div class="absolute -top-2 -left-2 flex flex-col gap-0.5 opacity-0 group-hover/tour:opacity-100 transition-opacity z-10">
+                                            <button onclick="moveCustomTournament('${tour.id}', -1)" ${tIdx === 0 ? 'disabled' : ''} class="bg-slate-700 hover:bg-emerald-600 disabled:opacity-30 disabled:cursor-not-allowed text-white w-5 h-5 rounded-full text-[10px] flex items-center justify-center shadow-lg" title="Yukarı Taşı"><i class="fa-solid fa-chevron-up"></i></button>
+                                            <button onclick="moveCustomTournament('${tour.id}', 1)" ${tIdx === cTours.length - 1 ? 'disabled' : ''} class="bg-slate-700 hover:bg-emerald-600 disabled:opacity-30 disabled:cursor-not-allowed text-white w-5 h-5 rounded-full text-[10px] flex items-center justify-center shadow-lg" title="Aşağı Taşı"><i class="fa-solid fa-chevron-down"></i></button>
+                                        </div>
                                         <button onclick="removeCustomTournament('${tour.id}')" class="absolute -top-2 -right-2 bg-red-600 hover:bg-red-500 text-white w-5 h-5 rounded-full text-[10px] flex items-center justify-center opacity-0 group-hover/tour:opacity-100 transition-opacity z-10 shadow-lg" title="Tüm Kartı Sil"><i class="fa-solid fa-times"></i></button>
                                         <h4 onclick="toggleCustomTournamentCollapse('${tour.id}')" class="text-sm font-bold text-emerald-400 mb-2 border-b border-slate-800 pb-1 truncate cursor-pointer select-none flex items-center justify-between gap-2">
                                             <span class="truncate">${tour.type}</span>
@@ -7170,6 +7213,7 @@ function formatShortPlayerName(name) {
                     document.getElementById('fm-home').value = match.home || '';
                     document.getElementById('fm-away').value = match.away || '';
                     document.getElementById('fm-opp-country').value = match.oppCountry || '';
+                    document.getElementById('fm-round').value = match.round || '';
                 }
             } else {
                 document.getElementById('fm-modal-title').textContent = 'Fikstür Planla';
@@ -7180,6 +7224,7 @@ function formatShortPlayerName(name) {
                 document.getElementById('fm-home').value = managedTeams.kulup.name || '';
                 document.getElementById('fm-away').value = '';
                 document.getElementById('fm-opp-country').value = '';
+                document.getElementById('fm-round').value = '';
             }
 
             const modal = document.getElementById('fixture-match-modal');
@@ -7199,6 +7244,7 @@ function formatShortPlayerName(name) {
             const home = document.getElementById('fm-home').value.trim();
             const away = document.getElementById('fm-away').value.trim();
             const oppCountry = document.getElementById('fm-opp-country').value.trim().toUpperCase();
+            const round = document.getElementById('fm-round').value.trim();
 
             if (isNaN(matchNo)) { alert('Lütfen geçerli bir Maç No girin!'); return; }
             if (!fixtureData[activeFixtureSeason]) fixtureData[activeFixtureSeason] = [];
@@ -7224,6 +7270,7 @@ function formatShortPlayerName(name) {
                     match.home = home;
                     match.away = away;
                     match.oppCountry = oppCountry;
+                    match.round = round;
                     syncFixtureToMatches(match, activeFixtureSeason);
                 }
             } else {
@@ -7235,6 +7282,7 @@ function formatShortPlayerName(name) {
                     home: home,
                     away: away,
                     oppCountry: oppCountry,
+                    round: round,
                     homeScore: '',
                     awayScore: '',
                     events: []
@@ -7418,12 +7466,13 @@ function formatShortPlayerName(name) {
                     if (!line.trim()) return;
                     const parts = line.split(',').map(s => s.trim());
                     
-                    if (parts.length >= 4) {
+                     if (parts.length >= 4) {
                         const matchNo = parts[0];
                         const tournament = parts[1];
                         const home = parts[2];
                         const away = parts[3];
                         const oppCountry = parts[4] ? normalizeCountryInput(parts[4]) : ''; 
+                        const round = parts[5] ? parts[5].trim() : '';
                         
                         let ground = 'neutral';
                         if (home === teamName) ground = 'home';
@@ -7437,6 +7486,7 @@ function formatShortPlayerName(name) {
                             home: home,
                             away: away,
                             oppCountry: oppCountry, 
+                            round: round,
                             homeScore: '',
                             awayScore: '',
                             events: []
