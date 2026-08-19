@@ -323,8 +323,8 @@ function escapeHtml(str) {
         const menuConfig = {
             anasayfa: { title: "Ana Sayfa", submenus: [] },
             kupalar: { title: "Kupalar", submenus: [] },
-            maclar: { title: "Maçlar", submenus: [{ id: "maclar-kulup", label: "Kulüp" }, { id: "maclar-milli", label: "Milli" }]},
-            kadro: { title: "Kadro", submenus: [{ id: "kadro-astakim", label: "As Takım" }, { id: "kadro-akademi", label: "Akademi" }, { id: "kadro-milli", label: "Milli" }]},
+            maclar: { title: "Maçlar", submenus: [] },
+            kadro: { title: "Kadro", submenus: [] },
             ligtarihi: { title: "Lig Tarihi", submenus: [] },
             transfer: { title: "Transfer", submenus: [] },
             golasist: { title: "Gol ve Asistler", submenus: [] },
@@ -1839,19 +1839,18 @@ function handleFileUpload(event, type) {
             // Kartların pitch kutusunun kendi boyutuna (cqmin = konteynerin en/boy'undan küçük olanı) göre
             // ölçeklenmesi için tüm boyutları container-query birimleriyle (cqmin) veriyoruz.
             const photoSize = 'clamp(32px, 16cqmin, 100px)';
-            const badgeFont = 'clamp(5px, 3cqmin, 10px)';
-            const badgePad = 'clamp(0px, 0.4cqmin, 2px) clamp(3px, 1.4cqmin, 8px)';
-            const nameFont = 'clamp(6px, 4cqmin, 12px)';
-            const namePad = 'clamp(1px, 0.7cqmin, 4px) clamp(4px, 2cqmin, 11px)';
+            const badgeFont = 'clamp(5px, 2.3cqmin, 8px)';
+            const badgePad = 'clamp(0px, 0.3cqmin, 1.5px) clamp(2px, 0.9cqmin, 5px)';
+            const nameFont = 'clamp(5.5px, 2.9cqmin, 11px)';
+            const namePad = 'clamp(1px, 0.5cqmin, 2.5px) clamp(2.5px, 1.3cqmin, 7.5px)';
 
             const nodesHtml = formData.filter(node => node.name).map(node => {
                 const photo = getPlayerPhotoByName(node.name);
-                    const photoHtml = photo
+                const photoHtml = photo
                     ? `<div class="relative flex items-end justify-center shrink-0 overflow-visible" style="width:${photoSize}; height:${photoSize};">
-                            <img src="${photo}" class="relative z-10 object-cover object-top pointer-events-none drop-shadow-lg" style="width:88%; height:118%;">
+                            <img src="${photo}" class="relative z-10 object-cover object-top pointer-events-none drop-shadow-lg" style="width:100%; height:118%;">
                        </div>`
                     : `<div class="rounded-full bg-slate-700 border-[3px] border-slate-900 flex items-center justify-center font-black text-white shadow-lg shrink-0" style="width:${photoSize}; height:${photoSize}; font-size:clamp(10px, 6.5cqmin, 30px);">${escapeHtml((node.name || '?').charAt(0).toUpperCase())}</div>`;
-
                 return `
                     <div class="absolute flex flex-col items-center transform -translate-x-1/2 -translate-y-1/2" style="left:${node.x}%; top:${node.y}%; width:clamp(64px, 24cqmin, 170px);">
                         ${photoHtml}
@@ -2022,10 +2021,19 @@ function handleFileUpload(event, type) {
             ? 'shadow-[0_0_15px_rgba(16,185,129,0.4)] border-emerald-500/60 relative z-10'
             : 'border-slate-700/50';
 
+        const abbr = getRoundAbbr(m.round);
+        const glowingPhases = ['G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7', 'G8', 'L32', 'L16', 'QF', 'SF', 'F', '3rd', 'PO'];
+        const badgeStyle = glowingPhases.includes(abbr)
+            ? 'text-amber-300 bg-amber-900/30 border-amber-600/50 shadow-[0_0_8px_rgba(245,158,11,0.4)]'
+            : 'text-slate-300 bg-slate-800/60 border-slate-700/30 shadow-sm';
+
+        const roundHtml = m.round ? `<span class="inline-flex items-center text-[8px] font-bold rounded px-1.5 py-[3px] ml-1.5 tracking-widest uppercase whitespace-nowrap border ${badgeStyle}" title="${escapeHtml(m.round)}">${escapeHtml(abbr)}</span>` : '';
+
         return `<div onclick="qfbOpenMatch('${m.season}','${m.id}')" class="grid grid-cols-[1fr_auto_1fr] items-center gap-4 sm:gap-6 ${resultClass || 'bg-slate-900/60'} hover:brightness-125 cursor-pointer border ${borderClass} rounded-lg px-3 py-3 transition-all" title="Skor / gol-asist girmek için tıklayın">
             <div class="flex items-center gap-2">
                 <span class="text-[10px] text-slate-500 font-bold shrink-0">${escapeHtml(m.season)}</span>
                 ${tourHtml}
+                ${roundHtml}
             </div>
             <div class="flex items-center justify-center gap-3">
                 <img src="${homeLogo}" class="w-8 h-8 object-contain">
@@ -2401,11 +2409,20 @@ function handleFileUpload(event, type) {
             opps.foreign.forEach(grp => sortTeamsByCountry(grp.teams));
             
             let html = `
-                <div class="w-full flex justify-between items-center mb-3 px-2 shrink-0">
-                    <h3 class="text-2xl font-bold text-white">${isKulup ? 'Kulüp' : 'Milli Takım'} Fikstür & Sonuçlar</h3>
-                    <div class="flex items-center gap-4">
-                        <button onclick="addNewForeignGroup()" class="bg-blue-900/50 hover:bg-blue-800 text-blue-300 px-3 py-1.5 rounded text-xs border border-blue-800 transition-colors"><i class="fa-solid fa-plus mr-1"></i>Yeni Kıta Grubu</button>
-                        ${getScaleSelectorHtml()}
+                <div class="w-full flex flex-nowrap justify-between items-center mb-3 px-2 shrink-0 gap-4 overflow-x-auto hide-scrollbar">
+                    <div class="flex items-center shrink-0">
+                        <h3 class="text-2xl font-bold text-white"><i class="fa-solid fa-chart-simple text-emerald-500"></i></h3>
+                    </div>
+
+                    <div class="flex flex-nowrap items-center gap-2 shrink-0 ml-auto">
+                        <button onclick="addNewForeignGroup()" class="bg-blue-900/50 hover:bg-blue-800 text-blue-300 w-8 h-8 flex items-center justify-center rounded text-xs border border-blue-800 transition-colors shrink-0" title="Yeni Kıta Grubu Ekle"><i class="fa-solid fa-plus"></i></button>
+                        <div class="shrink-0 flex items-center">
+                            ${getScaleSelectorHtml()}
+                        </div>
+                        <div class="flex gap-1 bg-slate-900 rounded-full border border-slate-700 p-1 shadow-lg shrink-0 ml-1">
+                            <button onclick="matchContext='kulup'; renderMatchesGrid();" class="px-6 py-1.5 rounded-full text-xs font-bold transition-colors ${matchContext === 'kulup' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}">Kulüp</button>
+                            <button onclick="matchContext='milli'; renderMatchesGrid();" class="px-6 py-1.5 rounded-full text-xs font-bold transition-colors ${matchContext === 'milli' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}">Milli</button>
+                        </div>
                     </div>
                 </div>
                 <div class="w-full overflow-auto table-scroll border border-slate-700 rounded-xl bg-slate-900 flex-1 min-h-0 relative pb-4">
@@ -3411,19 +3428,25 @@ function handleFileUpload(event, type) {
             };
 
             let html = `
-                <div class="w-full flex justify-between items-center mb-3 px-2 shrink-0">
-                    <div class="flex items-center gap-3">
-                        <h3 class="text-2xl font-bold text-white flex items-center gap-2">
-                            ${squadContext === 'astakim' ? 'As Takım' : (squadContext === 'akademi' ? 'Akademi' : 'Milli Takım')} Gelişim Takibi
-                            ${(squadContext === 'astakim' || squadContext === 'milli') ? `<button onclick="openFormationModal('ilk11')" class="text-sm bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-600 rounded px-2 py-1.5 transition-colors shadow-sm flex items-center justify-center w-8 h-8" title="Kadrolar"><i class="fa-solid fa-people-group"></i></button>` : ''}
-                        </h3>
-                        <button onclick="openSquadBulkModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-lg"><i class="fa-solid fa-list-ol mr-1"></i>Toplu Ekle</button>
-                        <button onclick="toggleSquadColumnsCollapse()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-lg" title="Ülke/Yaş/OVR/Gelişim/Gol/Asist sütunlarını gizle veya göster">
-                            <i class="fa-solid ${squadColumnsCollapsed ? 'fa-chevron-right' : 'fa-chevron-left'} mr-1"></i>${squadColumnsCollapsed ? 'Sütunları Göster' : 'Sütunları Daralt'}
+                <div class="w-full flex flex-wrap justify-between items-center mb-3 px-2 shrink-0 relative gap-y-3">
+                    <div class="flex flex-nowrap items-center gap-2 w-max shrink-0 overflow-x-auto hide-scrollbar">
+                        ${(squadContext === 'astakim' || squadContext === 'milli') ? `<button onclick="openFormationModal('ilk11')" class="text-sm bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-600 rounded px-2 py-1.5 transition-colors shadow-sm flex items-center justify-center shrink-0 w-8 h-8" title="Kadrolar"><i class="fa-solid fa-people-group"></i></button>` : ''}
+                        <button onclick="openPlayerInfoModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-lg flex items-center justify-center shrink-0" title="Oyuncu Ekle"><i class="fa-solid fa-user-plus"></i></button>
+                        <button onclick="openSquadBulkModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-lg flex items-center justify-center shrink-0" title="Toplu Ekle"><i class="fa-solid fa-list-ol"></i></button>
+                        <button onclick="toggleSquadColumnsCollapse()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-lg flex items-center justify-center shrink-0" title="Ülke/Yaş/OVR/Gelişim/Gol/Asist sütunlarını gizle veya göster">
+                            <i class="fa-solid ${squadColumnsCollapsed ? 'fa-chevron-right' : 'fa-chevron-left'}"></i>
                         </button>
-                        ${squadContext === 'milli' ? `<button onclick="openNationalCapsBulkModal()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-lg"><i class="fa-solid fa-shirt mr-1"></i>Toplu Maç Ekle</button>` : ''}
+                        ${squadContext === 'milli' ? `<button onclick="openNationalCapsBulkModal()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-lg flex items-center justify-center shrink-0" title="Toplu Maç Ekle"><i class="fa-solid fa-shirt"></i></button>` : ''}
                     </div>
-                    <div class="flex items-center gap-4">
+
+                    <!-- Ortalanmış Kadro Seçici Butonları -->
+                    <div class="flex xl:absolute xl:left-1/2 xl:-translate-x-1/2 gap-1 bg-slate-900 rounded-full border border-slate-700 p-1 shadow-lg z-10 w-full sm:w-auto justify-center order-last xl:order-none">
+                        <button onclick="squadContext='astakim'; renderSquadGrid();" class="px-6 py-1.5 rounded-full text-xs font-bold transition-colors ${squadContext === 'astakim' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}">As Takım</button>
+                        <button onclick="squadContext='akademi'; renderSquadGrid();" class="px-6 py-1.5 rounded-full text-xs font-bold transition-colors ${squadContext === 'akademi' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}">Akademi</button>
+                        <button onclick="squadContext='milli'; renderSquadGrid();" class="px-6 py-1.5 rounded-full text-xs font-bold transition-colors ${squadContext === 'milli' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}">Milli</button>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-4 ml-auto xl:ml-0 w-full sm:w-auto">
                         ${getScaleSelectorHtml()}
                     </div>
                 </div>
@@ -5731,7 +5754,7 @@ function applyQfbCollapsedState() {
             return initials.slice(0, 4) || name.slice(0, 3).toUpperCase();
         }
 
-        const ROUND_ABBR_MAP = {
+                const ROUND_ABBR_MAP = {
             'grup aşaması': 'GA',
             'son 32': 'L32',
             'son 16': 'L16',
@@ -6097,15 +6120,7 @@ function formatShortPlayerName(name) {
             renderFixturePanel();
         }
 
-        function removeCustomTournament(id) {
-            if(confirm("Bu müsabaka tablosunu silmek istediğinize emin misiniz?")) {
-                customTournamentsData[activeFixtureSeason] = customTournamentsData[activeFixtureSeason].filter(t => t.id !== id);
-                saveToLocalStorage();
-                renderFixturePanel();
-            }
-        }
-
-                function moveCustomTournament(id, direction) {
+        function moveCustomTournament(id, direction) {
             const list = customTournamentsData[activeFixtureSeason];
             if (!list) return;
             const idx = list.findIndex(t => t.id === id);
@@ -6713,6 +6728,16 @@ function formatShortPlayerName(name) {
                         ? `<button onclick="event.stopPropagation(); openCompetitionLogoModal('${safeTourJs}')" class="text-slate-500 hover:text-yellow-400" title="Logo Ekle/Değiştir"><i class="fa-solid fa-image text-[8px]"></i></button>`
                         : '';
 
+                    let roundHtml = '';
+                    if (m.round) {
+                        const abbr = getRoundAbbr(m.round);
+                        const glowingPhases = ['G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7', 'G8', 'L32', 'L16', 'QF', 'SF', 'F', '3rd', 'PO'];
+                        const badgeStyle = glowingPhases.includes(abbr)
+                            ? 'text-amber-300 bg-amber-900/30 border-amber-600/50 shadow-[0_0_8px_rgba(245,158,11,0.4)]'
+                            : 'text-slate-300 bg-slate-950/80 border-slate-700';
+                        roundHtml = `<span class="inline-block text-[9px] font-black rounded px-1 py-0.5 border ${badgeStyle}" title="${escapeHtml(m.round)}">${escapeHtml(abbr)}</span>`;
+                    }
+
                     matchRowsHtml += `
                         <tr id="fx-row-${m.id}" class="fixture-compact-row ${tournamentBg} transition-colors group cursor-pointer border-b border-slate-700/40 ${rowResultClass} ${isExpanded ? 'bg-slate-800/40' : ''}" onclick="toggleFixtureRowExpand('${m.id}')">
                             <td class="p-0.5 text-center w-5">
@@ -6730,7 +6755,7 @@ function formatShortPlayerName(name) {
                                     </div>
                                 </div>
                             </td>
-                            <td class="p-0.5 w-8 text-center">${m.round ? `<span class="inline-block text-[9px] font-black text-slate-300 bg-slate-950/80 border border-slate-700 rounded px-1 py-0.5" title="${escapeHtml(m.round)}">${escapeHtml(getRoundAbbr(m.round))}</span>` : ''}</td>
+                            <td class="p-0.5 w-8 text-center">${roundHtml}</td>
                             <td class="p-0.5 w-6 text-center">${getGroundLabel(m.ground)}</td>
                             <td class="p-1 text-right" title="${m.home || ''}">
                                 <div class="flex justify-end items-center h-full">
@@ -6773,7 +6798,7 @@ function formatShortPlayerName(name) {
                         <div class="bg-slate-800 border-b border-slate-700 p-2 sm:p-3 shrink-0 flex justify-between items-center flex-wrap gap-2">
                             <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-calendar-days text-emerald-400 mr-2"></i>Fikstür</h3>
                             <div class="flex gap-1.5">
-                                <button type="button" onclick="event.stopPropagation(); window.openFixtureBulkModal('${activeFixtureSeason}');" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded text-xs transition-colors shadow flex items-center gap-1.5">
+                                <button onclick="openFixtureBulkModal('${activeFixtureSeason}')" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded text-xs transition-colors shadow flex items-center gap-1.5">
                                     <i class="fa-solid fa-list-check"></i><span class="hidden sm:inline"> Toplu Ekle</span>
                                 </button>
                                 <button onclick="openFixtureModal('${activeFixtureSeason}', null)" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded text-xs transition-colors shadow flex items-center gap-1.5">
@@ -6820,7 +6845,7 @@ function formatShortPlayerName(name) {
                                     <thead class="bg-slate-900 sticky top-0 z-10">
                                         <tr class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">
                                             <th class="p-0.5 text-center border-b border-slate-700 w-5" title="Maç No">#</th>
-                                             <th class="p-0.5 text-center border-b border-slate-700 w-9" title="Müsabaka"><i class="fa-solid fa-trophy"></i></th>
+                                            <th class="p-0.5 text-center border-b border-slate-700 w-9" title="Müsabaka"><i class="fa-solid fa-trophy"></i></th>
                                             <th class="p-0.5 text-center border-b border-slate-700 w-8" title="Hafta / Aşama"><i class="fa-solid fa-list-ol"></i></th>
                                             <th class="p-0.5 text-center border-b border-slate-700 w-6" title="Zemin"><i class="fa-solid fa-map-pin"></i></th>
                                             <th class="p-2 text-center border-b border-slate-700" title="Ev Sahibi"><i class="fa-solid fa-house"></i></th>
@@ -6864,7 +6889,7 @@ function formatShortPlayerName(name) {
                                 const cTours = customTournamentsData[activeFixtureSeason] || [];
                                 if (cTours.length === 0) return `<div class="text-center text-slate-500 text-sm mt-10">Henüz bu sezon için müsabaka tablosu eklenmedi.<br>Yukarıdan seçip ekleyebilirsiniz.</div>`;
                                 
-                                    return cTours.map((tour, tIdx) => {
+                                return cTours.map((tour, tIdx) => {
                                     // Geriye dönük uyumluluk: eski kayıtlarda bu bayraklar yoksa, mevcut veriye göre makul bir varsayılan uygula
                                     const tableOn = tour.tableEnabled !== false;
                                     const knockoutOn = tour.knockoutEnabled !== undefined
@@ -7466,7 +7491,7 @@ function formatShortPlayerName(name) {
                     if (!line.trim()) return;
                     const parts = line.split(',').map(s => s.trim());
                     
-                     if (parts.length >= 4) {
+                    if (parts.length >= 4) {
                         const matchNo = parts[0];
                         const tournament = parts[1];
                         const home = parts[2];

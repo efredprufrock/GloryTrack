@@ -432,11 +432,10 @@
             <!-- GÖRÜNTÜLEME (PROFIL) MODU -->
             <div id="pi-view-section" class="hidden flex-col items-center w-full mt-2">
                 <!-- Fotoğrafı büyütüp (w-36 h-36) negatif margin (-mt-20) ile yukarı taşırdık -->
-                 <div class="relative w-36 h-36 mb-4 -mt-20 flex items-end justify-center">
+                <div class="relative w-36 h-36 mb-4 -mt-20 flex items-end justify-center">
                     <!-- Kenarlığı arka planla aynı renk (slate-800) ve kalın (border-[6px]) yaparak şık bir kesik efekti verdik -->
                     <div class="absolute bottom-0 w-36 h-36 rounded-full border-[6px] border-slate-800 shadow-2xl bg-slate-900"></div>
                     <img id="pi-view-photo" src="" class="relative z-10 object-cover object-top pointer-events-none drop-shadow-lg" style="width:100%; height:138%;" onerror="this.src='https://ui-avatars.com/api/?name=Oyuncu&background=random&color=fff'">
-                    
                     <!-- Bayrağı da yeni boyuta göre hizaladık -->
                     <div class="absolute bottom-1 right-2 border-[3px] border-slate-800 rounded shadow-md bg-slate-800 z-20">
                         <div id="pi-view-flag-container"></div>
@@ -810,7 +809,7 @@
                         <option value="neutral">Tarafsız</option>
                     </select>
                 </div>
-                <div class="sm:col-span-2">
+                 <div class="sm:col-span-2">
                     <label class="block text-[10px] font-bold text-emerald-400 mb-1 uppercase tracking-widest bg-emerald-900/20 px-2 py-1 rounded inline-block"><i class="fa-solid fa-earth-americas mr-1"></i> Rakip Ülke Kodu</label>
                     <input type="text" id="fm-opp-country" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-sm text-white outline-none focus:border-emerald-500 uppercase placeholder-slate-500" placeholder="Örn: EN, SC, SP, IT (Boş bırakılırsa Yurtiçi sayılır)">
                 </div>
@@ -826,6 +825,7 @@
                         <option value="Final">
                     </datalist>
                 </div>
+            </div>
 
             <div class="flex items-center gap-3 mb-5 bg-slate-900 rounded-xl p-4 border border-slate-700">
                 <div class="flex-1">
