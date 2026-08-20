@@ -18,6 +18,7 @@ if (localStorage.getItem('fc26_theme') === 'light') {
 const TR_EN = {
     // Sol menü / genel
     "FC26 Kariyer Paneli": "FC26 Career Panel",
+    "Ana Sayfa": "Home",
     "Kupalar": "Trophies",
     "Maçlar": "Matches",
     "Kadro": "Squad",
@@ -61,9 +62,231 @@ const TR_EN = {
     "Veriler alınıyor...": "Fetching data...",
     "Google ile bağlanılıyor...": "Connecting with Google...",
 
+    // --- ANA SAYFA (HOME) ---
+    "İlk 11": "Starting 11",
+    "Tümü": "All",
+    "Son 4 Maç": "Last 4 Matches",
+    "Sıradaki Maç": "Next Match",
+    "Sonraki 4 Maç": "Next 4 Matches",
+    "Gol Kralları": "Top Scorers",
+    "GOL": "GLS",
+    "ASİST": "AST",
+    "Oynanmış maç yok.": "No matches played.",
+    "Planlanmış maç yok.": "No scheduled matches.",
+    "Bu kadro için henüz İlk 11 belirlenmedi.": "No Starting 11 has been set for this squad yet.",
+    "Kadro panelinden \"Kadrolar\" ikonuna tıklayarak oluşturabilirsiniz.": "You can create one by clicking the \"Squads\" icon in the Squad panel.",
+    "sezonu için gol/asist verisi bulunmuyor.": "season has no goal/assist data.",
+    "Kayıtlı sezon bulunmuyor.": "No saved seasons.",
+
+    // --- KUPALAR (TROPHIES) ---
+    "Hücrelerdeki + butonuna tıklayarak logo ekleyebilirsiniz": "You can add a logo by clicking the + button in the cells",
+    "Yeni Sezon Ekle": "Add New Season",
+    "Kupa Ekle": "Add Trophy",
+    "Turnuvayı Düzenle": "Edit Tournament",
+    "Sezonu Sil": "Delete Season",
+
+    // --- MAÇLAR (MATCHES) ---
+    "YURTİÇİ": "DOMESTIC",
+    "YURTDIŞI / DİĞER": "ABROAD / OTHER",
+    "AVRUPA": "EUROPE",
+    "ASYA": "ASIA",
+    "AFRİKA": "AFRICA",
+    "KUZEY AMERİKA": "NORTH AMERICA",
+    "GÜNEY AMERİKA": "SOUTH AMERICA",
+    "DİĞER": "OTHER",
+    "YENİ ÜLKE GRUBU": "NEW COUNTRY GROUP",
+    "YENİ KITA GRUBU": "NEW CONTINENT GROUP",
+    "Yeni Kıta Grubu Ekle": "Add New Continent Group",
+    "Grubu Düzenle/Sil": "Edit/Delete Group",
+    "Sezon İstatistikleri": "Season Stats",
+    "Galibiyet Yüzdesi": "Win Percentage",
+    "Yeni Takım": "New Team",
+
+    // --- KADRO (SQUAD) ---
+    "HAZ-ŞUB": "JUN-FEB",
+    "KIŞ TR.": "WINTER TR.",
+    "ARA-EYL": "DEC-SEP",
+    "YAZ TR.": "SUMMER TR.",
+    "TAKIMDAN AYRILANLAR / ARŞİV": "DEPARTED PLAYERS / ARCHIVE",
+    "Ülke/Yaş/OVR/Gelişim/Gol/Asist sütunlarını gizle veya göster": "Hide or show Country/Age/OVR/Growth/Goal/Assist columns",
+    "Kadrolar": "Squads",
+    "Ülke": "Country",
+    "Gelişim (+/-)": "Growth (+/-)",
+    "Potansiyel (POT)": "Potential (POT)",
+    "Forma Sayısı (Caps)": "Caps",
+    "Gol": "Goals",
+    "Asist": "Assists",
+    "Kayıtlı oyuncu bulunmuyor.": "No registered players.",
+    "Yeni Oyuncu Ekle": "Add New Player",
+    "Oyuncu Adı": "Player Name",
+    "Değişiklikleri Kaydet": "Save Changes",
+    "Oyuncuları aşağıdaki formatta, aralarına virgül koyarak her satıra bir oyuncu gelecek şekilde yapıştırın:": "Paste the players in the following format, separated by commas, one player per line:",
+    "Pozisyon, İsim Soyisim, Ülke, Yaş, Reyting": "Position, Full Name, Country, Age, Rating",
+    "Örnek:": "Example:",
+    "As Takım Kadroları": "First Team Squads",
+    "İLK 11": "STARTING 11",
+    "YEDEK": "SUB",
+    "REZERV": "RESERVE",
+    "Oyuncuları sahada sürükleyerek dizebilirsiniz. İsim atamak için oyuncu noktasının yanındaki kalem ikonuna tıklayın.": "You can drag and drop players on the pitch. Click the pencil icon next to the player node to assign a name.",
+    "Seç": "Select",
+    "Sıfırla": "Reset",
+    "Liste": "List",
+    "Şubat - Haziran Gelişimi": "February - June Growth",
+    "Takım Adı / Açıklama Notu": "Team Name / Description Note",
+    "Örn: WATFORD": "e.g. WATFORD",
+    "Logo URL (Varsa metin yerine logo görünür)": "Logo URL (If provided, logo will be shown instead of text)",
+
+    // --- LİG TARİHİ (LEAGUE HISTORY) ---
+    "Lig Tarihi Paneli": "League History Panel",
+    "TAKIMLAR": "TEAMS",
+    "Sıralama Grafiği (1-18)": "Ranking Chart (1-18)",
+    "Toplu Puan Gir": "Bulk Enter Points",
+    "Toplu Puan Girişi": "Bulk Points Entry",
+    "Takım bulunmuyor. Yeni takım ekleyin.": "No teams found. Add a new team.",
+    "Kayıtlı takım bulunmuyor.": "No registered teams.",
+    "Her satıra bir takım adı gelecek şekilde listeyi yapıştırın.": "Paste the list with one team name per line.",
+
+    // --- TRANSFER PANELİ (TRANSFERS) ---
+    "TRANSFER PANELİ": "TRANSFER PANEL",
+    "Gelen ve Giden Oyuncu Bilançosu": "Incoming and Outgoing Player Balance",
+    "Gider": "Expenses",
+    "Gelir": "Income",
+    "Net Bilanço": "Net Balance",
+    "GELENLER": "INCOMING",
+    "GİDENLER": "OUTGOING",
+    "EKLE": "ADD",
+    "Kayıtlı transfer bulunmuyor.": "No registered transfers.",
+    "Bedelsiz": "Free",
+    "Sezona Göre Sırala": "Sort by Season",
+    "İsme Göre Sırala": "Sort by Name",
+    "Mevkiye Göre Sırala": "Sort by Position",
+    "OVR'a Göre Sırala": "Sort by OVR",
+    "Bedele Göre Sırala": "Sort by Fee",
+    "Profili Görüntüle": "View Profile",
+    "Bilinmiyor": "Unknown",
+    "Gelen Transfer Ekle": "Add Incoming Transfer",
+    "Giden Transfer Ekle": "Add Outgoing Transfer",
+    "Gittiği Takım": "To Club",
+    "Örn: 15.000.000 (Boşsa Bedelsiz)": "e.g. 15,000,000 (Empty for Free Transfer)",
+
+    // --- GOL VE ASİST PANELİ (GOALS & ASSISTS) ---
+    "Kulüp İstatistikleri": "Club Statistics",
+    "Milli Takım İstatistikleri": "National Team Statistics",
+    "GENEL TOPLAM": "OVERALL TOTAL",
+    "TOPLAM": "TOTAL",
+    "Daralt": "Collapse",
+    "Turnuva Detayları": "Tournament Details",
+    "Resmi bir gol veya asist verisi bulunmuyor.": "No official goal or assist data found.",
+    "Ülkeye Göre Sırala": "Sort by Country",
+
+    // --- SEZONLAR / FİKSTÜR PANELİ (SEASONS / FIXTURES / COMPETITION TABLES) ---
+    "Grup / Lig Tablosu": "Group / League Table",
+    "Sıra": "Rank",
+    "Fikstür": "Fixtures",
+    "O / G / B / M": "P / W / D / L",
+    "GOL (A/Y)": "GOALS (F/A)",
+    "İÇ": "HOME",
+    "DEP": "AWAY",
+    "TAR": "NEUTRAL",
+    "Müsabaka Tabloları": "Competition Tables",
+    "GRUP / LİG TABLOSU": "GROUP / LEAGUE TABLE",
+    "SIRA": "RANK",
+    "Gol Kralı ekle": "Add Top Scorer",
+    "Asist Kralı ekle": "Add Top Assist",
+    "ELEME AŞAMALARI": "KNOCKOUT STAGES",
+    "+ Tur Ekle": "+ Add Round",
+    "Avrupa Ligleri (İlk 4)": "European Leagues (Top 4)",
+    "TIKLA VE DÜZENLE": "CLICK AND EDIT",
+    "Toplu": "Bulk",
+    "Grup / Lig Tablosu Ekle": "Add Group / League Table",
+    "+ Grup / Lig Tablosu Ekle": "+ Add Group / League Table",
+    "+ Eleme Aşamaları Ekle": "+ Add Knockout Stages",
+    "Lig Tablosunu Toplu Ekle": "Bulk Add League Table",
+    "Avrupa Ligleri Toplu Ekle": "Bulk Add European Leagues",
+    "Takım ve Logoyu Düzenle": "Edit Team and Logo",
+    "Eleme Aşaması Takım Seçici": "Knockout Stage Team Selector",
+    "Skorları Gir": "Enter Scores",
+    "1. Maç": "1st Leg",
+    "2. Maç (Rövanş)": "2nd Leg (Return)",
+    "Gol Kralı": "Top Scorer",
+    "Asist Kralı": "Top Assist",
+    "Gol Sayısı": "Goals Scored",
+    "Asist Sayısı": "Assists Made",
+    "Müsabaka Logosu": "Competition Logo",
+    "Grup / Lig tablosu bölümünü silmek istediğinize emin misiniz?": "Are you sure you want to delete the Group / League table section?",
+    "Eleme Aşamaları bölümünü silmek istediğinize emin misiniz?": "Are you sure you want to delete the Knockout Stages section?",
+
+    // Fikstür ve Avrupa Ligleri Modal Metinleri
+    "Sütun Sırası:": "Column Order:",
+    "Hafta / Aşama (Opsiyonel)": "Week / Stage (Optional)",
+    "Örn: 1": "e.g. 1",
+    "Lig, Kupa...": "League, Cup...",
+    "Örn: EN, SC, SP, IT (Boş bırakılırsa Yurtiçi sayılır)": "e.g. EN, SC, SP, IT (If blank, considered Domestic)",
+    "Hafta / Aşama (Örn: 14. Hafta, Çeyrek Final)": "Week / Stage (e.g. Week 14, Quarter Final)",
+    "Örn: 14. Hafta veya Çeyrek Final": "e.g. Week 14 or Quarter Final",
+    "Örnek: 1, Süper Lig, Galatasaray, Fenerbahçe, TR, 1. Hafta": "Example: 1, Super League, Galatasaray, Fenerbahce, TR, Week 1",
+    "Örnek: 2, Şampiyonlar Ligi, Juventus, Galatasaray, IT, Çeyrek Final": "Example: 2, Champions League, Juventus, Galatasaray, IT, Quarter Final",
+    "Her satıra bir takım gelecek şekilde, aşağıdaki sıraya göre virgülle ayırarak yapıştırın. Bir ligin ilk 4 satırı sırasıyla 1.-4. sıraya yerleşir.": "Paste with one team per line, separated by commas in the following order. The first 4 lines of a league will be placed in the 1st-4th places respectively.",
+    "Lig Adı, Takım Adı, Puan": "League Name, Team Name, Points",
+    "Örnek: Premier League, Liverpool, 45 P": "Example: Premier League, Liverpool, 45 P",
+    "Örnek: Premier League, Arsenal, 42 P": "Example: Premier League, Arsenal, 42 P",
+    "Örnek: La Liga, Real Madrid, 40 P": "Example: La Liga, Real Madrid, 40 P",
+    "Geçerli lig adları: Premier League, Serie A, La Liga, Bundesliga, Ligue 1, Liga Portugal, Eredivisie, Belgian 1A Pro League, Scottish Premiership, Norwegian Eliteserien, Swedish Allsvenskan, Romanian Liga I": "Valid league names: Premier League, Serie A, La Liga, Bundesliga, Ligue 1, Liga Portugal, Eredivisie, Belgian 1A Pro League, Scottish Premiership, Norwegian Eliteserien, Swedish Allsvenskan, Romanian Liga I",
+
+    // Turnuva ve Aşama İsimleri
+    "Şampiyonlar Ligi": "Champions League",
+    "Avrupa Ligi": "Europa League",
+    "Konferans Ligi": "Conference League",
+    "Süper Lig": "Super League",
+    "Türkiye Kupası": "Turkish Cup",
+    "Türkiye Süper Kupası": "Turkish Super Cup",
+    "Dünya Kupası": "World Cup",
+    "Avrupa Şampiyonası": "European Championship",
+    "Dostluk Maçı": "Friendly Match",
+    "Sezon Öncesi Hazırlık": "Pre-Season Friendly",
+    "Grup Aşaması": "Group Stage",
+    "Son 32": "Round of 32",
+    "Son 16": "Round of 16",
+    "Çeyrek Final": "Quarter Final",
+    "Yarı Final": "Semi Final",
+    "Final": "Final",
+    "Üçüncülük": "Third Place",
+
+    // --- AYARLAR VE VERİTABANI (SETTINGS) ---
+    "Ayarlar ve Veritabanı": "Settings and Database",
+    "Tüm kariyer verileriniz anlık olarak tarayıcınıza kaydedilmektedir. Farklı bir tarayıcıya veya cihaza aktarmak için aşağıdaki yedekleme araçlarını kullanın.": "All your career data is saved instantly to your browser. Use the backup tools below to transfer to a different browser or device.",
+    "Bulut Senkronizasyonu": "Cloud Synchronization",
+    "Bağlı değil": "Not connected",
+    "Bu Google hesabıyla giriş yaptığınız her cihazda aynı kariyer verisine ulaşırsınız.": "You will access the same career data on every device you log into with this Google account.",
+    "Verilerinizi diğer cihazlarınızdan da görmek için Google hesabınızla giriş yapın.": "Sign in with your Google account to view your data from your other devices.",
+    "Hesaptan Çık": "Sign Out",
+    "Buluta Bağlan": "Connect to Cloud",
+    "Tarayıcı Depolama Kullanımı": "Browser Storage Usage",
+    "Verileri Dışa Aktar": "Export Data",
+    "Mevcut kariyerinizin yedeğini": "You can download a backup of your current career in",
+    "formatında bilgisayarınıza indirebilirsiniz.": "format to your computer.",
+    "Yedek İndir (.json)": "Download Backup (.json)",
+    "Verileri İçeri Aktar": "Import Data",
+    "Daha önce aldığınız veya başka bir cihazdan taşıdığınız yedeği (.json) sisteme yükleyin.": "Load a backup (.json) you previously took or transferred from another device into the system.",
+    "Yedekten Yükle (.json)": "Load from Backup (.json)",
+    "Kariyeri Sıfırla (Tehlikeli İşlem)": "Reset Career (Dangerous Action)",
+    "Tarayıcıdaki tüm kariyer verilerini": "Permanently deletes all career data in the browser",
+    "geri dönülemez şekilde": "(irreversibly)",
+    "siler. Sıfırlamadan önce yedek aldığınızdan emin olun.": ". Make sure to take a backup before resetting.",
+    "Tüm Verileri Sil ve Başa Dön": "Delete All Data and Start Over",
+
+    // --- YÖNETİLEN TAKIM ---
+    "Yönetilen Takımları Düzenle": "Edit Managed Teams",
+    "Kulüp Takımı": "Club Team",
+    "Bulunduğu Ülke Kodu (Örn: TUR, ENG)": "Country Code (e.g. TUR, ENG)",
+    "Milli Takım (Opsiyonel)": "National Team (Optional)",
+    "Ülke / Milli Takım Adı": "Country / National Team Name",
+
     // Ortak buton / etiket metinleri
     "Ara": "Search",
     "Ekle": "Add",
+    "Toplu Ekle": "Bulk Add",
+    "Takım Ekle": "Add Team",
     "Kaydet": "Save",
     "Güncelle": "Update",
     "Sil": "Delete",
@@ -1089,7 +1312,7 @@ function handleSyncClick() {
             'opponent-editor-modal', 'group-editor-modal', 'player-info-modal',
             'player-cell-modal', 'match-editor-modal', 'season-stats-modal',
             'league-team-modal', 'league-team-bulk-modal', 'league-cell-modal', 'transfer-editor-modal', 'fixture-match-modal', 'match-result-modal',
-            'fixture-bulk-modal', 'squad-bulk-modal', 'tournament-table-bulk-modal', 'national-caps-bulk-modal', 'formation-modal', 'euro-leagues-bulk-modal', 'bulk-stat-modal', 'bulk-league-pts-modal', 'custom-tour-team-modal', 'ko-team-modal'
+            'fixture-bulk-modal', 'squad-bulk-modal', 'tournament-table-bulk-modal', 'national-caps-bulk-modal', 'formation-modal', 'euro-leagues-bulk-modal', 'bulk-stat-modal', 'bulk-league-pts-modal', 'custom-tour-team-modal', 'ko-team-modal', 'top-stat-modal'
         ];
         const MODAL_CLOSE_FNS = {
             'trophy-modal': () => closeTrophyModal(),
@@ -1116,7 +1339,8 @@ function handleSyncClick() {
             'bulk-stat-modal': () => closeBulkStatModal(),
             'bulk-league-pts-modal': () => closeBulkLeaguePtsModal(),
             'custom-tour-team-modal': () => closeCustomTourTeamModal(),
-            'ko-team-modal': () => closeKoTeamModal()
+            'ko-team-modal': () => closeKoTeamModal(),
+            'top-stat-modal': () => closeTopStatModal()
         };
 
         document.addEventListener('keydown', function(e) {
@@ -5287,6 +5511,27 @@ function closeTransferModal() {
             return { stats, seasonsData };
         }
 
+        function getTournamentTopScorerAssist(season, tournamentName) {
+            const context = (tournamentName === 'Dünya Kupası' || tournamentName === 'Avrupa Şampiyonası') ? 'milli' : 'kulup';
+            const data = getStatsData(context);
+            let topScorer = null, topAssist = null;
+
+            data.stats.forEach(p => {
+                const pSeason = p.seasons[season];
+                if (!pSeason) return;
+                const pt = pSeason.tournaments[tournamentName];
+                if (!pt) return;
+                if (pt.goals > 0 && (!topScorer || pt.goals > topScorer.goals)) {
+                    topScorer = { name: p.name, goals: pt.goals, photoUrl: p.photoUrl };
+                }
+                if (pt.assists > 0 && (!topAssist || pt.assists > topAssist.assists)) {
+                    topAssist = { name: p.name, assists: pt.assists, photoUrl: p.photoUrl };
+                }
+            });
+
+            return { topScorer, topAssist };
+        }
+
         function renderStatsPanel() {
             const kulupData = getStatsData('kulup');
             const milliData = getStatsData('milli');
@@ -5724,9 +5969,9 @@ function applyQfbCollapsedState() {
         }
 
         function getGroundLabel(g) {
-            return g === 'home' ? '<span class="text-[10px] font-bold text-emerald-400 bg-emerald-900/40 px-1.5 py-0.5 rounded">İÇ</span>'
-                 : g === 'away' ? '<span class="text-[10px] font-bold text-red-400 bg-red-900/40 px-1.5 py-0.5 rounded">DEP</span>'
-                 : '<span class="text-[10px] font-bold text-slate-400 bg-slate-700 px-1.5 py-0.5 rounded">TAR</span>';
+            return g === 'home' ? '<span class="text-[10px] text-emerald-400 bg-emerald-900/40 px-1.5 py-0.5 rounded cursor-help" title="İç Saha / Home"><i class="fa-solid fa-house"></i></span>'
+                 : g === 'away' ? '<span class="text-[10px] text-red-400 bg-red-900/40 px-1.5 py-0.5 rounded cursor-help" title="Deplasman / Away"><i class="fa-solid fa-plane"></i></span>'
+                 : '<span class="text-[10px] text-slate-400 bg-slate-700 px-1.5 py-0.5 rounded cursor-help" title="Tarafsız Saha / Neutral"><i class="fa-solid fa-location-dot"></i></span>';
         }
 
         // YENİ: Turnuva isimlerini kısaltmalara çeviren motor (filtre butonlarında yer kazanmak için)
@@ -5797,6 +6042,125 @@ function updateCompetitionLogoPreview() {
         img.classList.add('hidden');
         placeholder.classList.remove('hidden');
     }
+}
+
+let activeTopStatInfo = { tourId: null, type: null };
+
+function openTopStatModal(tourId, type) {
+    activeTopStatInfo = { tourId, type };
+    const tour = customTournamentsData[activeFixtureSeason].find(t => t.id === tourId);
+    if (!tour) return;
+    const isScorer = type === 'scorer';
+
+    document.getElementById('tst-title').innerText = isScorer ? 'Gol Kralı' : 'Asist Kralı';
+    document.getElementById('tst-subtitle').innerText = tour.type;
+    document.getElementById('tst-score-label').innerText = isScorer ? 'Gol Sayısı' : 'Asist Sayısı';
+    document.getElementById('tst-name-input').value = isScorer ? (tour.topScorerName || '') : (tour.topAssistName || '');
+    document.getElementById('tst-photo-url-input').value = isScorer ? (tour.topScorerPhoto || '') : (tour.topAssistPhoto || '');
+    document.getElementById('tst-score-input').value = isScorer ? (tour.topScorerGoals || '') : (tour.topAssistAssists || '');
+
+    fileUploads['tst-photo'] = null;
+    document.getElementById('tst-photo-file-input').value = '';
+    document.getElementById('tst-photo-upload-btn').classList.replace('text-emerald-400', 'text-slate-300');
+    document.getElementById('tst-photo-results').innerHTML = '';
+    document.getElementById('tst-photo-results').classList.add('hidden');
+
+    const modal = document.getElementById('top-stat-modal');
+    modal.classList.remove('hidden'); modal.classList.add('flex');
+}
+
+function closeTopStatModal() {
+    document.getElementById('top-stat-modal').classList.add('hidden');
+    document.getElementById('top-stat-modal').classList.remove('flex');
+}
+
+function clearTopStatModal() {
+    document.getElementById('tst-name-input').value = '';
+    document.getElementById('tst-photo-url-input').value = '';
+    document.getElementById('tst-score-input').value = '';
+    fileUploads['tst-photo'] = null;
+    saveTopStatModal();
+}
+
+function saveTopStatModal() {
+    const { tourId, type } = activeTopStatInfo;
+    const tour = customTournamentsData[activeFixtureSeason].find(t => t.id === tourId);
+    if (!tour) return;
+
+    const name = document.getElementById('tst-name-input').value.trim();
+    const urlVal = document.getElementById('tst-photo-url-input').value.trim();
+    const photo = fileUploads['tst-photo'] || (urlVal !== "Yerel Dosya Yüklendi (Sıkıştırıldı)" ? urlVal : '');
+    const score = document.getElementById('tst-score-input').value.trim();
+
+    if (type === 'scorer') {
+        tour.topScorerName = name;
+        tour.topScorerPhoto = photo;
+        tour.topScorerGoals = score;
+    } else {
+        tour.topAssistName = name;
+        tour.topAssistPhoto = photo;
+        tour.topAssistAssists = score;
+    }
+
+    saveToLocalStorage();
+    closeTopStatModal();
+    renderFixturePanel();
+}
+
+async function tstSearchPlayerPhotos() {
+    const nameInput = document.getElementById('tst-name-input').value.trim();
+    const resultsContainer = document.getElementById('tst-photo-results');
+    if (!nameInput) { alert('Lütfen arama yapmak için oyuncunun adını girin!'); return; }
+
+    resultsContainer.innerHTML = '<div class="text-xs text-slate-400 w-full text-center"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Facecard Taranıyor...</div>';
+    resultsContainer.classList.remove('hidden');
+
+    let results = [];
+
+    try {
+        const sdbUrl = `https://www.thesportsdb.com/api/v1/json/3/searchplayers.php?p=${encodeURIComponent(nameInput)}`;
+        let sdbRes = await fetch(sdbUrl);
+        let sdbData = await sdbRes.json();
+        if (sdbData && sdbData.player) {
+            sdbData.player.forEach(p => {
+                if (p.strCutout) results.push(p.strCutout);
+                if (p.strThumb) results.push(p.strThumb);
+                if (p.strRender) results.push(p.strRender);
+            });
+        }
+    } catch (e) { console.warn("TheSportsDB oyuncu motoru hata verdi:", e); }
+
+    try {
+        const wikiUrl = `https://tr.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(nameInput)}`;
+        let wikiRes = await fetch(wikiUrl);
+        if (wikiRes.ok) {
+            let wikiData = await wikiRes.json();
+            if (wikiData.thumbnail && wikiData.thumbnail.source) {
+                results.push(wikiData.thumbnail.source.replace(/\/\d+px-/, '/300px-'));
+            }
+        }
+    } catch (e) { console.warn("Wikipedia motoru hata verdi:", e); }
+
+    results = [...new Set(results)].slice(0, 15);
+
+    if (results.length === 0) {
+        resultsContainer.innerHTML = '<div class="text-xs text-yellow-500 w-full text-center">Sonuç bulunamadı. İsmi kontrol edip tekrar deneyin veya URL/Dosya ile manuel ekleyin.</div>';
+        return;
+    }
+
+    resultsContainer.innerHTML = results.map(url => `
+        <div class="flex-shrink-0 relative group">
+            <img src="${url}" class="w-12 h-14 object-contain bg-slate-200/90 p-1 rounded cursor-pointer hover:scale-110 border-2 border-transparent tst-photo-search-img" onclick="tstSelectSearchedPlayerPhoto('${url}', this)" title="Seç">
+        </div>
+    `).join('');
+}
+
+function tstSelectSearchedPlayerPhoto(url, imgElement) {
+    document.querySelectorAll('.tst-photo-search-img').forEach(el => el.classList.remove('border-emerald-500', 'bg-emerald-100'));
+    imgElement.classList.add('border-emerald-500', 'bg-emerald-100');
+    document.getElementById('tst-photo-url-input').value = url;
+    fileUploads['tst-photo'] = null;
+    document.getElementById('tst-photo-upload-btn').classList.replace('text-emerald-400', 'text-slate-300');
 }
 
 function openCompetitionLogoModal(tournamentName) {
@@ -6086,6 +6450,20 @@ function formatShortPlayerName(name) {
             saveToLocalStorage();
             renderFixturePanel();
         }
+
+        function deleteCustomTournament(tourId) {
+    const msg = currentLang === 'en' 
+        ? "Are you sure you want to delete this entire tournament card?" 
+        : "Bu turnuva kartını tamamen silmek istediğinize emin misiniz?";
+        
+    if (confirm(msg)) {
+        if (customTournamentsData[activeFixtureSeason]) {
+            customTournamentsData[activeFixtureSeason] = customTournamentsData[activeFixtureSeason].filter(t => t.id !== tourId);
+            saveToLocalStorage();
+            renderFixturePanel();
+        }
+    }
+}
 
         function toggleTournamentTable(tourId, enable) {
             const tour = customTournamentsData[activeFixtureSeason].find(t => t.id === tourId);
@@ -7101,6 +7479,8 @@ function formatShortPlayerName(name) {
                                                 ${tour.knockouts.length === 0 ? '<div class="text-[10px] text-slate-500 italic px-2">Henüz eleme maçı eklenmedi.</div>' : ''}
                                             </div>
                                         </div>`;
+                                    } else if (tour.type === 'Süper Lig') {
+                                        knockoutHtml = '';
                                     } else {
                                         knockoutHtml = `
                                             <button onclick="toggleTournamentKnockouts('${tour.id}', true)" class="w-full text-[10px] bg-slate-800/60 hover:bg-slate-800 text-slate-400 hover:text-emerald-400 border border-dashed border-slate-700 rounded py-2 mt-2 transition-colors">
@@ -7110,6 +7490,29 @@ function formatShortPlayerName(name) {
                                     }
 
                                     const isCollapsed = tour.collapsed === true;
+
+                                    const renderTopStatInner = (name, photo, score, icon, emptyLabel) => {
+                                        if (!name) {
+                                            return `<i class="fa-solid ${icon} text-yellow-400 text-[11px] shrink-0" style="filter: drop-shadow(0 0 4px rgba(250,204,21,0.85));"></i><span class="text-[10px] text-slate-500 italic">${emptyLabel} ekle</span>`;
+                                        }
+                                        const photoHtml = photo
+                                            ? `<img src="${photo}" class="w-5 h-5 rounded-full object-cover bg-slate-800 shrink-0">`
+                                            : `<div class="w-5 h-5 rounded-full bg-slate-700 flex items-center justify-center text-[9px] font-bold shrink-0">${escapeHtml(name.charAt(0))}</div>`;
+                                        return `<i class="fa-solid ${icon} text-yellow-400 text-[11px] shrink-0" style="filter: drop-shadow(0 0 4px rgba(250,204,21,0.85));"></i>${photoHtml}<span class="text-[10px] font-bold text-white truncate">${escapeHtml(formatShortPlayerName(name))}</span><span class="text-[10px] font-black text-yellow-400 shrink-0 ml-auto">${escapeHtml(score || '')}</span>`;
+                                    };
+
+                                    const topStatsHtml = `
+                                        <div class="flex items-center gap-3 mt-2 pt-2 border-t border-slate-800">
+                                            <div class="flex-1 flex items-center gap-1.5 min-w-0 cursor-pointer hover:bg-slate-800/60 rounded px-1 py-0.5 transition-colors" onclick="openTopStatModal('${tour.id}', 'scorer')" title="Gol Kralını Düzenle">
+                                                ${renderTopStatInner(tour.topScorerName, tour.topScorerPhoto, tour.topScorerGoals, 'fa-futbol', 'Gol Kralı')}
+                                            </div>
+                                            <div class="w-px self-stretch bg-slate-800"></div>
+                                            <div class="flex-1 flex items-center gap-1.5 min-w-0 cursor-pointer hover:bg-slate-800/60 rounded px-1 py-0.5 transition-colors" onclick="openTopStatModal('${tour.id}', 'assist')" title="Asist Kralını Düzenle">
+                                                ${renderTopStatInner(tour.topAssistName, tour.topAssistPhoto, tour.topAssistAssists, 'fa-shoe-prints', 'Asist Kralı')}
+                                            </div>
+                                        </div>
+                                    `;
+
                                     return `
                                     <div class="relative group/tour ${getCustomTournamentCardBg(tour.type)} p-2 rounded-lg border shadow-sm">
                                         <div class="absolute -top-2 -left-2 flex flex-col gap-0.5 opacity-0 group-hover/tour:opacity-100 transition-opacity z-10">
@@ -7122,7 +7525,7 @@ function formatShortPlayerName(name) {
                                             <i id="tour-chevron-${tour.id}" class="fa-solid fa-chevron-down text-[10px] shrink-0 transition-transform duration-200 ${isCollapsed ? '-rotate-90' : ''}"></i>
                                         </h4>
                                         <div id="tour-content-${tour.id}" class="transition-all duration-300 ${isCollapsed ? 'hidden' : ''}">
-                                            ${tableSectionHtml}${knockoutHtml}
+                                            ${tableSectionHtml}${knockoutHtml}${topStatsHtml}
                                         </div>
                                     </div>`;
                                 }).join('');
@@ -8205,25 +8608,6 @@ function highlightFormationAutocompleteItem(items) {
     if (formationAutocompleteFocusIndex > -1 && items[formationAutocompleteFocusIndex]) {
         items[formationAutocompleteFocusIndex].classList.add('bg-emerald-600', 'text-white');
         items[formationAutocompleteFocusIndex].scrollIntoView({ block: 'nearest' });
-    }
-}
-
-// --- OTOMATİK LOGO TAMAMLAMA ---
-function autoFillTeamLogo(nameInputElem, urlInputId) {
-    const teamName = nameInputElem.value.trim();
-    if (!teamName) return;
-
-    // team-tournament-data.js içindeki FC26_TEAM_DATABASE dizisinde tam eşleşme ara
-    const teamData = FC26_TEAM_DATABASE.find(t => 
-        typeof t === 'object' && t.name && t.name.toLowerCase() === teamName.toLowerCase()
-    );
-
-    // Eğer takım bulunduysa ve logosu varsa URL alanına yazdır
-    if (teamData && teamData.logo) {
-        const urlInput = document.getElementById(urlInputId);
-        if (urlInput) {
-            urlInput.value = teamData.logo;
-        }
     }
 }
 

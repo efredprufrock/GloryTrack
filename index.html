@@ -926,6 +926,46 @@
     </div>
 </div>
 
+    <!-- Modal: Turnuva Gol/Asist Kralı -->
+    <div id="top-stat-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[100] fade-in backdrop-blur-sm">
+        <div class="bg-slate-800 p-6 rounded-xl border border-slate-600 w-[90%] max-w-sm shadow-2xl relative">
+            <button onclick="closeTopStatModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <h3 class="text-xl font-bold mb-1 text-white" id="tst-title">Gol Kralı</h3>
+            <p class="text-sm text-emerald-400 mb-4 font-medium" id="tst-subtitle">Turnuva Adı</p>
+
+            <div class="space-y-4 mb-6">
+                <div>
+                    <label class="block text-left text-xs font-medium text-slate-400 mb-1">Oyuncu Adı</label>
+                    <input type="text" id="tst-name-input" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white outline-none focus:border-emerald-500 use-autocomplete" placeholder="Oyuncu Adı" autocomplete="off" onblur="autoFetchPlayerPhoto(this.value, 'tst-photo-url-input')">
+                </div>
+                <div>
+                    <label class="block text-left text-xs font-medium text-slate-400 mb-1">Fotoğraf URL / Dosya</label>
+                    <div class="flex gap-2 mb-2">
+                        <button type="button" onclick="tstSearchPlayerPhotos()" class="bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded text-white whitespace-nowrap text-xs transition-colors shadow" title="Facecard / Fotoğraf Ara"><i class="fa-solid fa-search"></i> Facecard Ara</button>
+                    </div>
+                    <div id="tst-photo-results" class="flex gap-2 overflow-x-auto hidden py-2 mb-2 hide-scrollbar bg-slate-950/50 rounded px-2 items-center border border-slate-700/50"></div>
+                    <div class="flex gap-2">
+                        <input type="text" id="tst-photo-url-input" class="flex-1 bg-slate-900 border border-slate-600 rounded p-2 text-white text-xs outline-none focus:border-emerald-500">
+                        <input type="file" id="tst-photo-file-input" class="hidden" accept="image/*" onchange="handleFileUpload(event, 'tst-photo')">
+                        <button type="button" id="tst-photo-upload-btn" onclick="document.getElementById('tst-photo-file-input').click()" class="bg-slate-700 hover:bg-slate-600 px-3 py-2 rounded text-slate-300 transition-colors"><i class="fa-solid fa-image"></i></button>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-left text-xs font-medium text-slate-400 mb-1" id="tst-score-label">Gol Sayısı</label>
+                    <input type="number" id="tst-score-input" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white outline-none focus:border-emerald-500 appearance-none text-center font-bold" placeholder="0" autocomplete="off">
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center gap-3">
+                <button onclick="clearTopStatModal()" class="px-4 py-2.5 rounded-lg bg-red-900/50 hover:bg-red-800 text-red-200 font-medium transition-colors">Temizle</button>
+                <div class="flex gap-2">
+                    <button onclick="closeTopStatModal()" class="px-5 py-2.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-medium transition-colors">İptal</button>
+                    <button onclick="saveTopStatModal()" class="px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition-colors">Kaydet</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal: Toplu Fikstür Ekle (Excel/Metin) -->
     <div id="fixture-bulk-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[100] fade-in backdrop-blur-sm">
         <div class="bg-slate-800 p-6 rounded-xl border border-slate-600 w-[95%] max-w-3xl shadow-2xl relative flex flex-col">
@@ -1112,7 +1152,7 @@
                 <div>
                     <label class="block text-left text-sm font-medium text-slate-300 mb-1">Takım Adı</label>
                     <div class="flex gap-2 mb-2">
-                        <input type="text" id="ct-team-name" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white" list="global-team-datalist" onchange="autoFillTeamLogo(this, 'ct-team-url')">
+                        <input type="text" id="ct-team-name" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white" list="global-team-datalist" oninput="autoFillTeamLogo(this, 'ct-team-url')">
                         <button onclick="searchTeamLogos('ct-team')" class="bg-blue-600 hover:bg-blue-500 px-3 rounded text-white whitespace-nowrap" title="Logoları Ara"><i class="fa-solid fa-search"></i></button>
                     </div>
                     <div id="ct-team-logo-results" class="flex gap-2 overflow-x-auto hidden py-2 mb-2 hide-scrollbar bg-slate-950/50 rounded px-2 items-center border border-slate-700/50"></div>
