@@ -61,6 +61,9 @@ const TR_EN = {
     "Çevrimdışı": "Offline",
     "Veriler alınıyor...": "Fetching data...",
     "Google ile bağlanılıyor...": "Connecting with Google...",
+    "Başka cihazdan güncellendi": "Updated from another device",
+    "Bağlandı": "Connected",
+    "Buluttan veri alınamadı": "Could not fetch data from cloud",
 
     // --- ANA SAYFA (HOME) ---
     "İlk 11": "Starting 11",
@@ -197,6 +200,7 @@ const TR_EN = {
     "+ Tur Ekle": "+ Add Round",
     "Avrupa Ligleri (İlk 4)": "European Leagues (Top 4)",
     "TIKLA VE DÜZENLE": "CLICK AND EDIT",
+    "Tıkla ve Düzenle": "Click and Edit",
     "Toplu": "Bulk",
     "Grup / Lig Tablosu Ekle": "Add Group / League Table",
     "+ Grup / Lig Tablosu Ekle": "+ Add Group / League Table",
@@ -1013,19 +1017,40 @@ function getFlagIcon(countryCode) {
         }
 
         function setSyncStatus(state, msg) {
-            const el = document.getElementById('sync-status');
-            if (!el) return;
+            const logo = document.getElementById('sidebar-team-logo');
+            if (!logo) return;
+            const container = logo.parentElement;
+
+            container.classList.add('transition-all', 'duration-500');
+            logo.classList.add('transition-all', 'duration-500');
+
+            // Önceki efektleri temizle
+            logo.classList.remove('grayscale', 'opacity-60');
+            container.classList.remove('shadow-[0_0_15px_rgba(16,185,129,0.6)]', 'border-emerald-500', 'shadow-[0_0_15px_rgba(250,204,21,0.6)]', 'border-yellow-500', 'shadow-[0_0_15px_rgba(239,68,68,0.6)]', 'border-red-500');
+
             const map = {
-                idle:    { icon: 'fa-cloud',                  color: 'text-slate-400',   text: msg || 'Bulut' },
-                saving:  { icon: 'fa-arrows-rotate fa-spin',  color: 'text-yellow-400',  text: msg || 'Kaydediliyor...' },
-                saved:   { icon: 'fa-cloud-arrow-up',         color: 'text-emerald-400', text: msg || 'Kaydedildi' },
-                error:   { icon: 'fa-triangle-exclamation',   color: 'text-red-400',     text: msg || 'Senkronizasyon hatası' },
-                offline: { icon: 'fa-cloud-arrow-down',       color: 'text-slate-500',   text: msg || 'Çevrimdışı' }
+                idle:    { text: msg || 'Bulut' },
+                saving:  { text: msg || 'Kaydediliyor...' },
+                saved:   { text: msg || 'Kaydedildi' },
+                error:   { text: msg || 'Senkronizasyon hatası' },
+                offline: { text: msg || 'Çevrimdışı' }
             };
             const s = map[state] || map.idle;
-            // Hover ve cursor-pointer özelliklerini koruyan yeni className
-            el.className = `fixed top-3 right-3 z-[250] flex items-center gap-2 bg-slate-900/90 hover:bg-slate-800 border border-slate-700 hover:border-blue-500 rounded-full px-3 py-1.5 text-xs font-bold ${s.color} shadow-lg backdrop-blur-sm transition-all cursor-pointer`;
-            el.innerHTML = `<i class="fa-solid ${s.icon}"></i><span>${s.text}</span>`;
+            
+            // Mouse ile üzerine gelindiğinde bulut durumunu da göstersin
+            container.title = `Takımı Düzenle | Bulut: ${s.text}`;
+
+            if (state === 'saved') {
+                container.classList.add('shadow-[0_0_15px_rgba(16,185,129,0.6)]', 'border-emerald-500');
+            } else if (state === 'saving') {
+                container.classList.add('shadow-[0_0_15px_rgba(250,204,21,0.6)]', 'border-yellow-500');
+            } else if (state === 'error') {
+                logo.classList.add('grayscale');
+                container.classList.add('shadow-[0_0_15px_rgba(239,68,68,0.6)]', 'border-red-500');
+            } else {
+                // Offline / Idle
+                logo.classList.add('grayscale', 'opacity-60');
+            }
         }
 
         async function signInWithGoogle() {
