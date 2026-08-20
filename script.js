@@ -187,7 +187,7 @@ const TR_EN = {
     "Sıra": "Rank",
     "Fikstür": "Fixtures",
     "O / G / B / M": "P / W / D / L",
-    "GOL (A/Y)": "GOALS (F/A)",
+    "Gol (A/Y)": "GOALS (F/A)",
     "İÇ": "HOME",
     "DEP": "AWAY",
     "TAR": "NEUTRAL",
