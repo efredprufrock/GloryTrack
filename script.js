@@ -413,9 +413,22 @@ const TR_EN = {
     "Excel'den kopyaladığınız veya virgülle ayırdığınız maç listesini aşağıya yapıştırın.": "Paste the match list you copied from Excel or separated by commas below.",
     "Toplu Maç Ekle": "Bulk Add Caps",
     "Toplu Milli Maç (Cap) Ekle": "Bulk Add National Caps",
-    "Maça çıkan oyuncuların isimlerini her satıra bir isim gelecek şekilde yapıştırın.": "Paste the names of the players who played, one name per line.",
+        "Maça çıkan oyuncuların isimlerini her satıra bir isim gelecek şekilde yapıştırın.": "Paste the names of the players who played, one name per line.",
     "Listede eşleşen her oyuncunun forma sayısı (caps) 1 artırılacaktır.": "The caps count of each matched player will be incremented by 1.",
     "Maç Sayılarını Artır": "Increase Caps",
+
+    // --- MAÇ SONUCU MODALI (MATCH RESULT MODAL) ---
+    "Diğer": "Other",
+    "Henüz olay eklenmedi.": "No events added yet.",
+    "Dk": "Min",
+    "⚽ Biz": "⚽ Us",
+    "⚽ Rakip": "⚽ Opponent",
+    "↩ K.Kalesine": "↩ Own Goal",
+    "Gol atan": "Scorer",
+    "Asist (opsiyonel)": "Assist (optional)",
+    "Skoru gir / düzenle": "Enter / edit score",
+    "Geçmiş": "History",
+    "Geçmiş yok": "No history",
 };
 
 const EN_TR = Object.fromEntries(Object.entries(TR_EN).map(([tr, en]) => [en, tr]));
@@ -7769,13 +7782,18 @@ function formatShortPlayerName(name) {
             const match = (fixtureData[season] || []).find(m => m.id === matchId);
             if (!match) return;
 
-            document.getElementById('mr-modal-subtitle').textContent = `${season} Sezonu - ${match.tournament || 'Diğer'} Müsabakası`;
+            const seasonLabel = currentLang === 'en' ? `Season ${escapeHtml(season)}` : `${escapeHtml(season)} Sezonu`;
+            const tourLogoUrl = getCompetitionLogo(match.tournament);
+            const tourLine = tourLogoUrl
+                                ? `<img src="${tourLogoUrl}" alt="${escapeHtml(match.tournament || '')}" title="${escapeHtml(match.tournament || '')}" class="h-8 w-8 sm:h-9 sm:w-9 object-contain mt-1">`
+                : `<span class="block text-[9px] sm:text-[11px] text-slate-400 font-semibold leading-tight">${escapeHtml(match.tournament || 'Diğer')}</span>`;
+            document.getElementById('mr-modal-subtitle').innerHTML = `<span class="block text-[10px] sm:text-xs text-emerald-400 font-bold leading-tight">${seasonLabel}</span>${tourLine}`;
             
             const homeLogo = getTeamLogoByName(match.home);
             const awayLogo = getTeamLogoByName(match.away);
             
-            document.getElementById('mr-home-label').innerHTML = `<img src="${homeLogo}" title="${escapeHtml(match.home)}" class="h-12 w-auto object-contain ml-auto drop-shadow-md">`;
-            document.getElementById('mr-away-label').innerHTML = `<img src="${awayLogo}" title="${escapeHtml(match.away)}" class="h-12 w-auto object-contain mr-auto drop-shadow-md">`;
+            document.getElementById('mr-home-label').innerHTML = `<img src="${homeLogo}" title="${escapeHtml(match.home)}" class="h-16 sm:h-20 w-auto object-contain ml-auto drop-shadow-md">`;
+            document.getElementById('mr-away-label').innerHTML = `<img src="${awayLogo}" title="${escapeHtml(match.away)}" class="h-16 sm:h-20 w-auto object-contain mr-auto drop-shadow-md">`;
 
             document.getElementById('mr-home-score').value = match.homeScore !== '' ? match.homeScore : '';
             document.getElementById('mr-away-score').value = match.awayScore !== '' ? match.awayScore : '';
@@ -7785,6 +7803,7 @@ function formatShortPlayerName(name) {
             if(datalist) datalist.innerHTML = getSquadDatalistOptions(getFixtureMatchContext(match));
             
             fixtureEventsTemp = match.events ? JSON.parse(JSON.stringify(match.events)) : [];
+            renderRecentForm(match);
             renderFixtureEvents();
 
             const modal = document.getElementById('match-result-modal');
@@ -7842,23 +7861,24 @@ function formatShortPlayerName(name) {
             });
         }
 
-        function renderFixtureEvents() {
+                function renderFixtureEvents() {
             const container = document.getElementById('fm-events-container');
             if (!container) return;
             if (fixtureEventsTemp.length === 0) {
                 container.innerHTML = '<div class="text-center text-slate-600 text-xs py-4"><i class="fa-solid fa-futbol mr-1"></i>Henüz olay eklenmedi.</div>';
+                updateScoreFromEvents();
                 return;
             }
             container.innerHTML = fixtureEventsTemp.map((ev, i) => `
                 <div class="flex gap-2 items-center bg-slate-900 border border-slate-700 rounded-lg p-2.5">
                     <input type="number" id="fev_min_${i}" value="${ev.min}" placeholder="Dk"
                         class="w-14 bg-slate-950 text-xs text-white p-1.5 rounded border border-slate-600 outline-none focus:border-emerald-500 appearance-none text-center" min="1" max="120">
-                    <select id="fev_type_${i}" class="bg-slate-950 text-xs text-white p-1.5 rounded border border-slate-600 outline-none focus:border-emerald-500">
+                    <select id="fev_type_${i}" onchange="syncFixtureEvents(); updateScoreFromEvents();" class="bg-slate-950 text-xs text-white p-1.5 rounded border border-slate-600 outline-none focus:border-emerald-500">
                         <option value="US" ${ev.type==='US'?'selected':''}>⚽ Biz</option>
                         <option value="OPP" ${ev.type==='OPP'?'selected':''}>⚽ Rakip</option>
                         <option value="OG" ${ev.type==='OG'?'selected':''}>↩ K.Kalesine</option>
                     </select>
-                    <input type="text" id="fev_scorer_${i}" value="${ev.scorer}" list="squad-players-list" placeholder="Gol atan"
+                    <input type="text" id="fev_scorer_${i}" value="${ev.scorer}" list="squad-players-list" placeholder="Gol atan" oninput="syncFixtureEvents(); updateScoreFromEvents();"
                         class="flex-1 bg-slate-950 text-xs text-white p-1.5 rounded border border-slate-600 outline-none focus:border-emerald-500" autocomplete="off">
                     <input type="text" id="fev_assist_${i}" value="${ev.assist}" list="squad-players-list" placeholder="Asist (opsiyonel)"
                         class="flex-1 bg-slate-950 text-xs text-white p-1.5 rounded border border-slate-600 outline-none focus:border-emerald-500" autocomplete="off">
@@ -7867,6 +7887,109 @@ function formatShortPlayerName(name) {
                     </button>
                 </div>
             `).join('');
+            updateScoreFromEvents();
+        }
+
+        // Gol & Asist listesindeki olaylara göre skor kutucuklarını otomatik günceller
+        function updateScoreFromEvents() {
+            const match = (fixtureData[activeFixtureSeason] || []).find(m => m.id === activeFixtureMatchId);
+            const homeScoreEl = document.getElementById('mr-home-score');
+            const awayScoreEl = document.getElementById('mr-away-score');
+            if (!match || !homeScoreEl || !awayScoreEl) return;
+
+            const context = getFixtureMatchContext(match);
+            const ourName = context === 'milli' ? (managedTeams.milli.name || '') : (managedTeams.kulup.name || '');
+            const weAreHome = match.home === ourName;
+
+            let homeGoals = 0, awayGoals = 0;
+            fixtureEventsTemp.forEach(ev => {
+                const valid = ev.scorer || ev.type === 'OPP' || ev.type === 'OG';
+                if (!valid) return;
+                if (ev.type === 'US') { weAreHome ? homeGoals++ : awayGoals++; }
+                else if (ev.type === 'OPP') { weAreHome ? awayGoals++ : homeGoals++; }
+                else if (ev.type === 'OG') { weAreHome ? awayGoals++ : homeGoals++; }
+            });
+
+            homeScoreEl.value = homeGoals;
+            awayScoreEl.value = awayGoals;
+        }
+
+                // İki takım arasındaki daha önce oynanmış (skoru girilmiş) maçlardan son N tanesini döndürür (en yeni en sonda)
+        function getHeadToHeadMatches(match, limit = 4) {
+            if (!match) return [];
+            const teamName = managedTeams.kulup.name || '';
+            const nationalTeamName = managedTeams.milli.name || '';
+            const isOurTeam = (name) => name === teamName || (nationalTeamName && name === nationalTeamName);
+            const ourName = isOurTeam(match.home) ? match.home : match.away;
+            const oppName = ourName === match.home ? match.away : match.home;
+            if (!ourName || !oppName) return [];
+
+            const results = [];
+            Object.keys(fixtureData).forEach(season => {
+                (fixtureData[season] || []).forEach(m => {
+                    if (m.id === match.id) return;
+                    if (m.homeScore === '' || m.awayScore === '' || m.homeScore == null || m.awayScore == null) return;
+                    const isPair = (m.home === ourName && m.away === oppName) || (m.away === ourName && m.home === oppName);
+                    if (!isPair) return;
+                    results.push({ ...m, season });
+                });
+            });
+
+            results.sort((a, b) => {
+                const sA = seasonsList.indexOf(a.season), sB = seasonsList.indexOf(b.season);
+                if (sA !== sB) return sA - sB;
+                return (parseInt(a.matchNo) || 0) - (parseInt(b.matchNo) || 0);
+            });
+
+            return results.slice(-limit);
+        }
+
+        // Rakiple oynanmış geçmiş maçları, ana Fikstür panelindeki gibi (logo + renkli skor rozeti) küçük satırlar halinde çizer
+        function renderRecentForm(match) {
+            const container = document.getElementById('mr-recent-form');
+            if (!container) return;
+
+            const teamName = managedTeams.kulup.name || '';
+            const nationalTeamName = managedTeams.milli.name || '';
+            const isOurTeam = (name) => name === teamName || (nationalTeamName && name === nationalTeamName);
+
+            const matches = getHeadToHeadMatches(match);
+            if (matches.length === 0) {
+                container.innerHTML = '<span class="text-[9px] text-slate-600 font-semibold">Geçmiş yok</span>';
+                return;
+            }
+
+                        const rowsHtml = matches.map((m, idx) => {
+                const isLatest = idx === matches.length - 1;
+                const hsDisplay = m.homeScore !== '' && m.homeScore != null ? m.homeScore : '-';
+                const asDisplay = m.awayScore !== '' && m.awayScore != null ? m.awayScore : '-';
+
+                let resultLetter = '';
+                const hs = parseInt(m.homeScore), as = parseInt(m.awayScore);
+                if (!isNaN(hs) && !isNaN(as)) {
+                    if (isOurTeam(m.home)) resultLetter = hs > as ? 'W' : (hs < as ? 'L' : 'D');
+                    else if (isOurTeam(m.away)) resultLetter = as > hs ? 'W' : (as < hs ? 'L' : 'D');
+                }
+                const scoreBgClass = resultLetter === 'W' ? 'bg-green-600 border-green-500 text-white' :
+                                     resultLetter === 'D' ? 'bg-orange-500 border-orange-400 text-white' :
+                                     resultLetter === 'L' ? 'bg-red-600 border-red-500 text-white' :
+                                     'bg-slate-900 border-slate-700 text-slate-400';
+                const glowClass = isLatest ? 'ring-1 ring-white/50 shadow-[0_0_6px_1px_rgba(255,255,255,0.45)]' : '';
+
+                const homeLogo = getTeamLogoByName(m.home);
+                const awayLogo = getTeamLogoByName(m.away);
+
+                return `
+                    <div class="flex items-center justify-end gap-1" title="${escapeHtml(m.season)} - ${escapeHtml(m.tournament || '')}${isLatest ? ' (' + (currentLang === 'en' ? 'Most Recent' : 'Son Maç') + ')' : ''}">
+                        ${homeLogo ? `<img src="${homeLogo}" alt="${escapeHtml(m.home)}" class="w-4 h-4 object-contain shrink-0">` : ''}
+                        <span class="inline-flex items-center justify-center font-black text-[9px] rounded px-1 py-0.5 border shrink-0 ${scoreBgClass} ${glowClass}">${hsDisplay}:${asDisplay}</span>
+                        ${awayLogo ? `<img src="${awayLogo}" alt="${escapeHtml(m.away)}" class="w-4 h-4 object-contain shrink-0">` : ''}
+                    </div>`;
+            }).join('');
+
+            container.innerHTML = `
+                <div class="flex flex-col gap-1">${rowsHtml}</div>
+            `;
         }
 
         function openFixtureBulkModal(season) {

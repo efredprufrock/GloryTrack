@@ -861,12 +861,10 @@
             <datalist id="squad-players-list"></datalist>
             <!-- ----------------------- -->
 
-            <p class="text-xs text-emerald-400 font-bold mb-4" id="mr-modal-subtitle"></p>
-
-            <div class="flex items-center gap-3 mb-5 bg-slate-900 rounded-xl p-4 border border-slate-700">
+            <div class="flex items-center gap-2 sm:gap-3 mb-5 bg-slate-900 rounded-xl p-3 sm:p-4 border border-slate-700">
+                <div class="w-16 sm:w-24 shrink-0 leading-tight" id="mr-modal-subtitle"></div>
                 <div class="flex-1 text-right text-lg font-bold text-white truncate" id="mr-home-label">GS</div>
-                <div class="flex flex-col items-center gap-1 shrink-0">
-                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Skor</label>
+                                <div class="flex flex-col items-center gap-1 shrink-0">
                     <div class="flex items-center gap-2 bg-slate-800 rounded-lg px-3 py-2 border border-slate-600">
                         <input type="number" id="mr-home-score" class="w-10 bg-transparent text-center text-xl font-black text-white outline-none appearance-none" placeholder="-" min="0" max="99">
                         <span class="text-slate-400 font-black text-lg">:</span>
@@ -874,19 +872,20 @@
                     </div>
                 </div>
                 <div class="flex-1 text-left text-lg font-bold text-white truncate" id="mr-away-label">FB</div>
+                <div class="w-24 sm:w-32 shrink-0 flex flex-col items-end gap-1" id="mr-recent-form"></div>
             </div>
 
             <div class="flex justify-between items-center mb-2">
-                <span class="text-xs font-bold text-slate-300 uppercase tracking-widest"><i class="fa-solid fa-futbol text-emerald-500 mr-1"></i>Gol & Asist Detayları</span>
-                <button onclick="addFixtureEvent()" class="bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold px-3 py-1.5 rounded transition-colors"><i class="fa-solid fa-plus mr-1"></i>Olay Ekle</button>
+                <span class="text-xs font-bold text-slate-300 uppercase tracking-widest" title="Gol & Asist Detayları"><i class="fa-solid fa-futbol text-emerald-500"></i></span>
+                <button onclick="addFixtureEvent()" title="Olay Ekle" class="bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold w-8 h-8 rounded flex items-center justify-center transition-colors"><i class="fa-solid fa-plus"></i></button>
             </div>
             <div id="fm-events-container" class="flex-1 overflow-y-auto space-y-2 pr-1 hide-scrollbar min-h-[60px]">
                 <!-- Olaylar buraya yüklenecek -->
             </div>
 
             <div class="flex justify-end items-center mt-5 pt-4 border-t border-slate-700 shrink-0">
-                <button onclick="closeMatchResultModal()" class="px-5 py-2.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-medium transition-colors text-sm mr-2">İptal</button>
-                <button onclick="saveMatchResult()" class="px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold transition-colors text-sm"><i class="fa-solid fa-floppy-disk mr-1"></i>Sonucu Kaydet</button>
+                <button onclick="closeMatchResultModal()" title="İptal" class="w-10 h-10 rounded-lg bg-red-900/40 hover:bg-red-800/60 text-red-400 hover:text-red-300 transition-colors mr-2 flex items-center justify-center"><i class="fa-solid fa-ban text-lg"></i></button>
+                <button onclick="saveMatchResult()" title="Sonucu Kaydet" class="px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold transition-colors text-sm"><i class="fa-solid fa-floppy-disk"></i></button>
             </div>
         </div>
     </div>
