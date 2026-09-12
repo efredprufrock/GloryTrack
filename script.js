@@ -220,6 +220,34 @@ const TR_EN = {
     "Grup / Lig tablosu bölümünü silmek istediğinize emin misiniz?": "Are you sure you want to delete the Group / League table section?",
     "Eleme Aşamaları bölümünü silmek istediğinize emin misiniz?": "Are you sure you want to delete the Knockout Stages section?",
 
+    // Kariyer Yönetimi (Yeni eklenenler)
+    "Kariyer Yönetimi (Kayıt Slotları)": "Career Management (Save Slots)",
+    "Farklı takımlarla yeni kariyerlere başlamak için kayıt slotları arasında geçiş yapabilirsiniz.": "You can switch between save slots to start new careers with different teams.",
+    "KAYIT SLOTU 1": "SAVE SLOT 1",
+    "KAYIT SLOTU 2": "SAVE SLOT 2",
+    "KAYIT SLOTU 3": "SAVE SLOT 3",
+    "Kayıt Slotu": "Save Slot",
+    "Kariyer Slotu 1 yükleniyor...": "Loading Career Slot 1...",
+    "Kariyer Slotu 2 yükleniyor...": "Loading Career Slot 2...",
+    "Kariyer Slotu 3 yükleniyor...": "Loading Career Slot 3...",
+    "Aktif slotunuzdaki TÜM verileriniz kalıcı olarak silinecektir. Devam etmek istediğinize emin misiniz?": "ALL your data in the active slot will be permanently deleted. Are you sure you want to continue?",
+    "Sıfırlama işlemi geri alınamaz! Gerçekten bu kariyeri sıfırlamak istiyor musunuz?": "The reset operation cannot be undone! Do you really want to reset this career?",
+    "Kayıt Slotu 1": "Save Slot 1",
+    "Kayıt Slotu 2": "Save Slot 2",
+    "Kayıt Slotu 3": "Save Slot 3",
+    "Kayıt Slotu 1 içindeki tüm veriler kalıcı olarak silinecektir. Emin misiniz?": "All data in Save Slot 1 will be permanently deleted. Are you sure?",
+    "Kayıt Slotu 2 içindeki tüm veriler kalıcı olarak silinecektir. Emin misiniz?": "All data in Save Slot 2 will be permanently deleted. Are you sure?",
+    "Kayıt Slotu 3 içindeki tüm veriler kalıcı olarak silinecektir. Emin misiniz?": "All data in Save Slot 3 will be permanently deleted. Are you sure?",
+    "Slotu Temizle": "Clear Slot",
+
+    // Eksik Kalan Diğer Metinler
+    "kullanılıyor.": "used.",
+    "Yedek almayı unutmayın.": "Don't forget to take a backup.",
+    "Bu sezon için henüz maç kaydı bulunmuyor.": "No match records found for this season yet.",
+    "Sağ üstteki \"Maç Ekle\" butonuyla başlayın.": "Start by clicking the \"Add Match\" button on the top right.",
+    "Henüz bu sezon için müsabaka tablosu eklenmedi.": "No competition table added for this season yet.",
+    "Yukarıdan seçip ekleyebilirsiniz.": "You can select and add from above.",
+
     // Fikstür ve Avrupa Ligleri Modal Metinleri
     "Sütun Sırası:": "Column Order:",
     "Hafta / Aşama (Opsiyonel)": "Week / Stage (Optional)",
@@ -229,7 +257,7 @@ const TR_EN = {
     "Hafta / Aşama (Örn: 14. Hafta, Çeyrek Final)": "Week / Stage (e.g. Week 14, Quarter Final)",
     "Örn: 14. Hafta veya Çeyrek Final": "e.g. Week 14 or Quarter Final",
     "Örnek: 1, Süper Lig, Galatasaray, Fenerbahçe, TR, 1. Hafta": "Example: 1, Super League, Galatasaray, Fenerbahce, TR, Week 1",
-    "Örnek: 2, Şampiyonlar Ligi, Juventus, Galatasaray, IT, Çeyrek Final": "Example: 2, Champions League, Juventus, Galatasaray, IT, Quarter Final",
+    "Örnek: 2, UEFA Şampiyonlar Ligi, Juventus, Galatasaray, IT, Çeyrek Final": "Example: 2, UEFAChampions League, Juventus, Galatasaray, IT, Quarter Final",
     "Her satıra bir takım gelecek şekilde, aşağıdaki sıraya göre virgülle ayırarak yapıştırın. Bir ligin ilk 4 satırı sırasıyla 1.-4. sıraya yerleşir.": "Paste with one team per line, separated by commas in the following order. The first 4 lines of a league will be placed in the 1st-4th places respectively.",
     "Lig Adı, Takım Adı, Puan": "League Name, Team Name, Points",
     "Örnek: Premier League, Liverpool, 45 P": "Example: Premier League, Liverpool, 45 P",
@@ -238,9 +266,9 @@ const TR_EN = {
     "Geçerli lig adları: Premier League, Serie A, La Liga, Bundesliga, Ligue 1, Liga Portugal, Eredivisie, Belgian 1A Pro League, Scottish Premiership, Norwegian Eliteserien, Swedish Allsvenskan, Romanian Liga I": "Valid league names: Premier League, Serie A, La Liga, Bundesliga, Ligue 1, Liga Portugal, Eredivisie, Belgian 1A Pro League, Scottish Premiership, Norwegian Eliteserien, Swedish Allsvenskan, Romanian Liga I",
 
     // Turnuva ve Aşama İsimleri
-    "Şampiyonlar Ligi": "Champions League",
-    "Avrupa Ligi": "Europa League",
-    "Konferans Ligi": "Conference League",
+    "UEFA Şampiyonlar Ligi": "UEFA Champions League",
+    "UEFA Avrupa Ligi": "UEFA Europa League",
+    "UEFA Konferans Ligi": "UEFA Conference League",
     "Süper Lig": "Super League",
     "Türkiye Kupası": "Turkish Cup",
     "Türkiye Süper Kupası": "Turkish Super Cup",
@@ -586,19 +614,29 @@ function escapeHtml(str) {
         let currentModalTournament = null;
         let editingTournamentId = null;
         let tournamentsList = [
-            { id: 'ucl', name: 'Şampiyonlar Ligi', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/b/bf/UEFA_Champions_League_logo_2.svg', colorHex: '#1e3a8a' },
-            { id: 'uel', name: 'Avrupa Ligi', logoUrl: 'https://upload.wikimedia.org/wikipedia/en/b/bf/UEFA_Europa_League_logo_2021.svg', colorHex: '#ea580c' },
-            { id: 'uecl', name: 'Konferans Ligi', logoUrl: 'https://upload.wikimedia.org/wikipedia/en/f/f6/UEFA_Europa_Conference_League_logo.svg', colorHex: '#16a34a' },
-            { id: 'usc', name: 'Süper Kupa', logoUrl: 'https://upload.wikimedia.org/wikipedia/en/0/05/UEFA_Super_Cup_logo.svg', colorHex: '#475569' },
+            { id: 'ucl', name: 'UEFA Champions League', logoUrl: 'https://assets.football-logos.cc/logos/tournaments/700x700/uefa-champions-league.c16cec3d.png', colorHex: '#1e3a8a' },
+            { id: 'uel', name: 'UEFA Europa League', logoUrl: 'https://assets.football-logos.cc/logos/tournaments/700x700/uefa-europa-league.cec59481.png', colorHex: '#ea580c' },
+            { id: 'uecl', name: 'UEFA Europa Conference League', logoUrl: 'https://assets.football-logos.cc/logos/tournaments/700x700/uefa-conference-league.4a977457.png', colorHex: '#16a34a' },
+            { id: 'usc', name: 'UEFA Super Cup', logoUrl: 'https://assets.football-logos.cc/logos/tournaments/700x700/uefa-super-cup.73cc7e25.png', colorHex: '#475569' },
             { id: 'slig', name: 'Süper Lig', logoUrl: 'https://upload.wikimedia.org/wikipedia/tr/e/e0/Trendyol_S%C3%BCper_Lig_logo.svg', colorHex: '#b91c1c' },
-            { id: 'tkupa', name: 'Türkiye Kupası', logoUrl: 'https://upload.wikimedia.org/wikipedia/tr/8/86/Ziraat_T%C3%BCrkiye_Kupas%C4%B1_logo.png', colorHex: '#7f1d1d' }
+            { id: 'tkupa', name: 'Türkiye Kupası', logoUrl: 'https://upload.wikimedia.org/wikipedia/tr/8/86/Ziraat_T%C3%BCrkiye_Kupas%C4%B1_logo.png', colorHex: '#7f1d1d' },
+            { id: 'tsup', name: 'Türkiye Süper Kupası', logoUrl: 'https://upload.wikimedia.org/wikipedia/tr/2/28/TFF_S%C3%BCper_Kupa_logo.png', colorHex: '#475569' },
+            { id: 'pl', name: 'Premier League', logoUrl: 'https://upload.wikimedia.org/wikipedia/en/f/f2/Premier_League_Logo.svg', colorHex: '#3730a3' },
+            { id: 'laliga', name: 'La Liga', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/0/0f/LaLiga_logo_2023.svg', colorHex: '#ef4444' },
+            { id: 'bl', name: 'Bundesliga', logoUrl: 'https://upload.wikimedia.org/wikipedia/en/d/df/Bundesliga_logo_%282017%29.svg', colorHex: '#dc2626' },
+            { id: 'l1', name: 'Ligue 1', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/5/5e/Ligue_1_2024_logo.svg', colorHex: '#0f172a' },
+            { id: 'ligapt', name: 'Liga Portugal', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/a/a7/Liga_Portugal_logo.png', colorHex: '#14b8a6' },
+            { id: 'eredivisie', name: 'Eredivisie', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/0/0f/Eredivisie_nieuw_logo_2017-.svg', colorHex: '#1e3a8a' },
+            { id: 'belgian', name: 'Belgian 1A Pro League', logoUrl: 'https://upload.wikimedia.org/wikipedia/en/e/e0/Jupiler_Pro_League_Logo.svg', colorHex: '#000000' },
+            { id: 'scottish', name: 'Scottish Premiership', logoUrl: 'https://upload.wikimedia.org/wikipedia/en/0/05/Scottish_Premiership_logo.svg', colorHex: '#1e3a8a' },
+            { id: 'norwegian', name: 'Norwegian Eliteserien', logoUrl: 'https://upload.wikimedia.org/wikipedia/en/5/52/Eliteserien_logo.svg', colorHex: '#1e3a8a' }
         ];
 
         // Matches State
         let matchContext = null; 
         let managedTeams = {
-            kulup: { name: 'Kocaelispor', logoUrl: 'https://upload.wikimedia.org/wikipedia/tr/1/1a/Kocaelispor_logosu.png', country: 'TURKEY' },
-            milli: { name: 'Türkiye', logoUrl: 'https://upload.wikimedia.org/wikipedia/tr/d/d4/T%C3%BCrkiye_Mill%C3%AE_Futbol_Tak%C3%ADm%C3%AD_logo.svg', country: 'TURKEY' }
+            kulup: { name: '', logoUrl: '', country: '' },
+            milli: { name: '', logoUrl: '', country: '' }
         };
 
         let opponentsConfig = {
@@ -614,7 +652,7 @@ function escapeHtml(str) {
             }
         };
 
-        const tournamentOptions = ["Süper Lig", "Türkiye Kupası", "Türkiye Süper Kupası", "Şampiyonlar Ligi", "Avrupa Ligi", "Konferans Ligi", "UEFA Süper Kupa", "Pre-Season Friendly"];
+        const tournamentOptions = ["Süper Lig", "Türkiye Kupası", "Türkiye Süper Kupası", "UEFA Şampiyonlar Ligi", "Avrupa Ligi", "Konferans Ligi", "UEFA Süper Kupa", "Pre-Season Friendly"];
         let matchDataStore = { kulup: {}, milli: {} };
         let activeOppInfo = { context: null, groupType: null, groupIndex: null, index: null, id: null };
         let activeGroupInfo = { context: null, groupType: null, groupIndex: null };
@@ -648,9 +686,7 @@ function escapeHtml(str) {
         let activeBulkStatCellKey = null;
 
         // League History State
-        let leagueHistoryData = [
-            { id: 'lh_1', name: 'Kocaelispor', color: '#10b981', history: {} }
-        ];
+        let leagueHistoryData = [];
         let leagueChartInstance = null;
         let activeLeagueTeamId = null;
         let activeLeagueSeason = null;
@@ -934,6 +970,8 @@ function getFlagIcon(countryCode) {
             };
         }
 
+        let activeSlot = localStorage.getItem('fc26_active_slot') || '1';
+
         function saveToLocalStorage() {
             try {
                 const dataStr = JSON.stringify(getAllData());
@@ -941,7 +979,8 @@ function getFlagIcon(countryCode) {
                 if (dataStr.length > 4 * 1024 * 1024) {
                     console.warn('FC26: LocalStorage verisi 4MB sınırına yaklaşıyor. Yedek almanız önerilir.');
                 }
-                localStorage.setItem('fc26_career_data', dataStr);
+                localStorage.setItem('fc26_career_data_' + activeSlot, dataStr);
+                localStorage.setItem('fc26_career_data', dataStr); // Bulut ve eski yedekler için anahtarı senkronize tut
             } catch(e) {
                 if (e.name === 'QuotaExceededError') {
                     alert('⚠️ Tarayıcı depolama alanı doldu!\n\nAyarlar > Verileri Dışa Aktar ile yedek alın, ardından sayfayı yenileyip yedeği tekrar yükleyin.\n\nNot: Yerel olarak yüklenen büyük logo görselleri depolama alanını hızla doldurabilir. Mümkünse URL ile logo kullanın.');
@@ -995,7 +1034,15 @@ function getFlagIcon(countryCode) {
         }
 
         function loadFromLocalStorage() {
-            const dataStr = localStorage.getItem('fc26_career_data');
+            activeSlot = localStorage.getItem('fc26_active_slot') || '1';
+            let dataStr = localStorage.getItem('fc26_career_data_' + activeSlot);
+            
+            // Geriye dönük uyumluluk (Eski veriyi otomatik olarak Slot 1'e taşı)
+            if (!dataStr && activeSlot === '1') {
+                dataStr = localStorage.getItem('fc26_career_data');
+                if (dataStr) localStorage.setItem('fc26_career_data_1', dataStr);
+            }
+
             if (!dataStr) return false;
             try {
                 const data = JSON.parse(dataStr);
@@ -1003,6 +1050,36 @@ function getFlagIcon(countryCode) {
             } catch (e) {
                 console.error("Veri okuma hatası:", e);
                 return false;
+            }
+        }
+
+        function switchCareerSlot(slotNum) {
+            // Mevcut veriyi şu anki slota kaydet
+            saveToLocalStorage();
+            
+            // Yeni slotu belirle
+            activeSlot = slotNum.toString();
+            localStorage.setItem('fc26_active_slot', activeSlot);
+            
+            // Arayüzü yeni slot verisiyle baştan yükle
+            location.reload();
+        }
+
+        async function deleteCareerSlot(slotNum) {
+            if(confirm(`Kayıt Slotu ${slotNum} içindeki tüm veriler kalıcı olarak silinecektir. Emin misiniz?`)) {
+                localStorage.removeItem('fc26_career_data_' + slotNum);
+                if (slotNum === 1) localStorage.removeItem('fc26_career_data'); // Geriye dönük uyumluluk
+                
+                // Eğer silinen slot şu anki aktif slotsa, belleği sıfırlamak için sayfayı yenile
+                if (activeSlot === slotNum.toString()) {
+                    if (cloudDocRef) {
+                        try { await cloudDocRef.delete(); } catch(e) { console.error('Bulut verisi silinemedi:', e); }
+                    }
+                    location.reload();
+                } else {
+                    // Sadece arayüzü güncelle
+                    renderSettingsPanel();
+                }
             }
         }
 
@@ -1112,9 +1189,10 @@ function handleSyncClick() {
                 const snap = await cloudDocRef.get();
                 if (snap.exists) {
                     applyLoadedData(snap.data());
-                    localStorage.setItem('fc26_career_data', JSON.stringify(snap.data()));
+                    localStorage.setItem('fc26_career_data_' + activeSlot, JSON.stringify(snap.data()));
+                    localStorage.setItem('fc26_career_data', JSON.stringify(snap.data())); // Yedek anahtar
                 } else {
-                    const localStr = localStorage.getItem('fc26_career_data');
+                    const localStr = localStorage.getItem('fc26_career_data_' + activeSlot) || localStorage.getItem('fc26_career_data');
                     if (localStr) {
                         const upload = confirm('Google hesabınızla ilişkili bulut verisi bulunamadı.\n\nBu cihazdaki mevcut kariyer verinizi hesabınıza yüklemek ister misiniz?');
                         if (upload) {
@@ -1139,6 +1217,7 @@ function handleSyncClick() {
                 if (!snap.exists || snap.metadata.hasPendingWrites) return; // kendi yazdığımız veri geri yansıyor, atla
                 isApplyingRemoteData = true;
                 applyLoadedData(snap.data());
+                localStorage.setItem('fc26_career_data_' + activeSlot, JSON.stringify(snap.data()));
                 localStorage.setItem('fc26_career_data', JSON.stringify(snap.data()));
                 rerenderCurrentPanel();
                 isApplyingRemoteData = false;
@@ -1926,7 +2005,7 @@ function handleFileUpload(event, type) {
             // Calculate localStorage usage
             let usedBytes = 0;
             try {
-                const dataStr = localStorage.getItem('fc26_career_data') || '';
+                const dataStr = localStorage.getItem('fc26_career_data_' + activeSlot) || localStorage.getItem('fc26_career_data') || '';
                 usedBytes = new Blob([dataStr]).size;
             } catch(e) {}
             const usedKB = (usedBytes / 1024).toFixed(1);
@@ -1935,6 +2014,33 @@ function handleFileUpload(event, type) {
             const pct = Math.min(100, ((usedBytes / (maxMB * 1024 * 1024)) * 100)).toFixed(1);
             const barColor = pct >= 80 ? 'bg-red-500' : pct >= 50 ? 'bg-yellow-500' : 'bg-emerald-500';
             const storageDisplay = usedBytes > 1024 * 1024 ? `${usedMB} MB` : `${usedKB} KB`;
+
+            const getSlotData = (slotNum) => {
+                let dataStr = localStorage.getItem('fc26_career_data_' + slotNum);
+                if (!dataStr && slotNum === 1) dataStr = localStorage.getItem('fc26_career_data');
+                return dataStr;
+            };
+
+            const getSlotLogo = (slotNum) => {
+                try {
+                    const dataStr = getSlotData(slotNum);
+                    if (dataStr) {
+                        const parsed = JSON.parse(dataStr);
+                        if (parsed.managedTeams && parsed.managedTeams.kulup && parsed.managedTeams.kulup.logoUrl) {
+                            return parsed.managedTeams.kulup.logoUrl;
+                        }
+                    }
+                } catch(e) {}
+                return null;
+            };
+
+            const has1 = !!getSlotData(1);
+            const has2 = !!getSlotData(2);
+            const has3 = !!getSlotData(3);
+
+            const logo1 = getSlotLogo(1);
+            const logo2 = getSlotLogo(2);
+            const logo3 = getSlotLogo(3);
 
             let html = `
                 <div class="w-full max-w-4xl mx-auto flex flex-col h-full">
@@ -1971,6 +2077,37 @@ function handleFileUpload(event, type) {
                                 <div class="${barColor} h-2.5 rounded-full transition-all" style="width: ${pct}%"></div>
                             </div>
                             <p class="text-xs text-slate-500 mt-2">%${pct} kullanılıyor. ${pct >= 80 ? '⚠️ Depolama alanı dolmak üzere! Yedek alıp bazı verileri temizleyin.' : 'Yedek almayı unutmayın.'}</p>
+                        </div>
+
+                        <!-- Kariyer Slotları -->
+                        <div class="mb-6 bg-slate-800 border border-slate-600 rounded-xl p-4">
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="text-sm font-bold text-slate-300"><i class="fa-solid fa-folder-open mr-2 text-yellow-400"></i>Kariyer Yönetimi (Kayıt Slotları)</span>
+                            </div>
+                            <p class="text-xs text-slate-400 mb-3">Farklı takımlarla yeni kariyerlere başlamak için kayıt slotları arasında geçiş yapabilirsiniz.</p>
+                            <div class="grid grid-cols-3 gap-2">
+                                <div class="relative group h-full">
+                                    <button onclick="switchCareerSlot(1)" class="w-full h-full py-2 px-3 rounded-lg font-bold text-sm border-2 transition-all flex flex-col items-center justify-center gap-2 ${activeSlot === '1' ? 'border-emerald-500 bg-emerald-900/30 text-emerald-400' : 'border-slate-700 bg-slate-900 text-slate-400 hover:border-emerald-500/50 hover:text-white'}">
+                                        ${logo1 ? `<img src="${logo1}" class="w-8 h-8 object-contain drop-shadow-md">` : `<i class="fa-solid fa-1 text-xl"></i>`}
+                                        <span class="text-[10px] uppercase tracking-wider">Kayıt Slotu 1</span>
+                                    </button>
+                                    ${has1 ? `<button onclick="deleteCareerSlot(1)" class="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 bg-red-900/80 hover:bg-red-500 text-red-200 hover:text-white rounded w-6 h-6 flex items-center justify-center text-[10px] transition-all z-10 shadow-lg" title="Slotu Temizle"><i class="fa-solid fa-trash"></i></button>` : ''}
+                                </div>
+                                <div class="relative group h-full">
+                                    <button onclick="switchCareerSlot(2)" class="w-full h-full py-2 px-3 rounded-lg font-bold text-sm border-2 transition-all flex flex-col items-center justify-center gap-2 ${activeSlot === '2' ? 'border-emerald-500 bg-emerald-900/30 text-emerald-400' : 'border-slate-700 bg-slate-900 text-slate-400 hover:border-emerald-500/50 hover:text-white'}">
+                                        ${logo2 ? `<img src="${logo2}" class="w-8 h-8 object-contain drop-shadow-md">` : `<i class="fa-solid fa-2 text-xl"></i>`}
+                                        <span class="text-[10px] uppercase tracking-wider">Kayıt Slotu 2</span>
+                                    </button>
+                                    ${has2 ? `<button onclick="deleteCareerSlot(2)" class="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 bg-red-900/80 hover:bg-red-500 text-red-200 hover:text-white rounded w-6 h-6 flex items-center justify-center text-[10px] transition-all z-10 shadow-lg" title="Slotu Temizle"><i class="fa-solid fa-trash"></i></button>` : ''}
+                                </div>
+                                <div class="relative group h-full">
+                                    <button onclick="switchCareerSlot(3)" class="w-full h-full py-2 px-3 rounded-lg font-bold text-sm border-2 transition-all flex flex-col items-center justify-center gap-2 ${activeSlot === '3' ? 'border-emerald-500 bg-emerald-900/30 text-emerald-400' : 'border-slate-700 bg-slate-900 text-slate-400 hover:border-emerald-500/50 hover:text-white'}">
+                                        ${logo3 ? `<img src="${logo3}" class="w-8 h-8 object-contain drop-shadow-md">` : `<i class="fa-solid fa-3 text-xl"></i>`}
+                                        <span class="text-[10px] uppercase tracking-wider">Kayıt Slotu 3</span>
+                                    </button>
+                                    ${has3 ? `<button onclick="deleteCareerSlot(3)" class="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 bg-red-900/80 hover:bg-red-500 text-red-200 hover:text-white rounded w-6 h-6 flex items-center justify-center text-[10px] transition-all z-10 shadow-lg" title="Slotu Temizle"><i class="fa-solid fa-trash"></i></button>` : ''}
+                                </div>
+                            </div>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -2037,6 +2174,7 @@ function handleFileUpload(event, type) {
                 try {
                     const parsed = JSON.parse(e.target.result);
                     if (parsed.seasonsList && parsed.managedTeams) {
+                        localStorage.setItem('fc26_career_data_' + activeSlot, JSON.stringify(parsed));
                         localStorage.setItem('fc26_career_data', JSON.stringify(parsed));
                         // Buluta bağlıysa yedeği buluta da yaz, aksi halde eski bulut verisi geri gelir
                         if (cloudDocRef) {
@@ -2055,9 +2193,11 @@ function handleFileUpload(event, type) {
         }
 
         async function resetData() {
-            if(confirm("TÜM verileriniz kalıcı olarak silinecektir. Devam etmek istediğinize emin misiniz?")) {
-                if(confirm("Sıfırlama işlemi geri alınamaz! Gerçekten tüm kariyeri sıfırlamak istiyor musunuz?")) {
-                    localStorage.removeItem('fc26_career_data');
+            if(confirm("Aktif slotunuzdaki TÜM verileriniz kalıcı olarak silinecektir. Devam etmek istediğinize emin misiniz?")) {
+                if(confirm("Sıfırlama işlemi geri alınamaz! Gerçekten bu kariyeri sıfırlamak istiyor musunuz?")) {
+                    localStorage.removeItem('fc26_career_data_' + activeSlot);
+                    if (activeSlot === '1') localStorage.removeItem('fc26_career_data'); // Geriye dönük uyumluluk anahtarını da sil
+                    
                     // Buluta bağlıysa, silinen veri geri indirilmesin diye bulut kaydını da temizle
                     if (cloudDocRef) {
                         try { await cloudDocRef.delete(); } catch(e) { console.error('Bulut verisi silinemedi:', e); }
@@ -5993,9 +6133,9 @@ function applyQfbCollapsedState() {
 
         const allTournamentOptions = [
             "Süper Lig", "Türkiye Kupası", "Türkiye Süper Kupası",
-            "Şampiyonlar Ligi", "Avrupa Ligi", "Konferans Ligi",
+            "UEFA Şampiyonlar Ligi", "UEFA Avrupa Ligi", "UEFA Konferans Ligi",
             "UEFA Süper Kupa", "Pre-Season Friendly",
-            "Dünya Kupası", "Avrupa Şampiyonası", "Dostluk Maçı"
+            "Dünya Kupası", "UEFA Avrupa Şampiyonası", "Dostluk Maçı"
         ];
 
         function getFixtureTournaments() {
@@ -6018,9 +6158,9 @@ function applyQfbCollapsedState() {
             'Süper Lig': 'SL',
             'Türkiye Kupası': 'TK',
             'Türkiye Süper Kupası': 'TSK',
-            'Şampiyonlar Ligi': 'ŞL',
-            'Avrupa Ligi': 'AL',
-            'Konferans Ligi': 'KL',
+            'UEFA Şampiyonlar Ligi': 'UCL',
+            'UEFA Avrupa Ligi': 'UEL',
+            'UEFA Konferans Ligi': 'UCL',
             'UEFA Süper Kupa': 'USK',
             'Pre-Season Friendly': 'PF',
             'Sezon Öncesi Hazırlık': 'SÖH',
@@ -6247,6 +6387,29 @@ function clearCompetitionLogo() {
     renderFixturePanel();
 }
 
+// --- YENİ: Turnuva adı girildiğinde veritabanından logoyu otomatik çekme (İnput Alanları İçin) ---
+function autoFillTournamentLogo(nameInput, urlInputId) {
+    if (!nameInput || !nameInput.value || typeof FC26_TOURNAMENT_DATABASE === 'undefined') return;
+    
+    const typedName = nameInput.value.trim().toLowerCase();
+    const urlInput = document.getElementById(urlInputId);
+    if (!urlInput) return;
+
+    const match = FC26_TOURNAMENT_DATABASE.find(t => typeof t === 'object' && t.name && t.name.toLowerCase() === typedName);
+    
+    if (match && match.logo) {
+        urlInput.value = match.logo;
+        
+        // Dosya yükleme durumunu ve butonunu sıfırla ki çakışma yapmasın
+        const typePrefix = urlInputId.replace('-url-input', '').replace('-url', '');
+        if (typeof fileUploads !== 'undefined' && fileUploads[typePrefix] !== undefined) {
+            fileUploads[typePrefix] = null;
+            const uploadBtn = document.getElementById(`${typePrefix}-upload-btn`);
+            if (uploadBtn) uploadBtn.classList.replace('text-emerald-400', 'text-slate-300');
+        }
+    }
+}
+
 // --- YENİ: Takım adı girildiğinde veritabanından logoyu otomatik çekme (İnput Alanları İçin) ---
 function autoFillTeamLogo(nameInput, urlInputId) {
     if (!nameInput || !nameInput.value || typeof FC26_TEAM_DATABASE === 'undefined') return;
@@ -6352,9 +6515,9 @@ function formatShortPlayerName(name) {
             if (name.includes('türkiye süper kupası')) return 'bg-teal-900/30 hover:bg-teal-800/50'; // Turkuaz
             if (name.includes('süper lig')) return 'bg-red-950/40 hover:bg-red-900/60'; // Koyu kırmızı
             if (name.includes('türkiye kupası')) return 'bg-red-900/40 hover:bg-red-800/60'; // Kırmızı
-            if (name.includes('şampiyonlar ligi')) return 'bg-blue-950/50 hover:bg-blue-900/70'; // Koyu mavi
-            if (name.includes('avrupa ligi')) return 'bg-orange-900/30 hover:bg-orange-800/50'; // Turuncu
-            if (name.includes('konferans ligi')) return 'bg-emerald-900/30 hover:bg-emerald-800/50'; // Yeşil
+            if (name.includes('uefa şampiyonlar ligi')) return 'bg-blue-950/50 hover:bg-blue-900/70'; // Koyu mavi
+            if (name.includes('uefa avrupa ligi')) return 'bg-orange-900/30 hover:bg-orange-800/50'; // Turuncu
+            if (name.includes('uefa konferans ligi')) return 'bg-emerald-900/30 hover:bg-emerald-800/50'; // Yeşil
             if (name.includes('uefa süper kupa')) return 'bg-yellow-700/20 hover:bg-yellow-600/40'; // Altın
             if (name.includes('pre-season friendly')) return 'bg-slate-700/30 hover:bg-slate-600/50'; // Gri
             if (name.includes('dünya kupası')) return 'bg-purple-950/50 hover:bg-purple-900/70'; // Koyu mor
@@ -6468,7 +6631,7 @@ function formatShortPlayerName(name) {
             }
         }
 
-        const KNOCKOUT_DEFAULT_TYPES = ['Şampiyonlar Ligi', 'Avrupa Ligi', 'Konferans Ligi', 'Dünya Kupası', 'Avrupa Şampiyonası', 'Türkiye Kupası'];
+        const KNOCKOUT_DEFAULT_TYPES = ['UEFA Şampiyonlar Ligi', 'UEFA Avrupa Ligi', 'UEFA Konferans Ligi', 'Dünya Kupası', 'UEFA Avrupa Şampiyonası', 'Türkiye Kupası'];
 
         function addCustomTournament() {
             const type = document.getElementById('custom-tour-select').value;
@@ -7287,9 +7450,9 @@ function formatShortPlayerName(name) {
                                 <select id="custom-tour-select" class="bg-slate-900 border border-slate-600 text-[10px] text-slate-300 rounded p-1 outline-none focus:border-emerald-500">
                                     <option value="Süper Lig">Süper Lig</option>
                                     <option value="Türkiye Kupası">Türkiye Kupası</option>
-                                    <option value="Şampiyonlar Ligi">Şampiyonlar Ligi</option>
-                                    <option value="Avrupa Ligi">Avrupa Ligi</option>
-                                    <option value="Konferans Ligi">Konferans Ligi</option>
+                                    <option value="UEFA Şampiyonlar Ligi">UEFA Şampiyonlar Ligi</option>
+                                    <option value="UEFA Avrupa Ligi">UEFA Avrupa Ligi</option>
+                                    <option value="UEFA Konferans Ligi">UEFA Konferans Ligi</option>
                                     <option value="Sezon Öncesi Hazırlık">Sezon Öncesi Hazırlık</option>
                                     <option value="Dünya Kupası">Dünya Kupası</option>
                                     <option value="Avrupa Şampiyonası">Avrupa Şampiyonası</option>
@@ -7401,9 +7564,9 @@ function formatShortPlayerName(name) {
                                         let focusBorderClass = 'focus:border-slate-400';
                                         const tNameLower = (tour.type || '').toLowerCase();
                                         
-                                        if (tNameLower.includes('şampiyonlar ligi')) { textColorClass = 'text-blue-400'; focusBorderClass = 'focus:border-blue-500'; }
-                                        else if (tNameLower.includes('avrupa ligi')) { textColorClass = 'text-orange-400'; focusBorderClass = 'focus:border-orange-500'; }
-                                        else if (tNameLower.includes('konferans ligi')) { textColorClass = 'text-emerald-400'; focusBorderClass = 'focus:border-emerald-500'; }
+                                        if (tNameLower.includes('uefa şampiyonlar ligi')) { textColorClass = 'text-blue-400'; focusBorderClass = 'focus:border-blue-500'; }
+                                        else if (tNameLower.includes('uefa avrupa ligi')) { textColorClass = 'text-orange-400'; focusBorderClass = 'focus:border-orange-500'; }
+                                        else if (tNameLower.includes('uefa konferans ligi')) { textColorClass = 'text-emerald-400'; focusBorderClass = 'focus:border-emerald-500'; }
                                         else if (tNameLower.includes('süper lig')) { textColorClass = 'text-red-500'; focusBorderClass = 'focus:border-red-600'; }
                                         else if (tNameLower.includes('türkiye kupası')) { textColorClass = 'text-red-400'; focusBorderClass = 'focus:border-red-500'; }
                                         else if (tNameLower.includes('dünya kupası')) { textColorClass = 'text-yellow-500'; focusBorderClass = 'focus:border-yellow-600'; }

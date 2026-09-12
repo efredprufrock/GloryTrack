@@ -134,7 +134,7 @@
                 <div>
                     <label class="block text-left text-sm font-medium text-slate-300 mb-1">Turnuva Adı</label>
                     <div class="flex gap-2 mb-2">
-                        <input type="text" id="tour-name-input" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white" list="global-tournament-datalist">
+                        <input type="text" id="tour-name-input" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white" list="global-tournament-datalist" onchange="autoFillTournamentLogo(this, 'tour-url-input')">
                         <button onclick="searchTeamLogos('tour')" class="bg-blue-600 hover:bg-blue-500 px-3 rounded text-white whitespace-nowrap" title="Logoları Ara"><i class="fa-solid fa-search"></i> Ara</button>
                     </div>
                     <div id="tour-logo-results" class="flex gap-2 overflow-x-auto hidden py-2 mb-2 hide-scrollbar bg-slate-950/50 rounded px-2 items-center border border-slate-700/50"></div>
