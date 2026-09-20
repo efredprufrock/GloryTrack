@@ -334,6 +334,8 @@ const TR_EN = {
     "Şampiyon Takım": "Champion Team",
     "İkinci Takım": "Runner-up Team",
     "Turnuva Kutusunu Düzenle": "Edit Tournament Box",
+    "Sola Taşı": "Move Left",
+    "Sağa Taşı": "Move Right",
     "Turnuva Adı": "Tournament Name",
     "Turnuva Logosu URL / Dosya": "Tournament Logo URL / File",
     "Sütun Rengi": "Column Color",
@@ -2524,7 +2526,9 @@ function handleFileUpload(event, type) {
                                 </th>
             `;
             
-            tournamentsList.forEach(t => {
+            tournamentsList.forEach((t, idx) => {
+                const isFirst = idx === 0;
+                const isLast = idx === tournamentsList.length - 1;
                 html += `
                     <th class="p-2 border-r border-b border-slate-700 min-w-[120px] bg-slate-900 group relative">
                         <div class="flex items-center justify-center h-16 w-full mx-auto" title="${t.name}">
@@ -2535,6 +2539,14 @@ function handleFileUpload(event, type) {
                         <button onclick="openTournamentModal('${t.id}')" class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 bg-slate-800 text-white rounded p-1.5 text-xs z-[45] transition-opacity hover:bg-blue-600" title="Turnuvayı Düzenle">
                             <i class="fa-solid fa-pen"></i>
                         </button>
+                        <div class="absolute bottom-1 left-0 right-0 flex justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-[45]">
+                            <button onclick="moveTournamentColumn('${t.id}', -1)" class="bg-slate-800 hover:bg-emerald-600 text-white rounded px-2 py-0.5 text-[10px] ${isFirst ? 'invisible' : ''}" title="Sola Taşı">
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </button>
+                            <button onclick="moveTournamentColumn('${t.id}', 1)" class="bg-slate-800 hover:bg-emerald-600 text-white rounded px-2 py-0.5 text-[10px] ${isLast ? 'invisible' : ''}" title="Sağa Taşı">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+                        </div>
                     </th>`;
             });
 
@@ -2731,6 +2743,22 @@ function handleFileUpload(event, type) {
                 closeTournamentModal();
                 renderTrophiesGrid();
             }
+        }
+
+        function moveTournamentColumn(tourId, direction) {
+            const index = tournamentsList.findIndex(t => t.id === tourId);
+            if (index === -1) return;
+            
+            const newIndex = index + direction;
+            if (newIndex < 0 || newIndex >= tournamentsList.length) return;
+            
+            // Yer değiştir
+            const temp = tournamentsList[index];
+            tournamentsList[index] = tournamentsList[newIndex];
+            tournamentsList[newIndex] = temp;
+            
+            saveToLocalStorage();
+            renderTrophiesGrid();
         }
 
         // --- MAÇLAR TABLOSU ---
@@ -3080,7 +3108,9 @@ function handleFileUpload(event, type) {
             if(clubName) {
                 managedTeams.kulup.name = clubName;
                 managedTeams.kulup.country = clubCountry || 'TUR';
-                leagueHistoryData[0].name = clubName;
+                if (leagueHistoryData && leagueHistoryData.length > 0) {
+                    leagueHistoryData[0].name = clubName;
+                }
             }
             if(clubLogo) managedTeams.kulup.logoUrl = clubLogo;
 
@@ -3669,8 +3699,8 @@ function handleFileUpload(event, type) {
         function getDeltaHtml(current, prev) {
             if (!current || !prev) return '';
             const diff = parseInt(current) - parseInt(prev);
-            if (diff > 0) return `<span class="text-[10px] font-black text-emerald-400 ml-1.5 drop-shadow-md">+${diff}</span>`;
-            if (diff < 0) return `<span class="text-[10px] font-black text-red-400 ml-1.5 drop-shadow-md">${diff}</span>`;
+            if (diff > 0) return `<span class="text-[10px] font-black text-emerald-400 drop-shadow-md">+${diff}</span>`;
+            if (diff < 0) return `<span class="text-[10px] font-black text-red-400 drop-shadow-md">${diff}</span>`;
             return ''; // Fark sıfırsa bir şey göstermiyoruz, kalabalık yapmasın
         }
         // ----------------------------------------------
@@ -3877,10 +3907,10 @@ function handleFileUpload(event, type) {
 
             squadSeasons.forEach(season => {
                 html += `
-                    <th class="p-1 border-r border-b border-slate-700 bg-slate-900 text-[9px] font-bold text-slate-300 min-w-[80px] w-[80px] max-w-[80px]"><div class="flex items-center justify-center gap-1.5">HAZ-ŞUB ${bulkStatBtn(season, 's2')}</div></th>
-                    <th class="p-1 border-r border-b border-slate-700 bg-orange-900/30 text-[9px] font-bold text-orange-300 min-w-[80px] w-[80px] max-w-[80px]"><div class="flex items-center justify-center gap-1.5">KIŞ TR. ${bulkStatBtn(season, 't2')}</div></th>
-                    <th class="p-1 border-r border-b border-slate-700 bg-slate-900 text-[9px] font-bold text-slate-300 min-w-[80px] w-[80px] max-w-[80px]"><div class="flex items-center justify-center gap-1.5">ARA-EYL ${bulkStatBtn(season, 's1')}</div></th>
-                    <th class="p-1 border-r border-b border-slate-700 bg-blue-900/30 text-[9px] font-bold text-blue-300 min-w-[80px] w-[80px] max-w-[80px]"><div class="flex items-center justify-center gap-1.5">YAZ TR. ${bulkStatBtn(season, 't1')}</div></th>
+                    <th class="p-1 border-r border-b border-slate-700 bg-slate-900 text-[9px] font-bold text-slate-300 min-w-[95px] w-[95px] max-w-[95px]"><div class="flex items-center justify-center gap-1.5">HAZ-ŞUB ${bulkStatBtn(season, 's2')}</div></th>
+                    <th class="p-1 border-r border-b border-slate-700 bg-orange-900/30 text-[9px] font-bold text-orange-300 min-w-[95px] w-[95px] max-w-[95px]"><div class="flex items-center justify-center gap-1.5">KIŞ TR. ${bulkStatBtn(season, 't2')}</div></th>
+                    <th class="p-1 border-r border-b border-slate-700 bg-slate-900 text-[9px] font-bold text-slate-300 min-w-[95px] w-[95px] max-w-[95px]"><div class="flex items-center justify-center gap-1.5">ARA-EYL ${bulkStatBtn(season, 's1')}</div></th>
+                    <th class="p-1 border-r border-b border-slate-700 bg-blue-900/30 text-[9px] font-bold text-blue-300 min-w-[95px] w-[95px] max-w-[95px]"><div class="flex items-center justify-center gap-1.5">YAZ TR. ${bulkStatBtn(season, 't1')}</div></th>
                 `;
             });
             html += `</tr></thead><tbody>`;
@@ -4009,9 +4039,9 @@ function handleFileUpload(event, type) {
     for (let i = seasonsList.length - 1; i >= 0; i--) {
         let s = seasonsList[i];
         if (p.history && p.history[s]) {
-            // KIŞ TR. (t2) sezon içinde YAZ TR. (t1)'den daha güncel bir dönemdir, önce ona bak
+            if (p.history[s]['s2_acadPot']) { latestPot = p.history[s]['s2_acadPot']; break; }
             if (p.history[s]['t2_acadPot']) { latestPot = p.history[s]['t2_acadPot']; break; }
-            // Bulunamadıysa yaz dönemine (t1) bak
+            if (p.history[s]['s1_acadPot']) { latestPot = p.history[s]['s1_acadPot']; break; }
             if (p.history[s]['t1_acadPot']) { latestPot = p.history[s]['t1_acadPot']; break; }
         }
     }
@@ -4065,11 +4095,13 @@ function handleFileUpload(event, type) {
                                 };
 
                                 const renderTrOrAcadBadge = (cellKey) => {
-                                    if (squadContext === 'akademi' && (cellKey === 't1' || cellKey === 't2')) {
+                                    let potHtml = '';
+                                    if (squadContext === 'akademi') {
                                         let potVal = sData[`${cellKey}_acadPot`];
-                                        return potVal ? `<span class="text-[9px] font-black text-emerald-400 bg-slate-950/90 border border-emerald-600/70 px-1.5 py-[1px] rounded shadow-inner">${potVal}</span>` : '';
+                                        if (potVal) potHtml = `<span class="text-[9px] font-black text-emerald-400 bg-slate-950/90 border border-emerald-600/70 px-1.5 py-[1px] rounded shadow-inner">${potVal}</span>`;
                                     }
-                                    return getTrBadge(sData[`${cellKey}Type`], sData[cellKey], sData[`${cellKey}Logo`]) || '';
+                                    let trBadge = getTrBadge(sData[`${cellKey}Type`], sData[cellKey], sData[`${cellKey}Logo`]) || '';
+                                    return potHtml + (potHtml && trBadge ? ' ' : '') + trBadge;
                                 };
 
                                 const renderSeasonCell = (cellKey) => {
@@ -4082,16 +4114,20 @@ function handleFileUpload(event, type) {
                                     const trBadge = renderTrOrAcadBadge(cellKey);
 
                                     const content = `
-                                        <div class="grid grid-cols-[1fr_24px_1fr] items-center gap-1.5 w-full h-full min-h-[26px] px-1">
-                                            <div class="flex justify-end items-center scale-75 origin-right">
+                                        <div class="flex items-center justify-center w-full h-full min-h-[26px]">
+                                            <div class="w-[20px] flex justify-end items-center pr-1 shrink-0 scale-75 origin-right">
                                                 ${renderAgeBadge(age)}
                                             </div>
-                                            <div class="flex justify-center items-center shrink-0">
+                                            <div class="w-[24px] flex justify-center items-center shrink-0">
                                                 ${renderOvrBadge(ovr)}
                                             </div>
-                                            <div class="flex justify-start items-center gap-1">
-                                                ${delta}
-                                                ${trBadge}
+                                            <div class="w-[36px] flex justify-start items-center pl-1 shrink-0">
+                                                <div class="w-[14px] flex justify-start items-center shrink-0">
+                                                    ${delta}
+                                                </div>
+                                                <div class="flex justify-start items-center shrink-0">
+                                                    ${trBadge}
+                                                </div>
                                             </div>
                                         </div>`;
                                     return `<td class="p-0 border-r border-b border-slate-700/50 hover:bg-slate-800/80 align-middle cursor-pointer text-center transition-colors ${bg}" onclick="openPlayerCellModal('${p.id}', '${season}', '${cellKey}')">${content}</td>`;
@@ -4620,7 +4656,7 @@ async function autoFetchPlayerPhoto(playerName, urlInputId) {
             document.getElementById('pc-subtitle').innerText = `${p.name} - ${season} Sezonu`;
 
             const acadPotBox = document.getElementById('pc-form-acad-pot');
-            const isAcadTransferSlot = (squadContext === 'akademi' && (type === 't1' || type === 't2'));
+            const isAcadTransferSlot = (squadContext === 'akademi');
 
             if (isAcadTransferSlot) {
                 if (acadPotBox) acadPotBox.classList.remove('hidden');
@@ -4668,7 +4704,7 @@ async function autoFetchPlayerPhoto(playerName, urlInputId) {
             
             let sData = p.history[activePlayerSeason];
             const type = activeCellType;
-            const isAcadTransferSlot = (squadContext === 'akademi' && (type === 't1' || type === 't2'));
+            const isAcadTransferSlot = (squadContext === 'akademi');
 
             if (isAcadTransferSlot) {
                 sData[`${type}_acadPot`] = document.getElementById('pc-acad-pot-input').value.trim();

@@ -790,7 +790,7 @@ function populateGlobalNameDatalists() {
         const allTourNames = [...new Set([
             ...(typeof allTournamentOptions !== 'undefined' ? allTournamentOptions : []),
             ...(typeof tournamentOptions !== 'undefined' ? tournamentOptions : []),
-            ...FC26_TOURNAMENT_DATABASE
+            ...FC26_TOURNAMENT_DATABASE.map(t => typeof t === 'string' ? t : t.name)
         ])].sort((a, b) => a.localeCompare(b, 'tr'));
         tourDL.innerHTML = allTourNames.map(n => `<option value="${escapeHtml(n)}">`).join('');
         tourDL.dataset.filled = '1';
@@ -804,6 +804,6 @@ if (typeof getFixtureTournaments === 'function') {
     const _origGetFixtureTournaments = getFixtureTournaments;
     getFixtureTournaments = function() {
         const base = _origGetFixtureTournaments();
-        return [...new Set([...base, ...FC26_TOURNAMENT_DATABASE])].sort((a, b) => a.localeCompare(b, 'tr'));
+        return [...new Set([...base, ...FC26_TOURNAMENT_DATABASE.map(t => typeof t === 'string' ? t : t.name)])].sort((a, b) => a.localeCompare(b, 'tr'));
     };
 }
