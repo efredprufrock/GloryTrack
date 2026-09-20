@@ -982,7 +982,9 @@ function getFlagIcon(countryCode) {
                     console.warn('FC26: LocalStorage verisi 4MB sınırına yaklaşıyor. Yedek almanız önerilir.');
                 }
                 localStorage.setItem('fc26_career_data_' + activeSlot, dataStr);
-                localStorage.setItem('fc26_career_data', dataStr); // Bulut ve eski yedekler için anahtarı senkronize tut
+                if (activeSlot === '1') {
+                    localStorage.setItem('fc26_career_data', dataStr); // Sadece Slot 1 için geriye dönük uyumluluk anahtarını tut
+                }
             } catch(e) {
                 if (e.name === 'QuotaExceededError') {
                     alert('⚠️ Tarayıcı depolama alanı doldu!\n\nAyarlar > Verileri Dışa Aktar ile yedek alın, ardından sayfayı yenileyip yedeği tekrar yükleyin.\n\nNot: Yerel olarak yüklenen büyük logo görselleri depolama alanını hızla doldurabilir. Mümkünse URL ile logo kullanın.');
@@ -1072,11 +1074,14 @@ function getFlagIcon(countryCode) {
                 localStorage.removeItem('fc26_career_data_' + slotNum);
                 if (slotNum === 1) localStorage.removeItem('fc26_career_data'); // Geriye dönük uyumluluk
                 
+                // Bulut bağlantısı varsa oradan da tamamen sil
+                if (currentUser && fbDb) {
+                    const docId = slotNum.toString() === '1' ? currentUser.uid : `${currentUser.uid}_slot_${slotNum}`;
+                    try { await fbDb.collection('careers').doc(docId).delete(); } catch(e) { console.error('Bulut verisi silinemedi:', e); }
+                }
+                
                 // Eğer silinen slot şu anki aktif slotsa, belleği sıfırlamak için sayfayı yenile
                 if (activeSlot === slotNum.toString()) {
-                    if (cloudDocRef) {
-                        try { await cloudDocRef.delete(); } catch(e) { console.error('Bulut verisi silinemedi:', e); }
-                    }
                     location.reload();
                 } else {
                     // Sadece arayüzü güncelle
@@ -1185,16 +1190,20 @@ function handleSyncClick() {
         }
 
         async function connectToCloud(uid) {
-            cloudDocRef = fbDb.collection('careers').doc(uid);
+            // Geriye dönük uyumluluk: Slot 1 ana 'uid' dokümanını kullanır, diğerleri slot numarasını ekler
+            const docId = activeSlot === '1' ? uid : `${uid}_slot_${activeSlot}`;
+            cloudDocRef = fbDb.collection('careers').doc(docId);
             setSyncStatus('saving', 'Veriler alınıyor...');
             try {
                 const snap = await cloudDocRef.get();
                 if (snap.exists) {
                     applyLoadedData(snap.data());
                     localStorage.setItem('fc26_career_data_' + activeSlot, JSON.stringify(snap.data()));
-                    localStorage.setItem('fc26_career_data', JSON.stringify(snap.data())); // Yedek anahtar
+                    if (activeSlot === '1') localStorage.setItem('fc26_career_data', JSON.stringify(snap.data())); // Yedek anahtar sadece slot 1 için
                 } else {
-                    const localStr = localStorage.getItem('fc26_career_data_' + activeSlot) || localStorage.getItem('fc26_career_data');
+                    let localStr = localStorage.getItem('fc26_career_data_' + activeSlot);
+                    if (!localStr && activeSlot === '1') localStr = localStorage.getItem('fc26_career_data'); // Eski yedeği sadece Slot 1 için ara
+
                     if (localStr) {
                         const upload = confirm('Google hesabınızla ilişkili bulut verisi bulunamadı.\n\nBu cihazdaki mevcut kariyer verinizi hesabınıza yüklemek ister misiniz?');
                         if (upload) {
@@ -1220,7 +1229,7 @@ function handleSyncClick() {
                 isApplyingRemoteData = true;
                 applyLoadedData(snap.data());
                 localStorage.setItem('fc26_career_data_' + activeSlot, JSON.stringify(snap.data()));
-                localStorage.setItem('fc26_career_data', JSON.stringify(snap.data()));
+                if (activeSlot === '1') localStorage.setItem('fc26_career_data', JSON.stringify(snap.data()));
                 rerenderCurrentPanel();
                 isApplyingRemoteData = false;
                 setSyncStatus('saved', 'Başka cihazdan güncellendi');
