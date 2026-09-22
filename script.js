@@ -1069,6 +1069,17 @@ function getFlagIcon(countryCode) {
             location.reload();
         }
 
+        function startAppAfterAuth() {
+            // Başlangıç ekranını zorla kapat ve tamamlandı say
+            const setupModal = document.getElementById('setup-modal');
+            if(setupModal) setupModal.classList.add('hidden');
+            isSetupComplete = true;
+            
+            updateSiteFavicon();
+            if (!activeMain) selectMainMenu('kadro');
+            else rerenderCurrentPanel();
+        }
+
         async function deleteCareerSlot(slotNum) {
             if(confirm(`Kayıt Slotu ${slotNum} içindeki tüm veriler kalıcı olarak silinecektir. Emin misiniz?`)) {
                 localStorage.removeItem('fc26_career_data_' + slotNum);
@@ -1517,6 +1528,7 @@ function handleSyncClick() {
             if (loadFromLocalStorage()) {
                 if(managedTeams.kulup && managedTeams.kulup.logoUrl) {
                     document.getElementById('sidebar-team-logo').src = managedTeams.kulup.logoUrl;
+                    updateSiteFavicon();
                 }
             } else {
                 // İlk defa giren birini kurulum ekranı yerine direkt içeri al
@@ -2937,7 +2949,7 @@ function handleFileUpload(event, type) {
                 return `
                     <th class="p-2 border-r border-b border-slate-700 min-w-[84px] w-[84px] relative group cursor-pointer hover:bg-slate-800 transition-colors align-top" style="background-color: ${grpColor}40" onclick="handleOpponentClick('${groupType}', ${groupIndex}, ${index})">
                         <div class="h-12 w-12 mx-auto bg-slate-200/90 rounded p-1 shadow hover:scale-110 transition-transform">
-                            <img src="${opp.logoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(opp.name)}`}" title="${opp.name}" class="w-full h-full object-contain">
+                            <img src="${getTeamLogoByName(opp.name)}" title="${opp.name}" class="w-full h-full object-contain">
                         </div>
                         <div class="text-[11px] font-bold mt-1 text-center ${winRateColor}" title="Galibiyet Yüzdesi">${winRateStr}</div>
                     </th>`;
@@ -3101,6 +3113,17 @@ function handleFileUpload(event, type) {
             document.getElementById('managed-team-modal').classList.remove('flex');
         }
 
+        function updateSiteFavicon() {
+            const logoUrl = managedTeams && managedTeams.kulup && managedTeams.kulup.logoUrl ? managedTeams.kulup.logoUrl : 'favicon.png';
+            let link = document.querySelector("link[rel*='icon']");
+            if (!link) {
+                link = document.createElement('link');
+                link.rel = 'icon';
+                document.head.appendChild(link);
+            }
+            link.href = logoUrl;
+        }
+
         function saveManagedTeam() {
             // Kulüp Takımı Değerleri
             const clubName = document.getElementById('managed-name-input').value.trim();
@@ -3132,6 +3155,7 @@ function handleFileUpload(event, type) {
 
             // Sol taraftaki sidebar logosunu güncelle (Her zaman kulüp kalır)
             document.getElementById('sidebar-team-logo').src = managedTeams.kulup.logoUrl;
+            updateSiteFavicon();
 
             saveToLocalStorage();
             closeManagedTeamModal();
@@ -3203,7 +3227,7 @@ function handleFileUpload(event, type) {
             }
 
             document.getElementById('opp-name-input').value = opp.name;
-            document.getElementById('opp-url-input').value = opp.logoUrl;
+            document.getElementById('opp-url-input').value = (opp.logoUrl && opp.logoUrl.includes('ui-avatars.com')) ? '' : (opp.logoUrl || '');
             
             fileUploads.opp = null;
             document.getElementById('opp-file-input').value = '';
@@ -3237,7 +3261,7 @@ function handleFileUpload(event, type) {
             let logo = fileUploads.opp || (url !== "Yerel Dosya Seçildi" ? url : null);
 
             if(!name) { alert("Takım adı zorunludur!"); return; }
-            if(!logo) logo = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff`;
+            if(logo && logo.includes('ui-avatars.com')) logo = ''; // ui-avatars kaydedilmesini engelle
 
             const typedContinent = document.getElementById('opp-continent-input').value.trim();
             // Kıta/Grup yazılmamışsa, ülke kodundan otomatik bul
@@ -3252,7 +3276,16 @@ function handleFileUpload(event, type) {
             }
 
             // --- TAŞIMA MANTIĞI (Hem Kulüp Hem Milli İçin Ortak) ---
-            if (targetContinent.toUpperCase() === opponentsConfig[context].domestic.name.toUpperCase()) {
+            let isDomestic = false;
+            if (!typedContinent) {
+                const myCountry = context === 'kulup' ? managedTeams.kulup.country : managedTeams.milli.country;
+                // Eğer her iki ülke kodu da aynı bayrağı/simgesi üretiyorsa, bu takımlar aynı ülkedendir.
+                if (rawCountry && myCountry && getFlagIcon(rawCountry) === getFlagIcon(myCountry)) {
+                    isDomestic = true;
+                }
+            }
+
+            if (isDomestic || targetContinent.toUpperCase() === opponentsConfig[context].domestic.name.toUpperCase()) {
                 // Ana gruba (Yurtiçi/Avrupa) taşı
                 if (groupType !== 'domestic') {
                     opponentsConfig[context].foreign[groupIndex].teams.splice(index, 1);
@@ -3304,7 +3337,7 @@ function handleFileUpload(event, type) {
 
             activeOppInfo = { context, groupType, groupIndex, index, id: opp.id };
 
-            document.getElementById('stat-opp-logo').src = opp.logoUrl;
+            document.getElementById('stat-opp-logo').src = getTeamLogoByName(opp.name);
             document.getElementById('stat-opp-name').innerText = opp.name;
             document.getElementById('stat-opp-country').innerText = opp.country || '-';
 
@@ -6486,31 +6519,33 @@ function autoFillTeamLogo(nameInput, urlInputId) {
             if (managedTeams.kulup && managedTeams.kulup.name === name) return managedTeams.kulup.logoUrl;
             if (managedTeams.milli && managedTeams.milli.name === name) return managedTeams.milli.logoUrl;
             
-            // Bulamazsak kayıtlı tüm rakipleri tarayalım
-            let foundLogo = null;
+            // Özel yüklenmiş/girilmiş rakip logolarını kontrol et (ui-avatars.com HARİÇ)
+            let customLogo = null;
             ['kulup', 'milli'].forEach(ctx => {
                 if (opponentsConfig[ctx]) {
                     if (opponentsConfig[ctx].domestic && opponentsConfig[ctx].domestic.teams) {
                         let t = opponentsConfig[ctx].domestic.teams.find(x => x.name === name);
-                        if (t && t.logoUrl) foundLogo = t.logoUrl;
+                        if (t && t.logoUrl && !t.logoUrl.includes('ui-avatars.com')) customLogo = t.logoUrl;
                     }
-                    if (!foundLogo && opponentsConfig[ctx].foreign) {
+                    if (!customLogo && opponentsConfig[ctx].foreign) {
                         opponentsConfig[ctx].foreign.forEach(grp => {
                             let t = grp.teams.find(x => x.name === name);
-                            if (t && t.logoUrl) foundLogo = t.logoUrl;
+                            if (t && t.logoUrl && !t.logoUrl.includes('ui-avatars.com')) customLogo = t.logoUrl;
                         });
                     }
                 }
             });
 
-            // YENİ: FC26 Veritabanından (team-tournament-data.js) genel kontrol et (Fikstür / Maçlar tablosu için)
-            if (!foundLogo && typeof FC26_TEAM_DATABASE !== 'undefined') {
+            if (customLogo) return customLogo;
+
+            // FC26 Veritabanından (team-tournament-data.js) genel kontrol et
+            if (typeof FC26_TEAM_DATABASE !== 'undefined') {
                 const dbMatch = FC26_TEAM_DATABASE.find(t => typeof t === 'object' && t.name && t.name.toLowerCase() === name.toLowerCase());
-                if (dbMatch && dbMatch.logo) foundLogo = dbMatch.logo;
+                if (dbMatch && dbMatch.logo) return dbMatch.logo;
             }
             
             // Eğer hiçbir yerde yoksa, ismin baş harflerinden otomatik bir logo üret
-            return foundLogo || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff`;
+            return `[https://ui-avatars.com/api/?name=$](https://ui-avatars.com/api/?name=$){encodeURIComponent(name)}&background=random&color=fff`;
         }
 
         function toggleFixtureRowExpand(matchId) {
