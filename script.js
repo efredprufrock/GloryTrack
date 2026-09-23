@@ -263,7 +263,7 @@ const TR_EN = {
     "Örnek: Premier League, Liverpool, 45 P": "Example: Premier League, Liverpool, 45 P",
     "Örnek: Premier League, Arsenal, 42 P": "Example: Premier League, Arsenal, 42 P",
     "Örnek: La Liga, Real Madrid, 40 P": "Example: La Liga, Real Madrid, 40 P",
-    "Geçerli lig adları: Premier League, Serie A, La Liga, Bundesliga, Ligue 1, Liga Portugal, Eredivisie, Belgian 1A Pro League, Scottish Premiership, Norwegian Eliteserien, Swedish Allsvenskan, Romanian Liga I": "Valid league names: Premier League, Serie A, La Liga, Bundesliga, Ligue 1, Liga Portugal, Eredivisie, Belgian 1A Pro League, Scottish Premiership, Norwegian Eliteserien, Swedish Allsvenskan, Romanian Liga I",
+    "Geçerli lig adları: Premier League, Süper Lig, Serie A, La Liga, Bundesliga, Ligue 1, Liga Portugal, Eredivisie, Belgian 1A Pro League, Scottish Premiership, Norwegian Eliteserien, Swedish Allsvenskan": "Valid league names: Premier League, Süper Lig, Serie A, La Liga, Bundesliga, Ligue 1, Liga Portugal, Eredivisie, Belgian 1A Pro League, Scottish Premiership, Norwegian Eliteserien, Swedish Allsvenskan",
 
     // Turnuva ve Aşama İsimleri
     "UEFA Şampiyonlar Ligi": "UEFA Champions League",
@@ -6629,6 +6629,7 @@ function formatShortPlayerName(name) {
         // Tüm panelde (render + toplu ekleme) tek kaynaktan kullanılan lig listesi
         const EURO_LEAGUES_LIST = [
             { name: 'Premier League', flag: 'gb-eng' },
+            { name: 'Süper Lig', flag: 'tr' },
             { name: 'Serie A', flag: 'it' },
             { name: 'La Liga', flag: 'es' },
             { name: 'Bundesliga', flag: 'de' },
@@ -6638,8 +6639,7 @@ function formatShortPlayerName(name) {
             { name: 'Belgian 1A Pro League', flag: 'be' },
             { name: 'Scottish Premiership', flag: 'gb-sct' },
             { name: 'Norwegian Eliteserien', flag: 'no' },
-            { name: 'Swedish Allsvenskan', flag: 'se' },
-            { name: 'Romanian Liga I', flag: 'ro' }
+            { name: 'Swedish Allsvenskan', flag: 'se' }
         ];
 
         function updateEuroLeague(season, league, index, field, element) {
@@ -6714,14 +6714,22 @@ function formatShortPlayerName(name) {
         const KNOCKOUT_DEFAULT_TYPES = ['UEFA Şampiyonlar Ligi', 'UEFA Avrupa Ligi', 'UEFA Konferans Ligi', 'Dünya Kupası', 'UEFA Avrupa Şampiyonası', 'Türkiye Kupası'];
 
         function addCustomTournament() {
-            const type = document.getElementById('custom-tour-select').value;
+            let type = document.getElementById('custom-tour-select').value;
+            let isCustom = false;
+            
+            if (type === 'CUSTOM') {
+                type = prompt('Turnuva adını girin (Örn: Hazırlık Kupası, Copa America):');
+                if (!type || type.trim() === '') return;
+                isCustom = true;
+            }
+            
             if(!customTournamentsData[activeFixtureSeason]) customTournamentsData[activeFixtureSeason] = [];
             
             customTournamentsData[activeFixtureSeason].push({
                 id: 'ct_' + Date.now(),
                 type: type,
                 tableEnabled: true,
-                knockoutEnabled: KNOCKOUT_DEFAULT_TYPES.includes(type),
+                knockoutEnabled: isCustom ? true : KNOCKOUT_DEFAULT_TYPES.includes(type),
                 table: [
                     { rank: '1', name: 'Takım Adı', pld: '0', gd: '0', pts: '0' },
                     { rank: '2', name: 'Takım Adı', pld: '0', gd: '0', pts: '0' }
@@ -6730,6 +6738,16 @@ function formatShortPlayerName(name) {
             });
             saveToLocalStorage();
             renderFixturePanel();
+        }
+
+        function updateCustomTournamentName(id, element) {
+            const tour = customTournamentsData[activeFixtureSeason].find(t => t.id === id);
+            if (tour) {
+                tour.type = element.innerText.trim() || 'İsimsiz Turnuva';
+                saveToLocalStorage();
+                // Rengin (arka planın) güncellenmesi için tabloyu yeniden çizelim
+                renderFixturePanel();
+            }
         }
 
         function deleteCustomTournament(tourId) {
@@ -7536,6 +7554,7 @@ function formatShortPlayerName(name) {
                                     <option value="Sezon Öncesi Hazırlık">Sezon Öncesi Hazırlık</option>
                                     <option value="Dünya Kupası">Dünya Kupası</option>
                                     <option value="Avrupa Şampiyonası">Avrupa Şampiyonası</option>
+                                    <option value="CUSTOM" class="text-emerald-400 font-bold">+ Yeni / Özel Turnuva</option>
                                 </select>
                                 <button onclick="addCustomTournament()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-2 py-1 rounded text-[10px] font-bold transition-colors">
                                     <i class="fa-solid fa-plus mr-1"></i>Ekle
@@ -7801,9 +7820,11 @@ function formatShortPlayerName(name) {
                                             <button onclick="moveCustomTournament('${tour.id}', 1)" ${tIdx === cTours.length - 1 ? 'disabled' : ''} class="bg-slate-700 hover:bg-emerald-600 disabled:opacity-30 disabled:cursor-not-allowed text-white w-5 h-5 rounded-full text-[10px] flex items-center justify-center shadow-lg" title="Aşağı Taşı"><i class="fa-solid fa-chevron-down"></i></button>
                                         </div>
                                         <button onclick="deleteCustomTournament('${tour.id}')" class="absolute -top-2 -right-2 bg-red-600 hover:bg-red-500 text-white w-5 h-5 rounded-full text-[10px] flex items-center justify-center opacity-0 group-hover/tour:opacity-100 transition-opacity z-10 shadow-lg" title="Tüm Kartı Sil"><i class="fa-solid fa-times"></i></button>
-                                        <h4 onclick="toggleCustomTournamentCollapse('${tour.id}')" class="text-sm font-bold text-emerald-400 mb-2 border-b border-slate-800 pb-1 truncate cursor-pointer select-none flex items-center justify-between gap-2">
-                                            <span class="truncate">${tour.type}</span>
-                                            <i id="tour-chevron-${tour.id}" class="fa-solid fa-chevron-down text-[10px] shrink-0 transition-transform duration-200 ${isCollapsed ? '-rotate-90' : ''}"></i>
+                                        <h4 class="text-sm font-bold text-emerald-400 mb-2 border-b border-slate-800 pb-1 flex items-center justify-between gap-2">
+                                            <span class="truncate outline-none focus:bg-slate-800/80 rounded px-1 transition-colors hover:bg-slate-800/60 cursor-text" contenteditable="true" onblur="updateCustomTournamentName('${tour.id}', this)" title="Turnuva ismini düzenlemek için tıklayın">${tour.type}</span>
+                                            <button onclick="toggleCustomTournamentCollapse('${tour.id}')" class="p-1 hover:text-white cursor-pointer" title="Daralt/Genişlet">
+                                                <i id="tour-chevron-${tour.id}" class="fa-solid fa-chevron-down text-[10px] shrink-0 transition-transform duration-200 ${isCollapsed ? '-rotate-90' : ''}"></i>
+                                            </button>
                                         </h4>
                                         <div id="tour-content-${tour.id}" class="transition-all duration-300 ${isCollapsed ? 'hidden' : ''}">
                                             ${tableSectionHtml}${knockoutHtml}${topStatsHtml}
@@ -7823,7 +7844,7 @@ function formatShortPlayerName(name) {
                                 <button onclick="openEuroLeaguesBulkModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-2 py-1 rounded text-[10px] font-bold transition-colors shadow flex items-center gap-1">
                                     <i class="fa-solid fa-list-ol"></i> Toplu Ekle
                                 </button>
-                                <span class="text-[9px] text-slate-400 font-bold uppercase hidden lg:inline"><i class="fa-solid fa-pen mr-1"></i>Tıkla ve Düzenle</span>
+                                <span class="text-sm text-slate-400 hidden lg:inline cursor-help" title="Tıkla ve Düzenle"><i class="fa-solid fa-pen"></i></span>
                             </div>
                         </div>
                         <div class="p-4 overflow-y-auto custom-scrollbar h-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2 gap-4 content-start">
@@ -8238,7 +8259,12 @@ function formatShortPlayerName(name) {
         function openFixtureBulkModal(season) {
             activeFixtureSeason = season;
             document.getElementById('fb-modal-subtitle').textContent = season + ' Sezonu';
-            document.getElementById('fb-textarea').value = '';
+            document.getElementById('fb-rows-container').innerHTML = ''; // Temizle
+            
+            // İlk açılışta 3 boş satır ekle
+            addFixtureBulkRow();
+            addFixtureBulkRow();
+            addFixtureBulkRow();
             
             const modal = document.getElementById('fixture-bulk-modal');
             modal.classList.remove('hidden');
@@ -8249,6 +8275,52 @@ function formatShortPlayerName(name) {
             const modal = document.getElementById('fixture-bulk-modal');
             modal.classList.add('hidden');
             modal.classList.remove('flex');
+        }
+        
+        function addFixtureBulkRow() {
+            const container = document.getElementById('fb-rows-container');
+            const rowCount = container.children.length;
+            
+            // Otomatik sıralı maç numarası belirleme
+            const currentMatches = fixtureData[activeFixtureSeason] || [];
+            let maxNo = 0;
+            currentMatches.forEach(m => {
+                const no = parseInt(m.matchNo);
+                if (!isNaN(no) && no > maxNo) maxNo = no;
+            });
+            const defaultMatchNo = maxNo + rowCount + 1;
+            
+            const row = document.createElement('div');
+            row.className = 'fb-row grid grid-cols-1 sm:grid-cols-12 gap-2 items-center bg-slate-950 p-2 rounded border border-slate-800 relative group';
+            row.innerHTML = `
+                <div class="col-span-1">
+                    <input type="number" class="fb-matchno w-full bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-xs text-center text-white focus:border-emerald-500 outline-none" placeholder="No" value="${defaultMatchNo}">
+                </div>
+                <div class="col-span-2">
+                    <input type="text" list="global-tournament-datalist" class="fb-tournament w-full bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-xs text-white focus:border-emerald-500 outline-none" placeholder="Müsabaka">
+                </div>
+                <div class="col-span-2">
+                    <select class="fb-ground w-full bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-xs text-white focus:border-emerald-500 outline-none">
+                        <option value="home">İç Saha (Home)</option>
+                        <option value="away">Deplasman (Away)</option>
+                        <option value="neutral">Tarafsız (Neutral)</option>
+                    </select>
+                </div>
+                <div class="col-span-2">
+                    <input type="text" list="global-team-datalist" class="fb-home w-full bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-xs text-white focus:border-emerald-500 outline-none" placeholder="Ev Sahibi">
+                </div>
+                <div class="col-span-2">
+                    <input type="text" list="global-team-datalist" class="fb-away w-full bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-xs text-white focus:border-emerald-500 outline-none" placeholder="Deplasman">
+                </div>
+                <div class="col-span-2">
+                    <input type="text" class="fb-round w-full bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-xs text-white focus:border-emerald-500 outline-none" placeholder="Hafta / Aşama">
+                </div>
+                <div class="col-span-1 pr-6 sm:pr-0">
+                    <input type="text" class="fb-country w-full bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-xs text-center text-white focus:border-emerald-500 outline-none uppercase" placeholder="TR">
+                </div>
+                <button onclick="this.parentElement.remove()" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity" title="Satırı Sil"><i class="fa-solid fa-trash text-xs"></i></button>
+            `;
+            container.appendChild(row);
         }
 
         function deleteBulkFixtures() {
@@ -8264,39 +8336,31 @@ function formatShortPlayerName(name) {
         }
 
         function saveBulkFixtures() {
-            const text = document.getElementById('fb-textarea').value.trim();
-            if (!text) { alert('Lütfen eklenecek maçları girin!'); return; }
+            const rows = document.querySelectorAll('.fb-row');
+            if (rows.length === 0) { alert('Eklenecek satır bulunamadı!'); return; }
 
-            // YENİ: Sistemin donmadığını göstermek için butona yükleniyor efekti ver
             const btn = document.querySelector('#fixture-bulk-modal button.bg-blue-600');
             const originalHtml = btn.innerHTML;
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i>Ekleniyor...';
             btn.disabled = true;
 
-            // YENİ: Ağır işlemi setTimeout içine alarak tarayıcıya nefes aldırıyoruz
             setTimeout(() => {
-                const lines = text.split('\n');
                 let addedCount = 0;
                 
                 if (!fixtureData[activeFixtureSeason]) fixtureData[activeFixtureSeason] = [];
                 const teamName = managedTeams.kulup.name || '';
 
-                lines.forEach(line => {
-                    if (!line.trim()) return;
-                    const parts = line.split(',').map(s => s.trim());
+                rows.forEach(row => {
+                    const matchNo = row.querySelector('.fb-matchno').value.trim();
+                    const tournament = row.querySelector('.fb-tournament').value.trim();
+                    const ground = row.querySelector('.fb-ground').value;
+                    const home = row.querySelector('.fb-home').value.trim();
+                    const away = row.querySelector('.fb-away').value.trim();
+                    const round = row.querySelector('.fb-round').value.trim();
+                    const oppCountryRaw = row.querySelector('.fb-country').value.trim();
+                    const oppCountry = oppCountryRaw ? normalizeCountryInput(oppCountryRaw) : ''; 
                     
-                    if (parts.length >= 4) {
-                        const matchNo = parts[0];
-                        const tournament = parts[1];
-                        const home = parts[2];
-                        const away = parts[3];
-                        const oppCountry = parts[4] ? normalizeCountryInput(parts[4]) : ''; 
-                        const round = parts[5] ? parts[5].trim() : '';
-                        
-                        let ground = 'neutral';
-                        if (home === teamName) ground = 'home';
-                        else if (away === teamName) ground = 'away';
-
+                    if (home && away) {
                         const newMatch = {
                             id: 'fx_bulk_' + Date.now() + '_' + addedCount,
                             matchNo: matchNo, 
@@ -8316,7 +8380,6 @@ function formatShortPlayerName(name) {
                     }
                 });
 
-                // İşlem bitince butonu eski haline getir
                 btn.innerHTML = originalHtml;
                 btn.disabled = false;
 
@@ -8326,9 +8389,9 @@ function formatShortPlayerName(name) {
                     renderFixturePanel();
                     renderQuickFixtureBar();
                 } else {
-                    alert('Geçerli formatta maç bulunamadı. Lütfen "Maç No, Müsabaka, Ev, Deplasman" formatında girin.');
+                    alert('Geçerli maç bulunamadı. Lütfen Ev Sahibi ve Deplasman alanlarını kontrol edin.');
                 }
-            }, 50); // 50 milisaniye bekle, "Ekleniyor" yazısının ekranda belirmesine izin ver
+            }, 50); 
         }
 
         // --- SENKRONİZASYON MOTORU ---

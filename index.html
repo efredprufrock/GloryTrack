@@ -972,26 +972,34 @@
         </div>
     </div>
 
-    <!-- Modal: Toplu Fikstür Ekle (Excel/Metin) -->
+    <!-- Modal: Toplu Fikstür Ekle (Kutulu) -->
     <div id="fixture-bulk-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[100] fade-in backdrop-blur-sm">
-        <div class="bg-slate-800 p-6 rounded-xl border border-slate-600 w-[95%] max-w-3xl shadow-2xl relative flex flex-col">
+        <div class="bg-slate-800 p-6 rounded-xl border border-slate-600 w-[95%] max-w-5xl shadow-2xl relative flex flex-col max-h-[90vh]">
             <button onclick="closeFixtureBulkModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white z-10"><i class="fa-solid fa-xmark text-xl"></i></button>
             <h3 class="text-xl font-bold mb-1 text-white">Toplu Fikstür Ekle</h3>
             <p class="text-xs text-emerald-400 font-bold mb-4" id="fb-modal-subtitle"></p>
 
-            <div class="mb-4 bg-slate-900 p-4 rounded-lg border border-slate-700">
-                <p class="text-sm text-slate-300 mb-2">Excel'den kopyaladığınız veya virgülle ayırdığınız maç listesini aşağıya yapıştırın.</p>
-                <p class="text-[11px] text-slate-400 font-mono bg-slate-950 p-2 rounded border border-slate-800">
-                    Sütun Sırası: <span class="text-emerald-400">Maç No</span> | <span class="text-emerald-400">Müsabaka</span> | <span class="text-emerald-400">Ev Sahibi</span> | <span class="text-emerald-400">Deplasman</span> | <span class="text-blue-400">Ülke Kodu (Opsiyonel)</span> | <span class="text-purple-400">Hafta / Aşama (Opsiyonel)</span><br>
-                Örnek: 1, Süper Lig, Galatasaray, Fenerbahçe, TR, 1. Hafta<br>
-                Örnek: 2, Şampiyonlar Ligi, Juventus, Galatasaray, IT, Çeyrek Final
-            </p>
-        <textarea id="fb-textarea" rows="10" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-sm text-white outline-none focus:border-emerald-500 font-mono whitespace-pre text-nowrap hide-scrollbar mt-2" placeholder="1, Süper Lig, Galatasaray, Fenerbahçe, TR, 1. Hafta&#10;2, Şampiyonlar Ligi, Juventus, Galatasaray, IT, Çeyrek Final"></textarea>
+            <div class="flex-1 overflow-y-auto min-h-0 bg-slate-900 p-4 rounded-lg border border-slate-700 custom-scrollbar">
+                <div class="hidden sm:grid grid-cols-12 gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">
+                    <div class="col-span-1 text-center">Maç No</div>
+                    <div class="col-span-2">Müsabaka</div>
+                    <div class="col-span-2">Zemin</div>
+                    <div class="col-span-2">Ev Sahibi</div>
+                    <div class="col-span-2">Deplasman</div>
+                    <div class="col-span-2">Hafta / Aşama</div>
+                    <div class="col-span-1 text-center">Ülke</div>
+                </div>
+                <div id="fb-rows-container" class="space-y-2">
+                    <!-- Satırlar buraya JS ile yüklenecek -->
+                </div>
+                <button onclick="addFixtureBulkRow()" class="mt-3 w-full py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 border-dashed rounded text-sm text-emerald-400 font-bold transition-colors">
+                    <i class="fa-solid fa-plus mr-1"></i> Yeni Satır Ekle
+                </button>
             </div>
 
             <div class="flex justify-end items-center mt-4 pt-4 border-t border-slate-700 shrink-0 gap-2">
                 <button onclick="closeFixtureBulkModal()" class="px-5 py-2.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-medium transition-colors text-sm">İptal</button>
-                <button onclick="saveBulkFixtures()" class="px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold transition-colors text-sm"><i class="fa-solid fa-file-import mr-1"></i>Listeyi İçe Aktar</button>
+                <button onclick="saveBulkFixtures()" class="px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold transition-colors text-sm"><i class="fa-solid fa-file-import mr-1"></i>Maçları Ekle</button>
             </div>
         </div>
     </div>
@@ -1133,7 +1141,7 @@
                     Örnek: Premier League, Arsenal, 42 P<br>
                     Örnek: La Liga, Real Madrid, 40 P
                 </p>
-                <p class="text-[10px] text-slate-500 mt-2">Geçerli lig adları: Premier League, Serie A, La Liga, Bundesliga, Ligue 1, Liga Portugal, Eredivisie, Belgian 1A Pro League, Scottish Premiership, Norwegian Eliteserien, Swedish Allsvenskan, Romanian Liga I</p>
+                <p class="text-[10px] text-slate-500 mt-2">Geçerli lig adları: Premier League, Süper Lig, Serie A, La Liga, Bundesliga, Ligue 1, Liga Portugal, Eredivisie, Belgian 1A Pro League, Scottish Premiership, Norwegian Eliteserien, Swedish Allsvenskan</p>
             </div>
 
             <div class="mb-4">
