@@ -1004,6 +1004,30 @@
         </div>
     </div>
 
+    <!-- Modal: Toplu Fikstür Ekle (Metin/Virgüllü) -->
+    <div id="fixture-text-bulk-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[100] fade-in backdrop-blur-sm">
+        <div class="bg-slate-800 p-6 rounded-xl border border-slate-600 w-[95%] max-w-4xl shadow-2xl relative flex flex-col">
+            <button onclick="closeFixtureTextBulkModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white z-10"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <h3 class="text-xl font-bold mb-1 text-white">Metin ile Toplu Fikstür Ekle</h3>
+            <p class="text-xs text-emerald-400 font-bold mb-4" id="ftb-modal-subtitle"></p>
+
+            <div class="mb-4 bg-slate-900 p-4 rounded-lg border border-slate-700">
+                <p class="text-sm text-slate-300 mb-2">Her satıra bir maç gelecek şekilde, virgülle ayırarak listeyi yapıştırın.</p>
+                <p class="text-[11px] text-slate-400 font-mono bg-slate-950 p-2 rounded border border-slate-800">
+                    Sütun Sırası: <span class="text-emerald-400">Maç No</span>, <span class="text-emerald-400">Müsabaka</span>, <span class="text-emerald-400">Home/Away/Neutral</span>, <span class="text-emerald-400">Ev Sahibi</span>, <span class="text-emerald-400">Deplasman</span>, <span class="text-purple-400">Hafta / Aşama (Opsiyonel)</span>, <span class="text-blue-400">Ülke Kodu (Opsiyonel)</span><br>
+                    <br>Örnek 1: <span class="text-white">1, Süper Lig, Home, Galatasaray, Fenerbahçe, 1. Hafta, TR</span>
+                    <br>Örnek 2: <span class="text-white">2, Şampiyonlar Ligi, Away, Juventus, Galatasaray, Çeyrek Final, IT</span>
+                </p>
+                <textarea id="ftb-textarea" rows="10" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-sm text-white outline-none focus:border-emerald-500 font-mono whitespace-pre text-nowrap hide-scrollbar mt-2" placeholder="1, Süper Lig, Home, Galatasaray, Fenerbahçe, 1. Hafta, TR&#10;2, Şampiyonlar Ligi, Away, Juventus, Galatasaray, Çeyrek Final, IT"></textarea>
+            </div>
+
+            <div class="flex justify-end items-center mt-4 pt-4 border-t border-slate-700 shrink-0 gap-2">
+                <button onclick="closeFixtureTextBulkModal()" class="px-5 py-2.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-medium transition-colors text-sm">İptal</button>
+                <button onclick="saveFixtureTextBulk()" class="px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold transition-colors text-sm"><i class="fa-solid fa-file-import mr-1"></i>Listeyi İçe Aktar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal: Kadro Toplu Ekleme -->
     <div id="squad-bulk-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[100] fade-in backdrop-blur-sm">
         <div class="bg-slate-800 p-6 rounded-xl border border-slate-600 w-[90%] max-w-2xl shadow-2xl relative">

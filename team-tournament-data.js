@@ -5,6 +5,38 @@
 
 const FC26_TEAM_DATABASE = [
     "\" generic)",
+    { name: "Algeria", logo: "https://assets.football-logos.cc/logos/algeria/700x700/algeria-national-team.4c3d5d41.png" }, //
+    { name: "Argentina", logo: "https://assets.football-logos.cc/logos/argentina/700x700/argentina-national-team.83b3320e.png" }, //
+    { name: "Australia", logo: "https://assets.football-logos.cc/logos/australia/700x700/australia-national-team.25ee3a16.png" }, //
+    { name: "Austria", logo: "https://assets.football-logos.cc/logos/austria/700x700/austria-national-team.b6833989.png" }, //
+    { name: "Belgium", logo: "https://assets.football-logos.cc/logos/belgium/700x700/belgium-national-team.51d98d15.png" }, //
+    { name: "Bosnia and Herzegovina", logo: "https://assets.football-logos.cc/logos/bosnia-and-herzegovina/700x700/bosnia-and-herzegovina-national-team.28bbde58.png" }, //
+    { name: "Brazil", logo: "https://assets.football-logos.cc/logos/brazil/700x700/brazil-national-team.caceec49.png" }, //
+    { name: "Cabo Verde", logo: "https://assets.football-logos.cc/logos/cabo-verde/700x700/cabo-verde-national-team.85151b81.png" }, //
+    { name: "Colombia", logo: "https://assets.football-logos.cc/logos/colombia/700x700/colombia-national-team.d2541145.png" }, //
+    { name: "Congo DR", logo: "https://assets.football-logos.cc/logos/congo-dr/700x700/congo-dr-national-team.b8484bf7.png" }, //
+    { name: "Côte d'Ivoire", logo: "https://assets.football-logos.cc/logos/cote-d-ivoire/700x700/cote-d-ivoire-national-team.f3f9c32b.png" }, //
+    { name: "Curacao", logo: "https://assets.football-logos.cc/logos/curacao/700x700/curacao-national-team.e9edccb9.png" }, //
+    { name: "Ecuador", logo: "https://assets.football-logos.cc/logos/ecuador/700x700/ecuador-national-team.02108d33.png" }, //
+    { name: "Egypt", logo: "https://assets.football-logos.cc/logos/egypt/700x700/egypt-national-team.cb1f75a6.png" }, //
+    { name: "Haiti", logo: "https://assets.football-logos.cc/logos/haiti/700x700/haiti-national-team.d9f02d4a.png" }, //
+    { name: "Indonesia", logo: "https://assets.football-logos.cc/logos/indonesia/700x700/indonesia-national-team.8919e55c.png" }, //
+    { name: "Iran", logo: "https://assets.football-logos.cc/logos/iran/700x700/iran-national-team.58d01230.png" }, //
+    { name: "Iraq", logo: "https://assets.football-logos.cc/logos/iraq/700x700/iraq-national-team.ae06ca71.png" }, //
+    { name: "Japan", logo: "https://assets.football-logos.cc/logos/japan/700x700/japan-national-team.0783a9e9.png" }, //
+    { name: "Jordan", logo: "https://assets.football-logos.cc/logos/jordan/700x700/jordan-national-team.50fc35bc.png" }, //
+    { name: "Korea Republic", logo: "https://assets.football-logos.cc/logos/south-korea/700x700/south-korea-national-team.222b8234.png" }, //
+    { name: "New Zealand", logo: "https://assets.football-logos.cc/logos/new-zealand/700x700/new-zealand-national-team.9c5d5412.png" }, //
+    { name: "Panama", logo: "https://assets.football-logos.cc/logos/panama/700x700/panama-national-team.155ff4e6.png" }, //
+    { name: "Paraguay", logo: "https://assets.football-logos.cc/logos/paraguay/700x700/paraguay-national-team.84c19057.png" }, //
+    { name: "Saudi Arabia", logo: "https://assets.football-logos.cc/logos/saudi-arabia/700x700/saudi-arabia-national-team.dd90336c.png" }, //
+    { name: "Senegal", logo: "https://assets.football-logos.cc/logos/senegal/700x700/senegal-national-team.9d38991b.png" }, //
+    { name: "South Africa", logo: "https://assets.football-logos.cc/logos/south-africa/700x700/south-africa-national-team.fe892688.png" }, //
+    { name: "Switzerland", logo: "https://assets.football-logos.cc/logos/switzerland/700x700/switzerland-national-team.2bff4e73.png" },, //
+    { name: "Tunisia", logo: "https://assets.football-logos.cc/logos/tunisia/700x700/tunisia-national-team.55eea647.png" }, //
+    { name: "Türkiye", logo: "https://assets.football-logos.cc/logos/turkey/700x700/turkey-national-team.2e627602.png" }, //
+    { name: "Uruguay", logo: "https://assets.football-logos.cc/logos/uruguay/700x700/uruguay-national-team.d4efefc9.png" }, //
+    { name: "Uzbekistan", logo: "https://assets.football-logos.cc/logos/uzbekistan/700x700/uzbekistan-national-team.bc0802cf.png" }, //
     { name: "1. FC Heidenheim", logo: "https://assets.football-logos.cc/logos/germany/256x256/fc-heidenheim.5798143f.png" }, //
     { name: "1. FC Kaiserslautern", logo: "https://assets.football-logos.cc/logos/germany/256x256/fc-kaiserslautern.dd69845b.png" }, //
     { name: "1. FC Köln", logo: "https://assets.football-logos.cc/logos/germany/256x256/koln.47dabc55.png" }, //

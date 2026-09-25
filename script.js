@@ -400,8 +400,18 @@ const TR_EN = {
     "Deplasman": "Away",
     "Ülke Kodu (Opsiyonel)": "Country Code (Optional)",
     "Listeyi İçe Aktar": "Import List",
-    "Maç Sonucu Gir": "Enter Match Result",
-    "Gol & Asist Detayları": "Goal & Assist Details",
+        "Yeni Satır Ekle": "Add New Row",
+        "Maçları Ekle": "Add Matches",
+        "İç Saha": "Home",
+        "Deplasman": "Away",
+        "Tarafsız": "Neutral",
+        "Hafta / Aşama": "Week / Stage",
+        "Satırı Sil": "Delete Row",
+        "Maç Sonucu Gir": "Enter Match Result",
+        "Metin Ekle": "Text Add",
+        "Metin (Virgüllü) ile Toplu Ekle": "Bulk Add (Text / Comma)",
+        "Metin ile Toplu Fikstür Ekle": "Bulk Add Fixtures via Text",
+        "Her satıra bir maç gelecek şekilde, virgülle ayırarak listeyi yapıştırın.": "Paste the list, separating by commas, one match per line.",
     "Olay Ekle": "Add Event",
     "Sonucu Kaydet": "Save Result",
     "Lig Tarihine Takım Ekle": "Add Team to League History",
@@ -1451,9 +1461,10 @@ function handleSyncClick() {
             'opponent-editor-modal', 'group-editor-modal', 'player-info-modal',
             'player-cell-modal', 'match-editor-modal', 'season-stats-modal',
             'league-team-modal', 'league-team-bulk-modal', 'league-cell-modal', 'transfer-editor-modal', 'fixture-match-modal', 'match-result-modal',
-            'fixture-bulk-modal', 'squad-bulk-modal', 'tournament-table-bulk-modal', 'national-caps-bulk-modal', 'formation-modal', 'euro-leagues-bulk-modal', 'bulk-stat-modal', 'bulk-league-pts-modal', 'custom-tour-team-modal', 'ko-team-modal', 'top-stat-modal'
+            'fixture-bulk-modal', 'fixture-text-bulk-modal', 'squad-bulk-modal', 'tournament-table-bulk-modal', 'national-caps-bulk-modal', 'formation-modal', 'euro-leagues-bulk-modal', 'bulk-stat-modal', 'bulk-league-pts-modal', 'custom-tour-team-modal', 'ko-team-modal', 'top-stat-modal'
         ];
         const MODAL_CLOSE_FNS = {
+            'fixture-text-bulk-modal': () => closeFixtureTextBulkModal(),
             'trophy-modal': () => closeTrophyModal(),
             'tournament-modal': () => closeTournamentModal(),
             'managed-team-modal': () => closeManagedTeamModal(),
@@ -7475,6 +7486,9 @@ function formatShortPlayerName(name) {
                         <div class="bg-slate-800 border-b border-slate-700 p-2 sm:p-3 shrink-0 flex justify-between items-center flex-wrap gap-2">
                             <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-calendar-days text-emerald-400 mr-2"></i>Fikstür</h3>
                             <div class="flex gap-1.5">
+                                <button onclick="openFixtureTextBulkModal('${activeFixtureSeason}')" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded text-xs transition-colors shadow flex items-center gap-1.5" title="Metin (Virgüllü) ile Toplu Ekle">
+                                    <i class="fa-solid fa-file-lines"></i><span class="hidden sm:inline"> Metin Ekle</span>
+                                </button>
                                 <button onclick="openFixtureBulkModal('${activeFixtureSeason}')" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded text-xs transition-colors shadow flex items-center gap-1.5">
                                     <i class="fa-solid fa-list-check"></i><span class="hidden sm:inline"> Toplu Ekle</span>
                                 </button>
@@ -7985,7 +7999,7 @@ function formatShortPlayerName(name) {
             
             if (isNew || oldMatch.matchNo != matchNo) {
                 existingMatches.forEach(m => {
-                    if (parseInt(m.matchNo) >= matchNo) {
+                    if (parseInt(m.matchNo) >= matchNo && m.id !== activeFixtureMatchId) {
                         m.matchNo = (parseInt(m.matchNo) + 1).toString();
                     }
                 });
@@ -8021,6 +8035,12 @@ function formatShortPlayerName(name) {
                 syncFixtureToMatches(newMatch, activeFixtureSeason);
             }
 
+            // Boşlukları kapatmak ve yeniden sıralamak için otomatik numaralandırma
+            existingMatches.sort((a, b) => parseInt(a.matchNo) - parseInt(b.matchNo));
+            existingMatches.forEach((m, idx) => {
+                m.matchNo = (idx + 1).toString();
+            });
+
             saveToLocalStorage();
             closeFixtureModal();
             renderFixturePanel();
@@ -8032,11 +8052,17 @@ function formatShortPlayerName(name) {
             removeFixtureFromMatches(activeFixtureMatchId, activeFixtureSeason);
             if (fixtureData[activeFixtureSeason]) {
                 fixtureData[activeFixtureSeason] = fixtureData[activeFixtureSeason].filter(m => m.id !== activeFixtureMatchId);
+                
+                // Silme işleminden sonra sayısal boşlukları kapat
+                fixtureData[activeFixtureSeason].sort((a, b) => parseInt(a.matchNo) - parseInt(b.matchNo));
+                fixtureData[activeFixtureSeason].forEach((m, idx) => {
+                    m.matchNo = (idx + 1).toString();
+                });
             }
             saveToLocalStorage();
             closeFixtureModal();
             renderFixturePanel();
-        renderQuickFixtureBar();
+            renderQuickFixtureBar();
         }
 
         function openMatchResultModal(season, matchId) {
@@ -8258,7 +8284,7 @@ function formatShortPlayerName(name) {
 
         function openFixtureBulkModal(season) {
             activeFixtureSeason = season;
-            document.getElementById('fb-modal-subtitle').textContent = season + ' Sezonu';
+            document.getElementById('fb-modal-subtitle').textContent = currentLang === 'en' ? 'Season ' + season : season + ' Sezonu';
             document.getElementById('fb-rows-container').innerHTML = ''; // Temizle
             
             // İlk açılışta 3 boş satır ekle
@@ -8301,9 +8327,9 @@ function formatShortPlayerName(name) {
                 </div>
                 <div class="col-span-2">
                     <select class="fb-ground w-full bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-xs text-white focus:border-emerald-500 outline-none">
-                        <option value="home">İç Saha (Home)</option>
-                        <option value="away">Deplasman (Away)</option>
-                        <option value="neutral">Tarafsız (Neutral)</option>
+                        <option value="home">İç Saha</option>
+                        <option value="away">Deplasman</option>
+                        <option value="neutral">Tarafsız</option>
                     </select>
                 </div>
                 <div class="col-span-2">
@@ -8329,6 +8355,12 @@ function formatShortPlayerName(name) {
                 const toRemove = fixtureData[activeFixtureSeason].filter(m => m.id.startsWith('fx_bulk_'));
                 toRemove.forEach(m => removeFixtureFromMatches(m.id, activeFixtureSeason));
                 fixtureData[activeFixtureSeason] = fixtureData[activeFixtureSeason].filter(m => !m.id.startsWith('fx_bulk_'));
+                
+                // Silme işleminden sonra boşlukları kapat
+                fixtureData[activeFixtureSeason].sort((a, b) => parseInt(a.matchNo) - parseInt(b.matchNo));
+                fixtureData[activeFixtureSeason].forEach((m, idx) => {
+                    m.matchNo = (idx + 1).toString();
+                });
             }
             saveToLocalStorage();
             renderFixturePanel();
@@ -8348,10 +8380,10 @@ function formatShortPlayerName(name) {
                 let addedCount = 0;
                 
                 if (!fixtureData[activeFixtureSeason]) fixtureData[activeFixtureSeason] = [];
-                const teamName = managedTeams.kulup.name || '';
 
                 rows.forEach(row => {
-                    const matchNo = row.querySelector('.fb-matchno').value.trim();
+                    const matchNoStr = row.querySelector('.fb-matchno').value.trim();
+                    const matchNo = parseInt(matchNoStr) || 999;
                     const tournament = row.querySelector('.fb-tournament').value.trim();
                     const ground = row.querySelector('.fb-ground').value;
                     const home = row.querySelector('.fb-home').value.trim();
@@ -8361,9 +8393,16 @@ function formatShortPlayerName(name) {
                     const oppCountry = oppCountryRaw ? normalizeCountryInput(oppCountryRaw) : ''; 
                     
                     if (home && away) {
+                        // Yeni eklenen maça yer açmak için aynı veya daha büyük sıradaki mevcut maçları kaydır
+                        fixtureData[activeFixtureSeason].forEach(m => {
+                            if (parseInt(m.matchNo) >= matchNo) {
+                                m.matchNo = (parseInt(m.matchNo) + 1).toString();
+                            }
+                        });
+
                         const newMatch = {
                             id: 'fx_bulk_' + Date.now() + '_' + addedCount,
-                            matchNo: matchNo, 
+                            matchNo: matchNo.toString(), 
                             tournament: tournament,
                             ground: ground,
                             home: home,
@@ -8380,6 +8419,12 @@ function formatShortPlayerName(name) {
                     }
                 });
 
+                // İşlem sonunda sıralamayı kesinleştir ve boşlukları kapat
+                fixtureData[activeFixtureSeason].sort((a, b) => parseInt(a.matchNo) - parseInt(b.matchNo));
+                fixtureData[activeFixtureSeason].forEach((m, idx) => {
+                    m.matchNo = (idx + 1).toString();
+                });
+
                 btn.innerHTML = originalHtml;
                 btn.disabled = false;
 
@@ -8392,6 +8437,107 @@ function formatShortPlayerName(name) {
                     alert('Geçerli maç bulunamadı. Lütfen Ev Sahibi ve Deplasman alanlarını kontrol edin.');
                 }
             }, 50); 
+        }
+
+        function openFixtureTextBulkModal(season) {
+            activeFixtureSeason = season;
+            document.getElementById('ftb-modal-subtitle').textContent = currentLang === 'en' ? 'Season ' + season : season + ' Sezonu';
+            document.getElementById('ftb-textarea').value = '';
+            
+            const modal = document.getElementById('fixture-text-bulk-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeFixtureTextBulkModal() {
+            const modal = document.getElementById('fixture-text-bulk-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function saveFixtureTextBulk() {
+            const text = document.getElementById('ftb-textarea').value.trim();
+            if (!text) { alert('Lütfen eklenecek maçları girin!'); return; }
+
+            const btn = document.querySelector('#fixture-text-bulk-modal button.bg-blue-600');
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i>Ekleniyor...';
+            btn.disabled = true;
+
+            setTimeout(() => {
+                let addedCount = 0;
+                
+                if (!fixtureData[activeFixtureSeason]) fixtureData[activeFixtureSeason] = [];
+
+                const lines = text.split('\n');
+                lines.forEach(line => {
+                    if (!line.trim()) return;
+                    // Virgülle ayır, boşlukları temizle
+                    const parts = line.split(',').map(s => s.trim());
+                    
+                    if (parts.length >= 5) {
+                        const matchNoStr = parts[0];
+                        const matchNo = parseInt(matchNoStr) || 999;
+                        const tournament = parts[1] || '';
+                        
+                        // Zemin (Ground) algılama
+                        let rawGround = (parts[2] || '').toLowerCase();
+                        let ground = 'neutral';
+                        if (rawGround.includes('home') || rawGround.includes('iç')) ground = 'home';
+                        else if (rawGround.includes('away') || rawGround.includes('dep')) ground = 'away';
+                        
+                        const home = parts[3] || '';
+                        const away = parts[4] || '';
+                        const round = parts[5] || '';
+                        const oppCountryRaw = parts[6] || '';
+                        const oppCountry = oppCountryRaw ? normalizeCountryInput(oppCountryRaw) : '';
+                        
+                        if (home && away) {
+                            // Yeni eklenen maça yer açmak için aynı veya daha büyük sıradaki mevcut maçları kaydır
+                            fixtureData[activeFixtureSeason].forEach(m => {
+                                if (parseInt(m.matchNo) >= matchNo) {
+                                    m.matchNo = (parseInt(m.matchNo) + 1).toString();
+                                }
+                            });
+
+                            const newMatch = {
+                                id: 'fx_text_' + Date.now() + '_' + addedCount,
+                                matchNo: matchNo.toString(), 
+                                tournament: tournament,
+                                ground: ground,
+                                home: home,
+                                away: away,
+                                oppCountry: oppCountry, 
+                                round: round,
+                                homeScore: '',
+                                awayScore: '',
+                                events: []
+                            };
+                            fixtureData[activeFixtureSeason].push(newMatch);
+                            syncFixtureToMatches(newMatch, activeFixtureSeason);
+                            addedCount++;
+                        }
+                    }
+                });
+
+                // İşlem sonunda sıralamayı kesinleştir ve boşlukları kapat
+                fixtureData[activeFixtureSeason].sort((a, b) => parseInt(a.matchNo) - parseInt(b.matchNo));
+                fixtureData[activeFixtureSeason].forEach((m, idx) => {
+                    m.matchNo = (idx + 1).toString();
+                });
+
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+
+                if (addedCount > 0) {
+                    saveToLocalStorage();
+                    closeFixtureTextBulkModal();
+                    renderFixturePanel();
+                    renderQuickFixtureBar();
+                } else {
+                    alert('Geçerli maç bulunamadı. Lütfen sıralamanın şu formata uyduğundan emin olun:\nMaç No, Müsabaka, Home/Away/Neutral, Ev Sahibi, Deplasman, (Hafta), (Ülke)');
+                }
+            }, 50);
         }
 
         // --- SENKRONİZASYON MOTORU ---
