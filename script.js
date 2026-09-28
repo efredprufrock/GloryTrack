@@ -2458,7 +2458,7 @@ function handleFileUpload(event, type) {
             : 'border-slate-700/50';
 
         const abbr = getRoundAbbr(m.round);
-        const glowingPhases = ['G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7', 'G8', 'L32', 'L16', 'QF', 'SF', 'F', '3rd', 'PO'];
+        const glowingPhases = ['G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7', 'G8', 'R1', 'R2', 'R3', 'R4', 'R5', 'L32', 'L16', 'QF', 'SF', 'F', '3rd', 'PO'];
         const badgeStyle = glowingPhases.includes(abbr)
             ? 'text-amber-300 bg-amber-900/30 border-amber-600/50 shadow-[0_0_8px_rgba(245,158,11,0.4)]'
             : 'text-slate-300 bg-slate-800/60 border-slate-700/30 shadow-sm';
@@ -7419,7 +7419,7 @@ function formatShortPlayerName(name) {
                     let roundHtml = '';
                     if (m.round) {
                         const abbr = getRoundAbbr(m.round);
-                        const glowingPhases = ['G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7', 'G8', 'L32', 'L16', 'QF', 'SF', 'F', '3rd', 'PO'];
+                        const glowingPhases = ['G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7', 'G8', 'R1', 'R2', 'R3', 'R4', 'R5', 'L32', 'L32', 'L16', 'QF', 'SF', 'F', '3rd', 'PO'];
                         const badgeStyle = glowingPhases.includes(abbr)
                             ? 'text-amber-300 bg-amber-900/30 border-amber-600/50 shadow-[0_0_8px_rgba(245,158,11,0.4)]'
                             : 'text-slate-300 bg-slate-950/80 border-slate-700';
