@@ -3812,8 +3812,10 @@ function handleFileUpload(event, type) {
                     }
                 });
             }
-            // Base 45px (for player photo + padding) + approx 5px per character
-            let dynamicNameWidth = Math.floor(45 + (maxNameLength * 4));
+            // Fotoğraf (24px) + margin/padding boşlukları için sabit ~45px 
+            // + Karakter başına ortalama 7px.
+            // Ayrıca sütun başlığının ("İsim Soyisim") rahat sığabilmesi için en az 115px sınır.
+            let dynamicNameWidth = Math.max(115, Math.floor(45 + (maxNameLength * 7)));
 
             const staticCols = [
                 { id: 'pos', label: '<i class="fa-solid fa-street-view text-sm"></i>', title: 'Mevki', w: 26, align: 'center' },
@@ -7361,12 +7363,28 @@ function formatShortPlayerName(name) {
                     if (m.events && m.events.length > 0) {
                         const namedGoals = m.events.filter(ev => ev.scorer);
                         if (namedGoals.length) {
-                            scorersPlain = namedGoals.map(ev => formatShortPlayerName(ev.scorer)).join(', ');
-                            scorersList = namedGoals.map(ev => {
-                                const isUs = ev.type === 'US';
+                            const groupedGoals = [];
+                            namedGoals.forEach(ev => {
+                                const shortName = formatShortPlayerName(ev.scorer);
+                                const existing = groupedGoals.find(g => g.name === shortName && g.type === ev.type);
+                                const minuteStr = ev.min ? `${escapeHtml(ev.min)}'` : '';
+                                if (existing) {
+                                    if (minuteStr) existing.mins.push(minuteStr);
+                                } else {
+                                    groupedGoals.push({
+                                        name: shortName,
+                                        type: ev.type,
+                                        mins: minuteStr ? [minuteStr] : []
+                                    });
+                                }
+                            });
+                            
+                            scorersPlain = groupedGoals.map(g => g.name).join(', ');
+                            scorersList = groupedGoals.map(g => {
+                                const isUs = g.type === 'US';
                                 const colorClass = isUs ? 'goal-text' : 'text-red-400';
-                                const minuteStr = ev.min ? `${escapeHtml(ev.min)}'` : '-';
-                                return `<span class="${colorClass} text-[10px] font-bold whitespace-nowrap inline-block"><span class="text-slate-400 font-mono font-normal">${minuteStr}</span>&nbsp;${escapeHtml(formatShortPlayerName(ev.scorer))}</span>`;
+                                const minsJoined = g.mins.length > 0 ? g.mins.join(', ') : '-';
+                                return `<span class="${colorClass} text-[10px] font-bold whitespace-nowrap inline-block"><span class="text-slate-400 font-mono font-normal">${minsJoined}</span>&nbsp;${escapeHtml(g.name)}</span>`;
                             }).join('<span class="text-slate-600 mx-1">·</span>');
                         }
                     }
@@ -9065,11 +9083,47 @@ function startDragNode(e, index, nodeEl) {
         if(x < 2) x = 2; if(x > 98) x = 98;
         if(y < 2) y = 2; if(y > 98) y = 98;
 
+        // Görünmez Grid (Izgara) Snap Sistemi: Kartları 5% adımlarla hizalar
+        const GRID_STEP = 5;
+        x = Math.round(x / GRID_STEP) * GRID_STEP;
+        y = Math.round(y / GRID_STEP) * GRID_STEP;
+
         tempFormation[draggedNodeIndex].x = x;
         tempFormation[draggedNodeIndex].y = y;
         
         nodeEl.style.left = x + '%';
         nodeEl.style.top = y + '%';
+
+        // Konuma göre dinamik mevki (POS) belirleme motoru
+        let newPos = 'POS';
+        if (y >= 85) {
+            newPos = 'GK';
+        } else if (y >= 65) {
+            if (x <= 25) newPos = y <= 75 ? 'LWB' : 'LB';
+            else if (x >= 75) newPos = y <= 75 ? 'RWB' : 'RB';
+            else newPos = 'CB';
+        } else if (y >= 35) {
+            if (x <= 25) newPos = 'LM';
+            else if (x >= 75) newPos = 'RM';
+            else if (y >= 55) newPos = 'DM';
+            else if (y <= 45) newPos = 'AM';
+            else newPos = 'CM';
+        } else {
+            if (x <= 30) newPos = 'LW';
+            else if (x >= 70) newPos = 'RW';
+            else if (y >= 20) newPos = 'CF';
+            else newPos = 'ST';
+        }
+
+        // Mevki değiştiyse anında rozeti (badge) güncelle
+        if (tempFormation[draggedNodeIndex].pos !== newPos) {
+            tempFormation[draggedNodeIndex].pos = newPos;
+            const badge = document.getElementById(`node-pos-badge-${draggedNodeIndex}`);
+            if (badge) {
+                badge.innerText = newPos;
+                badge.className = `bg-slate-900 pos-${newPos} text-[11px] font-black px-2 py-[1px] rounded border border-slate-600 shadow-md tracking-wider`;
+            }
+        }
     }
 
     function onEnd() {
