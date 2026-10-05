@@ -2987,7 +2987,7 @@ function handleFileUpload(event, type) {
                     let hasData = cellData.some(m => m && (m.result || m.fixtureId)); 
                     
                     if (!hasData) {
-                        return `<td class="p-1 border-r border-b border-slate-700 align-middle cursor-pointer hover:bg-slate-700 transition-colors" style="background-color: ${grpColor}15" onclick="openMatchEditor('${season}', '${opp.id}', '${opp.name}')"></td>`;
+                        return `<td class="p-1 border-r border-b border-slate-700 align-top cursor-pointer hover:bg-slate-700 transition-colors" style="background-color: ${grpColor}15" onclick="openMatchEditor('${season}', '${opp.id}', '${opp.name}')"></td>`;
                     }
 
                     let boxesHtml = cellData.map(match => {
@@ -3003,8 +3003,8 @@ function handleFileUpload(event, type) {
                                 </div>`;
                     }).join('');
 
-                    return `<td class="p-1 border-r border-b border-slate-700 align-middle cursor-pointer hover:bg-slate-700 transition-colors" style="background-color: ${grpColor}15" onclick="openMatchEditor('${season}', '${opp.id}', '${opp.name}')">
-                                <div class="flex flex-wrap justify-center gap-1 w-full mx-auto p-1 rounded">${boxesHtml}</div>
+                    return `<td class="p-1 border-r border-b border-slate-700 align-top cursor-pointer hover:bg-slate-700 transition-colors" style="background-color: ${grpColor}15" onclick="openMatchEditor('${season}', '${opp.id}', '${opp.name}')">
+                                <div class="flex flex-col items-center justify-start gap-1 w-full mx-auto p-1 rounded">${boxesHtml}</div>
                             </td>`;
                 };
 
@@ -7625,6 +7625,7 @@ function formatShortPlayerName(name) {
                                                 <div class="flex justify-between items-center mb-1 gap-2">
                                                     <span class="text-[10px] text-slate-400 font-bold uppercase truncate"><i class="fa-solid fa-table-list mr-1"></i>Grup / Lig Tablosu</span>
                                                     <div class="flex gap-1 shrink-0">
+                                                        ${!knockoutOn && tour.type !== 'Süper Lig' ? `<button onclick="toggleTournamentKnockouts('${tour.id}', true)" class="text-[9px] bg-slate-800 hover:bg-emerald-600 hover:text-white text-emerald-400 px-2 py-0.5 rounded transition-colors" title="+ Eleme Aşamaları Ekle"><i class="fa-solid fa-sitemap"></i></button>` : ''}
                                                         <button onclick="openTournamentTableBulkModal('${tour.id}')" class="text-[9px] bg-indigo-900/50 hover:bg-indigo-800 text-indigo-300 px-2 py-0.5 rounded transition-colors" title="Toplu Ekle"><i class="fa-solid fa-list-ol mr-1"></i>Toplu</button>
                                                         <button onclick="addRowToCustomTournament('${tour.id}')" class="text-[9px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-0.5 rounded transition-colors" title="Satır Ekle"><i class="fa-solid fa-plus"></i></button>
                                                         <button onclick="toggleTournamentTable('${tour.id}', false)" class="text-[9px] bg-red-900/40 hover:bg-red-800 text-red-300 px-2 py-0.5 rounded transition-colors" title="Bu Bölümü Sil"><i class="fa-solid fa-trash"></i></button>
@@ -7796,11 +7797,15 @@ function formatShortPlayerName(name) {
                                     } else if (tour.type === 'Süper Lig') {
                                         knockoutHtml = '';
                                     } else {
-                                        knockoutHtml = `
-                                            <button onclick="toggleTournamentKnockouts('${tour.id}', true)" class="w-full text-[10px] bg-slate-800/60 hover:bg-slate-800 text-slate-400 hover:text-emerald-400 border border-dashed border-slate-700 rounded py-2 mt-2 transition-colors">
-                                                <i class="fa-solid fa-plus mr-1"></i>Eleme Aşamaları Ekle
-                                            </button>
-                                        `;
+                                        if (!tableOn) {
+                                            knockoutHtml = `
+                                                <button onclick="toggleTournamentKnockouts('${tour.id}', true)" class="w-full text-[10px] bg-slate-800/60 hover:bg-slate-800 text-slate-400 hover:text-emerald-400 border border-dashed border-slate-700 rounded py-2 mt-2 transition-colors">
+                                                    <i class="fa-solid fa-plus mr-1"></i>Eleme Aşamaları Ekle
+                                                </button>
+                                            `;
+                                        } else {
+                                            knockoutHtml = '';
+                                        }
                                     }
 
                                     const isCollapsed = tour.collapsed === true;
@@ -7827,6 +7832,40 @@ function formatShortPlayerName(name) {
                                         </div>
                                     `;
 
+                                    let champHtml = '';
+                                    if (isCollapsed) {
+                                        let champName = '';
+                                        let champLogo = '';
+                                        if (tour.knockouts && tour.knockouts.length > 0) {
+                                            const finalMatch = tour.knockouts.find(k => k.stage === 'Final' || k.stage === 'F');
+                                            if (finalMatch) {
+                                                const hs1 = parseInt(finalMatch.homeScore);
+                                                const as1 = parseInt(finalMatch.awayScore);
+                                                const hs2 = parseInt(finalMatch.homeScore2);
+                                                const as2 = parseInt(finalMatch.awayScore2);
+                                                const hasL1 = !isNaN(hs1) && !isNaN(as1);
+                                                const hasL2 = !isNaN(hs2) && !isNaN(as2);
+                                                if (hasL1) {
+                                                    const hTotal = hs1 + (hasL2 ? as2 : 0);
+                                                    const aTotal = as1 + (hasL2 ? hs2 : 0);
+                                                    if (hTotal > aTotal) { champName = finalMatch.home; champLogo = finalMatch.homeLogo || getTeamLogoByName(finalMatch.home); }
+                                                    else if (aTotal > hTotal) { champName = finalMatch.away; champLogo = finalMatch.awayLogo || getTeamLogoByName(finalMatch.away); }
+                                                }
+                                            }
+                                        }
+                                        if (!champName && tour.table && tour.table.length > 0) {
+                                            const topTeam = tour.table.find(t => t.rank == 1 || t.rank === '1') || tour.table[0];
+                                            if (topTeam && topTeam.name && topTeam.name !== 'Takım Adı') {
+                                                champName = topTeam.name;
+                                                champLogo = topTeam.logo || getTeamLogoByName(topTeam.name);
+                                            }
+                                        }
+                                        if (champName) {
+                                            const photoTag = champLogo ? `<img src="${champLogo}" class="w-5 h-5 rounded-full object-cover shadow-sm bg-slate-800 border border-slate-700">` : `<div class="w-5 h-5 rounded-full bg-slate-700 flex items-center justify-center text-[10px] font-bold text-white shadow-sm">${champName.charAt(0)}</div>`;
+                                            champHtml = `<div class="absolute left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-slate-900 px-3 py-0.5 rounded-full border border-yellow-500/50 shadow-[0_0_12px_rgba(234,179,8,0.4)] z-10 pointer-events-none"><i class="fa-solid fa-trophy text-yellow-500 text-xs drop-shadow-[0_0_5px_rgba(234,179,8,0.8)]"></i>${photoTag}<span class="text-xs text-white font-black truncate max-w-[120px] tracking-wide">${escapeHtml(champName)}</span></div>`;
+                                        }
+                                    }
+
                                     return `
                                     <div class="relative group/tour ${getCustomTournamentCardBg(tour.type)} p-2 rounded-lg border shadow-sm">
                                         <div class="absolute -top-2 -left-2 flex flex-col gap-0.5 opacity-0 group-hover/tour:opacity-100 transition-opacity z-10">
@@ -7834,9 +7873,12 @@ function formatShortPlayerName(name) {
                                             <button onclick="moveCustomTournament('${tour.id}', 1)" ${tIdx === cTours.length - 1 ? 'disabled' : ''} class="bg-slate-700 hover:bg-emerald-600 disabled:opacity-30 disabled:cursor-not-allowed text-white w-5 h-5 rounded-full text-[10px] flex items-center justify-center shadow-lg" title="Aşağı Taşı"><i class="fa-solid fa-chevron-down"></i></button>
                                         </div>
                                         <button onclick="deleteCustomTournament('${tour.id}')" class="absolute -top-2 -right-2 bg-red-600 hover:bg-red-500 text-white w-5 h-5 rounded-full text-[10px] flex items-center justify-center opacity-0 group-hover/tour:opacity-100 transition-opacity z-10 shadow-lg" title="Tüm Kartı Sil"><i class="fa-solid fa-times"></i></button>
-                                        <h4 class="text-sm font-bold text-emerald-400 mb-2 border-b border-slate-800 pb-1 flex items-center justify-between gap-2">
-                                            <span class="truncate outline-none focus:bg-slate-800/80 rounded px-1 transition-colors hover:bg-slate-800/60 cursor-text" contenteditable="true" onblur="updateCustomTournamentName('${tour.id}', this)" title="Turnuva ismini düzenlemek için tıklayın">${tour.type}</span>
-                                            <button onclick="toggleCustomTournamentCollapse('${tour.id}')" class="p-1 hover:text-white cursor-pointer" title="Daralt/Genişlet">
+                                        <h4 class="relative text-sm font-bold text-emerald-400 mb-2 border-b border-slate-800 pb-1 flex items-center justify-between gap-2">
+                                            <div class="flex items-center gap-1 min-w-0">
+                                                <span class="truncate outline-none focus:bg-slate-800/80 rounded px-1 transition-colors hover:bg-slate-800/60 cursor-text" contenteditable="true" onblur="updateCustomTournamentName('${tour.id}', this)" title="Turnuva ismini düzenlemek için tıklayın">${tour.type}</span>
+                                            </div>
+                                            ${champHtml}
+                                            <button onclick="toggleCustomTournamentCollapse('${tour.id}')" class="p-1 hover:text-white cursor-pointer relative z-20" title="Daralt/Genişlet">
                                                 <i id="tour-chevron-${tour.id}" class="fa-solid fa-chevron-down text-[10px] shrink-0 transition-transform duration-200 ${isCollapsed ? '-rotate-90' : ''}"></i>
                                             </button>
                                         </h4>
