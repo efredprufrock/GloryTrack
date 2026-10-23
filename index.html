@@ -890,40 +890,40 @@
     </div>
 
     <!-- Modal: Maç Sonucu ve Olay Ekleme -->
-    <div id="match-result-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[100] fade-in backdrop-blur-sm">
-        <div class="bg-slate-800 p-6 rounded-xl border border-slate-600 w-[95%] max-w-2xl shadow-2xl relative max-h-[92vh] flex flex-col">
-            <button onclick="closeMatchResultModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white z-10"><i class="fa-solid fa-xmark text-xl"></i></button>
-            <h3 class="text-xl font-bold mb-1 text-white">Maç Sonucu Gir</h3>
+    <div id="match-result-modal" class="fixed inset-0 bg-black/80 hidden items-start pt-10 sm:pt-0 sm:items-center justify-center z-[100] fade-in backdrop-blur-sm">
+        <div class="bg-slate-800 p-3 sm:p-6 rounded-lg sm:rounded-xl border border-slate-600 w-[98%] sm:w-[95%] max-w-2xl shadow-2xl relative max-h-[90vh] sm:max-h-[96vh] flex flex-col">
+            <button onclick="closeMatchResultModal()" class="absolute top-2 right-2 sm:top-4 sm:right-4 text-slate-400 hover:text-white z-10"><i class="fa-solid fa-xmark text-lg sm:text-xl"></i></button>
+            <h3 class="text-sm sm:text-xl font-bold mb-2 sm:mb-4 text-white">Maç Sonucu Gir</h3>
             
             <!-- YENİ EKLENEN KISIM BURASI -->
             <datalist id="squad-players-list"></datalist>
             <!-- ----------------------- -->
 
-            <div class="flex items-center gap-2 sm:gap-3 mb-5 bg-slate-900 rounded-xl p-3 sm:p-4 border border-slate-700">
-                <div class="w-16 sm:w-24 shrink-0 leading-tight" id="mr-modal-subtitle"></div>
-                <div class="flex-1 text-right text-lg font-bold text-white truncate" id="mr-home-label">GS</div>
+            <div class="flex items-center gap-1 sm:gap-3 mb-2 sm:mb-5 bg-slate-900 rounded-md sm:rounded-xl p-2 sm:p-4 border border-slate-700 shrink-0">
+                <div class="w-12 sm:w-24 shrink-0 leading-tight" id="mr-modal-subtitle"></div>
+                <div class="flex-1 text-right text-sm sm:text-lg font-bold text-white truncate" id="mr-home-label">GS</div>
                 <div class="flex flex-col items-center gap-1 shrink-0">
-                    <div id="mr-score-container" class="flex items-center gap-2 bg-slate-800 rounded-lg px-3 py-2 border border-slate-600 transition-all duration-300">
-                        <input type="number" id="mr-home-score" class="w-10 bg-transparent text-center text-xl font-black text-white outline-none appearance-none" placeholder="-" min="0" max="99" oninput="updateMatchResultColor()">
-                        <span class="text-slate-400 font-black text-lg">:</span>
-                        <input type="number" id="mr-away-score" class="w-10 bg-transparent text-center text-xl font-black text-white outline-none appearance-none" placeholder="-" min="0" max="99" oninput="updateMatchResultColor()">
+                    <div id="mr-score-container" class="flex items-center gap-1 sm:gap-2 bg-slate-800 rounded sm:rounded-lg px-1.5 py-1 sm:px-3 sm:py-2 border border-slate-600 transition-all duration-300">
+                        <input type="number" id="mr-home-score" class="w-7 sm:w-10 bg-transparent text-center text-base sm:text-xl font-black text-white outline-none appearance-none" placeholder="-" min="0" max="99" oninput="updateMatchResultColor()">
+                        <span class="text-slate-400 font-black text-sm sm:text-lg">:</span>
+                        <input type="number" id="mr-away-score" class="w-7 sm:w-10 bg-transparent text-center text-base sm:text-xl font-black text-white outline-none appearance-none" placeholder="-" min="0" max="99" oninput="updateMatchResultColor()">
                     </div>
                 </div>
-                <div class="flex-1 text-left text-lg font-bold text-white truncate" id="mr-away-label">FB</div>
-                <div class="w-24 sm:w-32 shrink-0 flex flex-col items-end gap-1" id="mr-recent-form"></div>
+                <div class="flex-1 text-left text-sm sm:text-lg font-bold text-white truncate" id="mr-away-label">FB</div>
+                <div class="w-14 sm:w-32 shrink-0 flex flex-col items-end gap-1" id="mr-recent-form"></div>
             </div>
 
-            <div class="flex justify-between items-center mb-2">
-                <span class="text-xs font-bold text-slate-300 uppercase tracking-widest" title="Gol & Asist Detayları"><i class="fa-solid fa-futbol text-emerald-500"></i></span>
-                <button onclick="addFixtureEvent()" title="Olay Ekle" class="bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold w-8 h-8 rounded flex items-center justify-center transition-colors"><i class="fa-solid fa-plus"></i></button>
+            <div class="flex justify-between items-center mb-1.5 sm:mb-2 shrink-0">
+                <span class="text-[10px] sm:text-xs font-bold text-slate-300 uppercase tracking-widest" title="Gol & Asist Detayları"><i class="fa-solid fa-futbol text-emerald-500 mr-1"></i></span>
+                <button onclick="addFixtureEvent()" title="Olay Ekle" class="bg-emerald-700 hover:bg-emerald-600 text-white text-[10px] sm:text-xs font-bold w-6 h-6 sm:w-8 sm:h-8 rounded flex items-center justify-center transition-colors"><i class="fa-solid fa-plus"></i></button>
             </div>
-            <div id="fm-events-container" class="flex-1 overflow-y-auto space-y-2 pr-1 hide-scrollbar min-h-[60px]">
+            <div id="fm-events-container" class="flex-1 overflow-y-auto space-y-1 sm:space-y-2 pr-1 hide-scrollbar min-h-[60px]">
                 <!-- Olaylar buraya yüklenecek -->
             </div>
 
-            <div class="flex justify-end items-center mt-5 pt-4 border-t border-slate-700 shrink-0">
-                <button onclick="closeMatchResultModal()" title="İptal" class="w-10 h-10 rounded-lg bg-red-900/40 hover:bg-red-800/60 text-red-400 hover:text-red-300 transition-colors mr-2 flex items-center justify-center"><i class="fa-solid fa-ban text-lg"></i></button>
-                <button onclick="saveMatchResult()" title="Sonucu Kaydet" class="px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold transition-colors text-sm"><i class="fa-solid fa-floppy-disk"></i></button>
+            <div class="flex justify-end items-center mt-2 sm:mt-5 pt-2 sm:pt-4 border-t border-slate-700 shrink-0">
+                <button onclick="closeMatchResultModal()" title="İptal" class="w-8 h-8 sm:w-10 sm:h-10 rounded sm:rounded-lg bg-red-900/40 hover:bg-red-800/60 text-red-400 hover:text-red-300 transition-colors mr-2 flex items-center justify-center"><i class="fa-solid fa-ban text-sm sm:text-lg"></i></button>
+                <button onclick="saveMatchResult()" title="Sonucu Kaydet" class="px-3 py-1.5 sm:px-5 sm:py-2.5 rounded sm:rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold transition-colors text-xs sm:text-sm"><i class="fa-solid fa-floppy-disk mr-0 sm:mr-1"></i><span class="hidden sm:inline">Kaydet</span></button>
             </div>
         </div>
     </div>
