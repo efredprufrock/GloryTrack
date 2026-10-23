@@ -612,7 +612,7 @@ function escapeHtml(str) {
 }
 
     // --- 1. VERİ YAPILARI (STATE) ---
-        let currentScale = '1';
+        let currentScale = window.innerWidth < 768 ? '0.5' : '1';
 
         const menuConfig = {
             anasayfa: { title: "Ana Sayfa", submenus: [] },
@@ -2096,103 +2096,124 @@ function handleFileUpload(event, type) {
 
             let html = `
                 <div class="w-full max-w-4xl mx-auto flex flex-col h-full">
-                    <div class="mb-6 px-2 shrink-0">
-                        <h3 class="text-2xl font-bold text-white text-left"><i class="fa-solid fa-gear text-emerald-500 mr-2"></i>Ayarlar ve Veritabanı</h3>
-                        <p class="text-slate-400 text-sm mt-1 text-left">Tüm kariyer verileriniz anlık olarak tarayıcınıza kaydedilmektedir. Farklı bir tarayıcıya veya cihaza aktarmak için aşağıdaki yedekleme araçlarını kullanın.</p>
+                    <div class="mb-2 sm:mb-6 px-2 shrink-0">
+                        <h3 class="text-lg sm:text-2xl font-bold text-white text-left"><i class="fa-solid fa-gear text-emerald-500 mr-2"></i>Ayarlar ve Veritabanı</h3>
+                        <p class="hidden sm:block text-slate-400 text-xs sm:text-sm mt-1 text-left">Tüm kariyer verileriniz anlık olarak tarayıcınıza kaydedilmektedir. Farklı bir tarayıcıya veya cihaza aktarmak için aşağıdaki yedekleme araçlarını kullanın.</p>
                     </div>
                     
-                    <div class="bg-slate-900 border border-slate-700 rounded-xl p-6 shadow-lg flex-1 overflow-auto hide-scrollbar">
+                    <div class="bg-slate-900 border border-slate-700 rounded-lg sm:rounded-xl p-2 sm:p-6 shadow-lg flex-1 overflow-auto hide-scrollbar flex flex-col gap-2 sm:gap-0">
+                        
+                        <!-- Görünüm ve Dil -->
+                        <div class="flex-1 sm:flex-none flex flex-col justify-center sm:block sm:mb-6 bg-slate-800 border border-slate-600 rounded-lg sm:rounded-xl p-2 sm:p-4">
+                            <div class="flex justify-between items-center mb-1.5 sm:mb-4">
+                                <span class="text-[10px] sm:text-sm font-bold text-slate-300"><i class="fa-solid fa-palette mr-2 text-purple-400"></i>Arayüz ve Dil</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 sm:gap-4 flex-1">
+                                <button onclick="toggleTheme()" class="bg-slate-900 hover:bg-slate-700 border border-slate-700 rounded-lg py-2 px-2 sm:p-3 flex flex-col items-center justify-center gap-1 sm:gap-2 transition-colors h-full">
+                                    <i class="fa-solid fa-circle-half-stroke text-base sm:text-2xl text-yellow-500"></i>
+                                    <span class="text-[9px] sm:text-xs font-bold text-slate-300 text-center">Tema Değiştir</span>
+                                </button>
+                                <button onclick="toggleLanguage(); renderSettingsPanel();" class="bg-slate-900 hover:bg-slate-700 border border-slate-700 rounded-lg py-2 px-2 sm:p-3 flex flex-col items-center justify-center gap-1 sm:gap-2 transition-colors h-full">
+                                    <i class="fa-solid fa-language text-base sm:text-2xl text-blue-400"></i>
+                                    <span class="text-[9px] sm:text-xs font-bold text-slate-300 text-center leading-tight">Dil Değiştir<br><span class="hidden sm:inline">Switch Language</span></span>
+                                    <span class="text-[7px] sm:text-[10px] font-black text-slate-500 uppercase tracking-widest mt-0">ŞU AN: <span id="btn-lang-label" class="text-emerald-400">${currentLang === 'en' ? 'EN' : 'TR'}</span></span>
+                                </button>
+                            </div>
+                        </div>
+
                         <!-- Cloud Sync Card -->
-                        <div class="mb-6 bg-slate-800 border border-slate-600 rounded-xl p-4">
-                            <div class="flex justify-between items-center mb-2 flex-wrap gap-2">
-                                <span class="text-sm font-bold text-slate-300"><i class="fa-solid fa-cloud mr-2 text-blue-400"></i>Bulut Senkronizasyonu</span>
+                        <div class="flex-1 sm:flex-none flex flex-col justify-center sm:block sm:mb-6 bg-slate-800 border border-slate-600 rounded-lg sm:rounded-xl p-2 sm:p-4">
+                            <div class="flex justify-between items-center mb-1.5 sm:mb-2 flex-wrap gap-1 sm:gap-2">
+                                <span class="text-[10px] sm:text-sm font-bold text-slate-300"><i class="fa-solid fa-cloud mr-2 text-blue-400"></i>Bulut Senkronizasyonu</span>
                                 ${currentUser
-                                    ? `<span class="flex items-center gap-2 text-xs font-bold text-emerald-400 bg-emerald-900/30 px-2 py-1 rounded">
-                                         ${currentUser.photoURL ? `<img src="${currentUser.photoURL}" class="w-5 h-5 rounded-full" referrerpolicy="no-referrer">` : ''}
+                                    ? `<span class="flex items-center gap-1 sm:gap-2 text-[9px] sm:text-xs font-bold text-emerald-400 bg-emerald-900/30 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded">
+                                         ${currentUser.photoURL ? `<img src="${currentUser.photoURL}" class="w-3 h-3 sm:w-5 sm:h-5 rounded-full" referrerpolicy="no-referrer">` : ''}
                                          ${currentUser.email || currentUser.displayName || 'Bağlı'}
                                        </span>`
-                                    : `<span class="text-xs font-mono font-bold text-slate-400 bg-slate-900 px-2 py-1 rounded">Bağlı değil</span>`
+                                    : `<span class="text-[9px] sm:text-xs font-mono font-bold text-slate-400 bg-slate-900 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded">Bağlı değil</span>`
                                 }
                             </div>
-                            <p class="text-xs text-slate-500 mb-3">${currentUser ? 'Bu Google hesabıyla giriş yaptığınız her cihazda aynı kariyer verisine ulaşırsınız.' : 'Verilerinizi diğer cihazlarınızdan da görmek için Google hesabınızla giriş yapın.'}</p>
-                            <button onclick="${currentUser ? 'signOutOfCloud()' : 'signInWithGoogle()'}" class="${currentUser ? 'bg-slate-700 hover:bg-slate-600' : 'bg-blue-600 hover:bg-blue-500'} text-white text-sm font-bold py-2 px-4 rounded-lg transition-colors">
+                            <p class="hidden sm:block text-[10px] sm:text-xs text-slate-500 mb-2 sm:mb-3">${currentUser ? 'Bu Google hesabıyla giriş yaptığınız her cihazda aynı kariyer verisine ulaşırsınız.' : 'Verilerinizi diğer cihazlarınızdan da görmek için Google hesabınızla giriş yapın.'}</p>
+                            <button onclick="${currentUser ? 'signOutOfCloud()' : 'signInWithGoogle()'}" class="${currentUser ? 'bg-slate-700 hover:bg-slate-600' : 'bg-blue-600 hover:bg-blue-500'} text-white text-[10px] sm:text-sm font-bold py-2 px-3 sm:py-2 sm:px-4 rounded-md sm:rounded-lg transition-colors w-full sm:w-auto mt-1 sm:mt-0">
                                 <i class="fa-solid ${currentUser ? 'fa-right-from-bracket' : 'fa-cloud-arrow-up'} mr-1"></i> ${currentUser ? 'Hesaptan Çık' : 'Buluta Bağlan'}
                             </button>
                         </div>
+                        
                         <!-- Storage Usage Bar -->
-                        <div class="mb-6 bg-slate-800 border border-slate-600 rounded-xl p-4">
-                            <div class="flex justify-between items-center mb-2">
-                                <span class="text-sm font-bold text-slate-300"><i class="fa-solid fa-database mr-2 text-emerald-500"></i>Tarayıcı Depolama Kullanımı</span>
-                                <span class="text-sm font-mono font-bold ${pct >= 80 ? 'text-red-400' : pct >= 50 ? 'text-yellow-400' : 'text-emerald-400'}">${storageDisplay} / ${maxMB} MB</span>
+                        <div class="flex-1 sm:flex-none flex flex-col justify-center sm:block sm:mb-6 bg-slate-800 border border-slate-600 rounded-lg sm:rounded-xl p-2 sm:p-4">
+                            <div class="flex justify-between items-center mb-1.5 sm:mb-2">
+                                <span class="text-[10px] sm:text-sm font-bold text-slate-300"><i class="fa-solid fa-database mr-2 text-emerald-500"></i>Tarayıcı Depolama Kullanımı</span>
+                                <span class="text-[9px] sm:text-sm font-mono font-bold ${pct >= 80 ? 'text-red-400' : pct >= 50 ? 'text-yellow-400' : 'text-emerald-400'}">${storageDisplay} / ${maxMB} MB</span>
                             </div>
-                            <div class="w-full bg-slate-700 rounded-full h-2.5">
-                                <div class="${barColor} h-2.5 rounded-full transition-all" style="width: ${pct}%"></div>
+                            <div class="w-full bg-slate-700 rounded-full h-1.5 sm:h-2.5">
+                                <div class="${barColor} h-1.5 sm:h-2.5 rounded-full transition-all" style="width: ${pct}%"></div>
                             </div>
-                            <p class="text-xs text-slate-500 mt-2">%${pct} kullanılıyor. ${pct >= 80 ? '⚠️ Depolama alanı dolmak üzere! Yedek alıp bazı verileri temizleyin.' : 'Yedek almayı unutmayın.'}</p>
+                            <p class="hidden sm:block text-[9px] sm:text-xs text-slate-500 mt-1.5 sm:mt-2">%${pct} kullanılıyor. ${pct >= 80 ? '⚠️ Depolama alanı dolmak üzere! Yedek alıp bazı verileri temizleyin.' : 'Yedek almayı unutmayın.'}</p>
                         </div>
 
                         <!-- Kariyer Slotları -->
-                        <div class="mb-6 bg-slate-800 border border-slate-600 rounded-xl p-4">
-                            <div class="flex justify-between items-center mb-4">
-                                <span class="text-sm font-bold text-slate-300"><i class="fa-solid fa-folder-open mr-2 text-yellow-400"></i>Kariyer Yönetimi (Kayıt Slotları)</span>
+                        <div class="flex-[1.2] sm:flex-none flex flex-col justify-center sm:block sm:mb-6 bg-slate-800 border border-slate-600 rounded-lg sm:rounded-xl p-2 sm:p-4">
+                            <div class="flex justify-between items-center mb-1.5 sm:mb-4">
+                                <span class="text-[10px] sm:text-sm font-bold text-slate-300"><i class="fa-solid fa-folder-open mr-2 text-yellow-400"></i>Kariyer Yönetimi (Kayıt Slotları)</span>
                             </div>
-                            <p class="text-xs text-slate-400 mb-3">Farklı takımlarla yeni kariyerlere başlamak için kayıt slotları arasında geçiş yapabilirsiniz.</p>
-                            <div class="grid grid-cols-3 gap-2">
+                            <p class="hidden sm:block text-[10px] sm:text-xs text-slate-400 mb-2 sm:mb-3">Farklı takımlarla yeni kariyerlere başlamak için kayıt slotları arasında geçiş yapabilirsiniz.</p>
+                            <div class="grid grid-cols-3 gap-2 sm:gap-2 flex-1">
                                 <div class="relative group h-full">
-                                    <button onclick="switchCareerSlot(1)" class="w-full h-full py-2 px-3 rounded-lg font-bold text-sm border-2 transition-all flex flex-col items-center justify-center gap-2 ${activeSlot === '1' ? 'border-emerald-500 bg-emerald-900/30 text-emerald-400' : 'border-slate-700 bg-slate-900 text-slate-400 hover:border-emerald-500/50 hover:text-white'}">
-                                        ${logo1 ? `<img src="${logo1}" class="w-8 h-8 object-contain drop-shadow-md">` : `<i class="fa-solid fa-1 text-xl"></i>`}
-                                        <span class="text-[10px] uppercase tracking-wider">Kayıt Slotu 1</span>
+                                    <button onclick="switchCareerSlot(1)" class="w-full h-full py-2 sm:py-2 px-1 sm:px-3 rounded-md sm:rounded-lg font-bold border-2 transition-all flex flex-col items-center justify-center gap-1.5 sm:gap-2 ${activeSlot === '1' ? 'border-emerald-500 bg-emerald-900/30 text-emerald-400' : 'border-slate-700 bg-slate-900 text-slate-400 hover:border-emerald-500/50 hover:text-white'}">
+                                        ${logo1 ? `<img src="${logo1}" class="w-5 h-5 sm:w-8 sm:h-8 object-contain drop-shadow-md">` : `<i class="fa-solid fa-1 text-sm sm:text-xl"></i>`}
+                                        <span class="text-[8px] sm:text-[10px] uppercase tracking-wider text-center">Kayıt Slotu 1</span>
                                     </button>
-                                    ${has1 ? `<button onclick="deleteCareerSlot(1)" class="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 bg-red-900/80 hover:bg-red-500 text-red-200 hover:text-white rounded w-6 h-6 flex items-center justify-center text-[10px] transition-all z-10 shadow-lg" title="Slotu Temizle"><i class="fa-solid fa-trash"></i></button>` : ''}
+                                    ${has1 ? `<button onclick="deleteCareerSlot(1)" class="absolute -top-1 -right-1 sm:top-1 sm:right-1 opacity-100 sm:opacity-0 group-hover:opacity-100 bg-red-900/80 hover:bg-red-500 text-red-200 hover:text-white rounded w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center text-[8px] sm:text-[10px] transition-all z-10 shadow-lg" title="Slotu Temizle"><i class="fa-solid fa-trash"></i></button>` : ''}
                                 </div>
                                 <div class="relative group h-full">
-                                    <button onclick="switchCareerSlot(2)" class="w-full h-full py-2 px-3 rounded-lg font-bold text-sm border-2 transition-all flex flex-col items-center justify-center gap-2 ${activeSlot === '2' ? 'border-emerald-500 bg-emerald-900/30 text-emerald-400' : 'border-slate-700 bg-slate-900 text-slate-400 hover:border-emerald-500/50 hover:text-white'}">
-                                        ${logo2 ? `<img src="${logo2}" class="w-8 h-8 object-contain drop-shadow-md">` : `<i class="fa-solid fa-2 text-xl"></i>`}
-                                        <span class="text-[10px] uppercase tracking-wider">Kayıt Slotu 2</span>
+                                    <button onclick="switchCareerSlot(2)" class="w-full h-full py-2 sm:py-2 px-1 sm:px-3 rounded-md sm:rounded-lg font-bold border-2 transition-all flex flex-col items-center justify-center gap-1.5 sm:gap-2 ${activeSlot === '2' ? 'border-emerald-500 bg-emerald-900/30 text-emerald-400' : 'border-slate-700 bg-slate-900 text-slate-400 hover:border-emerald-500/50 hover:text-white'}">
+                                        ${logo2 ? `<img src="${logo2}" class="w-5 h-5 sm:w-8 sm:h-8 object-contain drop-shadow-md">` : `<i class="fa-solid fa-2 text-sm sm:text-xl"></i>`}
+                                        <span class="text-[8px] sm:text-[10px] uppercase tracking-wider text-center">Kayıt Slotu 2</span>
                                     </button>
-                                    ${has2 ? `<button onclick="deleteCareerSlot(2)" class="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 bg-red-900/80 hover:bg-red-500 text-red-200 hover:text-white rounded w-6 h-6 flex items-center justify-center text-[10px] transition-all z-10 shadow-lg" title="Slotu Temizle"><i class="fa-solid fa-trash"></i></button>` : ''}
+                                    ${has2 ? `<button onclick="deleteCareerSlot(2)" class="absolute -top-1 -right-1 sm:top-1 sm:right-1 opacity-100 sm:opacity-0 group-hover:opacity-100 bg-red-900/80 hover:bg-red-500 text-red-200 hover:text-white rounded w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center text-[8px] sm:text-[10px] transition-all z-10 shadow-lg" title="Slotu Temizle"><i class="fa-solid fa-trash"></i></button>` : ''}
                                 </div>
                                 <div class="relative group h-full">
-                                    <button onclick="switchCareerSlot(3)" class="w-full h-full py-2 px-3 rounded-lg font-bold text-sm border-2 transition-all flex flex-col items-center justify-center gap-2 ${activeSlot === '3' ? 'border-emerald-500 bg-emerald-900/30 text-emerald-400' : 'border-slate-700 bg-slate-900 text-slate-400 hover:border-emerald-500/50 hover:text-white'}">
-                                        ${logo3 ? `<img src="${logo3}" class="w-8 h-8 object-contain drop-shadow-md">` : `<i class="fa-solid fa-3 text-xl"></i>`}
-                                        <span class="text-[10px] uppercase tracking-wider">Kayıt Slotu 3</span>
+                                    <button onclick="switchCareerSlot(3)" class="w-full h-full py-2 sm:py-2 px-1 sm:px-3 rounded-md sm:rounded-lg font-bold border-2 transition-all flex flex-col items-center justify-center gap-1.5 sm:gap-2 ${activeSlot === '3' ? 'border-emerald-500 bg-emerald-900/30 text-emerald-400' : 'border-slate-700 bg-slate-900 text-slate-400 hover:border-emerald-500/50 hover:text-white'}">
+                                        ${logo3 ? `<img src="${logo3}" class="w-5 h-5 sm:w-8 sm:h-8 object-contain drop-shadow-md">` : `<i class="fa-solid fa-3 text-sm sm:text-xl"></i>`}
+                                        <span class="text-[8px] sm:text-[10px] uppercase tracking-wider text-center">Kayıt Slotu 3</span>
                                     </button>
-                                    ${has3 ? `<button onclick="deleteCareerSlot(3)" class="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 bg-red-900/80 hover:bg-red-500 text-red-200 hover:text-white rounded w-6 h-6 flex items-center justify-center text-[10px] transition-all z-10 shadow-lg" title="Slotu Temizle"><i class="fa-solid fa-trash"></i></button>` : ''}
+                                    ${has3 ? `<button onclick="deleteCareerSlot(3)" class="absolute -top-1 -right-1 sm:top-1 sm:right-1 opacity-100 sm:opacity-0 group-hover:opacity-100 bg-red-900/80 hover:bg-red-500 text-red-200 hover:text-white rounded w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center text-[8px] sm:text-[10px] transition-all z-10 shadow-lg" title="Slotu Temizle"><i class="fa-solid fa-trash"></i></button>` : ''}
                                 </div>
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Export / Import / Reset -->
+                        <div class="flex-1 sm:flex-none grid grid-cols-2 md:grid-cols-2 gap-2 sm:gap-6 mt-0">
                             
-                            <div class="bg-slate-800 border border-slate-600 rounded-xl p-6 relative overflow-hidden flex flex-col justify-between">
-                                <div class="absolute -bottom-4 -right-4 p-4 opacity-10 pointer-events-none"><i class="fa-solid fa-download text-[150px] text-emerald-500"></i></div>
-                                <div>
+                            <div class="bg-slate-800 border border-slate-600 rounded-lg sm:rounded-xl p-2 sm:p-6 relative overflow-hidden flex flex-col justify-center sm:justify-between items-center sm:items-start h-full">
+                                <div class="hidden sm:block absolute -bottom-4 -right-4 p-4 opacity-10 pointer-events-none"><i class="fa-solid fa-download text-[150px] text-emerald-500"></i></div>
+                                <div class="hidden sm:block mb-0">
                                     <h4 class="text-lg font-bold text-emerald-400 mb-2 relative z-10">Verileri Dışa Aktar</h4>
-                                    <p class="text-sm text-slate-400 mb-6 relative z-10">Mevcut kariyerinizin yedeğini <span class="text-emerald-300 font-bold">.json</span> formatında bilgisayarınıza indirebilirsiniz.</p>
+                                    <p class="text-sm text-slate-400 mb-6 relative z-10 leading-tight">Mevcut kariyerinizin yedeğini <span class="text-emerald-300 font-bold">.json</span> formatında bilgisayarınıza indirebilirsiniz.</p>
                                 </div>
-                                <button onclick="exportJSON()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-6 rounded-lg w-full transition-colors flex items-center justify-center gap-2 relative z-10 shadow-lg">
-                                    <i class="fa-solid fa-file-export"></i> Yedek İndir (.json)
+                                <button onclick="exportJSON()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 sm:py-3 px-2 sm:px-6 rounded-md sm:rounded-lg w-full text-[10px] sm:text-base transition-colors flex items-center justify-center gap-1.5 sm:gap-2 relative z-10 shadow-sm sm:shadow-lg h-full sm:h-auto">
+                                    <i class="fa-solid fa-file-export"></i> <span class="sm:hidden">Dışa Aktar</span><span class="hidden sm:inline">Yedek İndir (.json)</span>
                                 </button>
                             </div>
 
-                            <div class="bg-slate-800 border border-slate-600 rounded-xl p-6 relative overflow-hidden flex flex-col justify-between">
-                                <div class="absolute -bottom-4 -right-4 p-4 opacity-10 pointer-events-none"><i class="fa-solid fa-upload text-[150px] text-blue-500"></i></div>
-                                <div>
+                            <div class="bg-slate-800 border border-slate-600 rounded-lg sm:rounded-xl p-2 sm:p-6 relative overflow-hidden flex flex-col justify-center sm:justify-between items-center sm:items-start h-full">
+                                <div class="hidden sm:block absolute -bottom-4 -right-4 p-4 opacity-10 pointer-events-none"><i class="fa-solid fa-upload text-[150px] text-blue-500"></i></div>
+                                <div class="hidden sm:block mb-0">
                                     <h4 class="text-lg font-bold text-blue-400 mb-2 relative z-10">Verileri İçeri Aktar</h4>
-                                    <p class="text-sm text-slate-400 mb-6 relative z-10">Daha önce aldığınız veya başka bir cihazdan taşıdığınız yedeği (.json) sisteme yükleyin.</p>
+                                    <p class="text-sm text-slate-400 mb-6 relative z-10 leading-tight">Daha önce aldığınız veya başka bir cihazdan taşıdığınız yedeği (.json) sisteme yükleyin.</p>
                                 </div>
                                 <input type="file" id="import-file" class="hidden" accept=".json" onchange="importJSON(event)">
-                                <button onclick="document.getElementById('import-file').click()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-lg w-full transition-colors flex items-center justify-center gap-2 relative z-10 shadow-lg">
-                                    <i class="fa-solid fa-file-import"></i> Yedekten Yükle (.json)
+                                <button onclick="document.getElementById('import-file').click()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 sm:py-3 px-2 sm:px-6 rounded-md sm:rounded-lg w-full text-[10px] sm:text-base transition-colors flex items-center justify-center gap-1.5 sm:gap-2 relative z-10 shadow-sm sm:shadow-lg h-full sm:h-auto">
+                                    <i class="fa-solid fa-file-import"></i> <span class="sm:hidden">İçeri Aktar</span><span class="hidden sm:inline">Yedekten Yükle (.json)</span>
                                 </button>
                             </div>
                             
-                            <div class="bg-slate-800 border border-red-900/50 rounded-xl p-6 relative overflow-hidden md:col-span-2 mt-2">
-                                <div class="absolute top-1/2 -translate-y-1/2 right-4 p-4 opacity-10 pointer-events-none"><i class="fa-solid fa-triangle-exclamation text-[120px] text-red-500"></i></div>
-                                <h4 class="text-lg font-bold text-red-500 mb-2 relative z-10">Kariyeri Sıfırla (Tehlikeli İşlem)</h4>
-                                <p class="text-sm text-slate-400 mb-6 relative z-10 max-w-xl">Tarayıcıdaki tüm kariyer verilerini <span class="text-red-400 font-bold">geri dönülemez şekilde</span> siler. Sıfırlamadan önce yedek aldığınızdan emin olun.</p>
-                                <button onclick="resetData()" class="bg-red-900/80 hover:bg-red-700 text-red-100 font-bold py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2 relative z-10 w-fit">
-                                    <i class="fa-solid fa-trash"></i> Tüm Verileri Sil ve Başa Dön
+                            <div class="bg-slate-800 border border-red-900/50 rounded-lg sm:rounded-xl p-2 sm:p-6 relative overflow-hidden col-span-2 flex flex-col justify-center h-full">
+                                <div class="hidden sm:block absolute top-1/2 -translate-y-1/2 right-4 p-4 opacity-10 pointer-events-none"><i class="fa-solid fa-triangle-exclamation text-[120px] text-red-500"></i></div>
+                                <h4 class="hidden sm:block text-lg font-bold text-red-500 mb-2 relative z-10">Kariyeri Sıfırla (Tehlikeli İşlem)</h4>
+                                <p class="hidden sm:block text-sm text-slate-400 mb-6 relative z-10 max-w-xl leading-tight">Tarayıcıdaki tüm kariyer verilerini <span class="text-red-400 font-bold">geri dönülemez şekilde</span> siler. Sıfırlamadan önce yedek aldığınızdan emin olun.</p>
+                                <button onclick="resetData()" class="bg-red-900/80 hover:bg-red-700 text-red-100 font-bold py-2 sm:py-3 px-2 sm:px-6 rounded-md sm:rounded-lg transition-colors flex items-center justify-center gap-1.5 sm:gap-2 relative z-10 w-full sm:w-fit text-[10px] sm:text-base h-full sm:h-auto">
+                                    <i class="fa-solid fa-trash"></i> <span class="sm:hidden">Sıfırla</span><span class="hidden sm:inline">Tüm Verileri Sil ve Başa Dön</span>
                                 </button>
                             </div>
 
@@ -2358,16 +2379,16 @@ function handleFileUpload(event, type) {
             };
 
             const headerHtml = `
-                <div class="flex items-center gap-2 px-2 pb-1.5">
-                    <span class="w-5"></span>
-                    <span class="w-8"></span>
+                <div class="flex items-center gap-1.5 sm:gap-2 px-1 sm:px-2 pb-1 sm:pb-1.5">
+                    <span class="w-4 sm:w-5"></span>
+                    <span class="w-6 sm:w-8"></span>
                     <span class="flex-1"></span>
-                    <button onclick="homeSetStatsSort('goals')" class="text-[10px] font-bold text-emerald-400 hover:text-emerald-300 flex items-center transition-colors">GOL${sortIcon('goals')}</button>
-                    <button onclick="homeSetStatsSort('assists')" class="text-[10px] font-bold text-blue-400 hover:text-blue-300 flex items-center transition-colors ml-2">ASİST${sortIcon('assists')}</button>
+                    <button onclick="homeSetStatsSort('goals')" class="text-[9px] sm:text-[10px] font-bold text-emerald-400 hover:text-emerald-300 flex items-center transition-colors">GOL${sortIcon('goals')}</button>
+                    <button onclick="homeSetStatsSort('assists')" class="text-[9px] sm:text-[10px] font-bold text-blue-400 hover:text-blue-300 flex items-center transition-colors ml-2">ASİST${sortIcon('assists')}</button>
                 </div>
             `;
 
-            if (top.length === 0) return { headerHtml: '', bodyHtml: `<div class="text-center text-slate-500 text-sm py-6">${escapeHtml(season)} sezonu için gol/asist verisi bulunmuyor.</div>` };
+            if (top.length === 0) return { headerHtml: '', bodyHtml: `<div class="text-center text-slate-500 text-xs sm:text-sm py-6">${escapeHtml(season)} sezonu için gol/asist verisi bulunmuyor.</div>` };
 
             const maxGoals = Math.max(0, ...top.map(p => p.goals));
             const maxAssists = Math.max(0, ...top.map(p => p.assists));
@@ -2375,16 +2396,19 @@ function handleFileUpload(event, type) {
             const bodyHtml = top.map((p, idx) => {
                 const rankCls = idx === 0 ? 'text-amber-300' : idx === 1 ? 'text-slate-300' : idx === 2 ? 'text-orange-400' : 'text-slate-500';
                 const photoHtml = p.photoUrl
-                    ? `<img src="${p.photoUrl}" class="w-8 h-8 rounded-full object-cover bg-slate-800 border border-slate-700">`
-                    : `<div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold">${escapeHtml((p.name || '?').charAt(0))}</div>`;
+                    ? `<img src="${p.photoUrl}" class="w-6 h-6 sm:w-8 sm:h-8 rounded-full object-cover bg-slate-800 border border-slate-700">`
+                    : `<div class="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-slate-700 flex items-center justify-center text-[10px] sm:text-xs font-bold">${escapeHtml((p.name || '?').charAt(0))}</div>`;
                 const goalsGlow = (p.goals > 0 && p.goals === maxGoals) ? 'text-glow-max' : '';
                 const assistsGlow = (p.assists > 0 && p.assists === maxAssists) ? 'text-glow-max' : '';
-                return `<div class="flex items-center gap-2 bg-slate-900/60 border border-slate-700/50 rounded-lg px-2 py-1.5">
-                    <span class="w-5 text-center text-xs font-black ${rankCls}">${idx + 1}</span>
+                
+                const shortName = formatShortPlayerName(p.name);
+                
+                return `<div class="flex items-center gap-1.5 sm:gap-2 bg-slate-900/60 border border-slate-700/50 rounded-lg px-1.5 py-1 sm:px-2 sm:py-1.5">
+                    <span class="w-4 sm:w-5 text-center text-[10px] sm:text-xs font-black ${rankCls}">${idx + 1}</span>
                     ${photoHtml}
-                    <span class="flex-1 text-sm font-bold text-white truncate text-left">${escapeHtml(p.name)}</span>
-                    <span class="text-xs font-black text-emerald-400 w-12 text-right inline-flex items-center justify-end gap-1 ${goalsGlow}"><i class="fa-solid fa-futbol"></i>${p.goals}</span>
-                    <span class="text-xs font-black text-blue-400 w-14 text-right inline-flex items-center justify-end gap-1 ${assistsGlow}"><i class="fa-solid fa-shoe-prints"></i>${p.assists}</span>
+                    <span class="flex-1 text-xs sm:text-sm font-bold text-white truncate text-left" title="${escapeHtml(p.name)}">${escapeHtml(shortName)}</span>
+                    <span class="text-[10px] sm:text-xs font-black text-emerald-400 w-10 sm:w-12 text-right inline-flex items-center justify-end gap-1 ${goalsGlow}"><i class="fa-solid fa-futbol"></i>${p.goals}</span>
+                    <span class="text-[10px] sm:text-xs font-black text-blue-400 w-10 sm:w-14 text-right inline-flex items-center justify-end gap-1 ${assistsGlow}"><i class="fa-solid fa-shoe-prints"></i>${p.assists}</span>
                 </div>`;
             }).join('');
 
@@ -2437,7 +2461,6 @@ function handleFileUpload(event, type) {
         }
 
         const oppName = isOurTeam(m.home) ? m.away : m.home;
-        // YENİ: reverse() eklenerek en güncel maçın en sola (index 0) gelmesi sağlandı
         const h2hMatches = played.filter(pm => (pm.home === oppName || pm.away === oppName) && pm.id !== m.id).slice(-3).reverse();
         
         let badgesHtml = '<div></div>';
@@ -2457,18 +2480,16 @@ function handleFileUpload(event, type) {
                 const bgClass = res === 'W' ? 'bg-emerald-500' : (res === 'D' ? 'bg-yellow-500' : 'bg-red-500');
                 
                 let badgeGlow = 'shadow-sm';
-                // YENİ: reverse edildiği için en güncel maç artık 0. index'te
                 if (idx === 0) { 
                     if (res === 'W') badgeGlow = 'shadow-[0_0_8px_rgba(16,185,129,0.9)] scale-110 z-10 border border-white/50';
                     else if (res === 'D') badgeGlow = 'shadow-[0_0_8px_rgba(234,179,8,0.9)] scale-110 z-10 border border-white/50';
                     else if (res === 'L') badgeGlow = 'shadow-[0_0_8px_rgba(239,68,68,0.9)] scale-110 z-10 border border-white/50';
                 }
 
-                return `<span class="flex items-center justify-center w-4 h-4 rounded text-[9px] font-black text-white ${bgClass} ${badgeGlow}" title="${hm.season} | ${hm.homeScore}-${hm.awayScore}">${res}</span>`;
+                return `<span class="flex items-center justify-center w-3 h-3 sm:w-4 sm:h-4 rounded text-[7px] sm:text-[9px] font-black text-white ${bgClass} ${badgeGlow}" title="${hm.season} | ${hm.homeScore}-${hm.awayScore}">${res}</span>`;
             }).join('');
             
-            // YENİ: ml-auto ve justify-end kaldırılarak justify-start eklendi (Sola yaslama)
-            badgesHtml = `<div class="flex items-center justify-start gap-1.5">${badges}</div>`;
+            badgesHtml = `<div class="flex items-center justify-start gap-1 sm:gap-1.5">${badges}</div>`;
         }
 
         const borderClass = highlight
@@ -2481,80 +2502,142 @@ function handleFileUpload(event, type) {
             ? 'text-amber-300 bg-amber-900/30 border-amber-600/50 shadow-[0_0_8px_rgba(245,158,11,0.4)]'
             : 'text-slate-300 bg-slate-800/60 border-slate-700/30 shadow-sm';
 
-        const roundHtml = m.round ? `<span class="inline-flex items-center text-[8px] font-bold rounded px-1.5 py-[3px] ml-1.5 tracking-widest uppercase whitespace-nowrap border ${badgeStyle}" title="${escapeHtml(m.round)}">${escapeHtml(abbr)}</span>` : '';
+        const roundHtml = m.round ? `<span class="inline-flex items-center text-[7px] sm:text-[8px] font-bold rounded px-1 sm:px-1.5 py-[2px] sm:py-[3px] ml-1 sm:ml-1.5 tracking-widest uppercase whitespace-nowrap border ${badgeStyle}" title="${escapeHtml(m.round)}">${escapeHtml(abbr)}</span>` : '';
 
-        return `<div onclick="qfbOpenMatch('${m.season}','${m.id}')" class="grid grid-cols-[1fr_auto_1fr] items-center gap-4 sm:gap-6 ${resultClass || 'bg-slate-900/60'} hover:brightness-125 cursor-pointer border ${borderClass} rounded-lg px-3 py-3 transition-all" title="Skor / gol-asist girmek için tıklayın">
-            <div class="flex items-center gap-2">
-                <span class="text-[10px] text-slate-500 font-bold shrink-0">${escapeHtml(m.season)}</span>
+        return `<div onclick="qfbOpenMatch('${m.season}','${m.id}')" class="grid grid-cols-[1fr_auto_1fr] items-center gap-1.5 sm:gap-6 ${resultClass || 'bg-slate-900/60'} hover:brightness-125 cursor-pointer border ${borderClass} rounded-lg px-2 py-2 sm:px-3 sm:py-3 transition-all" title="Skor / gol-asist girmek için tıklayın">
+            <div class="flex items-center justify-start gap-1 sm:gap-2">
+                <span class="hidden sm:inline-block text-[10px] text-slate-500 font-bold shrink-0">${escapeHtml(m.season)}</span>
                 ${tourHtml}
                 ${roundHtml}
             </div>
-            <div class="flex items-center justify-center gap-3">
-                <img src="${homeLogo}" class="w-8 h-8 object-contain">
-                <span class="score-display ${resultClass ? 'score-' + resultClass.replace('frow-', '') : 'text-white'} text-base font-black w-14 text-center">${hs}:${as}</span>
-                <img src="${awayLogo}" class="w-8 h-8 object-contain">
+            <div class="flex items-center justify-center gap-2 sm:gap-3">
+                <img src="${homeLogo}" class="w-6 h-6 sm:w-8 sm:h-8 object-contain">
+                <span class="score-display ${resultClass ? 'score-' + resultClass.replace('frow-', '') : 'text-white'} text-sm sm:text-base font-black w-10 sm:w-14 text-center">${hs}:${as}</span>
+                <img src="${awayLogo}" class="w-6 h-6 sm:w-8 sm:h-8 object-contain">
             </div>
             ${badgesHtml}
         </div>`;
     };
 
-    let html = '';
-    html += `<div class="mb-3"><h5 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Son 4 Maç</h5><div class="space-y-1.5">${last4.length ? last4.map(m => renderMatchRow(m, false)).join('') : '<div class="text-center text-slate-500 text-xs py-2">Oynanmış maç yok.</div>'}</div></div>`;
-    html += `<div class="mb-3"><h5 class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest mb-1.5">Sıradaki Maç</h5><div class="space-y-1.5">${nextMatch ? renderMatchRow(nextMatch, true) : '<div class="text-center text-slate-500 text-xs py-2">Planlanmış maç yok.</div>'}</div></div>`;
-    html += `<div><h5 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Sonraki 4 Maç</h5><div class="space-y-1.5">${next4.length ? next4.map(m => renderMatchRow(m, false)).join('') : '<div class="text-center text-slate-500 text-xs py-2">Planlanmış maç yok.</div>'}</div></div>`;
+    let html = '<div class="flex flex-col h-full justify-between gap-1 sm:gap-3 pb-1">';
+    html += `<div class="flex flex-col mb-1 sm:mb-0"><h5 class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 sm:mb-1.5">Son 4 Maç</h5><div class="flex flex-col gap-1.5 sm:gap-1.5">${last4.length ? last4.map(m => renderMatchRow(m, false)).join('') : '<div class="text-center text-slate-500 text-xs py-2">Oynanmış maç yok.</div>'}</div></div>`;
+    html += `<div class="flex flex-col mb-1 sm:mb-0"><h5 class="text-[9px] sm:text-[10px] font-bold text-emerald-400 uppercase tracking-widest mb-1 sm:mb-1.5">Sıradaki Maç</h5><div class="flex flex-col gap-1.5 sm:gap-1.5">${nextMatch ? renderMatchRow(nextMatch, true) : '<div class="text-center text-slate-500 text-xs py-2">Planlanmış maç yok.</div>'}</div></div>`;
+    html += `<div class="flex flex-col"><h5 class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 sm:mb-1.5">Sonraki 4 Maç</h5><div class="flex flex-col gap-1.5 sm:gap-1.5">${next4.length ? next4.map(m => renderMatchRow(m, false)).join('') : '<div class="text-center text-slate-500 text-xs py-2">Planlanmış maç yok.</div>'}</div></div>`;
+    html += '</div>';
     return html;
 }
+
+        let homeActiveTab = 'maclar';
+
+        function switchHomeTab(tabId) {
+            homeActiveTab = tabId;
+            ['ilk11', 'maclar', 'goller'].forEach(id => {
+                const btn = document.getElementById('htab-' + id);
+                const content = document.getElementById('hcontent-' + id);
+                if (!btn || !content) return;
+                
+                if (id === tabId) {
+                    btn.className = 'flex-1 px-4 py-3 text-lg bg-slate-900 text-emerald-400 border border-slate-700 border-b-slate-900 rounded-t-xl transition-colors shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] relative z-10 -mb-[1px] flex items-center justify-center';
+                    content.classList.remove('hidden');
+                    content.classList.add('flex');
+                } else {
+                    btn.className = 'flex-1 px-4 py-3 text-lg bg-slate-800/50 text-slate-400 border border-transparent border-b-slate-700 rounded-t-xl hover:bg-slate-800 hover:text-white transition-colors relative z-0 flex items-center justify-center cursor-pointer';
+                    content.classList.add('hidden');
+                    content.classList.remove('flex');
+                }
+            });
+        }
 
         function renderHomePanel() {
             const season = seasonsList[seasonsList.length - 1];
 
             const html = `
-                <div class="w-full flex flex-col sm:flex-row justify-between items-center mb-4 px-2 shrink-0 relative gap-3 sm:gap-0">
-                    <h3 class="text-2xl font-bold text-white self-start sm:self-auto"><i class="fa-solid fa-house text-emerald-500 mr-2"></i>Ana Sayfa</h3>
-                    
-                    <!-- Ortalanmış Kulüp / Milli Seçici -->
-                    <div class="sm:absolute sm:left-1/2 sm:-translate-x-1/2 flex gap-1 bg-slate-900 rounded-full border border-slate-700 p-1 shadow-lg z-10">
-                        <button onclick="setHomeGlobalContext('kulup')" class="px-6 py-1.5 rounded-full text-xs font-bold transition-colors ${homeGlobalContext === 'kulup' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}">Kulüp</button>
-                        <button onclick="setHomeGlobalContext('milli')" class="px-6 py-1.5 rounded-full text-xs font-bold transition-colors ${homeGlobalContext === 'milli' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}">Milli</button>
-                    </div>
-                    
-                    <div class="hidden sm:block"></div> <!-- Flex dengesi için boş div -->
-                </div>
-                <div class="w-full flex-1 grid grid-cols-1 xl:grid-cols-3 gap-4 overflow-y-auto xl:overflow-hidden hide-scrollbar px-2 pb-4">
-
-                    <div class="flex flex-col bg-slate-900 border border-slate-700 rounded-xl overflow-hidden shadow-lg h-full min-h-[400px] xl:min-h-0">
-                        <div class="bg-slate-800 border-b border-slate-700 p-3 shrink-0 flex justify-between items-center flex-wrap gap-2">
-                            <h4 class="text-sm font-bold text-white"><i class="fa-solid fa-people-group text-emerald-400 mr-1.5"></i>İlk 11</h4>
+                <div class="w-full h-full flex flex-col min-h-0 overflow-hidden">
+                    <!-- Üst Başlık ve Seçici Paneli -->
+                    <div class="w-full flex flex-col sm:flex-row sm:justify-between items-center mb-4 px-2 shrink-0 relative gap-3 sm:gap-0">
+                        <h3 class="hidden sm:block text-2xl font-bold text-white self-start sm:self-auto"><i class="fa-solid fa-house text-emerald-500 mr-2"></i>Ana Sayfa</h3>
+                        
+                        <!-- Ortalanmış Kulüp / Milli Seçici -->
+                        <div class="flex gap-1 bg-slate-900 rounded-full border border-slate-700 p-1 shadow-lg z-10 w-max mx-auto sm:absolute sm:left-1/2 sm:-translate-x-1/2">
+                            <button onclick="setHomeGlobalContext('kulup')" class="px-6 py-1.5 rounded-full text-xs font-bold transition-colors ${homeGlobalContext === 'kulup' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}">Kulüp</button>
+                            <button onclick="setHomeGlobalContext('milli')" class="px-6 py-1.5 rounded-full text-xs font-bold transition-colors ${homeGlobalContext === 'milli' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}">Milli</button>
                         </div>
-                        <div class="flex-1 overflow-hidden p-3 min-h-0">
-                            ${renderHomeFirst11(homeSquadContext)}
-                        </div>
+                        
+                        <div class="hidden sm:block"></div> <!-- Flex dengesi için boş div -->
                     </div>
 
-                    <div class="flex flex-col bg-slate-900 border border-slate-700 rounded-xl overflow-hidden shadow-lg h-full min-h-[400px] xl:min-h-0">
-                        <div class="bg-slate-800 border-b border-slate-700 p-3 shrink-0 flex justify-between items-center flex-wrap gap-2">
-                            <h4 class="text-sm font-bold text-white"><i class="fa-solid fa-calendar-days text-emerald-400 mr-1.5"></i>Maçlar</h4>
-                            <div class="flex gap-1 bg-slate-900 rounded-full border border-slate-700 p-1">
-                                <button onclick="toggleHomeFixtureBoth()" class="px-3 py-1 rounded-full text-[10px] font-bold transition-colors ${homeFixtureContext === 'both' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}">Tümü</button>
+                    <div class="w-full flex-1 flex flex-col min-h-0 overflow-hidden px-2 pb-4 max-w-3xl xl:max-w-none mx-auto">
+                        <!-- Sekmeler (Tabs - Sadece Mobilde Görünür) -->
+                        <div class="flex xl:hidden gap-1 overflow-x-auto hide-scrollbar shrink-0 px-2">
+                            <button onclick="switchHomeTab('ilk11')" id="htab-ilk11" class="flex-1 px-4 py-3 text-lg bg-slate-900 text-emerald-400 border border-slate-700 border-b-slate-900 rounded-t-xl transition-colors shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] relative z-10 -mb-[1px] flex items-center justify-center">
+                                <i class="fa-solid fa-people-group"></i>
+                            </button>
+                            <button onclick="switchHomeTab('maclar')" id="htab-maclar" class="flex-1 px-4 py-3 text-lg bg-slate-800/50 text-slate-400 border border-transparent border-b-slate-700 rounded-t-xl hover:bg-slate-800 hover:text-white transition-colors relative z-0 flex items-center justify-center cursor-pointer">
+                                <i class="fa-solid fa-calendar-days"></i>
+                            </button>
+                            <button onclick="switchHomeTab('goller')" id="htab-goller" class="flex-1 px-4 py-3 text-lg bg-slate-800/50 text-slate-400 border border-transparent border-b-slate-700 rounded-t-xl hover:bg-slate-800 hover:text-white transition-colors relative z-0 flex items-center justify-center cursor-pointer">
+                                <i class="fa-solid fa-futbol"></i>
+                            </button>
+                        </div>
+
+                        <!-- Ana Panel İçeriği (Web'de Grid, Mobilde Sekmeli Blok) -->
+                        <div class="flex-1 flex flex-col min-h-0 overflow-hidden xl:grid xl:grid-cols-3 xl:gap-4 relative z-0">
+                            
+                            <!-- İlk 11 İçeriği -->
+                            <div id="hcontent-ilk11" class="flex-1 flex xl:flex flex-col min-h-0 bg-slate-900 border border-slate-700 rounded-b-xl rounded-tr-xl xl:rounded-xl overflow-hidden shadow-lg transition-all duration-300">
+                                <!-- Masaüstü Başlığı -->
+                                <div class="hidden xl:flex bg-slate-800 border-b border-slate-700 p-3 shrink-0 justify-between items-center flex-wrap gap-2">
+                                    <h4 class="text-sm font-bold text-white"><i class="fa-solid fa-people-group text-emerald-400 mr-1.5"></i>İlk 11</h4>
+                                </div>
+                                <div class="flex-1 overflow-y-auto p-3 min-h-0 hide-scrollbar">
+                                    ${renderHomeFirst11(homeSquadContext)}
+                                </div>
                             </div>
-                        </div>
-                        <div class="flex-1 overflow-y-auto p-3 hide-scrollbar">
-                            ${renderHomeFixtures(homeFixtureContext)}
+
+                            <!-- Maçlar İçeriği -->
+                            <div id="hcontent-maclar" class="hidden xl:flex flex-1 flex-col min-h-0 bg-slate-900 border border-slate-700 rounded-b-xl rounded-tr-xl xl:rounded-xl overflow-hidden shadow-lg transition-all duration-300">
+                                <!-- Masaüstü Başlığı -->
+                                <div class="hidden xl:flex bg-slate-800 border-b border-slate-700 p-3 shrink-0 justify-between items-center flex-wrap gap-2">
+                                    <h4 class="text-sm font-bold text-white"><i class="fa-solid fa-calendar-days text-emerald-400 mr-1.5"></i>Maçlar</h4>
+                                    <div class="flex gap-1 bg-slate-900 rounded-full border border-slate-700 p-1">
+                                        <button onclick="event.stopPropagation(); toggleHomeFixtureBoth()" class="px-3 py-1 rounded-full text-[10px] font-bold transition-colors ${homeFixtureContext === 'both' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}">Tümü</button>
+                                    </div>
+                                </div>
+                                <!-- Mobil Başlığı -->
+                                <div class="xl:hidden bg-slate-800/50 border-b border-slate-700 p-2 shrink-0 flex justify-between items-center">
+                                    <span class="text-xs font-bold text-slate-400 uppercase tracking-widest ml-2">Fikstür Özeti</span>
+                                    <div class="flex gap-1 bg-slate-900 rounded-full border border-slate-700 p-1">
+                                        <button onclick="event.stopPropagation(); toggleHomeFixtureBoth()" class="px-3 py-1 rounded-full text-[10px] font-bold transition-colors ${homeFixtureContext === 'both' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}">Tümü</button>
+                                    </div>
+                                </div>
+                                <div class="flex-1 overflow-y-auto p-3 hide-scrollbar min-h-0">
+                                    ${renderHomeFixtures(homeFixtureContext)}
+                                </div>
+                            </div>
+
+                            <!-- Krallar İçeriği -->
+                            <div id="hcontent-goller" class="hidden xl:flex flex-1 flex-col min-h-0 bg-slate-900 border border-slate-700 rounded-b-xl rounded-tr-xl xl:rounded-xl overflow-hidden shadow-lg transition-all duration-300">
+                                <!-- Masaüstü Başlığı -->
+                                <div class="hidden xl:flex bg-slate-800 border-b border-slate-700 p-3 shrink-0 justify-between items-center flex-wrap gap-2">
+                                    <h4 class="text-sm font-bold text-white"><i class="fa-solid fa-futbol text-emerald-400 mr-1.5"></i>Gol Kralları <span class="text-[9px] text-slate-500 font-normal">(${escapeHtml(season || '')})</span></h4>
+                                </div>
+                                <!-- Mobil Başlığı -->
+                                <div class="xl:hidden bg-slate-800/50 border-b border-slate-700 p-2 shrink-0 flex items-center">
+                                    <span class="text-xs font-bold text-slate-400 uppercase tracking-widest ml-2">İstatistikler <span class="text-[9px] font-normal">(${escapeHtml(season || '')})</span></span>
+                                </div>
+                                <div class="flex-1 overflow-y-auto p-3 hide-scrollbar min-h-0">
+                                    ${(() => { const r = renderHomeTopScorers(homeStatsContext); return r.headerHtml + `<div class="space-y-1.5">${r.bodyHtml}</div>`; })()}
+                                </div>
+                            </div>
+
                         </div>
                     </div>
-
-                    <div class="flex flex-col bg-slate-900 border border-slate-700 rounded-xl overflow-hidden shadow-lg h-full min-h-[400px] xl:min-h-0">
-                        <div class="bg-slate-800 border-b border-slate-700 p-3 shrink-0 flex justify-between items-center flex-wrap gap-2">
-                            <h4 class="text-sm font-bold text-white"><i class="fa-solid fa-futbol text-emerald-400 mr-1.5"></i>Gol Kralları <span class="text-[9px] text-slate-500 font-normal">(${escapeHtml(season || '')})</span></h4>
-                        </div>
-                        <div class="flex-1 overflow-y-auto p-3 hide-scrollbar">
-                            ${(() => { const r = renderHomeTopScorers(homeStatsContext); return r.headerHtml + `<div class="space-y-1.5">${r.bodyHtml}</div>`; })()}
-                        </div>
-                    </div>
-
                 </div>
             `;
             updateContentArea(html);
+            
+            // Sekme durumunu en son bırakıldığı gibi ayarla
+            switchHomeTab(homeActiveTab);
         }
 
         // --- KUPALAR TABLOSU ---
