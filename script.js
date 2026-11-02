@@ -142,7 +142,7 @@ const TR_EN = {
     "Logo URL (Varsa metin yerine logo görünür)": "Logo URL (If provided, logo will be shown instead of text)",
 
     // --- LİG TARİHİ (LEAGUE HISTORY) ---
-    "Lig Tarihi Paneli": "History",
+    "Lig Tarihi Paneli": "League History Panel",
     "TAKIMLAR": "TEAMS",
     "Sıralama Grafiği (1-18)": "Ranking Chart (1-18)",
     "Toplu Puan Gir": "Bulk Enter Points",
@@ -779,26 +779,6 @@ function escapeHtml(str) {
         let activeFixtureMatchId = null;
         let fixtureFilter = { tournament: '' };
         let expandedFixtureMatchIds = new Set(); // Inline açılan (expand edilen) maç satırlarının ID'lerini tutar
-        let fixtureActiveTab = 'fixtures'; // Mobil için aktif tab
-
-        function switchFixturePanelTab(tabId) {
-            fixtureActiveTab = tabId;
-            ['fixtures', 'tables', 'euro'].forEach(id => {
-                const btn = document.getElementById('fixtab-' + id);
-                const content = document.getElementById('fixcontent-' + id);
-                if (!btn || !content) return;
-                
-                if (id === tabId) {
-                    btn.className = 'flex-1 px-4 py-3 text-lg bg-slate-900 text-emerald-400 border border-slate-700 border-b-slate-900 rounded-t-xl transition-colors shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] relative z-10 -mb-[1px] flex items-center justify-center';
-                    content.classList.remove('hidden');
-                    content.classList.add('flex');
-                } else {
-                    btn.className = 'flex-1 px-4 py-3 text-lg bg-slate-800/50 text-slate-400 border border-transparent border-b-slate-700 rounded-t-xl hover:bg-slate-800 hover:text-white transition-colors relative z-0 flex items-center justify-center cursor-pointer';
-                    content.classList.add('hidden');
-                    content.classList.remove('flex');
-                }
-            });
-        }
 
         
 
@@ -7983,33 +7963,11 @@ function formatShortPlayerName(name) {
             }
 
             const html = `
-                <div class="w-full flex-1 min-h-0 flex flex-col pb-2 px-2 xl:px-0">
-                    
-                    <!-- Sezon Seçici (Tüm sayfanın en üstünde ortalanmış) -->
-                    <div class="flex justify-center gap-2 overflow-x-auto hide-scrollbar shrink-0 mb-3 mt-1">
-                        ${seasonTabsHtml}
-                    </div>
-
-                    <!-- Sekmeler (Tabs - Sadece Mobilde Görünür) -->
-                    <div class="flex xl:hidden gap-1 overflow-x-auto hide-scrollbar shrink-0 mb-2">
-                        <button onclick="switchFixturePanelTab('fixtures')" id="fixtab-fixtures" class="flex-1 px-4 py-3 text-lg bg-slate-900 text-emerald-400 border border-slate-700 border-b-slate-900 rounded-t-xl transition-colors shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] relative z-10 -mb-[1px] flex items-center justify-center">
-                            <i class="fa-solid fa-calendar-days"></i>
-                        </button>
-                        <button onclick="switchFixturePanelTab('tables')" id="fixtab-tables" class="flex-1 px-4 py-3 text-lg bg-slate-800/50 text-slate-400 border border-transparent border-b-slate-700 rounded-t-xl hover:bg-slate-800 hover:text-white transition-colors relative z-0 flex items-center justify-center cursor-pointer">
-                            <i class="fa-solid fa-trophy text-yellow-500"></i>
-                        </button>
-                        <button onclick="switchFixturePanelTab('euro')" id="fixtab-euro" class="flex-1 px-4 py-3 text-lg bg-slate-800/50 text-slate-400 border border-transparent border-b-slate-700 rounded-t-xl hover:bg-slate-800 hover:text-white transition-colors relative z-0 flex items-center justify-center cursor-pointer">
-                            <i class="fa-solid fa-globe text-blue-400"></i>
-                        </button>
-                    </div>
-
-                    <div class="flex flex-col p-3 flex-1 min-h-0 overflow-hidden gap-2">
-
-                            <!-- Stats Summary Bar -->
+                <div class="w-full flex-1 min-h-0 grid grid-cols-1 xl:grid-cols-3 gap-4 xl:gap-6 pb-4 overflow-y-auto xl:overflow-hidden hide-scrollbar">
                     
                     <!-- 1. SOL PANEL: FİKSTÜR -->
-                    <div id="fixcontent-fixtures" class="flex-1 xl:w-1/3 xl:flex flex-col bg-slate-900 border border-slate-700 xl:rounded-xl rounded-b-xl rounded-tr-xl overflow-hidden shadow-lg h-full min-h-0 transition-all duration-300">
-                        <div class="bg-slate-800 border-b border-slate-700 p-2 sm:p-3 shrink-0 hidden xl:flex justify-between items-center flex-wrap gap-2">
+                    <div class="flex flex-col bg-slate-900 border border-slate-700 rounded-xl overflow-hidden shadow-lg h-full min-h-[550px] xl:min-h-0">
+                        <div class="bg-slate-800 border-b border-slate-700 p-2 sm:p-3 shrink-0 flex justify-between items-center flex-wrap gap-2">
                             <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-calendar-days text-emerald-400 mr-2"></i>Fikstür</h3>
                             <div class="flex gap-1.5">
                                 <button onclick="openFixtureTextBulkModal('${activeFixtureSeason}')" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded text-xs transition-colors shadow flex items-center gap-1.5" title="Metin (Virgüllü) ile Toplu Ekle">
@@ -8027,26 +7985,12 @@ function formatShortPlayerName(name) {
                             </div>
                         </div>
                         
-                        <!-- Fikstür Mobil Header (Tab altı kontrolleri) -->
-                        <div class="bg-slate-800/50 border-b border-slate-700 px-2 py-1.5 shrink-0 xl:hidden flex justify-between items-center gap-2 z-10">
-                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">İşlemler</span>
-                            <div class="flex gap-1.5">
-                                <button onclick="openFixtureTextBulkModal('${activeFixtureSeason}')" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded text-xs transition-colors shadow flex items-center gap-1.5" title="Metin (Virgüllü) ile Toplu Ekle">
-                                    <i class="fa-solid fa-file-lines"></i>
-                                </button>
-                                <button onclick="openFixtureBulkModal('${activeFixtureSeason}')" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded text-xs transition-colors shadow flex items-center gap-1.5">
-                                    <i class="fa-solid fa-list-check"></i>
-                                </button>
-                                <button onclick="openFixtureModal('${activeFixtureSeason}', null)" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded text-xs transition-colors shadow flex items-center gap-1.5">
-                                    <i class="fa-solid fa-plus"></i>
-                                </button>
-                                <button onclick="deleteBulkFixtures()" class="bg-red-900/50 hover:bg-red-800 text-red-200 font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded text-xs transition-colors" title="Toplu Sil">
-                                    <i class="fa-solid fa-trash-can"></i>
-                                </button>
+                        <div class="flex flex-col p-3 h-full overflow-hidden gap-2">
+
+                            <!-- Season Tabs -->
+                            <div class="flex gap-2 overflow-x-auto hide-scrollbar shrink-0 pb-1">
+                                ${seasonTabsHtml}
                             </div>
-                        </div>
-                        
-                        <div class="flex flex-col p-3 flex-1 min-h-0 overflow-hidden gap-2">
 
                             <!-- Stats Summary Bar -->
                             ${played > 0 ? `
@@ -8094,10 +8038,10 @@ function formatShortPlayerName(name) {
                     </div>
 
                     <!-- 2. ORTA PANEL: MÜSABAKA TABLOLARI -->
-                    <div id="fixcontent-tables" class="hidden xl:w-1/3 xl:flex flex-1 flex-col bg-slate-900 border border-slate-700 xl:rounded-xl rounded-b-xl rounded-tr-xl overflow-hidden shadow-lg h-full min-h-0 transition-all duration-300">
-                        <div class="bg-slate-800 border-b border-slate-700 px-3 py-2 shrink-0 flex justify-between items-center z-10">
-                            <h3 class="text-lg font-bold text-white hidden xl:block"><i class="fa-solid fa-trophy mr-2 text-yellow-500"></i>Müsabaka Tabloları</h3>
-                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1 xl:hidden">Turnuva Ekle</span>
+                    <div class="flex flex-col bg-slate-900 border border-slate-700 rounded-xl overflow-hidden shadow-lg h-full min-h-[550px] xl:min-h-0">
+                        <div class="bg-slate-800 border-b border-slate-700 p-3 shrink-0 flex justify-between items-center">
+                            <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-trophy mr-2 text-yellow-500"></i>Müsabaka Tabloları</h3>
+                            
                             <div class="flex gap-2">
                                 <select id="custom-tour-select" class="bg-slate-900 border border-slate-600 text-[10px] text-slate-300 rounded p-1 outline-none focus:border-emerald-500">
                                     <option value="Süper Lig">Süper Lig</option>
@@ -8115,7 +8059,7 @@ function formatShortPlayerName(name) {
                                 </button>
                             </div>
                         </div>
-                        <div class="p-4 overflow-y-auto custom-scrollbar flex-1 min-h-0 flex flex-col gap-6">
+                        <div class="p-4 overflow-y-auto custom-scrollbar h-full flex flex-col gap-6">
                             
                             ${(() => {
                                 const cTours = customTournamentsData[activeFixtureSeason] || [];
@@ -8140,22 +8084,22 @@ function formatShortPlayerName(name) {
 
                                             return `
                                             <tr class="border-b border-slate-800 bg-slate-800/20 hover:bg-slate-800/50 transition-colors">
-                                                <td class="py-1 px-0.5 sm:px-1.5 w-5 sm:w-8 text-center outline-none focus:bg-slate-700 cursor-text rounded ${rankGlow}" contenteditable="true" onblur="updateCustomTournament('${tour.id}', ${idx}, 'rank', this)">${row.rank}</td>
-                                                <td class="py-1 px-0.5 sm:px-1.5 font-bold rounded cursor-pointer hover:bg-slate-700/80 transition-colors group/edit ${nameGlow}" onclick="openCustomTourTeamModal('${tour.id}', ${idx})" title="Takım ve Logoyu Düzenle">
-                                                    <div class="flex items-center gap-1 sm:gap-2">
-                                                        <img src="${row.logo || `https://ui-avatars.com/api/?name=\${encodeURIComponent(row.name || '?')}&background=random&color=fff&size=32`}" alt="${row.name}" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(row.name || '?')}&background=random&color=fff&size=32'" class="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full object-cover shrink-0">
-                                                        <span class="truncate max-w-[65px] sm:max-w-[120px]">${row.name}</span>
-                                                        <i class="fa-solid fa-pen text-[8px] sm:text-[10px] text-slate-500 opacity-0 group-hover/edit:opacity-100 transition-opacity ml-auto"></i>
+                                                <td class="py-1 px-1.5 w-8 text-center outline-none focus:bg-slate-700 cursor-text rounded ${rankGlow}" contenteditable="true" onblur="updateCustomTournament('${tour.id}', ${idx}, 'rank', this)">${row.rank}</td>
+                                                <td class="py-1 px-1.5 font-bold rounded cursor-pointer hover:bg-slate-700/80 transition-colors group/edit ${nameGlow}" onclick="openCustomTourTeamModal('${tour.id}', ${idx})" title="Takım ve Logoyu Düzenle">
+                                                    <div class="flex items-center gap-2">
+                                                        <img src="${row.logo || `https://ui-avatars.com/api/?name=\${encodeURIComponent(row.name || '?')}&background=random&color=fff&size=32`}" alt="${row.name}" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(row.name || '?')}&background=random&color=fff&size=32'" class="w-4 h-4 rounded-full object-cover shrink-0">
+                                                        <span class="truncate">${row.name}</span>
+                                                        <i class="fa-solid fa-pen text-[10px] text-slate-500 opacity-0 group-hover/edit:opacity-100 transition-opacity ml-auto"></i>
                                                     </div>
                                                 </td>
-                                                <td class="py-1 px-0.5 sm:px-1.5 text-center w-4 sm:w-8 outline-none focus:bg-slate-700 cursor-text rounded ${textGlow}" contenteditable="true" onblur="updateCustomTournament('${tour.id}', ${idx}, 'pld', this)">${row.pld}</td>
-                                                <td class="py-1 px-0.5 sm:px-1.5 text-center w-4 sm:w-8 outline-none focus:bg-slate-700 cursor-text rounded ${textGlow}" contenteditable="true" onblur="updateCustomTournament('${tour.id}', ${idx}, 'w', this)">${row.w || 0}</td>
-                                                <td class="py-1 px-0.5 sm:px-1.5 text-center w-4 sm:w-8 outline-none focus:bg-slate-700 cursor-text rounded ${textGlow}" contenteditable="true" onblur="updateCustomTournament('${tour.id}', ${idx}, 'd', this)">${row.d || 0}</td>
-                                                <td class="py-1 px-0.5 sm:px-1.5 text-center w-4 sm:w-8 outline-none focus:bg-slate-700 cursor-text rounded ${textGlow}" contenteditable="true" onblur="updateCustomTournament('${tour.id}', ${idx}, 'l', this)">${row.l || 0}</td>
-                                                <td class="py-1 px-0.5 sm:px-1.5 text-center w-4 sm:w-8 outline-none focus:bg-slate-700 cursor-text rounded ${textGlow}" contenteditable="true" onblur="updateCustomTournament('${tour.id}', ${idx}, 'gf', this)">${row.gf || 0}</td>
-                                                <td class="py-1 px-0.5 sm:px-1.5 text-center w-4 sm:w-8 outline-none focus:bg-slate-700 cursor-text rounded ${textGlow}" contenteditable="true" onblur="updateCustomTournament('${tour.id}', ${idx}, 'ga', this)">${row.ga || 0}</td>
-                                                <td class="py-1 px-0.5 sm:px-1.5 text-center w-5 sm:w-10 outline-none focus:bg-slate-700 cursor-text rounded ${textGlow}" contenteditable="true" onblur="updateCustomTournament('${tour.id}', ${idx}, 'gd', this)">${row.gd}</td>
-                                                <td class="py-1 px-0.5 sm:px-1.5 text-center font-black text-[9px] sm:text-[12px] w-6 sm:w-10 outline-none focus:bg-slate-700 cursor-text rounded ${textGlow}" contenteditable="true" onblur="updateCustomTournament('${tour.id}', ${idx}, 'pts', this)">${row.pts}</td>
+                                                <td class="py-1 px-1.5 text-center w-8 outline-none focus:bg-slate-700 cursor-text rounded ${textGlow}" contenteditable="true" onblur="updateCustomTournament('${tour.id}', ${idx}, 'pld', this)">${row.pld}</td>
+                                                <td class="py-1 px-1.5 text-center w-8 outline-none focus:bg-slate-700 cursor-text rounded ${textGlow}" contenteditable="true" onblur="updateCustomTournament('${tour.id}', ${idx}, 'w', this)">${row.w || 0}</td>
+                                                <td class="py-1 px-1.5 text-center w-8 outline-none focus:bg-slate-700 cursor-text rounded ${textGlow}" contenteditable="true" onblur="updateCustomTournament('${tour.id}', ${idx}, 'd', this)">${row.d || 0}</td>
+                                                <td class="py-1 px-1.5 text-center w-8 outline-none focus:bg-slate-700 cursor-text rounded ${textGlow}" contenteditable="true" onblur="updateCustomTournament('${tour.id}', ${idx}, 'l', this)">${row.l || 0}</td>
+                                                <td class="py-1 px-1.5 text-center w-8 outline-none focus:bg-slate-700 cursor-text rounded ${textGlow}" contenteditable="true" onblur="updateCustomTournament('${tour.id}', ${idx}, 'gf', this)">${row.gf || 0}</td>
+                                                <td class="py-1 px-1.5 text-center w-8 outline-none focus:bg-slate-700 cursor-text rounded ${textGlow}" contenteditable="true" onblur="updateCustomTournament('${tour.id}', ${idx}, 'ga', this)">${row.ga || 0}</td>
+                                                <td class="py-1 px-1.5 text-center w-10 outline-none focus:bg-slate-700 cursor-text rounded ${textGlow}" contenteditable="true" onblur="updateCustomTournament('${tour.id}', ${idx}, 'gd', this)">${row.gd}</td>
+                                                <td class="py-1 px-1.5 text-center font-black text-[12px] w-10 outline-none focus:bg-slate-700 cursor-text rounded ${textGlow}" contenteditable="true" onblur="updateCustomTournament('${tour.id}', ${idx}, 'pts', this)">${row.pts}</td>
                                             </tr>
                                         `;
                                         }).join('');
@@ -8171,19 +8115,19 @@ function formatShortPlayerName(name) {
                                                         <button onclick="toggleTournamentTable('${tour.id}', false)" class="text-[9px] bg-red-900/40 hover:bg-red-800 text-red-300 px-2 py-0.5 rounded transition-colors" title="Bu Bölümü Sil"><i class="fa-solid fa-trash"></i></button>
                                                     </div>
                                                 </div>
-                                                <table class="w-full text-[9px] sm:text-[11px] text-left text-slate-300 mb-1">
-                                                    <thead class="text-[7.5px] sm:text-[9px] text-slate-400 uppercase bg-slate-900">
+                                                <table class="w-full text-[11px] text-left text-slate-300 mb-1">
+                                                    <thead class="text-[9px] text-slate-400 uppercase bg-slate-900">
                                                         <tr>
-                                                            <th class="p-0.5 sm:p-1 border-slate-700 text-center">Sıra</th>
-                                                            <th class="p-0.5 sm:p-1 border-slate-700">Takım</th>
-                                                            <th class="p-0.5 sm:p-1 border-slate-700 text-center">Pl</th>
-                                                            <th class="p-0.5 sm:p-1 border-slate-700 text-center">W</th>
-                                                            <th class="p-0.5 sm:p-1 border-slate-700 text-center">D</th>
-                                                            <th class="p-0.5 sm:p-1 border-slate-700 text-center">L</th>
-                                                            <th class="p-0.5 sm:p-1 border-slate-700 text-center">GF</th>
-                                                            <th class="p-0.5 sm:p-1 border-slate-700 text-center">GA</th>
-                                                            <th class="p-0.5 sm:p-1 border-slate-700 text-center">GD</th>
-                                                            <th class="p-0.5 sm:p-1 border-slate-700 text-center font-bold">Pts</th>
+                                                            <th class="p-1 border-slate-700 text-center">Sıra</th>
+                                                            <th class="p-1 border-slate-700">Takım</th>
+                                                            <th class="p-1 border-slate-700 text-center">Pl</th>
+                                                            <th class="p-1 border-slate-700 text-center">W</th>
+                                                            <th class="p-1 border-slate-700 text-center">D</th>
+                                                            <th class="p-1 border-slate-700 text-center">L</th>
+                                                            <th class="p-1 border-slate-700 text-center">GF</th>
+                                                            <th class="p-1 border-slate-700 text-center">GA</th>
+                                                            <th class="p-1 border-slate-700 text-center">GD</th>
+                                                            <th class="p-1 border-slate-700 text-center font-bold">Pts</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -8430,8 +8374,8 @@ function formatShortPlayerName(name) {
                                         }
                                     }
                                     if (champName) {
-                                        const photoTag = champLogo ? `<img src="${champLogo}" class="w-4 h-4 sm:w-5 sm:h-5 rounded-full object-cover shadow-sm bg-slate-800 border border-slate-700">` : `<div class="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-slate-700 flex items-center justify-center text-[9px] sm:text-[10px] font-bold text-white shadow-sm">${champName.charAt(0)}</div>`;
-                                        champHtml = `<div class="absolute right-7 sm:left-1/2 sm:-translate-x-1/2 flex items-center gap-1 sm:gap-1.5 bg-slate-900 px-2 sm:px-3 py-0.5 rounded-full border border-yellow-500/50 shadow-[0_0_12px_rgba(234,179,8,0.4)] z-10 pointer-events-none transform scale-[0.85] sm:scale-100 origin-right sm:origin-center"><i class="fa-solid fa-trophy text-yellow-500 text-[10px] sm:text-xs drop-shadow-[0_0_5px_rgba(234,179,8,0.8)]"></i>${photoTag}<span class="text-[10px] sm:text-xs text-white font-black truncate max-w-[80px] sm:max-w-[120px] tracking-wide">${escapeHtml(champName)}</span></div>`;
+                                        const photoTag = champLogo ? `<img src="${champLogo}" class="w-5 h-5 rounded-full object-cover shadow-sm bg-slate-800 border border-slate-700">` : `<div class="w-5 h-5 rounded-full bg-slate-700 flex items-center justify-center text-[10px] font-bold text-white shadow-sm">${champName.charAt(0)}</div>`;
+                                        champHtml = `<div class="absolute left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-slate-900 px-3 py-0.5 rounded-full border border-yellow-500/50 shadow-[0_0_12px_rgba(234,179,8,0.4)] z-10 pointer-events-none"><i class="fa-solid fa-trophy text-yellow-500 text-xs drop-shadow-[0_0_5px_rgba(234,179,8,0.8)]"></i>${photoTag}<span class="text-xs text-white font-black truncate max-w-[120px] tracking-wide">${escapeHtml(champName)}</span></div>`;
                                     }
 
                                     return `
@@ -8461,10 +8405,9 @@ function formatShortPlayerName(name) {
                     </div>
 
                     <!-- 3. SAĞ PANEL: DİĞER LİGLER (İlk 4) -->
-                    <div id="fixcontent-euro" class="hidden xl:w-1/3 xl:flex flex-1 flex-col bg-slate-900 border border-slate-700 xl:rounded-xl rounded-b-xl rounded-tr-xl overflow-hidden shadow-lg h-full min-h-0 transition-all duration-300">
-                        <div class="bg-slate-800 border-b border-slate-700 px-3 py-2 shrink-0 flex justify-between items-center flex-wrap gap-2 z-10">
-                            <h3 class="text-lg font-bold text-white hidden xl:block"><i class="fa-solid fa-globe mr-2 text-blue-400"></i>Avrupa Ligleri (İlk 4)</h3>
-                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1 xl:hidden">Avrupa Ligleri</span>
+                    <div class="flex flex-col bg-slate-900 border border-slate-700 rounded-xl overflow-hidden shadow-lg h-full min-h-[550px] xl:min-h-0">
+                        <div class="bg-slate-800 border-b border-slate-700 p-3 shrink-0 flex justify-between items-center flex-wrap gap-2">
+                            <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-globe mr-2 text-blue-400"></i>Avrupa Ligleri (İlk 4)</h3>
                             <div class="flex items-center gap-2">
                                 <button onclick="openEuroLeaguesBulkModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-2 py-1 rounded text-[10px] font-bold transition-colors shadow flex items-center gap-1">
                                     <i class="fa-solid fa-list-ol"></i> Toplu Ekle
@@ -8472,7 +8415,7 @@ function formatShortPlayerName(name) {
                                 <span class="text-sm text-slate-400 hidden lg:inline cursor-help" title="Tıkla ve Düzenle"><i class="fa-solid fa-pen"></i></span>
                             </div>
                         </div>
-                        <div class="p-4 overflow-y-auto custom-scrollbar flex-1 min-h-0 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2 gap-4 content-start">
+                        <div class="p-4 overflow-y-auto custom-scrollbar h-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2 gap-4 content-start">
                             
                             ${EURO_LEAGUES_LIST.map(league => {
                                 const lData = (euroLeaguesData[activeFixtureSeason] && euroLeaguesData[activeFixtureSeason][league.name]) ? euroLeaguesData[activeFixtureSeason][league.name] : [{},{},{},{}];
@@ -8505,13 +8448,9 @@ function formatShortPlayerName(name) {
                         </div>
                     </div>
 
-                </div>
                 </div>`;
 
             updateContentArea(html);
-            
-            // Sekme durumunu en son bırakıldığı gibi ayarla
-            switchFixturePanelTab(fixtureActiveTab);
 
             // En son oynanan maçı bul ve otomatik olarak ekranda ortala
             setTimeout(() => {
