@@ -48,11 +48,11 @@
     </aside>
 
     <!-- İkinci Dikey Bar: Hızlı Fikstür Şeridi -->
-    <aside id="quick-fixture-bar" class="absolute z-[55] sm:relative left-0 top-0 h-full sm:h-auto bg-slate-950/95 sm:bg-slate-950 backdrop-blur-sm sm:backdrop-blur-none border-r border-slate-800 flex flex-col shrink-0 overflow-hidden transition-all duration-300 transform -translate-x-full sm:translate-x-0 w-[87px] shadow-2xl sm:shadow-none pb-[60px] sm:pb-0">
+    <aside id="quick-fixture-bar" class="absolute z-[70] sm:relative left-0 top-0 h-full sm:h-auto bg-slate-950/95 sm:bg-slate-950 backdrop-blur-sm sm:backdrop-blur-none border-r border-slate-800 flex flex-col shrink-0 overflow-hidden transition-all duration-300 transform -translate-x-full sm:translate-x-0 w-[87px] shadow-2xl sm:shadow-none pb-[60px] sm:pb-0">
         <div id="qfb-list" class="flex-1 overflow-y-auto hide-scrollbar px-1.5 py-2 space-y-1.5"></div>
     </aside>
-    <button onclick="toggleQuickFixtureBar()" id="qfb-handle" class="absolute sm:relative left-0 sm:left-auto top-1/2 sm:top-0 -translate-y-1/2 sm:translate-y-0 h-16 sm:h-full w-5 sm:w-4 shrink-0 bg-slate-900/90 sm:bg-slate-950 hover:bg-slate-800 border sm:border-t-0 border-slate-700 sm:border-slate-800 rounded-r-lg sm:rounded-none flex items-center sm:items-start justify-center sm:pt-3 text-slate-400 hover:text-emerald-400 transition-all z-[56] shadow-lg sm:shadow-none duration-300" title="Fikstür Şeridini Aç/Kapat">
-        <i class="fa-solid fa-chevron-right sm:fa-chevron-left text-[10px]" id="qfb-toggle-icon" style="transition: transform 0.2s ease;"></i>
+    <button onclick="toggleQuickFixtureBar()" id="qfb-handle" class="absolute sm:relative left-0 sm:left-auto top-1/2 sm:top-0 -translate-y-1/2 sm:translate-y-0 h-16 sm:h-full w-6 sm:w-4 shrink-0 bg-slate-800 sm:bg-slate-950 hover:bg-slate-700 border border-l-0 sm:border-t-0 border-slate-600 sm:border-slate-800 rounded-r-lg sm:rounded-none flex items-center sm:items-start justify-center sm:pt-3 text-emerald-400 sm:text-slate-400 hover:text-emerald-300 sm:hover:text-emerald-400 transition-all z-[71] shadow-[4px_0_10px_rgba(0,0,0,0.5)] sm:shadow-none duration-300" title="Fikstür Şeridini Aç/Kapat">
+        <i class="fa-solid fa-chevron-right sm:fa-chevron-left text-[12px] sm:text-[10px]" id="qfb-toggle-icon" style="transition: transform 0.2s ease;"></i>
     </button>
 
     <!-- Ana İçerik Konteyneri -->
@@ -466,8 +466,8 @@
 
                     <!-- Potansiyel Kutusu (Dokunulmadı) -->
                     <div id="pi-view-pot-container" class="col-span-2 bg-slate-900/50 p-3 rounded-xl border border-slate-700/50 flex flex-col items-center justify-center hidden">
-                        <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1">Potansiyel Aralık</span>
-                        <span id="pi-view-pot" class="text-xl font-black text-emerald-300">80-85</span>
+                        <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1">Max Potansiyel</span>
+                        <span id="pi-view-pot" class="text-xl font-black text-emerald-300">90</span>
                     </div>
                 </div>
                 
@@ -534,8 +534,8 @@
                             <input type="number" id="pi-ovr" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white outline-none focus:border-emerald-500 appearance-none text-center font-bold" autocomplete="off">
                         </div>
                         <div id="pi-pot-container-edit" class="flex-1 hidden">
-                            <label class="block text-left text-xs font-medium text-emerald-400 mb-1">Potansiyel</label>
-                            <input type="text" id="pi-pot" class="w-full bg-slate-900 border border-emerald-600 rounded p-2 text-white outline-none focus:border-emerald-400 text-center font-bold" placeholder="80-85" autocomplete="off">
+                            <label class="block text-left text-xs font-medium text-emerald-400 mb-1">Max POT</label>
+                            <input type="number" id="pi-pot" class="w-full bg-slate-900 border border-emerald-600 rounded p-2 text-white outline-none focus:border-emerald-400 text-center font-bold appearance-none" placeholder="90" autocomplete="off" min="1" max="99">
                         </div>
                     </div>
 
@@ -892,8 +892,7 @@
     <!-- Modal: Maç Sonucu ve Olay Ekleme -->
     <div id="match-result-modal" class="fixed inset-0 bg-black/80 hidden items-start pt-10 sm:pt-0 sm:items-center justify-center z-[100] fade-in backdrop-blur-sm">
         <div class="bg-slate-800 p-3 sm:p-6 rounded-lg sm:rounded-xl border border-slate-600 w-[98%] sm:w-[95%] max-w-2xl shadow-2xl relative max-h-[90vh] sm:max-h-[96vh] flex flex-col">
-            <button onclick="closeMatchResultModal()" class="absolute top-2 right-2 sm:top-4 sm:right-4 text-slate-400 hover:text-white z-10"><i class="fa-solid fa-xmark text-lg sm:text-xl"></i></button>
-            <h3 class="text-sm sm:text-xl font-bold mb-2 sm:mb-4 text-white">Maç Sonucu Gir</h3>
+            <button onclick="closeMatchResultModal()" class="absolute -top-3 -right-3 sm:-top-4 sm:-right-4 w-8 h-8 sm:w-10 sm:h-10 bg-slate-700 hover:bg-red-500 text-slate-300 hover:text-white rounded-full border-2 border-slate-800 shadow-lg flex items-center justify-center transition-all z-20"><i class="fa-solid fa-xmark text-sm sm:text-base"></i></button>
             
             <!-- YENİ EKLENEN KISIM BURASI -->
             <datalist id="squad-players-list"></datalist>
@@ -913,17 +912,16 @@
                 <div class="w-14 sm:w-32 shrink-0 flex flex-col items-end gap-1" id="mr-recent-form"></div>
             </div>
 
-            <div class="flex justify-between items-center mb-1.5 sm:mb-2 shrink-0">
-                <span class="text-[10px] sm:text-xs font-bold text-slate-300 uppercase tracking-widest" title="Gol & Asist Detayları"><i class="fa-solid fa-futbol text-emerald-500 mr-1"></i></span>
-                <button onclick="addFixtureEvent()" title="Olay Ekle" class="bg-emerald-700 hover:bg-emerald-600 text-white text-[10px] sm:text-xs font-bold w-6 h-6 sm:w-8 sm:h-8 rounded flex items-center justify-center transition-colors"><i class="fa-solid fa-plus"></i></button>
-            </div>
             <div id="fm-events-container" class="flex-1 overflow-y-auto space-y-1 sm:space-y-2 pr-1 hide-scrollbar min-h-[60px]">
                 <!-- Olaylar buraya yüklenecek -->
+            </div>
+            <div class="flex justify-end mt-1 sm:mt-2 shrink-0 pr-1">
+                <button onclick="addFixtureEvent()" title="Olay Ekle" class="bg-emerald-700 hover:bg-emerald-600 text-white text-[10px] sm:text-xs font-bold w-6 h-6 sm:w-8 sm:h-8 rounded flex items-center justify-center transition-colors"><i class="fa-solid fa-plus"></i></button>
             </div>
 
             <div class="flex justify-end items-center mt-2 sm:mt-5 pt-2 sm:pt-4 border-t border-slate-700 shrink-0">
                 <button onclick="closeMatchResultModal()" title="İptal" class="w-8 h-8 sm:w-10 sm:h-10 rounded sm:rounded-lg bg-red-900/40 hover:bg-red-800/60 text-red-400 hover:text-red-300 transition-colors mr-2 flex items-center justify-center"><i class="fa-solid fa-ban text-sm sm:text-lg"></i></button>
-                <button onclick="saveMatchResult()" title="Sonucu Kaydet" class="px-3 py-1.5 sm:px-5 sm:py-2.5 rounded sm:rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold transition-colors text-xs sm:text-sm"><i class="fa-solid fa-floppy-disk mr-0 sm:mr-1"></i><span class="hidden sm:inline">Kaydet</span></button>
+                <button onclick="saveMatchResult()" title="Sonucu Kaydet" class="w-8 h-8 sm:w-10 sm:h-10 rounded sm:rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold transition-colors text-xs sm:text-sm flex items-center justify-center"><i class="fa-solid fa-floppy-disk text-sm sm:text-lg"></i></button>
             </div>
         </div>
     </div>
