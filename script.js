@@ -89,6 +89,8 @@ const TR_EN = {
     "Tümü": "All",
     "Son 4 Maç": "Last 4 Matches",
     "Sıradaki Maç": "Next Match",
+    "Küçült": "Zoom Out",
+    "Büyüt": "Zoom In",
     "Fikstür Şeridini Aç/Kapat": "Show/Hide Fixture Strip",
     "Seçilen / Özel Logo URL": "Selected / Custom Logo URL",
     "Örn: Türkiye": "e.g. Turkey",
@@ -974,10 +976,6 @@ function escapeHtml(str) {
 
         // Gol ve Asist State
         let statExpanded = { kulup: {}, milli: {} };
-        let statSort = { 
-            kulup: { field: 'overall_goals', asc: false }, 
-            milli: { field: 'overall_goals', asc: false } 
-        };
 
         // Transfer Panel State
         let transferData = { in: [], out: [], shortlist: [] };
@@ -1016,8 +1014,6 @@ function escapeHtml(str) {
         let fixtureFilter = { tournament: '' };
         let expandedFixtureMatchIds = new Set(); // Inline açılan (expand edilen) maç satırlarının ID'lerini tutar
 
-        
-
         // Bir fikstür maçının Kulüp mü yoksa Milli Takım maçı mı olduğunu ev sahibi/deplasman isimlerine bakarak belirler.
         function getFixtureMatchContext(match) {
             if (!match) return 'kulup';
@@ -1030,7 +1026,6 @@ function escapeHtml(str) {
             if (milliName) return 'milli';
             return 'kulup';
         }
-
 
 // --- TÜRKÇE VE İNGİLİZCE TAM İSİM ÇEVİRMENİ ---
 const COUNTRY_ALIASES = {
@@ -1345,17 +1340,6 @@ function getFlagIcon(countryCode) {
             location.reload();
         }
 
-        function startAppAfterAuth() {
-            // Başlangıç ekranını zorla kapat ve tamamlandı say
-            const setupModal = document.getElementById('setup-modal');
-            if(setupModal) setupModal.classList.add('hidden');
-            isSetupComplete = true;
-            
-            updateSiteFavicon();
-            if (!activeMain) selectMainMenu('kadro');
-            else rerenderCurrentPanel();
-        }
-
         async function deleteCareerSlot(slotNum) {
             if(confirm(`Kayıt Slotu ${slotNum} içindeki tüm veriler kalıcı olarak silinecektir. Emin misiniz?`)) {
                 localStorage.removeItem('fc26_career_data_' + slotNum);
@@ -1454,16 +1438,6 @@ function getFlagIcon(countryCode) {
                 setSyncStatus('error', e.code === 'auth/unauthorized-domain'
                     ? 'Bu site adresi Firebase\'de yetkilendirilmemiş (Authorized domains).'
                     : 'Giriş hatası: ' + e.message);
-            }
-        }
-
-function handleSyncClick() {
-            if (!currentUser) {
-                // Giriş yapılmamışsa doğrudan Google Login'i tetikle
-                signInWithGoogle();
-            } else {
-                // Giriş yapılmışsa durumu görmek için Ayarlar paneline yönlendir
-                selectMainMenu('ayarlar');
             }
         }
 
@@ -1885,37 +1859,6 @@ function handleSyncClick() {
         // NOT: Bu fonksiyon artık kullanılan bir "setup-modal" öğesine sahip değil
         // (eski kurulum sihirbazı arayüzden kaldırıldı). Elemanlar bulunamazsa
         // sessizce çıkar; ileride kurulum ekranı geri eklenirse çalışmaya devam eder.
-        function finishSetup() {
-            const countryEl = document.getElementById('setup-country');
-            const nameEl = document.getElementById('setup-name');
-            const urlEl = document.getElementById('setup-url-input');
-            const setupModal = document.getElementById('setup-modal');
-            if (!countryEl || !nameEl || !urlEl || !setupModal) return;
-
-            const country = countryEl.value.trim();
-            const name = nameEl.value.trim();
-            const url = urlEl.value.trim();
-            const logo = fileUploads.setup || (url !== "Yerel Dosya Seçildi" && url !== "" ? url : null);
-
-            if(name) {
-                managedTeams.kulup.name = name;
-                managedTeams.milli.country = country || 'TUR';
-                if(country) managedTeams.kulup.country = country;
-                managedTeams.kulup.logoUrl = logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff`;
-                
-                leagueHistoryData[0].name = name;
-            }
-
-            document.getElementById('sidebar-team-logo').src = managedTeams.kulup.logoUrl;
-
-            isSetupComplete = true;
-            saveToLocalStorage();
-            setupModal.style.opacity = '0';
-            setTimeout(() => {
-                setupModal.classList.add('hidden');
-                selectMainMenu('kadro');
-            }, 500);
-        }
 
         function changeScale(val) {
             currentScale = val;
@@ -1924,12 +1867,22 @@ function handleSyncClick() {
             if(activeMain === 'kadro') renderSquadGrid();
         }
 
+        // ===================== ÖLÇEK SEÇİCİ: minimal [ − 75% + ] =====================
+        const SCALE_STEPS = ['0.5', '0.75', '1'];
+        function stepScale(dir) {
+            const i = SCALE_STEPS.indexOf(currentScale);
+            const next = SCALE_STEPS[Math.min(SCALE_STEPS.length - 1, Math.max(0, (i === -1 ? SCALE_STEPS.length - 1 : i) + dir))];
+            if (next !== currentScale) changeScale(next);
+        }
         function getScaleSelectorHtml() {
+            return ''; // GİZLENDİ: seçiciyi geri açmak için bu satırı sil
+            const i = SCALE_STEPS.indexOf(currentScale);
+            const btn = 'w-7 h-7 flex items-center justify-center text-slate-300 hover:bg-slate-800 hover:text-white transition-colors disabled:opacity-30 disabled:hover:bg-transparent disabled:cursor-not-allowed';
             return `
-                <div class="flex items-center gap-1 bg-slate-900 rounded border border-slate-700 p-1">
-                    <button onclick="changeScale('0.5')" class="px-2 py-1 rounded text-xs font-bold transition-colors ${currentScale === '0.5' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:bg-slate-800'}" title="%50">50</button>
-                    <button onclick="changeScale('0.75')" class="px-2 py-1 rounded text-xs font-bold transition-colors ${currentScale === '0.75' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:bg-slate-800'}" title="%75">75</button>
-                    <button onclick="changeScale('1')" class="px-2 py-1 rounded text-xs font-bold transition-colors ${currentScale === '1' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:bg-slate-800'}" title="%100">100</button>
+                <div class="flex items-center rounded-lg border border-slate-700 bg-slate-900 overflow-hidden" title="%${Math.round(parseFloat(currentScale) * 100)}">
+                    <button onclick="stepScale(-1)" ${i === 0 ? 'disabled' : ''} class="${btn}" title="Küçült" aria-label="Küçült"><i class="fa-solid fa-minus text-[10px]"></i></button>
+                    <span class="w-10 text-center text-[11px] font-bold text-slate-300 tabular-nums select-none border-x border-slate-800">${Math.round(parseFloat(currentScale) * 100)}%</span>
+                    <button onclick="stepScale(1)" ${i === SCALE_STEPS.length - 1 ? 'disabled' : ''} class="${btn}" title="Büyüt" aria-label="Büyüt"><i class="fa-solid fa-plus text-[10px]"></i></button>
                 </div>
             `;
         }
@@ -2345,8 +2298,6 @@ function handleFileUpload(event, type) {
             contentArea.innerHTML = htmlContent;
         }
 
-
-
         // --- AYARLAR VE VERİ YÖNETİMİ PANELİ ---
         function renderSettingsPanel() {
             // Calculate localStorage usage
@@ -2594,12 +2545,6 @@ function handleFileUpload(event, type) {
             renderHomePanel();
         }
 
-        function homeSetStatsSort(field) {
-            if (homeStatsSort.field === field) homeStatsSort.asc = !homeStatsSort.asc;
-            else { homeStatsSort.field = field; homeStatsSort.asc = false; }
-            renderHomePanel();
-        }
-
         function renderHomeFirst11(context) {
             const formData = formations && formations[context] ? formations[context].ilk11 : null;
             if (!formData || !Array.isArray(formData) || !formData.some(n => n.name)) {
@@ -2645,69 +2590,6 @@ function handleFileUpload(event, type) {
                     ${nodesHtml}
                 </div>
             `;
-        }
-
-        function renderHomeTopScorersOld(context) {
-            const season = seasonsList[seasonsList.length - 1];
-            if (!season) return { headerHtml: '', bodyHtml: '<div class="text-center text-slate-500 text-sm py-6">Kayıtlı sezon bulunmuyor.</div>' };
-            const data = getStatsData(context);
-            const list = data.stats.map(p => ({
-                name: p.name,
-                photoUrl: p.photoUrl,
-                goals: p.seasons[season] ? p.seasons[season].totalGoals : 0,
-                assists: p.seasons[season] ? p.seasons[season].totalAssists : 0
-            })).filter(p => p.goals > 0 || p.assists > 0);
-
-            const field = homeStatsSort.field;
-            const asc = homeStatsSort.asc;
-            list.sort((a, b) => {
-                const primary = asc ? (a[field] - b[field]) : (b[field] - a[field]);
-                if (primary !== 0) return primary;
-                const other = field === 'goals' ? 'assists' : 'goals';
-                return b[other] - a[other];
-            });
-            const top = list;
-
-            const sortIcon = (f) => {
-                if (homeStatsSort.field !== f) return '<i class="fa-solid fa-sort text-[8px] ml-1 opacity-50"></i>';
-                return homeStatsSort.asc ? '<i class="fa-solid fa-chevron-up text-[8px] ml-1"></i>' : '<i class="fa-solid fa-chevron-down text-[8px] ml-1"></i>';
-            };
-
-            const headerHtml = `
-                <div class="flex items-center gap-1.5 sm:gap-2 px-1 sm:px-2 pb-1 sm:pb-1.5">
-                    <span class="w-4 sm:w-5"></span>
-                    <span class="w-6 sm:w-8"></span>
-                    <span class="flex-1"></span>
-                    <button onclick="homeSetStatsSort('goals')" class="text-[9px] sm:text-[10px] font-bold text-emerald-400 hover:text-emerald-300 flex items-center transition-colors">GOL${sortIcon('goals')}</button>
-                    <button onclick="homeSetStatsSort('assists')" class="text-[9px] sm:text-[10px] font-bold text-blue-400 hover:text-blue-300 flex items-center transition-colors ml-2">ASİST${sortIcon('assists')}</button>
-                </div>
-            `;
-
-            if (top.length === 0) return { headerHtml: '', bodyHtml: `<div class="text-center text-slate-500 text-xs sm:text-sm py-6">${escapeHtml(season)} sezonu için gol/asist verisi bulunmuyor.</div>` };
-
-            const maxGoals = Math.max(0, ...top.map(p => p.goals));
-            const maxAssists = Math.max(0, ...top.map(p => p.assists));
-
-            const bodyHtml = top.map((p, idx) => {
-                const rankCls = idx === 0 ? 'text-amber-300' : idx === 1 ? 'text-slate-300' : idx === 2 ? 'text-orange-400' : 'text-slate-500';
-                const photoHtml = p.photoUrl
-                    ? `<img src="${p.photoUrl}" class="w-6 h-6 sm:w-8 sm:h-8 rounded-full object-cover bg-slate-800 border border-slate-700">`
-                    : `<div class="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-slate-700 flex items-center justify-center text-[10px] sm:text-xs font-bold">${escapeHtml((p.name || '?').charAt(0))}</div>`;
-                const goalsGlow = (p.goals > 0 && p.goals === maxGoals) ? 'text-glow-max' : '';
-                const assistsGlow = (p.assists > 0 && p.assists === maxAssists) ? 'text-glow-max' : '';
-                
-                const shortName = formatShortPlayerName(p.name);
-                
-                return `<div class="flex items-center gap-1.5 sm:gap-2 bg-slate-900/60 border border-slate-700/50 rounded-lg px-1.5 py-1 sm:px-2 sm:py-1.5">
-                    <span class="w-4 sm:w-5 text-center text-[10px] sm:text-xs font-black ${rankCls}">${idx + 1}</span>
-                    ${photoHtml}
-                    <span class="flex-1 text-xs sm:text-sm font-bold text-white truncate text-left" title="${escapeHtml(p.name)}">${escapeHtml(shortName)}</span>
-                    <span class="text-[10px] sm:text-xs font-black text-emerald-400 w-10 sm:w-12 text-right inline-flex items-center justify-end gap-1 ${goalsGlow}"><i class="fa-solid fa-futbol"></i>${p.goals}</span>
-                    <span class="text-[10px] sm:text-xs font-black text-blue-400 w-10 sm:w-14 text-right inline-flex items-center justify-end gap-1 ${assistsGlow}"><i class="fa-solid fa-shoe-prints"></i>${p.assists}</span>
-                </div>`;
-            }).join('');
-
-            return { headerHtml, bodyHtml };
         }
 
         function homeGetFilteredMatches(context) {
@@ -2759,31 +2641,100 @@ function handleFileUpload(event, type) {
             sc.scrollTop = 0;
         }
 
-        function homeCenterNextMatchV6() {
-            const root = document.getElementById('hcontent-maclar');
-            if (!root) return;
-            const sc = root.querySelector('.overflow-y-auto');
-            const wrap = root.querySelector('[data-hx="wrap"]');
-            const top = root.querySelector('[data-hx="top"]');
-            const bot = root.querySelector('[data-hx="bot"]');
-            if (!sc || !wrap || !top || !bot || !top.firstElementChild || !bot.firstElementChild) return;
-            if (!sc.clientHeight) return; // Mobilde sekme gizliyse ölçülemez; sekme açılınca tekrar çalışır
-            const cs = getComputedStyle(sc);
-            const inner = sc.clientHeight - (parseFloat(cs.paddingTop) || 0) - (parseFloat(cs.paddingBottom) || 0);
-            top.style.minHeight = ''; bot.style.minHeight = '';
-            const need = Math.max(top.firstElementChild.offsetHeight, bot.firstElementChild.offsetHeight);
-            top.style.minHeight = need + 'px';
-            bot.style.minHeight = need + 'px';
-            wrap.style.minHeight = inner + 'px';
-            const extra = sc.scrollHeight - sc.clientHeight;
-            sc.scrollTop = extra > 0 ? extra / 2 : 0;
-        }
         if (typeof window !== 'undefined' && !window.__homeCenterBound) {
             window.__homeCenterBound = true;
             window.addEventListener('resize', () => homeCenterNextMatch());
         }
         // Sekme değişince de (mobil) ortalamayı yenile
+        // ===================== ANA SAYFA SAHA: kartların üst üste binmesini önleyen yerleşim =====================
+        // Kartları (foto + mevki + isim) ölçer; çakışanları birbirinden uzaklaştırır, gerekirse hepsini biraz küçültür; saha dışına taşmayı engeller.
+        function homeFitPitch(box) {
+            const W = box.clientWidth, H = box.clientHeight;
+            if (!W || !H) return; // gizli sekmede ölçülemez; görünür olunca yeniden çalışır
+            const cards = Array.from(box.querySelectorAll(':scope > .absolute.flex.flex-col'));
+            if (!cards.length) return;
+            const PAD = 5, GAP = 3;
+
+            const nodes = cards.map(c => {
+                if (c.dataset.l0 === undefined) { c.dataset.l0 = c.style.left; c.dataset.t0 = c.style.top; }
+                c.style.transform = 'translate(-50%, -50%)'; // ölçmeden önce ölçeği sıfırla
+                const img = c.querySelector('img');
+                const photoBox = c.firstElementChild;
+                let w = 0;
+                Array.from(c.children).forEach(ch => { w = Math.max(w, ch.offsetWidth); });
+                const up = img && photoBox ? Math.max(0, img.offsetHeight - photoBox.offsetHeight) : 0; // foto kutunun üstüne taşar
+                return { c, w, h: c.offsetHeight + up, up, x0: parseFloat(c.dataset.l0) / 100 * W, y0: parseFloat(c.dataset.t0) / 100 * H };
+            });
+
+            const solve = (k) => {
+                const P = nodes.map(n => ({ w: n.w * k, h: n.h * k, x: n.x0, y: n.y0 }));
+                const clamp = (p) => {
+                    // Kartın görünür kutusu: merkez yatay, dikeyde (üstten taşan foto dahil) h
+                    p.x = Math.min(W - PAD - p.w / 2, Math.max(PAD + p.w / 2, p.x));
+                    p.y = Math.min(H - PAD - p.h / 2, Math.max(PAD + p.h / 2, p.y));
+                };
+                P.forEach(clamp);
+                for (let it = 0; it < 80; it++) {
+                    let moved = false;
+                    for (let i = 0; i < P.length; i++) {
+                        for (let j = i + 1; j < P.length; j++) {
+                            const a = P[i], b = P[j];
+                            const ox = (a.w + b.w) / 2 + GAP - Math.abs(a.x - b.x);
+                            const oy = (a.h + b.h) / 2 + GAP - Math.abs(a.y - b.y);
+                            if (ox <= 0 || oy <= 0) continue;
+                            moved = true;
+                            if (oy <= ox) { // dikeyde ayır
+                                const s = (a.y === b.y ? (i % 2 ? 1 : -1) : Math.sign(a.y - b.y)) * oy / 2;
+                                a.y += s; b.y -= s;
+                            } else {
+                                const s = (a.x === b.x ? (i % 2 ? 1 : -1) : Math.sign(a.x - b.x)) * ox / 2;
+                                a.x += s; b.x -= s;
+                            }
+                            clamp(a); clamp(b);
+                        }
+                    }
+                    if (!moved) break;
+                }
+                let clash = false;
+                for (let i = 0; i < P.length && !clash; i++) for (let j = i + 1; j < P.length; j++) {
+                    const a = P[i], b = P[j];
+                    if ((a.w + b.w) / 2 - Math.abs(a.x - b.x) > 0.5 && (a.h + b.h) / 2 - Math.abs(a.y - b.y) > 0.5) { clash = true; break; }
+                }
+                return { P, clash };
+            };
+
+            let res = null, kUsed = 1;
+            for (let k = 1; k >= 0.5; k -= 0.05) {
+                res = solve(k); kUsed = k;
+                if (!res.clash) break;
+            }
+            nodes.forEach((n, i) => {
+                const p = res.P[i];
+                // p.y görünür kutunun merkezi; kartın kendi merkezi üstten taşan fotoyu çıkarınca aşağıdadır
+                const cy = p.y + (n.up * kUsed) / 2;
+                n.c.style.left = p.x + 'px';
+                n.c.style.top = cy + 'px';
+                n.c.style.transform = `translate(-50%, -50%) scale(${kUsed.toFixed(3)})`;
+            });
+        }
+
+        function homeFitPitches() {
+            document.querySelectorAll('.home-pitch-container').forEach(box => {
+                homeFitPitch(box);
+                if (typeof ResizeObserver !== 'undefined') {
+                    if (!window.__homePitchRO) window.__homePitchRO = new ResizeObserver(es => es.forEach(e => homeFitPitch(e.target)));
+                    window.__homePitchRO.observe(box); // panel boyutu değişince (pencere, sekme, yan menü) yeniden yerleştirir
+                }
+            });
+        }
+
         function switchHomeTab(tabId) {
+            switchHomeTabV6(tabId);
+            homeFitPitches();
+            requestAnimationFrame(homeFitPitches);
+        }
+
+        function switchHomeTabV6(tabId) {
             switchHomeTabBase(tabId);
             homeCenterNextMatch();
             requestAnimationFrame(homeCenterNextMatch);
@@ -2917,254 +2868,7 @@ function handleFileUpload(event, type) {
             </div>`;
         }
 
-        function renderHomeFixturesV6(context) {
-            const matches = homeGetFilteredMatches(context);
-            const hasScore = (m) => m.homeScore !== '' && m.homeScore !== null && m.homeScore !== undefined && m.awayScore !== '' && m.awayScore !== null && m.awayScore !== undefined;
-            const played = matches.filter(hasScore);
-            const upcoming = matches.filter(m => !hasScore(m));
-
-            const last4 = played.slice(-4);
-            const nextMatch = upcoming[0] || null;
-            const next4 = upcoming.slice(1, 5);
-
-            const clubName = managedTeams.kulup.name || '';
-            const nationalName = managedTeams.milli.name || '';
-            const isOurTeam = (name) => name === clubName || name === nationalName;
-
-            const renderMatchRow = (m, highlight) => {
-                const homeLogo = getTeamLogoByName(m.home);
-                const awayLogo = getTeamLogoByName(m.away);
-                const hs = hasScore(m) ? m.homeScore : '-';
-                const as = hasScore(m) ? m.awayScore : '-';
-                const tourLogo = getCompetitionLogo(m.tournament);
-                const tourHtml = tourLogo
-                    ? `<img src="${tourLogo}" alt="${escapeHtml(m.tournament || '')}" title="${escapeHtml(m.tournament || '')}" class="w-6 h-6 object-contain shrink-0">`
-                    : `<span class="text-[10px] text-slate-400 truncate min-w-0 max-w-[90px] sm:max-w-[130px]" title="${escapeHtml(m.tournament || '')}">${escapeHtml(m.tournament || '')}</span>`;
-
-                let resultClass = '';
-
-                if (hasScore(m)) {
-                    const hsNum = parseInt(m.homeScore), asNum = parseInt(m.awayScore);
-                    if (!isNaN(hsNum) && !isNaN(asNum)) {
-                        let letter = '';
-                        if (isOurTeam(m.home)) letter = hsNum > asNum ? 'W' : (hsNum < asNum ? 'L' : 'D');
-                        else if (isOurTeam(m.away)) letter = asNum > hsNum ? 'W' : (asNum < hsNum ? 'L' : 'D');
-                        if (letter) resultClass = `frow-${letter}`;
-                    }
-                }
-
-                const oppName = isOurTeam(m.home) ? m.away : m.home;
-                const h2hMatches = played.filter(pm => (pm.home === oppName || pm.away === oppName) && pm.id !== m.id).slice(-3).reverse();
-
-                let badgesHtml = '<div></div>';
-                if (h2hMatches.length > 0) {
-                    let badges = h2hMatches.map((hm, idx) => {
-                        const h_isUsHome = isOurTeam(hm.home);
-                        const h_hs = parseInt(hm.homeScore);
-                        const h_as = parseInt(hm.awayScore);
-                        let res = 'D';
-                        if (h_isUsHome) {
-                            if (h_hs > h_as) res = 'W';
-                            else if (h_hs < h_as) res = 'L';
-                        } else {
-                            if (h_as > h_hs) res = 'W';
-                            else if (h_as < h_hs) res = 'L';
-                        }
-                        const bgClass = res === 'W' ? 'bg-emerald-500' : (res === 'D' ? 'bg-yellow-500' : 'bg-red-500');
-
-                        let badgeGlow = 'shadow-sm';
-                        if (idx === 0) {
-                            if (res === 'W') badgeGlow = 'shadow-[0_0_8px_rgba(16,185,129,0.9)] scale-110 z-10 border border-white/50';
-                            else if (res === 'D') badgeGlow = 'shadow-[0_0_8px_rgba(234,179,8,0.9)] scale-110 z-10 border border-white/50';
-                            else if (res === 'L') badgeGlow = 'shadow-[0_0_8px_rgba(239,68,68,0.9)] scale-110 z-10 border border-white/50';
-                        }
-
-                        return `<span class="flex items-center justify-center w-3 h-3 sm:w-4 sm:h-4 rounded text-[7px] sm:text-[9px] font-black text-white ${bgClass} ${badgeGlow}" title="${hm.season} | ${hm.homeScore}-${hm.awayScore}">${res}</span>`;
-                    }).join('');
-
-                    // Rozetlerin soluna: rakiple en son oynanan maçın skoru (bizim takım önde)
-                    const lm = h2hMatches[0];
-                    const lmUsHome = isOurTeam(lm.home);
-                    const lmOurs = parseInt(lmUsHome ? lm.homeScore : lm.awayScore);
-                    const lmTheirs = parseInt(lmUsHome ? lm.awayScore : lm.homeScore);
-                    const lmCls = lmOurs > lmTheirs ? 'text-emerald-400' : (lmOurs < lmTheirs ? 'text-red-400' : 'text-yellow-400');
-                    const lmTip = [lm.season, lm.tournament, `${lm.homeScore}-${lm.awayScore}`].filter(Boolean).join(' | ');
-                    const lastMatchHtml = (isNaN(lmOurs) || isNaN(lmTheirs)) ? '' : `<span class="text-[9px] sm:text-[11px] font-black tabular-nums whitespace-nowrap ${lmCls}" title="${escapeHtml(lmTip)}">${lmOurs}-${lmTheirs}</span>`;
-
-                    badgesHtml = `<div class="flex items-center justify-start gap-1.5 sm:gap-2">${lastMatchHtml}<div class="flex items-center justify-start gap-1 sm:gap-1.5">${badges}</div></div>`;
-                }
-
-                const borderClass = highlight
-                    ? 'shadow-[0_0_15px_rgba(16,185,129,0.4)] border-emerald-500/60 relative z-10'
-                    : 'border-slate-700/50';
-                // Sıradaki Maç satırı eski yüksekliğini korur; geçmiş/gelecek satırlar logolar küçülmeden daralır
-                const padClass = highlight ? 'px-2 py-2 sm:px-3 sm:py-3' : 'px-2 py-0.5 sm:px-3 sm:py-1';
-
-                const abbr = getRoundAbbr(m.round);
-                const glowingPhases = ['G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7', 'G8', 'R1', 'R2', 'R3', 'R4', 'R5', 'L32', 'L16', 'QF', 'SF', 'F', '3rd', 'PO'];
-                const badgeStyle = glowingPhases.includes(abbr)
-                    ? 'text-amber-300 bg-amber-900/30 border-amber-600/50 shadow-[0_0_8px_rgba(245,158,11,0.4)]'
-                    : 'text-slate-300 bg-slate-800/60 border-slate-700/30 shadow-sm';
-
-                const roundHtml = m.round ? `<span class="inline-flex items-center text-[7px] sm:text-[8px] font-bold rounded px-1 sm:px-1.5 py-[2px] sm:py-[3px] ml-1 sm:ml-1.5 tracking-widest uppercase whitespace-nowrap border shrink-0 ${badgeStyle}" title="${escapeHtml(m.round)}">${escapeHtml(abbr)}</span>` : '';
-
-                return `<div onclick="qfbOpenMatch('${m.season}','${m.id}')" class="grid grid-cols-[1fr_auto_1fr] items-center gap-1.5 sm:gap-6 ${resultClass || 'bg-slate-900/60'} hover:brightness-125 cursor-pointer border ${borderClass} rounded-lg ${padClass} transition-all" title="Skor / gol-asist girmek için tıklayın">
-            <div class="flex items-center justify-start gap-1 sm:gap-2 min-w-0">
-                ${tourHtml}
-                ${roundHtml}
-            </div>
-            <div class="flex items-center justify-center gap-2 sm:gap-3">
-                <img src="${homeLogo}" class="w-6 h-6 sm:w-8 sm:h-8 object-contain">
-                <span class="score-display ${resultClass ? 'score-' + resultClass.replace('frow-', '') : 'text-white'} text-sm sm:text-base font-black w-10 sm:w-14 text-center">${hs}:${as}</span>
-                <img src="${awayLogo}" class="w-6 h-6 sm:w-8 sm:h-8 object-contain">
-            </div>
-            ${badgesHtml}
-        </div>`;
-            };
-
-            const h5 = (cls, text) => `<h5 class="text-[9px] sm:text-[10px] font-bold ${cls} uppercase tracking-widest mb-1 sm:mb-1.5">${text}</h5>`;
-            const empty = (text) => `<div class="text-center text-slate-500 text-xs py-2">${text}</div>`;
-
-            // Üst blok alta yaslı, alt blok üste yaslı; ikisi eşitlenince Sıradaki Maç tam ortada kalır (bkz. homeCenterNextMatch)
-            return `<div data-hx="wrap" class="flex flex-col gap-1 sm:gap-3">
-                <div data-hx="top" class="flex-1 flex flex-col justify-end"><div>
-                    ${h5('text-slate-400', 'Son 4 Maç')}
-                    <div class="flex flex-col gap-1">${last4.length ? last4.map(m => renderMatchRow(m, false)).join('') : empty('Oynanmış maç yok.')}</div>
-                </div></div>
-                <div data-hx="mid">
-                    ${h5('text-emerald-400', 'Sıradaki Maç')}
-                    <div class="flex flex-col gap-1.5">${nextMatch ? renderMatchRow(nextMatch, true) : empty('Planlanmış maç yok.')}</div>
-                </div>
-                <div data-hx="bot" class="flex-1 flex flex-col justify-start"><div>
-                    ${h5('text-slate-400', 'Sonraki 4 Maç')}
-                    <div class="flex flex-col gap-1">${next4.length ? next4.map(m => renderMatchRow(m, false)).join('') : empty('Planlanmış maç yok.')}</div>
-                </div></div>
-            </div>`;
-        }
-
-        function renderHomeFixturesOld(context) {
-    const matches = homeGetFilteredMatches(context);
-    const hasScore = (m) => m.homeScore !== '' && m.homeScore !== null && m.homeScore !== undefined && m.awayScore !== '' && m.awayScore !== null && m.awayScore !== undefined;
-    const played = matches.filter(hasScore);
-    const upcoming = matches.filter(m => !hasScore(m));
-
-    const last4 = played.slice(-4);
-    const nextMatch = upcoming[0] || null;
-    const next4 = upcoming.slice(1, 5);
-
-    const clubName = managedTeams.kulup.name || '';
-    const nationalName = managedTeams.milli.name || '';
-    const isOurTeam = (name) => name === clubName || name === nationalName;
-
-    const renderMatchRow = (m, highlight) => {
-        const homeLogo = getTeamLogoByName(m.home);
-        const awayLogo = getTeamLogoByName(m.away);
-        const hs = hasScore(m) ? m.homeScore : '-';
-        const as = hasScore(m) ? m.awayScore : '-';
-        const tourLogo = getCompetitionLogo(m.tournament);
-        const tourHtml = tourLogo
-            ? `<img src="${tourLogo}" alt="${escapeHtml(m.tournament || '')}" title="${escapeHtml(m.tournament || '')}" class="w-6 h-6 object-contain">`
-            : `<span class="text-[10px] text-slate-400 truncate max-w-[70px]" title="${escapeHtml(m.tournament || '')}">${escapeHtml(m.tournament || '')}</span>`;
-
-        let resultClass = '';
-        
-        if (hasScore(m)) {
-            const hsNum = parseInt(m.homeScore), asNum = parseInt(m.awayScore);
-            if (!isNaN(hsNum) && !isNaN(asNum)) {
-                let letter = '';
-                if (isOurTeam(m.home)) letter = hsNum > asNum ? 'W' : (hsNum < asNum ? 'L' : 'D');
-                else if (isOurTeam(m.away)) letter = asNum > hsNum ? 'W' : (asNum < hsNum ? 'L' : 'D');
-                if (letter) resultClass = `frow-${letter}`;
-            }
-        }
-
-        const oppName = isOurTeam(m.home) ? m.away : m.home;
-        const h2hMatches = played.filter(pm => (pm.home === oppName || pm.away === oppName) && pm.id !== m.id).slice(-3).reverse();
-        
-        let badgesHtml = '<div></div>';
-        if (h2hMatches.length > 0) {
-            let badges = h2hMatches.map((hm, idx) => {
-                const h_isUsHome = isOurTeam(hm.home);
-                const h_hs = parseInt(hm.homeScore);
-                const h_as = parseInt(hm.awayScore);
-                let res = 'D';
-                if (h_isUsHome) {
-                    if (h_hs > h_as) res = 'W';
-                    else if (h_hs < h_as) res = 'L';
-                } else {
-                    if (h_as > h_hs) res = 'W';
-                    else if (h_as < h_hs) res = 'L';
-                }
-                const bgClass = res === 'W' ? 'bg-emerald-500' : (res === 'D' ? 'bg-yellow-500' : 'bg-red-500');
-                
-                let badgeGlow = 'shadow-sm';
-                if (idx === 0) { 
-                    if (res === 'W') badgeGlow = 'shadow-[0_0_8px_rgba(16,185,129,0.9)] scale-110 z-10 border border-white/50';
-                    else if (res === 'D') badgeGlow = 'shadow-[0_0_8px_rgba(234,179,8,0.9)] scale-110 z-10 border border-white/50';
-                    else if (res === 'L') badgeGlow = 'shadow-[0_0_8px_rgba(239,68,68,0.9)] scale-110 z-10 border border-white/50';
-                }
-
-                return `<span class="flex items-center justify-center w-3 h-3 sm:w-4 sm:h-4 rounded text-[7px] sm:text-[9px] font-black text-white ${bgClass} ${badgeGlow}" title="${hm.season} | ${hm.homeScore}-${hm.awayScore}">${res}</span>`;
-            }).join('');
-            
-            badgesHtml = `<div class="flex items-center justify-start gap-1 sm:gap-1.5">${badges}</div>`;
-        }
-
-        const borderClass = highlight
-            ? 'shadow-[0_0_15px_rgba(16,185,129,0.4)] border-emerald-500/60 relative z-10'
-            : 'border-slate-700/50';
-
-        const abbr = getRoundAbbr(m.round);
-        const glowingPhases = ['G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7', 'G8', 'R1', 'R2', 'R3', 'R4', 'R5', 'L32', 'L16', 'QF', 'SF', 'F', '3rd', 'PO'];
-        const badgeStyle = glowingPhases.includes(abbr)
-            ? 'text-amber-300 bg-amber-900/30 border-amber-600/50 shadow-[0_0_8px_rgba(245,158,11,0.4)]'
-            : 'text-slate-300 bg-slate-800/60 border-slate-700/30 shadow-sm';
-
-        const roundHtml = m.round ? `<span class="inline-flex items-center text-[7px] sm:text-[8px] font-bold rounded px-1 sm:px-1.5 py-[2px] sm:py-[3px] ml-1 sm:ml-1.5 tracking-widest uppercase whitespace-nowrap border ${badgeStyle}" title="${escapeHtml(m.round)}">${escapeHtml(abbr)}</span>` : '';
-
-        return `<div onclick="qfbOpenMatch('${m.season}','${m.id}')" class="grid grid-cols-[1fr_auto_1fr] items-center gap-1.5 sm:gap-6 ${resultClass || 'bg-slate-900/60'} hover:brightness-125 cursor-pointer border ${borderClass} rounded-lg px-2 py-2 sm:px-3 sm:py-3 transition-all" title="Skor / gol-asist girmek için tıklayın">
-            <div class="flex items-center justify-start gap-1 sm:gap-2">
-                <span class="hidden sm:inline-block text-[10px] text-slate-500 font-bold shrink-0">${escapeHtml(m.season)}</span>
-                ${tourHtml}
-                ${roundHtml}
-            </div>
-            <div class="flex items-center justify-center gap-2 sm:gap-3">
-                <img src="${homeLogo}" class="w-6 h-6 sm:w-8 sm:h-8 object-contain">
-                <span class="score-display ${resultClass ? 'score-' + resultClass.replace('frow-', '') : 'text-white'} text-sm sm:text-base font-black w-10 sm:w-14 text-center">${hs}:${as}</span>
-                <img src="${awayLogo}" class="w-6 h-6 sm:w-8 sm:h-8 object-contain">
-            </div>
-            ${badgesHtml}
-        </div>`;
-    };
-
-    let html = '<div class="flex flex-col h-full justify-between gap-1 sm:gap-3 pb-1">';
-    html += `<div class="flex flex-col mb-1 sm:mb-0"><h5 class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 sm:mb-1.5">Son 4 Maç</h5><div class="flex flex-col gap-1.5 sm:gap-1.5">${last4.length ? last4.map(m => renderMatchRow(m, false)).join('') : '<div class="text-center text-slate-500 text-xs py-2">Oynanmış maç yok.</div>'}</div></div>`;
-    html += `<div class="flex flex-col mb-1 sm:mb-0"><h5 class="text-[9px] sm:text-[10px] font-bold text-emerald-400 uppercase tracking-widest mb-1 sm:mb-1.5">Sıradaki Maç</h5><div class="flex flex-col gap-1.5 sm:gap-1.5">${nextMatch ? renderMatchRow(nextMatch, true) : '<div class="text-center text-slate-500 text-xs py-2">Planlanmış maç yok.</div>'}</div></div>`;
-    html += `<div class="flex flex-col"><h5 class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 sm:mb-1.5">Sonraki 4 Maç</h5><div class="flex flex-col gap-1.5 sm:gap-1.5">${next4.length ? next4.map(m => renderMatchRow(m, false)).join('') : '<div class="text-center text-slate-500 text-xs py-2">Planlanmış maç yok.</div>'}</div></div>`;
-    html += '</div>';
-    return html;
-}
-
         let homeActiveTab = 'maclar';
-
-        function switchHomeTabLegacy(tabId) {
-            homeActiveTab = tabId;
-            ['ilk11', 'maclar', 'goller'].forEach(id => {
-                const btn = document.getElementById('htab-' + id);
-                const content = document.getElementById('hcontent-' + id);
-                if (!btn || !content) return;
-                
-                if (id === tabId) {
-                    btn.className = 'flex-1 px-4 py-3 text-lg bg-slate-900 text-emerald-400 border border-slate-700 border-b-slate-900 rounded-t-xl transition-colors shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] relative z-10 -mb-[1px] flex items-center justify-center';
-                    content.classList.remove('hidden');
-                    content.classList.add('flex');
-                } else {
-                    btn.className = 'flex-1 px-4 py-3 text-lg bg-slate-800/50 text-slate-400 border border-transparent border-b-slate-700 rounded-t-xl hover:bg-slate-800 hover:text-white transition-colors relative z-0 flex items-center justify-center cursor-pointer';
-                    content.classList.add('hidden');
-                    content.classList.remove('flex');
-                }
-            });
-        }
 
         // ===================== ANA SAYFA: 6 PANELLİ DÜZEN =====================
         let homeSquadSub = 'astakim';   // Kulüp kadrosu alt seçimi: 'astakim' (Ana Takım) | 'akademi' (Altyapı)
@@ -3220,14 +2924,6 @@ function handleFileUpload(event, type) {
         }
 
         // --- 1) KADRO PANELİ ---
-        function homeOvrColor(ovr) {
-            const n = parseInt(ovr);
-            if (isNaN(n)) return 'text-slate-500';
-            if (n >= 85) return 'text-emerald-400';
-            if (n >= 75) return 'text-yellow-300';
-            if (n >= 65) return 'text-orange-400';
-            return 'text-slate-400';
-        }
 
         // ===================== ANA SAYFA: KADRO (11 + YEDEK + REZERV) VE GOL KRALLARI DETAYI =====================
         const HOME_POS_ORDER = ['GK', 'CB', 'LB', 'RB', 'DM', 'CM', 'LM', 'RM', 'AM', 'LW', 'RW', 'ST'];
@@ -3284,23 +2980,6 @@ function handleFileUpload(event, type) {
             return `<button onclick="event.stopPropagation(); homeToggleSquadEdit()" title="${on ? 'Düzenlemeyi Bitir' : 'Kadroyu Düzenle'}" class="w-7 h-7 shrink-0 rounded-full border text-[11px] flex items-center justify-center transition-colors ${on ? 'bg-emerald-600 text-white border-emerald-500' : 'bg-slate-900 text-slate-300 border-slate-700 hover:text-white'}"><i class="fa-solid ${on ? 'fa-check' : 'fa-pen'}"></i></button>`;
         }
 
-        function homeSquadRowHtml(name, pos, fctx, grow) {
-            const cur = getPlayerCurrentStatsByName(name, fctx);
-            const photo = getPlayerPhotoByName(name);
-            const canon = homePosCanon(pos);
-            const photoHtml = photo
-                ? `<img src="${photo}" class="w-5 h-5 rounded-full object-cover bg-slate-800 border border-slate-700 shrink-0">`
-                : `<div class="w-5 h-5 rounded-full bg-slate-700 flex items-center justify-center text-[9px] font-bold shrink-0">${escapeHtml((name || '?').charAt(0))}</div>`;
-            const has = (v) => v !== null && v !== undefined && v !== '';
-            const sizeCls = grow ? 'flex-1 basis-0 min-h-[22px] max-h-[40px]' : 'min-h-[24px] py-0.5';
-            return `<div class="${sizeCls} flex items-center gap-1.5 bg-slate-900/60 border border-slate-700/50 rounded-md px-1.5">
-                <span class="pos-${escapeHtml(canon)} w-8 shrink-0 text-center bg-slate-950/90 font-black rounded border border-slate-700 text-[9px] leading-[14px]">${escapeHtml(canon || '-')}</span>
-                ${photoHtml}
-                <span class="flex-1 min-w-0 text-[11px] sm:text-xs font-bold text-white truncate text-left" title="${escapeHtml(name)}">${escapeHtml(formatShortPlayerName(name))}</span>
-                <span class="w-6 text-center text-[10px] font-bold text-slate-300">${has(cur.age) ? escapeHtml(String(cur.age)) : '-'}</span>
-                <span class="w-7 text-center text-[11px] sm:text-xs font-black ${homeOvrColor(cur.ovr)}">${has(cur.ovr) ? escapeHtml(String(cur.ovr)) : '-'}</span>
-            </div>`;
-        }
 
         function homeSortLineup(items, fctx) {
             return items.map(n => ({ n, cur: getPlayerCurrentStatsByName(n.name, fctx) }))
@@ -3339,6 +3018,39 @@ function handleFileUpload(event, type) {
             return `<div class="flex flex-col gap-1.5">${rows}</div>`;
         }
 
+                // ===================== KADRO v3: modern rozetler (yaş: küçük pill, OVR: yuvarlak) + masaüstünde 2 sütun =====================
+        function homeBadgeStyle(color) {
+            const hex = String(color).replace('#', '');
+            const r = parseInt(hex.substr(0, 2), 16), g = parseInt(hex.substr(2, 2), 16), b = parseInt(hex.substr(4, 2), 16);
+            const fg = ((0.299 * r + 0.587 * g + 0.114 * b) / 255) > 0.55 ? '#0b1220' : '#ffffff';
+            return `background-color:${color};color:${fg};box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 1px 3px rgba(0,0,0,.5)`;
+        }
+        function homeAgeBadge(age) {
+            if (age === null || age === undefined || age === '') return '<span class="w-6 shrink-0 text-center text-[9px] font-bold text-slate-600">-</span>';
+            return `<span class="w-6 shrink-0 flex justify-center"><span class="w-5 h-[15px] rounded-md flex items-center justify-center text-[9px] font-black tabular-nums leading-none" style="${homeBadgeStyle(getAgeColor(age))}">${escapeHtml(String(age))}</span></span>`;
+        }
+        function homeOvrBadge(ovr) {
+            if (ovr === null || ovr === undefined || ovr === '') return '<span class="w-7 shrink-0 text-center text-[10px] font-bold text-slate-600">-</span>';
+            return `<span class="w-7 shrink-0 flex justify-center"><span class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black tabular-nums leading-none ring-2 ring-slate-900/80" style="${homeBadgeStyle(getOvrColor(ovr))}">${escapeHtml(String(ovr))}</span></span>`;
+        }
+
+        function homeSquadRowHtml(name, pos, fctx, grow) {
+            const cur = getPlayerCurrentStatsByName(name, fctx);
+            const photo = getPlayerPhotoByName(name);
+            const canon = homePosCanon(pos);
+            const photoHtml = photo
+                ? `<img src="${photo}" class="w-5 h-5 rounded-full object-cover bg-slate-800 border border-slate-700 shrink-0">`
+                : `<div class="w-5 h-5 rounded-full bg-slate-700 flex items-center justify-center text-[9px] font-bold shrink-0">${escapeHtml((name || '?').charAt(0))}</div>`;
+            const sizeCls = grow ? 'flex-1 basis-0 min-h-[28px] max-h-[40px]' : 'min-h-[28px] py-0.5';
+            return `<div class="${sizeCls} flex items-center gap-1.5 bg-slate-900/60 border border-slate-700/50 rounded-md px-1.5">
+                <span class="pos-${escapeHtml(canon)} w-8 shrink-0 text-center bg-slate-950/90 font-black rounded border border-slate-700 text-[9px] leading-[14px]">${escapeHtml(canon || '-')}</span>
+                ${photoHtml}
+                <span class="flex-1 min-w-0 text-[11px] sm:text-xs font-bold text-white truncate text-left" title="${escapeHtml(name)}">${escapeHtml(homeShortName(name))}</span>
+                ${homeAgeBadge(cur.age)}
+                ${homeOvrBadge(cur.ovr)}
+            </div>`;
+        }
+
         function renderHomeSquad(ctx) {
             const fctx = homeLineupCtx();
             if (homeSquadEdit) return renderHomeSquadEditor(fctx);
@@ -3353,34 +3065,29 @@ function handleFileUpload(event, type) {
                 return '<div class="text-center text-slate-500 text-sm py-6">İlk 11 henüz seçilmedi.<br><span class="text-xs">Sağ üstteki kalem simgesine tıklayarak oyuncuları ve mevkileri seçin.</span></div>';
             }
 
-            const colHead = `<div class="shrink-0 flex items-center gap-1.5 px-1.5 text-[9px] font-bold leading-none">
-                <span class="w-8"></span><span class="w-5"></span><span class="flex-1"></span>
+            const head = (title) => `<div class="shrink-0 flex items-center gap-1.5 px-1.5 mb-1 text-[9px] font-bold leading-none">
+                <span class="flex-1 uppercase tracking-widest text-slate-400">${title}</span>
                 <span class="w-6 text-center text-slate-400">Yaş</span><span class="w-7 text-center text-emerald-400">OVR</span>
             </div>`;
-
-            let html = `<div class="flex flex-col gap-[3px]" style="min-height:100%">${colHead}${starters.map(n => homeSquadRowHtml(n.name, n.pos, fctx, true)).join('')}</div>`;
-
-            const section = (title, list) => `
-                <div class="mt-3">
-                    <h5 class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">${title}</h5>
-                    <div class="flex flex-col gap-1">${list.length ? list.map(n => homeSquadRowHtml(n.name, n.pos, fctx, false)).join('') : '<div class="text-center text-slate-600 text-[10px] py-1">Henüz oyuncu seçilmedi.</div>'}</div>
+            const empty = '<div class="text-center text-slate-600 text-[10px] py-1">Henüz oyuncu seçilmedi.</div>';
+            const section = (title, list, mt) => `
+                <div class="${mt}">
+                    ${head(title)}
+                    <div class="flex flex-col gap-1">${list.length ? list.map(n => homeSquadRowHtml(n.name, n.pos, fctx, false)).join('') : empty}</div>
                 </div>`;
-            html += section('Yedek Oyuncular', subs);
-            html += section('Rezerv Oyuncular', reserves);
-            return html;
+
+            const left = `<div class="flex flex-col xl:min-h-0">
+                ${head('İlk 11')}
+                <div class="flex flex-col gap-[3px] flex-1">${starters.map(n => homeSquadRowHtml(n.name, n.pos, fctx, true)).join('')}</div>
+            </div>`;
+            const right = `<div class="mt-3 xl:mt-0 xl:overflow-y-auto hide-scrollbar xl:min-h-0">
+                ${section('Yedek Oyuncular', subs, '')}
+                ${section('Rezerv Oyuncular', reserves, 'mt-3')}
+            </div>`;
+            return `<div class="xl:grid xl:grid-cols-2 xl:gap-4 xl:h-full">${left}${right}</div>`;
         }
 
         // ---------- GOL KRALLARI: MAÇ BAZLI DETAY ----------
-        function homeToggleScorer(enc) {
-            const name = decodeURIComponent(enc);
-            if (homeScorerOpen.has(name)) homeScorerOpen.delete(name); else homeScorerOpen.add(name);
-            homeKeepScroll('hcontent-goller');
-        }
-        function homeToggleAllScorers() {
-            const all = homeScorerShown.length > 0 && homeScorerShown.every(n => homeScorerOpen.has(n));
-            if (all) homeScorerOpen.clear(); else homeScorerShown.forEach(n => homeScorerOpen.add(n));
-            homeKeepScroll('hcontent-goller');
-        }
 
         function homeScorerDetails(name, season, context) {
             const t = context === 'milli' ? managedTeams.milli : managedTeams.kulup;
@@ -3396,38 +3103,6 @@ function handleFileUpload(event, type) {
                 });
             });
             return { goals, assists, ourName };
-        }
-
-        function homeDetailRowHtml(kind, item, ourName) {
-            const m = item.m, ev = item.ev;
-            const isHome = !ourName || homeSameTeam(m.home, ourName);
-            const opp = isHome ? m.away : m.home;
-            const hs = m.homeScore, as = m.awayScore;
-            const hasScore = [hs, as].every(v => v !== '' && v !== null && v !== undefined);
-            const ours = isHome ? hs : as, theirs = isHome ? as : hs;
-            let resCls = 'text-slate-400';
-            if (hasScore) resCls = (+ours > +theirs) ? 'text-emerald-400' : ((+ours < +theirs) ? 'text-red-400' : 'text-amber-300');
-            const tLogo = (typeof getCompetitionLogo === 'function') ? getCompetitionLogo(m.tournament) : '';
-            const tAbbr = (typeof getTournamentAbbr === 'function') ? getTournamentAbbr(m.tournament) : (m.tournament || '');
-            const roundAbbr = (m.round && typeof getRoundAbbr === 'function') ? getRoundAbbr(m.round) : '';
-            const tip = [m.tournament, m.round].filter(Boolean).join(' · ');
-            const tHtml = tLogo
-                ? `<img src="${tLogo}" alt="" class="w-4 h-4 object-contain shrink-0" title="${escapeHtml(tip)}">`
-                : `<span class="text-[8px] font-black text-slate-300 bg-slate-800 border border-slate-700 rounded px-1 shrink-0" title="${escapeHtml(tip)}">${escapeHtml(tAbbr || '-')}</span>`;
-            const rHtml = roundAbbr ? `<span class="text-[8px] font-bold text-amber-300 shrink-0">${escapeHtml(roundAbbr)}</span>` : '';
-            const icon = kind === 'goal' ? '<i class="fa-solid fa-futbol text-emerald-400 text-[9px] w-3 shrink-0"></i>' : '<i class="fa-solid fa-shoe-prints text-blue-400 text-[9px] w-3 shrink-0"></i>';
-            const other = kind === 'goal'
-                ? (ev.assist ? `<span class="shrink-0 max-w-[38%] truncate text-blue-400 font-bold" title="Asist"><i class="fa-solid fa-shoe-prints text-[8px] mr-0.5"></i>${escapeHtml(formatShortPlayerName(ev.assist))}</span>` : '')
-                : (ev.scorer ? `<span class="shrink-0 max-w-[38%] truncate text-emerald-400 font-bold" title="Gol"><i class="fa-solid fa-futbol text-[8px] mr-0.5"></i>${escapeHtml(formatShortPlayerName(ev.scorer))}</span>` : '');
-            return `<div class="flex items-center gap-1.5 text-[10px] sm:text-[11px] px-1 py-0.5 min-w-0">
-                ${icon}
-                <span class="w-7 shrink-0 text-right font-mono text-slate-300">${ev.min ? escapeHtml(String(ev.min)) + "'" : '-'}</span>
-                ${tHtml}${rHtml}
-                <img src="${getTeamLogoByName(opp)}" alt="" class="w-4 h-4 object-contain shrink-0">
-                <span class="flex-1 min-w-0 truncate text-slate-300" title="${escapeHtml(opp)}">${escapeHtml(opp || '-')}</span>
-                <span class="font-black shrink-0 ${resCls}">${hasScore ? escapeHtml(String(ours)) + '-' + escapeHtml(String(theirs)) : '-'}</span>
-                ${other}
-            </div>`;
         }
 
         // ===================== GOL KRALLARI: SOLDA GOLLER, SAĞDA ASİSTLER =====================
@@ -3499,21 +3174,26 @@ function handleFileUpload(event, type) {
             return s || '-';
         }
 
-        function homeTourHeadCell(t) {
-            const logo = (typeof getCompetitionLogo === 'function') ? getCompetitionLogo(t) : '';
-            const inner = logo
-                ? `<img src="${logo}" alt="" class="w-4 h-4 object-contain">`
-                : `<span class="text-[7px] sm:text-[8px] font-black text-slate-300 bg-slate-800 border border-slate-700 rounded px-0.5 leading-[12px] whitespace-nowrap">${escapeHtml(homeTourInitials(t))}</span>`;
-            return `<span class="w-5 sm:w-6 shrink-0 flex items-center justify-center" title="${escapeHtml(t || '-')}">${inner}</span>`;
+        // ===================== GOL KRALLARI: GENİŞ TEK SÜTUN İÇİN DÜZEN (isim sabit genişlik, sütunlar eşit dağılır, büyük sayılar) =====================
+
+        // ===================== GOL KRALLARI: SIKI MASAÜSTÜ DÜZENİ ("S. Lavery" isimleri, yakın sayı sütunları, küçük ölçek) =====================
+        function homeShortName(name) {
+            const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+            if (!parts.length) return '';
+            if (parts.length === 1) return parts[0];
+            let last = parts[parts.length - 1];
+            if (last.length > 1 && last === last.toUpperCase()) {
+                last = last.toLowerCase().replace(/(^|[-'\u2019])(\p{L})/gu, (m, a, b) => a + b.toUpperCase());
+            }
+            return parts[0].charAt(0).toUpperCase() + '. ' + last;
         }
 
-        // ===================== GOL KRALLARI: GENİŞ TEK SÜTUN İÇİN DÜZEN (isim sabit genişlik, sütunlar eşit dağılır, büyük sayılar) =====================
-        function homeTourHeadCell2(t) {
+        function homeTourHeadCell3(t) {
             const logo = (typeof getCompetitionLogo === 'function') ? getCompetitionLogo(t) : '';
             const inner = logo
-                ? `<img src="${logo}" alt="" class="w-5 h-5 xl:w-4 xl:h-4 object-contain">`
-                : `<span class="text-[9px] sm:text-[10px] xl:text-[8px] font-black text-slate-300 bg-slate-800 border border-slate-700 rounded px-1 xl:px-0.5 leading-[14px] xl:leading-[12px] whitespace-nowrap">${escapeHtml(homeTourInitials(t))}</span>`;
-            return `<span class="flex-1 xl:flex-none xl:w-6 min-w-0 flex items-center justify-center" title="${escapeHtml(t || '-')}">${inner}</span>`;
+                ? `<img src="${logo}" alt="" class="w-5 h-5 xl:w-3.5 xl:h-3.5 object-contain">`
+                : `<span class="text-[9px] sm:text-[10px] xl:text-[7px] font-black text-slate-300 bg-slate-800 border border-slate-700 rounded px-1 xl:px-0.5 leading-[14px] xl:leading-[11px] whitespace-nowrap">${escapeHtml(homeTourInitials(t))}</span>`;
+            return `<span class="flex-1 xl:flex-none xl:w-5 xl:shrink xl:min-w-[14px] min-w-0 flex items-center justify-center overflow-hidden" title="${escapeHtml(t || '-')}">${inner}</span>`;
         }
 
         function homeStatColumn(kind, players, season, context) {
@@ -3551,16 +3231,18 @@ function handleFileUpload(event, type) {
             });
 
             // Başlık ve satırlar AYNI sınıfları paylaşır -> sütunlar alt alta oturur
+            // Çok turnuva varsa (5+) masaüstünde foto gizlenir; isimlere yer açılır
+            const dense = tours.length > 4;
             const leftW = 'w-36 sm:w-48 xl:w-auto xl:flex-1 min-w-0 shrink-0 xl:shrink';
-            const colsW = 'flex-1 xl:flex-none xl:shrink-0 min-w-0 flex items-center';
-            const totalW = 'w-12 sm:w-14 xl:w-9 shrink-0';
+            const colsW = 'flex-1 xl:flex-none xl:shrink min-w-0 flex items-center';
+            const totalW = 'w-12 sm:w-14 xl:w-8 shrink-0';
 
-            const head = `<div class="flex items-center gap-1.5 px-[7px] sm:px-[9px] pb-1.5">
-                <div class="${leftW} flex items-center gap-1.5">
+            const head = `<div class="flex items-center gap-1.5 xl:gap-1 px-[7px] sm:px-[9px] xl:px-1.5 pb-1.5">
+                <div class="${leftW} flex items-center gap-1.5 xl:gap-1">
                     <span class="${accent} text-[10px] font-bold uppercase tracking-widest whitespace-nowrap"><i class="fa-solid ${icon} mr-1"></i>${isGoal ? 'Gol' : 'Asist'}</span>
                     <button onclick="homeToggleStatCol('${kind}')" title="Tümünü Aç / Kapat" class="text-[10px] text-slate-400 hover:text-white transition-colors"><i class="fa-solid ${allOpen ? 'fa-angles-up' : 'fa-angles-down'}"></i></button>
                 </div>
-                <div class="${colsW}">${tours.map(homeTourHeadCell2).join('')}</div>
+                <div class="${colsW}">${tours.map(homeTourHeadCell3).join('')}</div>
                 <span class="${totalW} text-right text-sm xl:text-[11px] font-black text-slate-400" title="Toplam">Σ</span>
             </div>`;
 
@@ -3569,8 +3251,8 @@ function handleFileUpload(event, type) {
                 : rows.map((p, idx) => {
                     const rankCls = idx === 0 ? 'text-amber-300' : idx === 1 ? 'text-slate-300' : idx === 2 ? 'text-orange-400' : 'text-slate-500';
                     const photoHtml = p.photoUrl
-                        ? `<img src="${p.photoUrl}" class="w-7 h-7 xl:w-6 xl:h-6 rounded-full object-cover bg-slate-800 border border-slate-700 shrink-0 xl:hidden 2xl:block">`
-                        : `<div class="w-7 h-7 xl:w-6 xl:h-6 rounded-full bg-slate-700 flex items-center justify-center text-[10px] font-bold shrink-0 xl:hidden 2xl:flex">${escapeHtml((p.name || '?').charAt(0))}</div>`;
+                        ? `<img src="${p.photoUrl}" class="w-7 h-7 xl:w-5 xl:h-5 rounded-full object-cover bg-slate-800 border border-slate-700 shrink-0 ${dense ? 'xl:hidden' : 'xl:hidden 2xl:block'}">`
+                        : `<div class="w-7 h-7 xl:w-5 xl:h-5 rounded-full bg-slate-700 flex items-center justify-center text-[10px] font-bold shrink-0 ${dense ? 'xl:hidden' : 'xl:hidden 2xl:flex'}">${escapeHtml((p.name || '?').charAt(0))}</div>`;
                     const glow = (p[field] > 0 && p[field] === maxVal) ? 'text-glow-max' : '';
                     const open = homeStatsOpen.has(kind + '|' + p.name);
                     const enc = encodeURIComponent(p.name).replace(/'/g, '%27');
@@ -3578,7 +3260,7 @@ function handleFileUpload(event, type) {
 
                     const cells = tours.map(t => {
                         const n = info.counts[t] || 0;
-                        return `<span class="flex-1 xl:flex-none xl:w-6 min-w-0 text-center text-sm xl:text-[11px] ${n ? 'font-bold text-slate-200' : 'text-slate-600'}">${n || '-'}</span>`;
+                        return `<span class="flex-1 xl:flex-none xl:w-5 xl:shrink xl:min-w-[14px] min-w-0 text-center text-sm xl:text-[11px] ${n ? 'font-bold text-slate-200' : 'text-slate-600'}">${n || '-'}</span>`;
                     }).join('');
 
                     let detailHtml = '';
@@ -3591,15 +3273,15 @@ function handleFileUpload(event, type) {
                     }
 
                     return `<div class="bg-slate-900/60 border border-slate-700/50 rounded-lg min-w-0">
-                        <div class="flex items-center gap-1.5 px-1.5 py-1.5 sm:px-2 sm:py-2 xl:py-1.5 cursor-pointer hover:bg-slate-800/40 rounded-lg transition-colors" onclick="homeToggleStatRow('${kind}', '${enc}')">
-                            <div class="${leftW} flex items-center gap-1.5">
-                                <span class="w-4 shrink-0 text-center text-xs font-black ${rankCls}">${idx + 1}</span>
+                        <div class="flex items-center gap-1.5 xl:gap-1 px-1.5 py-1.5 sm:px-2 sm:py-2 xl:py-1 cursor-pointer hover:bg-slate-800/40 rounded-lg transition-colors" onclick="homeToggleStatRow('${kind}', '${enc}')">
+                            <div class="${leftW} flex items-center gap-1.5 xl:gap-1">
+                                <span class="w-4 xl:w-3.5 shrink-0 text-center text-xs xl:text-[11px] font-black ${rankCls}">${idx + 1}</span>
                                 ${photoHtml}
-                                <span class="flex-1 min-w-0 text-sm font-bold text-white truncate text-left" title="${escapeHtml(p.name)}">${escapeHtml(formatShortPlayerName(p.name))}</span>
+                                <span class="flex-1 min-w-0 text-sm xl:text-xs font-bold text-white truncate text-left" title="${escapeHtml(p.name)}">${escapeHtml(homeShortName(p.name))}</span>
                                 <i class="fa-solid fa-chevron-down text-[8px] text-slate-500 transition-transform shrink-0 ${open ? 'rotate-180' : ''}"></i>
                             </div>
                             <div class="${colsW}">${cells}</div>
-                            <span class="${totalW} text-base xl:text-[13px] font-black ${accent} inline-flex items-center justify-end gap-1 ${glow}"><i class="fa-solid ${icon} text-xs xl:text-[11px]"></i>${p[field]}</span>
+                            <span class="${totalW} text-base xl:text-xs font-black ${accent} inline-flex items-center justify-end gap-1 xl:gap-0.5 ${glow}"><i class="fa-solid ${icon} text-xs xl:text-[10px]"></i>${p[field]}</span>
                         </div>
                         ${detailHtml}
                     </div>`;
@@ -3607,153 +3289,6 @@ function handleFileUpload(event, type) {
 
             // Geniş tek sütunda liste en fazla max-w-xl (576px) olur ve ortalanır; iki sütunlu masaüstünde sınır yok
             return `<div class="${vis} xl:flex flex-col min-w-0 w-full max-w-xl mx-auto xl:max-w-none xl:mx-0 ${borderCls}">${head}<div class="flex flex-col gap-1.5">${body}</div></div>`;
-        }
-
-        function homeStatColumnV4(kind, players, season, context) {
-            const isGoal = kind === 'goal';
-            const field = isGoal ? 'goals' : 'assists';
-            const otherField = isGoal ? 'assists' : 'goals';
-            const accent = isGoal ? 'text-emerald-400' : 'text-blue-400';
-            const icon = isGoal ? 'fa-futbol' : 'fa-shoe-prints';
-
-            const rows = players.filter(p => p[field] > 0)
-                .sort((a, b) => (b[field] - a[field]) || (b[otherField] - a[otherField]) || String(a.name).localeCompare(String(b.name), 'tr'));
-            homeStatsShown[kind] = rows.map(p => p.name);
-            const maxVal = Math.max(0, ...rows.map(p => p[field]));
-            const allOpen = rows.length > 0 && rows.every(p => homeStatsOpen.has(kind + '|' + p.name));
-            const vis = homeStatsMobileTab === kind ? 'flex' : 'hidden';
-            const borderCls = isGoal ? 'xl:border-r xl:border-slate-700/50 xl:pr-3' : '';
-
-            // Her oyuncunun turnuva bazlı gol/asist dağılımı (fikstürdeki olaylardan)
-            const detByName = {};
-            const present = new Set();
-            rows.forEach(p => {
-                const d = homeScorerDetails(p.name, season, context);
-                const counts = {};
-                (isGoal ? d.goals : d.assists).forEach(it => {
-                    const t = it.m.tournament || '';
-                    counts[t] = (counts[t] || 0) + 1;
-                    present.add(t);
-                });
-                detByName[p.name] = { d, counts };
-            });
-            // Sütun sırası: turnuvaların fikstürdeki ilk görünme sırası
-            const tours = [];
-            ((fixtureData && fixtureData[season]) || []).forEach(m => {
-                const t = m.tournament || '';
-                if (present.has(t) && !tours.includes(t)) tours.push(t);
-            });
-
-            const totalW = 'w-8 sm:w-9';
-            const head = `<div class="flex items-center gap-1 px-[7px] sm:px-[9px] pb-1.5">
-                <div class="flex items-center gap-1.5 flex-1 min-w-0">
-                    <span class="${accent} text-[10px] font-bold uppercase tracking-widest whitespace-nowrap"><i class="fa-solid ${icon} mr-1"></i>${isGoal ? 'Gol' : 'Asist'}</span>
-                    <button onclick="homeToggleStatCol('${kind}')" title="Tümünü Aç / Kapat" class="text-[10px] text-slate-400 hover:text-white transition-colors"><i class="fa-solid ${allOpen ? 'fa-angles-up' : 'fa-angles-down'}"></i></button>
-                </div>
-                <div class="flex items-center shrink-0">
-                    ${tours.map(homeTourHeadCell).join('')}
-                    <span class="${totalW} shrink-0 text-right text-[11px] font-black text-slate-400" title="Toplam">Σ</span>
-                </div>
-            </div>`;
-
-            const body = rows.length === 0
-                ? `<div class="text-center text-slate-500 text-xs py-6">${isGoal ? 'Henüz gol yok.' : 'Henüz asist yok.'}</div>`
-                : rows.map((p, idx) => {
-                    const rankCls = idx === 0 ? 'text-amber-300' : idx === 1 ? 'text-slate-300' : idx === 2 ? 'text-orange-400' : 'text-slate-500';
-                    const photoHtml = p.photoUrl
-                        ? `<img src="${p.photoUrl}" class="w-6 h-6 rounded-full object-cover bg-slate-800 border border-slate-700 shrink-0 xl:hidden 2xl:block">`
-                        : `<div class="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-[10px] font-bold shrink-0 xl:hidden 2xl:flex">${escapeHtml((p.name || '?').charAt(0))}</div>`;
-                    const glow = (p[field] > 0 && p[field] === maxVal) ? 'text-glow-max' : '';
-                    const open = homeStatsOpen.has(kind + '|' + p.name);
-                    const enc = encodeURIComponent(p.name).replace(/'/g, '%27');
-                    const info = detByName[p.name];
-
-                    const cells = tours.map(t => {
-                        const n = info.counts[t] || 0;
-                        return `<span class="w-5 sm:w-6 shrink-0 text-center text-[9px] sm:text-[10px] ${n ? 'font-bold text-slate-300' : 'text-slate-600'}">${n || '-'}</span>`;
-                    }).join('');
-
-                    let detailHtml = '';
-                    if (open) {
-                        const items = isGoal ? info.d.goals : info.d.assists;
-                        const missing = Math.max(0, p[field] - items.length);
-                        const inner = items.map(it => homeStatDetailRow(kind, it, info.d.ourName)).join('')
-                            + (missing ? `<div class="text-[10px] text-slate-500 px-1 py-0.5"><span class="font-bold">+${missing}</span> <span>Maç detayı girilmemiş</span></div>` : '');
-                        detailHtml = `<div class="mx-1.5 mb-1.5 pl-2 border-l-2 border-slate-700/60">${inner || '<div class="text-[10px] text-slate-500 py-1">-</div>'}</div>`;
-                    }
-
-                    return `<div class="bg-slate-900/60 border border-slate-700/50 rounded-lg min-w-0">
-                        <div class="flex items-center gap-1.5 px-1.5 py-1 sm:px-2 sm:py-1.5 cursor-pointer hover:bg-slate-800/40 rounded-lg transition-colors" onclick="homeToggleStatRow('${kind}', '${enc}')">
-                            <span class="w-4 shrink-0 text-center text-[10px] sm:text-xs font-black ${rankCls}">${idx + 1}</span>
-                            ${photoHtml}
-                            <span class="flex-1 min-w-0 text-xs sm:text-sm font-bold text-white truncate text-left" title="${escapeHtml(p.name)}">${escapeHtml(formatShortPlayerName(p.name))}</span>
-                            <i class="fa-solid fa-chevron-down text-[8px] text-slate-500 transition-transform shrink-0 ${open ? 'rotate-180' : ''}"></i>
-                            <div class="flex items-center shrink-0">
-                                ${cells}
-                                <span class="${totalW} shrink-0 text-[11px] sm:text-xs font-black ${accent} inline-flex items-center justify-end gap-1 ${glow}"><i class="fa-solid ${icon}"></i>${p[field]}</span>
-                            </div>
-                        </div>
-                        ${detailHtml}
-                    </div>`;
-                }).join('');
-
-            return `<div class="${vis} xl:flex flex-col min-w-0 ${borderCls}">${head}<div class="flex flex-col gap-1.5">${body}</div></div>`;
-        }
-
-        function homeStatColumnV3(kind, players, season, context) {
-            const isGoal = kind === 'goal';
-            const field = isGoal ? 'goals' : 'assists';
-            const otherField = isGoal ? 'assists' : 'goals';
-            const accent = isGoal ? 'text-emerald-400' : 'text-blue-400';
-            const icon = isGoal ? 'fa-futbol' : 'fa-shoe-prints';
-
-            const rows = players.filter(p => p[field] > 0)
-                .sort((a, b) => (b[field] - a[field]) || (b[otherField] - a[otherField]) || String(a.name).localeCompare(String(b.name), 'tr'));
-            homeStatsShown[kind] = rows.map(p => p.name);
-            const maxVal = Math.max(0, ...rows.map(p => p[field]));
-            const allOpen = rows.length > 0 && rows.every(p => homeStatsOpen.has(kind + '|' + p.name));
-            const vis = homeStatsMobileTab === kind ? 'flex' : 'hidden';
-            const borderCls = isGoal ? 'xl:border-r xl:border-slate-700/50 xl:pr-3' : '';
-
-            const head = `<div class="flex items-center justify-between px-1 pb-1.5">
-                <span class="${accent} text-[10px] font-bold uppercase tracking-widest"><i class="fa-solid ${icon} mr-1"></i>${isGoal ? 'Gol' : 'Asist'}</span>
-                <button onclick="homeToggleStatCol('${kind}')" title="Tümünü Aç / Kapat" class="text-[10px] text-slate-400 hover:text-white transition-colors"><i class="fa-solid ${allOpen ? 'fa-angles-up' : 'fa-angles-down'}"></i></button>
-            </div>`;
-
-            const body = rows.length === 0
-                ? `<div class="text-center text-slate-500 text-xs py-6">${isGoal ? 'Henüz gol yok.' : 'Henüz asist yok.'}</div>`
-                : rows.map((p, idx) => {
-                    const rankCls = idx === 0 ? 'text-amber-300' : idx === 1 ? 'text-slate-300' : idx === 2 ? 'text-orange-400' : 'text-slate-500';
-                    const photoHtml = p.photoUrl
-                        ? `<img src="${p.photoUrl}" class="w-6 h-6 sm:w-8 sm:h-8 rounded-full object-cover bg-slate-800 border border-slate-700 shrink-0">`
-                        : `<div class="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-slate-700 flex items-center justify-center text-[10px] sm:text-xs font-bold shrink-0">${escapeHtml((p.name || '?').charAt(0))}</div>`;
-                    const glow = (p[field] > 0 && p[field] === maxVal) ? 'text-glow-max' : '';
-                    const open = homeStatsOpen.has(kind + '|' + p.name);
-                    const enc = encodeURIComponent(p.name).replace(/'/g, '%27');
-
-                    let detailHtml = '';
-                    if (open) {
-                        const d = homeScorerDetails(p.name, season, context);
-                        const items = isGoal ? d.goals : d.assists;
-                        const missing = Math.max(0, p[field] - items.length);
-                        const inner = items.map(it => homeStatDetailRow(kind, it, d.ourName)).join('')
-                            + (missing ? `<div class="text-[10px] text-slate-500 px-1 py-0.5"><span class="font-bold">+${missing}</span> <span>Maç detayı girilmemiş</span></div>` : '');
-                        detailHtml = `<div class="mx-1.5 mb-1.5 pl-2 border-l-2 border-slate-700/60">${inner || '<div class="text-[10px] text-slate-500 py-1">-</div>'}</div>`;
-                    }
-
-                    return `<div class="bg-slate-900/60 border border-slate-700/50 rounded-lg min-w-0">
-                        <div class="flex items-center gap-1.5 sm:gap-2 px-1.5 py-1 sm:px-2 sm:py-1.5 cursor-pointer hover:bg-slate-800/40 rounded-lg transition-colors" onclick="homeToggleStatRow('${kind}', '${enc}')">
-                            <span class="w-4 sm:w-5 shrink-0 text-center text-[10px] sm:text-xs font-black ${rankCls}">${idx + 1}</span>
-                            ${photoHtml}
-                            <span class="flex-1 min-w-0 text-xs sm:text-sm font-bold text-white truncate text-left" title="${escapeHtml(p.name)}">${escapeHtml(formatShortPlayerName(p.name))}</span>
-                            <i class="fa-solid fa-chevron-down text-[8px] text-slate-500 transition-transform shrink-0 ${open ? 'rotate-180' : ''}"></i>
-                            <span class="text-[11px] sm:text-xs font-black ${accent} min-w-[28px] text-right inline-flex items-center justify-end gap-1 shrink-0 ${glow}"><i class="fa-solid ${icon}"></i>${p[field]}</span>
-                        </div>
-                        ${detailHtml}
-                    </div>`;
-                }).join('');
-
-            return `<div class="${vis} xl:flex flex-col min-w-0 ${borderCls}">${head}<div class="flex flex-col gap-1.5">${body}</div></div>`;
         }
 
         function renderHomeTopScorers(context) {
@@ -3771,129 +3306,6 @@ function handleFileUpload(event, type) {
 
             const bodyHtml = `<div class="flex flex-col xl:grid xl:grid-cols-2 xl:gap-3">${homeStatColumn('goal', players, season, context)}${homeStatColumn('assist', players, season, context)}</div>`;
             return { headerHtml: '', bodyHtml };
-        }
-
-        function renderHomeTopScorersV2(context) {
-            const season = seasonsList[seasonsList.length - 1];
-            if (!season) return { headerHtml: '', bodyHtml: '<div class="text-center text-slate-500 text-sm py-6">Kayıtlı sezon bulunmuyor.</div>' };
-            const data = getStatsData(context);
-            const list = data.stats.map(p => ({
-                name: p.name,
-                photoUrl: p.photoUrl,
-                goals: p.seasons[season] ? p.seasons[season].totalGoals : 0,
-                assists: p.seasons[season] ? p.seasons[season].totalAssists : 0
-            })).filter(p => p.goals > 0 || p.assists > 0);
-
-            const field = homeStatsSort.field;
-            const asc = homeStatsSort.asc;
-            list.sort((a, b) => {
-                const primary = asc ? (a[field] - b[field]) : (b[field] - a[field]);
-                if (primary !== 0) return primary;
-                const other = field === 'goals' ? 'assists' : 'goals';
-                return b[other] - a[other];
-            });
-            homeScorerShown = list.map(p => p.name);
-
-            const sortIcon = (f) => {
-                if (homeStatsSort.field !== f) return '<i class="fa-solid fa-sort text-[8px] ml-1 opacity-50"></i>';
-                return homeStatsSort.asc ? '<i class="fa-solid fa-chevron-up text-[8px] ml-1"></i>' : '<i class="fa-solid fa-chevron-down text-[8px] ml-1"></i>';
-            };
-            const allOpen = homeScorerShown.length > 0 && homeScorerShown.every(n => homeScorerOpen.has(n));
-
-            const headerHtml = `
-                <div class="flex items-center gap-1.5 sm:gap-2 px-1 sm:px-2 pb-1 sm:pb-1.5">
-                    <span class="w-4 sm:w-5"></span>
-                    <span class="w-6 sm:w-8"></span>
-                    <span class="flex-1">
-                        <button onclick="homeToggleAllScorers()" title="Tümünü Aç / Kapat" class="text-[10px] text-slate-400 hover:text-white transition-colors"><i class="fa-solid ${allOpen ? 'fa-angles-up' : 'fa-angles-down'}"></i></button>
-                    </span>
-                    <button onclick="homeSetStatsSort('goals')" class="text-[9px] sm:text-[10px] font-bold text-emerald-400 hover:text-emerald-300 flex items-center transition-colors">GOL${sortIcon('goals')}</button>
-                    <button onclick="homeSetStatsSort('assists')" class="text-[9px] sm:text-[10px] font-bold text-blue-400 hover:text-blue-300 flex items-center transition-colors ml-2">ASİST${sortIcon('assists')}</button>
-                </div>
-            `;
-
-            if (list.length === 0) return { headerHtml: '', bodyHtml: `<div class="text-center text-slate-500 text-xs sm:text-sm py-6">${escapeHtml(season)} sezonu için gol/asist verisi bulunmuyor.</div>` };
-
-            const maxGoals = Math.max(0, ...list.map(p => p.goals));
-            const maxAssists = Math.max(0, ...list.map(p => p.assists));
-
-            const bodyHtml = list.map((p, idx) => {
-                const rankCls = idx === 0 ? 'text-amber-300' : idx === 1 ? 'text-slate-300' : idx === 2 ? 'text-orange-400' : 'text-slate-500';
-                const photoHtml = p.photoUrl
-                    ? `<img src="${p.photoUrl}" class="w-6 h-6 sm:w-8 sm:h-8 rounded-full object-cover bg-slate-800 border border-slate-700">`
-                    : `<div class="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-slate-700 flex items-center justify-center text-[10px] sm:text-xs font-bold">${escapeHtml((p.name || '?').charAt(0))}</div>`;
-                const goalsGlow = (p.goals > 0 && p.goals === maxGoals) ? 'text-glow-max' : '';
-                const assistsGlow = (p.assists > 0 && p.assists === maxAssists) ? 'text-glow-max' : '';
-                const shortName = formatShortPlayerName(p.name);
-                const open = homeScorerOpen.has(p.name);
-                const enc = encodeURIComponent(p.name).replace(/'/g, '%27');
-
-                let detailHtml = '';
-                if (open) {
-                    const d = homeScorerDetails(p.name, season, context);
-                    const missingG = Math.max(0, p.goals - d.goals.length);
-                    const missingA = Math.max(0, p.assists - d.assists.length);
-                    const block = (label, kind, items, missing) => (items.length || missing) ? `
-                        <div class="text-[9px] font-bold uppercase tracking-widest ${kind === 'goal' ? 'text-emerald-400' : 'text-blue-400'} mt-1 mb-0.5">${label}</div>
-                        ${items.map(it => homeDetailRowHtml(kind, it, d.ourName)).join('')}
-                        ${missing ? `<div class="text-[10px] text-slate-500 px-1 py-0.5"><span class="font-bold">+${missing}</span> <span>Maç detayı girilmemiş</span></div>` : ''}` : '';
-                    const inner = block('Gol', 'goal', d.goals, missingG) + block('Asist', 'assist', d.assists, missingA);
-                    detailHtml = `<div class="mx-1.5 sm:mx-2 mb-1.5 pl-2 border-l-2 border-slate-700/60">${inner || '<div class="text-[10px] text-slate-500 py-1">-</div>'}</div>`;
-                }
-
-                return `<div class="bg-slate-900/60 border border-slate-700/50 rounded-lg">
-                    <div class="flex items-center gap-1.5 sm:gap-2 px-1.5 py-1 sm:px-2 sm:py-1.5 cursor-pointer hover:bg-slate-800/40 rounded-lg transition-colors" onclick="homeToggleScorer('${enc}')">
-                        <span class="w-4 sm:w-5 text-center text-[10px] sm:text-xs font-black ${rankCls}">${idx + 1}</span>
-                        ${photoHtml}
-                        <span class="flex-1 text-xs sm:text-sm font-bold text-white truncate text-left" title="${escapeHtml(p.name)}">${escapeHtml(shortName)}</span>
-                        <i class="fa-solid fa-chevron-down text-[8px] text-slate-500 transition-transform ${open ? 'rotate-180' : ''}"></i>
-                        <span class="text-[10px] sm:text-xs font-black text-emerald-400 w-10 sm:w-12 text-right inline-flex items-center justify-end gap-1 ${goalsGlow}"><i class="fa-solid fa-futbol"></i>${p.goals}</span>
-                        <span class="text-[10px] sm:text-xs font-black text-blue-400 w-10 sm:w-14 text-right inline-flex items-center justify-end gap-1 ${assistsGlow}"><i class="fa-solid fa-shoe-prints"></i>${p.assists}</span>
-                    </div>
-                    ${detailHtml}
-                </div>`;
-            }).join('');
-
-            return { headerHtml, bodyHtml };
-        }
-
-        function renderHomeSquadOld(ctx) {
-            const pool = (typeof squadData !== 'undefined' && squadData && squadData[ctx]) ? squadData[ctx] : [];
-            const list = pool.filter(p => p && p.name).map(p => {
-                const cur = getPlayerCurrentStatsByName(p.name, ctx);
-                return { name: p.name, pos: p.pos || '', photoUrl: p.photoUrl, age: cur.age, ovr: cur.ovr };
-            });
-            if (list.length === 0) return '<div class="text-center text-slate-500 text-sm py-6">Bu kadroda oyuncu yok.</div>';
-
-            list.sort((a, b) => {
-                const d = (parseInt(b.ovr) || 0) - (parseInt(a.ovr) || 0);
-                if (d !== 0) return d;
-                return a.name.localeCompare(b.name, 'tr');
-            });
-
-            const headerHtml = `
-                <div class="flex items-center gap-1.5 sm:gap-2 px-1 sm:px-2 pb-1 sm:pb-1.5">
-                    <span class="w-9"></span>
-                    <span class="w-6 sm:w-8"></span>
-                    <span class="flex-1"></span>
-                    <span class="w-8 text-center text-[9px] sm:text-[10px] font-bold text-slate-400">Yaş</span>
-                    <span class="w-9 text-center text-[9px] sm:text-[10px] font-bold text-emerald-400">OVR</span>
-                </div>`;
-
-            const rows = list.map(p => {
-                const photoHtml = p.photoUrl
-                    ? `<img src="${p.photoUrl}" class="w-6 h-6 sm:w-8 sm:h-8 rounded-full object-cover bg-slate-800 border border-slate-700">`
-                    : `<div class="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-slate-700 flex items-center justify-center text-[10px] sm:text-xs font-bold">${escapeHtml((p.name || '?').charAt(0))}</div>`;
-                return `<div class="flex items-center gap-1.5 sm:gap-2 bg-slate-900/60 border border-slate-700/50 rounded-lg px-1.5 py-1 sm:px-2 sm:py-1.5">
-                    <span class="pos-${escapeHtml(p.pos)} w-9 text-center bg-slate-950/90 font-black rounded border border-slate-700 text-[9px] sm:text-[10px] py-0.5">${escapeHtml(p.pos)}</span>
-                    ${photoHtml}
-                    <span class="flex-1 text-xs sm:text-sm font-bold text-white truncate text-left" title="${escapeHtml(p.name)}">${escapeHtml(formatShortPlayerName(p.name))}</span>
-                    <span class="w-8 text-center text-[10px] sm:text-xs font-bold text-slate-300">${p.age !== null && p.age !== undefined && p.age !== '' ? escapeHtml(String(p.age)) : '-'}</span>
-                    <span class="w-9 text-center text-xs sm:text-sm font-black ${homeOvrColor(p.ovr)}">${p.ovr !== null && p.ovr !== undefined && p.ovr !== '' ? escapeHtml(String(p.ovr)) : '-'}</span>
-                </div>`;
-            }).join('');
-
-            return headerHtml + `<div class="space-y-1.5">${rows}</div>`;
         }
 
         // --- 2) İLK 11 (YATAY SAHA - sadece masaüstü) ---
@@ -3973,13 +3385,14 @@ function handleFileUpload(event, type) {
             return tours.slice().sort((a, b) => score(b) - score(a))[0];
         }
 
+                // ===================== LİG TABLOSU v2: AT/YE sütunları, isme yakın geniş sayı sütunları, temiz yapışkan başlık =====================
         function renderHomeLeagueTable() {
             const season = seasonsList[seasonsList.length - 1];
             const tour = season ? homePickLeagueTour(season) : null;
             if (!tour) return '<div class="text-center text-slate-500 text-sm py-6">Bu sezon için lig tablosu yok.</div>';
 
             const our = homeOurTeamName();
-            const H = homeIsEn() ? ['P', 'W', 'D', 'L', 'GD', 'Pts'] : ['O', 'G', 'B', 'M', 'AV', 'P'];
+            const H = homeIsEn() ? ['P', 'W', 'D', 'L', 'GF', 'GA', 'GD', 'Pts'] : ['O', 'G', 'B', 'M', 'A', 'Y', 'AV', 'P'];
             const num = (v) => (v === undefined || v === null || v === '') ? '0' : escapeHtml(String(v));
 
             const rows = tour.table.filter(r => r && r.name).map(row => {
@@ -3989,39 +3402,36 @@ function handleFileUpload(event, type) {
                 const rowBg = isUs ? 'bg-emerald-900/30' : '';
                 const rankCls = isFirst ? 'text-emerald-400 font-black' : 'text-slate-400 font-bold';
                 const nameCls = isUs ? 'text-emerald-300 font-black' : (isFirst ? 'text-white font-black' : 'text-white font-bold');
-                return `<tr class="${rowBg} border-b border-slate-800">
-                    <td class="py-1 w-6 text-center ${rankCls}">${num(row.rank)}</td>
-                    <td class="py-1 pl-1 w-full max-w-0">
-                        <div class="flex items-center gap-1.5 min-w-0">
+                const c = `py-1 border-b border-slate-800 ${rowBg}`;
+                const n = (v, extra) => `<td class="${c} px-0 sm:px-1 text-center tabular-nums min-w-[1.25rem] sm:min-w-[1.75rem] ${extra || ''}">${num(v)}</td>`;
+                return `<tr>
+                    <td class="${c} w-7 text-center ${rankCls} first:rounded-l">${num(row.rank)}</td>
+                    <td class="${c} w-[1%] pl-1 pr-2 sm:pr-3 whitespace-nowrap">
+                        <div class="flex items-center gap-1.5 max-w-[8.25rem] sm:max-w-[10rem]">
                             <img src="${logo}" alt="" class="w-5 h-5 object-contain shrink-0">
-                            <span class="truncate ${nameCls}" title="${escapeHtml(row.name)}">${escapeHtml(row.name)}</span>
+                            <span class="truncate min-w-0 ${nameCls}" title="${escapeHtml(row.name)}">${escapeHtml(row.name)}</span>
                         </div>
                     </td>
-                    <td class="py-1 w-6 text-center">${num(row.pld)}</td>
-                    <td class="py-1 w-6 text-center">${num(row.w)}</td>
-                    <td class="py-1 w-6 text-center">${num(row.d)}</td>
-                    <td class="py-1 w-6 text-center">${num(row.l)}</td>
-                    <td class="py-1 w-8 text-center">${num(row.gd)}</td>
-                    <td class="py-1 w-8 text-center font-black text-white">${num(row.pts)}</td>
+                    ${n(row.pld)}${n(row.w)}${n(row.d)}${n(row.l)}${n(row.gf)}${n(row.ga)}${n(row.gd)}
+                    <td class="${c} px-0 sm:px-1 text-center tabular-nums min-w-[1.5rem] sm:min-w-[2rem] font-black text-white last:rounded-r">${num(row.pts)}</td>
                 </tr>`;
             }).join('');
 
+            // Başlık hücreleri: -top-3 + pt-4 -> panelin p-3 üst boşluğunu da kapatır, satırlar başlığın üstünden görünmez
+            const th = 'sticky -top-3 z-10 bg-slate-900 pt-4 pb-1 border-b border-slate-700/60 text-center';
             return `
-                <table class="w-full text-[10px] sm:text-[11px] text-slate-300 border-separate border-spacing-0">
-                    <thead class="text-[9px] text-slate-500 font-bold uppercase sticky top-0 bg-slate-900 z-10">
-                        <tr>
-                            <th class="py-1 w-6 text-center">#</th>
-                            <th class="py-1 pl-1"></th>
-                            <th class="py-1 w-6 text-center">${H[0]}</th>
-                            <th class="py-1 w-6 text-center">${H[1]}</th>
-                            <th class="py-1 w-6 text-center">${H[2]}</th>
-                            <th class="py-1 w-6 text-center">${H[3]}</th>
-                            <th class="py-1 w-8 text-center">${H[4]}</th>
-                            <th class="py-1 w-8 text-center">${H[5]}</th>
-                        </tr>
-                    </thead>
-                    <tbody>${rows}</tbody>
-                </table>`;
+                <div class="w-full max-w-xl mx-auto">
+                    <table class="w-full text-[10px] sm:text-[11px] text-slate-300 border-separate border-spacing-0">
+                        <thead class="text-[9px] text-slate-500 font-bold uppercase">
+                            <tr>
+                                <th class="${th} w-7">#</th>
+                                <th class="${th} w-[1%] pl-1"></th>
+                                ${H.map((h, i) => `<th class="${th} px-0 sm:px-1">${h}</th>`).join('')}
+                            </tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </div>`;
         }
 
         // --- 4) TURNUVALAR ---
@@ -4221,105 +3631,13 @@ function handleFileUpload(event, type) {
             switchHomeTab(homeActiveTab);
         }
 
-        function renderHomePanelLegacy() {
-            const season = seasonsList[seasonsList.length - 1];
-
-            const html = `
-                <div class="w-full h-full flex flex-col min-h-0 overflow-hidden">
-                    <!-- Üst Başlık ve Seçici Paneli -->
-                    <div class="w-full flex flex-col sm:flex-row sm:justify-between items-center mb-4 px-2 shrink-0 relative gap-3 sm:gap-0">
-                        <h3 class="hidden sm:block text-2xl font-bold text-white self-start sm:self-auto" title="Ana Sayfa"><i class="fa-solid fa-house text-emerald-500 mr-2"></i>${escapeHtml(season || '')}</h3>
-                        
-                        <!-- Ortalanmış Kulüp / Milli Seçici -->
-                        <div class="flex gap-1 bg-slate-900 rounded-full border border-slate-700 p-1 shadow-lg z-10 w-max mx-auto sm:absolute sm:left-1/2 sm:-translate-x-1/2">
-                            <button onclick="setHomeGlobalContext('kulup')" class="px-6 py-1.5 rounded-full text-xs font-bold transition-colors ${homeGlobalContext === 'kulup' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}">Kulüp</button>
-                            <button onclick="setHomeGlobalContext('milli')" class="px-6 py-1.5 rounded-full text-xs font-bold transition-colors ${homeGlobalContext === 'milli' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}">Milli</button>
-                        </div>
-                        
-                        <div class="hidden sm:block"></div> <!-- Flex dengesi için boş div -->
-                    </div>
-
-                    <div class="w-full flex-1 flex flex-col min-h-0 overflow-hidden px-2 pb-4 max-w-3xl xl:max-w-none mx-auto">
-                        <!-- Sekmeler (Tabs - Sadece Mobilde Görünür) -->
-                        <div class="flex xl:hidden gap-1 overflow-x-auto hide-scrollbar shrink-0 px-2">
-                            <button onclick="switchHomeTab('ilk11')" id="htab-ilk11" class="flex-1 px-4 py-3 text-lg bg-slate-900 text-emerald-400 border border-slate-700 border-b-slate-900 rounded-t-xl transition-colors shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] relative z-10 -mb-[1px] flex items-center justify-center">
-                                <i class="fa-solid fa-people-group"></i>
-                            </button>
-                            <button onclick="switchHomeTab('maclar')" id="htab-maclar" class="flex-1 px-4 py-3 text-lg bg-slate-800/50 text-slate-400 border border-transparent border-b-slate-700 rounded-t-xl hover:bg-slate-800 hover:text-white transition-colors relative z-0 flex items-center justify-center cursor-pointer">
-                                <i class="fa-solid fa-calendar-days"></i>
-                            </button>
-                            <button onclick="switchHomeTab('goller')" id="htab-goller" class="flex-1 px-4 py-3 text-lg bg-slate-800/50 text-slate-400 border border-transparent border-b-slate-700 rounded-t-xl hover:bg-slate-800 hover:text-white transition-colors relative z-0 flex items-center justify-center cursor-pointer">
-                                <i class="fa-solid fa-futbol"></i>
-                            </button>
-                        </div>
-
-                        <!-- Ana Panel İçeriği (Web'de Grid, Mobilde Sekmeli Blok) -->
-                        <div class="flex-1 flex flex-col min-h-0 overflow-hidden xl:grid xl:grid-cols-3 xl:gap-4 relative z-0">
-                            
-                            <!-- İlk 11 İçeriği -->
-                            <div id="hcontent-ilk11" class="flex-1 flex xl:flex flex-col min-h-0 bg-slate-900 border border-slate-700 rounded-b-xl rounded-tr-xl xl:rounded-xl overflow-hidden shadow-lg transition-all duration-300">
-                                <!-- Masaüstü Başlığı -->
-                                <div class="hidden xl:flex bg-slate-800 border-b border-slate-700 p-3 shrink-0 justify-between items-center flex-wrap gap-2">
-                                    <h4 class="text-sm font-bold text-white"><i class="fa-solid fa-people-group text-emerald-400 mr-1.5"></i>İlk 11</h4>
-                                </div>
-                                <div class="flex-1 overflow-y-auto p-3 min-h-0 hide-scrollbar">
-                                    ${renderHomeFirst11(homeSquadContext)}
-                                </div>
-                            </div>
-
-                            <!-- Maçlar İçeriği -->
-                            <div id="hcontent-maclar" class="hidden xl:flex flex-1 flex-col min-h-0 bg-slate-900 border border-slate-700 rounded-b-xl rounded-tr-xl xl:rounded-xl overflow-hidden shadow-lg transition-all duration-300">
-                                <!-- Masaüstü Başlığı -->
-                                <div class="hidden xl:flex bg-slate-800 border-b border-slate-700 p-3 shrink-0 justify-between items-center flex-wrap gap-2">
-                                    <h4 class="text-sm font-bold text-white"><i class="fa-solid fa-calendar-days text-emerald-400 mr-1.5"></i>Maçlar</h4>
-                                    <div class="flex gap-1 bg-slate-900 rounded-full border border-slate-700 p-1">
-                                        <button onclick="event.stopPropagation(); toggleHomeFixtureBoth()" class="px-3 py-1 rounded-full text-[10px] font-bold transition-colors ${homeFixtureContext === 'both' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}">Tümü</button>
-                                    </div>
-                                </div>
-                                <!-- Mobil Başlığı -->
-                                <div class="xl:hidden bg-slate-800/50 border-b border-slate-700 p-2 shrink-0 flex justify-between items-center">
-                                    <span class="text-xs font-bold text-slate-400 uppercase tracking-widest ml-2">Fikstür Özeti</span>
-                                    <div class="flex gap-1 bg-slate-900 rounded-full border border-slate-700 p-1">
-                                        <button onclick="event.stopPropagation(); toggleHomeFixtureBoth()" class="px-3 py-1 rounded-full text-[10px] font-bold transition-colors ${homeFixtureContext === 'both' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}">Tümü</button>
-                                    </div>
-                                </div>
-                                <div class="flex-1 overflow-y-auto p-3 hide-scrollbar min-h-0">
-                                    ${renderHomeFixtures(homeFixtureContext)}
-                                </div>
-                            </div>
-
-                            <!-- Krallar İçeriği -->
-                            <div id="hcontent-goller" class="hidden xl:flex flex-1 flex-col min-h-0 bg-slate-900 border border-slate-700 rounded-b-xl rounded-tr-xl xl:rounded-xl overflow-hidden shadow-lg transition-all duration-300">
-                                <!-- Masaüstü Başlığı -->
-                                <div class="hidden xl:flex bg-slate-800 border-b border-slate-700 p-3 shrink-0 justify-between items-center flex-wrap gap-2">
-                                    <h4 class="text-sm font-bold text-white"><i class="fa-solid fa-futbol text-emerald-400 mr-1.5"></i>Gol Kralları <span class="text-[9px] text-slate-500 font-normal">(${escapeHtml(season || '')})</span></h4>
-                                </div>
-                                <!-- Mobil Başlığı -->
-                                <div class="xl:hidden bg-slate-800/50 border-b border-slate-700 p-2 shrink-0 flex items-center">
-                                    <span class="text-xs font-bold text-slate-400 uppercase tracking-widest ml-2">İstatistikler <span class="text-[9px] font-normal">(${escapeHtml(season || '')})</span></span>
-                                </div>
-                                <div class="flex-1 overflow-y-auto p-3 hide-scrollbar min-h-0">
-                                    ${(() => { const r = renderHomeTopScorers(homeStatsContext); return r.headerHtml + `<div class="space-y-1.5">${r.bodyHtml}</div>`; })()}
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-            `;
-            updateContentArea(html);
-            
-            // Sekme durumunu en son bırakıldığı gibi ayarla
-            switchHomeTab(homeActiveTab);
-        }
-
         // --- KUPALAR TABLOSU ---
         function renderTrophiesGrid() {
             let html = `
                 <div class="w-full flex justify-between items-center mb-3 px-2 shrink-0">
                     <h3 class="text-2xl font-bold text-white"><i class="fa-solid fa-trophy text-yellow-500"></i></h3>
                     <div class="flex items-center gap-4">
-                        <span class="text-sm text-slate-400 hidden md:inline"><i class="fa-solid fa-circle-info mr-1"></i>Hücrelerdeki + butonuna tıklayarak logo ekleyebilirsiniz</span>
+                         
                         ${getScaleSelectorHtml()}
                     </div>
                 </div>
@@ -4414,7 +3732,6 @@ function handleFileUpload(event, type) {
                     </tr>`;
 
             html += `</tbody></table></div>`;
-
 
             // --- 2. MOBİL GÖRÜNÜM (Ters Çevrilmiş Yön: Satırlar = Turnuvalar, Sütunlar = Sezonlar) ---
             html += `
@@ -4672,7 +3989,179 @@ function handleFileUpload(event, type) {
         }
 
         // --- MAÇLAR TABLOSU ---
+        // ===================== İSTATİSTİK (MAÇLAR) TABLOSU: mobilde dikey düzen (takımlar yukarıdan aşağı, sezonlar soldan sağa) =====================
         function renderMatchesGrid() {
+            if (window.innerWidth < 640) renderMatchesGridVertical();
+            else renderMatchesGridHorizontal();
+        }
+        if (typeof window !== 'undefined' && !window.__mgResizeBound) {
+            window.__mgResizeBound = true;
+            window.__mgMobile = window.innerWidth < 640;
+            window.addEventListener('resize', () => {
+                const m = window.innerWidth < 640;
+                if (m !== window.__mgMobile) {
+                    window.__mgMobile = m;
+                    if (typeof activeMain !== 'undefined' && activeMain === 'maclar') renderMatchesGrid();
+                }
+            });
+        }
+
+        function renderMatchesGridVertical() {
+            const team = managedTeams[matchContext];
+            const opps = opponentsConfig[matchContext];
+            const jsq = (s) => String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
+            const getWinRate = (oppId) => {
+                let w = 0, played = 0;
+                const contextData = matchDataStore[matchContext] || {};
+                Object.values(contextData).forEach(seasonData => {
+                    if (seasonData[oppId]) {
+                        seasonData[oppId].forEach(match => {
+                            if (match && match.result) { played++; if (match.result === 'W') w++; }
+                        });
+                    }
+                });
+                if (played === 0) return null;
+                return Math.round((w / played) * 100);
+            };
+            const getWinRateColorClass = (rate) => {
+                if (rate === null) return 'text-slate-500';
+                if (rate === 100) return 'text-indigo-400';
+                if (rate >= 75) return 'text-green-500';
+                if (rate >= 50) return 'text-orange-500';
+                return 'text-red-500';
+            };
+
+            // Takımları ülkelere göre grupla (yatay tablodaki sıralama ile birebir aynı)
+            const sortTeamsByCountry = (teamsArr) => {
+                const filledTeams = teamsArr.filter(t => t.name && t.name.trim() !== '');
+                const countryMap = {};
+                filledTeams.forEach(t => {
+                    const c = (t.country || '').trim().toUpperCase() || 'BİLİNMEYEN';
+                    if (!countryMap[c]) countryMap[c] = [];
+                    countryMap[c].push(t);
+                });
+                const sortedCountries = Object.keys(countryMap).sort((a, b) => {
+                    const countDiff = countryMap[b].length - countryMap[a].length;
+                    if (countDiff !== 0) return countDiff;
+                    if (a === 'BİLİNMEYEN') return 1;
+                    if (b === 'BİLİNMEYEN') return -1;
+                    return a.localeCompare(b, 'tr', { sensitivity: 'base' });
+                });
+                let sortedFilled = [];
+                sortedCountries.forEach(c => {
+                    sortedFilled.push(...countryMap[c].sort((a, b) => a.name.localeCompare(b.name, 'tr', { sensitivity: 'base' })));
+                });
+                teamsArr.length = 0;
+                if (sortedFilled.length === 0) {
+                    teamsArr.push({ id: `empty_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`, name: '', logoUrl: '', country: '' });
+                } else {
+                    teamsArr.push(...sortedFilled);
+                }
+            };
+            sortTeamsByCountry(opps.domestic.teams);
+            opps.foreign.forEach(grp => sortTeamsByCountry(grp.teams));
+
+            const colCount = seasonsList.length + 3; // rakip sütunu + sezonlar + (+) sütunu + dolgu sütunu
+
+            let html = `
+                <div class="w-full flex flex-nowrap justify-between items-center mb-3 px-2 shrink-0 gap-4 overflow-x-auto hide-scrollbar">
+                    <div class="flex items-center shrink-0">
+                        <h3 class="text-2xl font-bold text-white"><i class="fa-solid fa-chart-simple text-emerald-500"></i></h3>
+                    </div>
+                    <div class="flex flex-nowrap items-center gap-2 shrink-0 ml-auto">
+                        <button onclick="addNewForeignGroup()" class="bg-blue-900/50 hover:bg-blue-800 text-blue-300 w-8 h-8 flex items-center justify-center rounded text-xs border border-blue-800 transition-colors shrink-0" title="Yeni Kıta Grubu Ekle"><i class="fa-solid fa-plus"></i></button>
+                        <div class="shrink-0 flex items-center">
+                            ${getScaleSelectorHtml()}
+                        </div>
+                        <div class="flex gap-1 bg-slate-900 rounded-full border border-slate-700 p-1 shadow-lg shrink-0 ml-1">
+                            <button onclick="matchContext='kulup'; renderMatchesGrid();" class="px-6 py-1.5 rounded-full text-xs font-bold transition-colors ${matchContext === 'kulup' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}">Kulüp</button>
+                            <button onclick="matchContext='milli'; renderMatchesGrid();" class="px-6 py-1.5 rounded-full text-xs font-bold transition-colors ${matchContext === 'milli' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}">Milli</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full overflow-auto table-scroll border border-slate-700 rounded-xl bg-slate-900 flex-1 min-h-0 relative pb-4">
+                    <table class="w-max min-w-full border-separate border-spacing-0 text-sm origin-top-left" style="transform: scale(${currentScale}); transform-origin: top left; width: max-content;">
+                        <thead class="bg-slate-950 sticky top-0 z-[40] shadow-md">
+                            <tr>
+                                <th class="p-2 border-r border-b border-slate-700 sticky left-0 bg-slate-950 z-[60] min-w-[80px] w-20 align-middle shadow-[2px_0_5px_rgba(0,0,0,0.2)]">
+                                    <div class="relative group cursor-pointer" onclick="openManagedTeamModal()">
+                                        <img src="${team.logoUrl}" alt="${escapeHtml(team.name)}" class="w-12 h-12 mx-auto object-contain drop-shadow-lg" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(team.name)}&background=random&color=fff'">
+                                    </div>
+                                </th>`;
+
+            // SEZON BAŞLIKLARI (soldan sağa)
+            seasonsList.forEach(season => {
+                html += `<th class="p-1 border-r border-b border-slate-700 min-w-[64px] w-[64px] max-w-[64px] text-center align-middle cursor-pointer hover:bg-slate-800 transition-colors" onclick="openSeasonStatsModal('${jsq(season)}')" title="Sezon İstatistikleri">
+                            <div class="text-xs font-bold tracking-wider text-emerald-500 whitespace-nowrap">${season}</div>
+                            <button onclick="event.stopPropagation(); deleteSeason('${jsq(season)}')" class="mt-0.5 text-red-500/60 hover:text-red-400 transition-colors" title="Sezonu Sil"><i class="fa-solid fa-trash text-[9px]"></i></button>
+                        </th>`;
+            });
+            html += `<th class="p-1 border-b border-slate-700 min-w-[48px] bg-slate-950 text-center align-middle">
+                        <button onclick="addNewSeason()" class="text-emerald-500 hover:text-emerald-400" title="Yeni Sezon Ekle"><i class="fa-solid fa-plus-circle text-lg"></i></button>
+                     </th>
+                     <th class="border-b border-slate-700 w-full bg-slate-950"></th></tr></thead><tbody>`;
+
+            const renderMatchCell = (season, opp, grpColor) => {
+                if (!matchDataStore[matchContext][season]) matchDataStore[matchContext][season] = {};
+                const cellData = matchDataStore[matchContext][season][opp.id] || [];
+                const hasData = cellData.some(m => m && (m.result || m.fixtureId));
+                const clickAttr = `onclick="openMatchEditor('${jsq(season)}', '${jsq(opp.id)}', '${jsq(opp.name)}')"`;
+                const base = 'p-1 border-r border-b border-slate-700 align-middle cursor-pointer hover:bg-slate-700 transition-colors min-w-[64px] w-[64px] max-w-[64px]';
+                if (!hasData) return `<td class="${base}" style="background-color: ${grpColor}15" ${clickAttr}></td>`;
+                const boxesHtml = cellData.map(match => {
+                    if (!match || (!match.result && !match.fixtureId)) return '';
+                    const loc = match.location === 'H' ? 'E' : (match.location === 'A' ? 'D' : 'T');
+                    const hasScore = (match.teamScore !== '' && match.teamScore !== undefined && match.oppScore !== '' && match.oppScore !== undefined);
+                    const scoreStr = hasScore ? `${match.teamScore}-${match.oppScore}` : '-';
+                    const resultClass = match.result ? `match-${match.result}` : 'bg-slate-600 border-slate-500 opacity-70';
+                    return `<div class="match-box ${resultClass}" title="${loc} | ${escapeHtml(match.tournament || '')}\nSkor: ${scoreStr}"><span class="score-display">${scoreStr}</span></div>`;
+                }).join('');
+                return `<td class="${base}" style="background-color: ${grpColor}15" ${clickAttr}>
+                            <div class="flex flex-col items-center justify-center gap-1 w-full mx-auto rounded">${boxesHtml}</div>
+                        </td>`;
+            };
+
+            const renderOpponentCell = (opp, groupType, groupIndex, index, grpColor) => {
+                const winRate = opp.name ? getWinRate(opp.id) : null;
+                const winRateStr = winRate !== null ? `%${winRate}` : '-';
+                const flag = (opp.name && opp.country) ? getFlagIcon(opp.country) : '';
+                const logoBox = opp.name
+                    ? `<div class="relative h-10 w-10 mx-auto bg-slate-200/90 rounded p-1 shadow">
+                            <img src="${getTeamLogoByName(opp.name)}" title="${escapeHtml(opp.name)}" class="w-full h-full object-contain">
+                            ${flag ? `<span class="absolute -bottom-1 -right-1 scale-[0.6] origin-bottom-right drop-shadow">${flag}</span>` : ''}
+                       </div>`
+                    : `<div class="h-10 w-10 mx-auto rounded border border-dashed border-slate-600 flex items-center justify-center text-slate-500"><i class="fa-solid fa-plus text-xs"></i></div>`;
+                return `<td class="p-1 border-r border-b border-slate-700 sticky left-0 bg-slate-950 z-[30] min-w-[80px] w-20 align-middle cursor-pointer hover:bg-slate-800 transition-colors shadow-[2px_0_5px_rgba(0,0,0,0.2)]" onclick="handleOpponentClick('${groupType}', ${groupIndex}, ${index})">
+                            ${logoBox}
+                            <div class="text-[10px] font-bold mt-0.5 text-center ${getWinRateColorClass(winRate)}" title="Galibiyet Yüzdesi">${winRateStr}</div>
+                        </td>`;
+            };
+
+            const renderGroup = (grp, groupType, groupIndex) => {
+                let g = `<tr><td colspan="${colCount}" class="p-0 border-b border-slate-700" style="background-color: ${grp.color}90">
+                            <div class="sticky left-0 w-max flex items-center gap-2 px-2 py-1 text-xs font-bold tracking-widest text-white">
+                                <span>${grp.name}</span>
+                                <button onclick="openGroupEditorModal('${groupType}', ${groupIndex})" class="bg-slate-800 p-1 rounded text-[10px] text-white" title="Grubu Düzenle/Sil"><i class="fa-solid fa-pen"></i></button>
+                                <button onclick="addOpponentColumn('${groupType}', ${groupIndex})" class="bg-emerald-600 p-1 rounded text-[10px] text-white" title="Takım Ekle"><i class="fa-solid fa-plus"></i></button>
+                            </div>
+                        </td></tr>`;
+                grp.teams.forEach((opp, i) => {
+                    g += `<tr class="hover:bg-slate-800/50 transition-colors">${renderOpponentCell(opp, groupType, groupIndex, i, grp.color)}`;
+                    seasonsList.forEach(season => { g += renderMatchCell(season, opp, grp.color); });
+                    g += `<td class="border-b border-slate-800 bg-slate-900/10"></td><td class="border-b border-slate-800 bg-slate-900/10 w-full"></td></tr>`;
+                });
+                return g;
+            };
+
+            html += renderGroup(opps.domestic, 'domestic', 0);
+            opps.foreign.forEach((grp, gIdx) => { html += renderGroup(grp, 'foreign', gIdx); });
+            html += `</tbody></table></div>`;
+
+            updateContentArea(`<div class="w-full flex flex-col h-full min-h-0 overflow-hidden">${html}</div>`);
+        }
+
+        function renderMatchesGridHorizontal() {
             const team = managedTeams[matchContext];
             const opps = opponentsConfig[matchContext];
             const isKulup = matchContext === 'kulup';
@@ -6470,7 +5959,6 @@ async function autoFetchPlayerPhoto(playerName, urlInputId) {
                     promoteBtnView.classList.add('hidden');
                 }
              
-
                 // Düzenle tuşuna basıldığında kullanılmak üzere formu arka planda doldur
                 document.getElementById('player-info-title').innerText = "Oyuncu Düzenle";
                 document.getElementById('pi-pos').value = p.pos;
@@ -7758,16 +7246,6 @@ function closeTransferModal() {
             renderStatsPanel();
         }
 
-        function sortStats(context, field) {
-            if (statSort[context].field === field) {
-                statSort[context].asc = !statSort[context].asc;
-            } else {
-                statSort[context].field = field;
-                statSort[context].asc = (field === 'name' || field === 'pos' || field === 'countryCode') ? true : false;
-            }
-            renderStatsPanel();
-        }
-
         function getStatsData(context) {
             let playersMap = {};
             let seasonsData = {}; // { "25/26": ["Süper Lig", "Türkiye Kupası"] }
@@ -7846,89 +7324,186 @@ function closeTransferModal() {
             return { stats, seasonsData };
         }
 
-        function getTournamentTopScorerAssist(season, tournamentName) {
-            const context = (tournamentName === 'Dünya Kupası' || tournamentName === 'Avrupa Şampiyonası') ? 'milli' : 'kulup';
-            const data = getStatsData(context);
-            let topScorer = null, topAssist = null;
-
-            data.stats.forEach(p => {
-                const pSeason = p.seasons[season];
-                if (!pSeason) return;
-                const pt = pSeason.tournaments[tournamentName];
-                if (!pt) return;
-                if (pt.goals > 0 && (!topScorer || pt.goals > topScorer.goals)) {
-                    topScorer = { name: p.name, goals: pt.goals, photoUrl: p.photoUrl };
-                }
-                if (pt.assists > 0 && (!topAssist || pt.assists > topAssist.assists)) {
-                    topAssist = { name: p.name, assists: pt.assists, photoUrl: p.photoUrl };
-                }
-            });
-
-            return { topScorer, topAssist };
-        }
-
         let statsActiveTab = 'kulup'; // Mobil için aktif tab
         
-        function switchStatsTab(tabId) {
-            statsActiveTab = tabId;
-            ['kulup', 'milli'].forEach(id => {
-                const btn = document.getElementById('statstab-' + id);
-                const content = document.getElementById('statscontent-' + id);
-                if (!btn || !content) return;
-                
-                if (id === tabId) {
-                    btn.className = 'flex-1 px-4 py-3 text-lg bg-slate-900 text-emerald-400 border border-slate-700 border-b-slate-900 rounded-t-xl transition-colors shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] relative z-10 -mb-[1px] flex items-center justify-center';
-                    content.classList.remove('hidden');
-                    content.classList.add('flex');
-                } else {
-                    btn.className = 'flex-1 px-4 py-3 text-lg bg-slate-800/50 text-slate-400 border border-transparent border-b-slate-700 rounded-t-xl hover:bg-slate-800 hover:text-white transition-colors relative z-0 flex items-center justify-center cursor-pointer';
-                    content.classList.add('hidden');
-                    content.classList.remove('flex');
-                }
+                                // ===================== GOL-ASİST v6: takım üst başlıkları + tüm tablolar için tek tip otomatik ölçek =====================
+        // Dört tabloyu da aynı yazı boyutuyla çizer; en dar paneli referans alıp ortak boyutu küçültür (web, >=1280px).
+        function statsFitTables() {
+            const tables = Array.from(document.querySelectorAll('table.stv2'));
+            if (!tables.length) return;
+            if (!window.matchMedia('(min-width: 1280px)').matches) { tables.forEach(t => { t.style.fontSize = ''; }); return; }
+            const MAXFS = 15, MINFS = 10;
+            let fs = MAXFS;
+            for (let pass = 0; pass < 4; pass++) {
+                tables.forEach(t => { t.style.fontSize = fs + 'px'; });
+                let ratio = 1;
+                tables.forEach(t => {
+                    const sc = t.parentElement;
+                    if (!sc || !sc.clientWidth) return;
+                    const w = t.style.width, mw = t.style.minWidth;
+                    t.style.width = 'max-content'; t.style.minWidth = '0';
+                    const need = t.offsetWidth;
+                    t.style.width = w; t.style.minWidth = mw;
+                    if (need > 0) ratio = Math.min(ratio, (sc.clientWidth - 2) / need);
+                });
+                if (ratio >= 1) break;
+                fs = Math.max(MINFS, Math.floor(fs * ratio * 10) / 10);
+                if (fs <= MINFS) { tables.forEach(t => { t.style.fontSize = fs + 'px'; }); break; }
+            }
+        }
+        if (!window.__statsFitBound) {
+            window.__statsFitBound = true;
+            let _t = null;
+            window.addEventListener('resize', () => {
+                clearTimeout(_t);
+                _t = setTimeout(() => { if (typeof activeMain !== 'undefined' && activeMain === 'golasist') statsFitTables(); }, 120);
             });
         }
 
         function renderStatsPanel() {
-            const kulupData = getStatsData('kulup');
-            const milliData = getStatsData('milli');
+            const ctxSel = statsActiveTab === 'milli' ? 'milli' : 'kulup';
+            const metric = statsMetricTab === 'assists' ? 'assists' : 'goals';
+            const pack = (ctx) => {
+                const d = getStatsData(ctx);
+                return { ctx, d, goals: d.stats.filter(p => p.overallGoals > 0), assists: d.stats.filter(p => p.overallAssists > 0) };
+            };
+            const K = pack('kulup'), M = pack('milli');
 
-            let html = `
+            const tabOn = 'flex-1 px-4 py-3 text-lg bg-slate-900 border border-slate-700 border-b-slate-900 rounded-t-xl transition-colors shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] relative z-10 -mb-[1px] flex items-center justify-center';
+            const tabOff = 'flex-1 px-4 py-3 text-lg bg-slate-800/50 text-slate-400 border border-transparent border-b-slate-700 rounded-t-xl hover:bg-slate-800 hover:text-white transition-colors relative z-0 flex items-center justify-center cursor-pointer';
+            const ctxIcon = (id, icon) => {
+                const t = (typeof managedTeams !== 'undefined' && managedTeams) ? managedTeams[id] : null;
+                const u = t && t.logoUrl;
+                return u ? `<img src="${u}" alt="" class="w-6 h-6 object-contain ${ctxSel === id ? '' : 'opacity-50'}">` : `<i class="fa-solid ${icon}"></i>`;
+            };
+            const ctxTab = (id, icon, ttl, colorOn) => `<button onclick="statsSetContext('${id}')" title="${ttl}" class="${ctxSel === id ? tabOn + ' ' + colorOn : tabOff}">${ctxIcon(id, icon)}</button>`;
+            const metTab = (id, icon, ttl, colorOn) => `<button onclick="statsSetMetricTab('${id}')" title="${ttl}" class="${metric === id ? tabOn + ' ' + colorOn : tabOff}"><i class="fa-solid ${icon}"></i></button>`;
+
+            // Takım üst başlığı (yalnızca web): Kulüp / Milli Takım + takım adı
+            const groupHead = (ctx) => {
+                const isK = ctx === 'kulup';
+                const t = (typeof managedTeams !== 'undefined' && managedTeams && managedTeams[ctx]) ? managedTeams[ctx] : null;
+                const nm = t && t.name ? String(t.name) : '';
+                const logo = nm && typeof getTeamLogoByName === 'function' ? getTeamLogoByName(nm) : '';
+                const cls = isK ? 'bg-emerald-900/25 border-emerald-700/50 text-emerald-300' : 'bg-red-900/25 border-red-700/50 text-red-300';
+                return `<div class="hidden xl:flex shrink-0 items-center gap-2.5 px-4 py-2.5 mb-3 rounded-xl border ${cls}">
+                    <i class="fa-solid ${isK ? 'fa-shield-halved' : 'fa-flag'}"></i>
+                    <span class="font-black tracking-[0.18em] uppercase text-sm">${isK ? 'Kulüp' : 'Milli Takım'}</span>
+                    ${nm ? `<span class="ml-auto flex items-center gap-2 text-slate-300 font-bold text-sm min-w-0">${logo ? `<img src="${logo}" alt="" class="w-5 h-5 object-contain shrink-0">` : ''}<span class="truncate">${escapeHtml(nm)}</span></span>` : ''}
+                </div>`;
+            };
+            const one = (P, m) => `
+                <div class="${(ctxSel === P.ctx && metric === m) ? 'flex' : 'hidden xl:flex'} flex-1 flex-col min-h-0 min-w-0 relative">
+                    ${renderStatTableHTML(P.ctx, m === 'goals' ? 'Gol' : 'Asist', m === 'goals' ? P.goals : P.assists, P.d.seasonsData, statSortM[P.ctx][m], m)}
+                </div>`;
+            const group = (P) => `
+                <div class="${ctxSel === P.ctx ? 'flex' : 'hidden xl:flex'} flex-1 flex-col min-h-0 min-w-0">
+                    ${groupHead(P.ctx)}
+                    <div class="flex-1 flex flex-col xl:flex-row gap-3 min-h-0 min-w-0">
+                        ${one(P, 'goals')}${one(P, 'assists')}
+                    </div>
+                </div>`;
+
+            const html = `
                 <div class="w-full flex-1 flex flex-col min-h-0 overflow-hidden px-2 pt-2">
-                    <!-- Sekmeler (Tabs - Sadece Mobilde Görünür) -->
-                    <div class="flex xl:hidden gap-1 overflow-x-auto hide-scrollbar shrink-0 px-1 mb-2">
-                        <button onclick="switchStatsTab('kulup')" id="statstab-kulup" class="flex-1 px-4 py-3 text-lg bg-slate-900 text-emerald-400 border border-slate-700 border-b-slate-900 rounded-t-xl transition-colors shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] relative z-10 -mb-[1px] flex items-center justify-center">
-                            <i class="fa-solid fa-shield-halved"></i>
-                        </button>
-                        <button onclick="switchStatsTab('milli')" id="statstab-milli" class="flex-1 px-4 py-3 text-lg bg-slate-800/50 text-slate-400 border border-transparent border-b-slate-700 rounded-t-xl hover:bg-slate-800 hover:text-white transition-colors relative z-0 flex items-center justify-center cursor-pointer">
-                            <i class="fa-solid fa-flag text-red-400"></i>
-                        </button>
+                    <!-- Kulüp / Milli sekmeleri (yalnızca mobil) -->
+                    <div class="flex xl:hidden gap-1 shrink-0 px-1 mb-2">
+                        ${ctxTab('kulup', 'fa-shield-halved', 'Kulüp', 'text-emerald-400')}
+                        ${ctxTab('milli', 'fa-flag', 'Milli Takım', 'text-red-400')}
+                    </div>
+                    <!-- Gol / Asist sekmeleri (yalnızca mobil) -->
+                    <div class="flex xl:hidden gap-1 shrink-0 px-1 mb-2">
+                        ${metTab('goals', 'fa-futbol', 'Gol', 'text-green-400')}
+                        ${metTab('assists', 'fa-shoe-prints', 'Asist', 'text-blue-400')}
                     </div>
 
-                    <!-- İstatistik Listeleri -->
-                    <div class="flex-1 flex flex-col xl:flex-row gap-4 min-h-0 overflow-hidden relative z-0">
-                        <div id="statscontent-kulup" class="flex-1 flex xl:flex flex-col min-h-0 relative transition-all duration-300">
-                            ${renderStatTableHTML('kulup', 'Kulüp İstatistikleri', kulupData.stats, kulupData.seasonsData, statSort.kulup)}
-                        </div>
-                        <div id="statscontent-milli" class="hidden xl:flex flex-1 flex-col min-h-0 relative transition-all duration-300">
-                            ${renderStatTableHTML('milli', 'Milli Takım İstatistikleri', milliData.stats, milliData.seasonsData, statSort.milli)}
-                        </div>
+                    <!-- Web: solda Kulüp (Gol | Asist), sağda Milli Takım (Gol | Asist) -->
+                    <div class="flex-1 flex flex-col xl:flex-row gap-6 min-h-0 overflow-hidden relative z-0">
+                        ${group(K)}
+                        ${group(M)}
                     </div>
                 </div>
             `;
             updateContentArea(html);
-            
-            // Sekme durumunu en son bırakıldığı gibi ayarla
-            switchStatsTab(statsActiveTab);
+            statsFitTables();
+            requestAnimationFrame(statsFitTables);
+            setTimeout(statsFitTables, 400);   // ikon/yazı tipi yüklendikten sonra yeniden ölç
         }
 
-        function renderStatTableHTML(context, title, players, seasonsData, sortInfo) {
+                // ===================== GOL-ASİST TABLOSU v2: sığan sütunlar, tam isimler, büyük masaüstü ölçeği, sade başlık =====================
+        function statsV2EnsureCss() {
+            if (document.getElementById('stats-v2-css')) return;
+            const st = document.createElement('style');
+            st.id = 'stats-v2-css';
+            st.textContent = `
+                .stv2 { font-size: 12px; border-collapse: separate; border-spacing: 0; }
+                @media (min-width: 1280px) { .stv2 { font-size: 13px; } }
+                @media (min-width: 1700px) { .stv2 { font-size: 14px; } }
+                .stv2 th, .stv2 td { box-sizing: border-box; padding: .5em .6em; white-space: nowrap; text-align: center; vertical-align: middle; border-bottom: 1px solid rgba(148,163,184,.12); }
+                .stv2 tbody tr:last-child td { border-bottom: none; }
+                .stv2 thead th { border-bottom: 1px solid rgba(148,163,184,.25); }
+                .stv2 tfoot td { border-top: 2px solid rgba(148,163,184,.3); border-bottom: none; }
+                .stv2 .stv2-sep { border-left: 1px solid rgba(148,163,184,.22); }
+                .stv2 thead button.group\/th { padding: .25em .7em; }
+                .stv2 thead button.group\/th > i { margin-left: 0 !important; }
+                .stv2 thead button.group\/th > i.opacity-0 { opacity: .3 !important; }
+                .stv2 thead [class*="tracking-[0.15em]"] { letter-spacing: .06em; }
+                .stv2 td.stv2-id { padding-right: .6em; }
+                .stv2 td.stv2-id > div { gap: .45em; }
+                .stv2 td.stv2-id .ml-auto { padding-left: .3em; }
+                .stv2 .stv2-id { text-align: left; padding-left: .7em; padding-right: 1em; }
+                .stv2 .stv2-idshadow { box-shadow: 6px 0 8px -6px rgba(0,0,0,.55); }
+                .stv2 .stats-rank-badge { width: 1.75em; height: 1.75em; font-size: .8em; flex-shrink: 0; }
+                .stv2 .stats-pos-pill { display: inline-block; min-width: 2.6em; text-align: center; font-size: .7em; padding: .25em .5em; flex-shrink: 0; }
+                .stv2 .stats-chip { min-width: 2.1em; padding: .15em .55em; font-size: .95em; }
+                .stv2 .stats-chip-goal-total, .stv2 .stats-chip-assist-total { font-size: 1.05em; min-width: 2.1em; padding: .1em .5em; }
+                .stv2 .stats-chip-goal-tour, .stv2 .stats-chip-assist-tour { font-size: .85em; min-width: 1.9em; padding: .1em .45em; }
+                body.theme-light .stv2 th, body.theme-light .stv2 td { border-bottom-color: rgba(44,36,32,.1); }
+                body.theme-light .stv2 .stv2-sep { border-left-color: rgba(44,36,32,.18); }
+                body.theme-light .stv2 tfoot td { border-top-color: rgba(44,36,32,.3); }
+            `;
+            document.head.appendChild(st);
+        }
+
+        function statsChipTier(val, max) {
+            if (!val || val <= 0) return 'chip-tier-zero';
+            if (max > 0 && val === max) return 'chip-glow-max';
+            const ratio = max > 0 ? val / max : 0;
+            if (ratio >= 0.7) return 'chip-tier-bright';
+            if (ratio >= 0.4) return 'chip-tier-mid';
+            return 'chip-tier-dim';
+        }
+
+                // ===================== GOL-ASİST v3: Gol / Asist / Tümü ayrımı (önce v2 uygulanmış olmalı) =====================
+
+                // ===================== GOL-ASİST v4: web'de yan yana Gol | Asist tabloları, mobilde Kulüp/Milli + Gol/Asist sekmeleri =====================
+        let statsMetricTab = 'goals';   // mobil alt sekme: 'goals' | 'assists'
+        let statSortM = {
+            kulup: { goals: { field: 'overall_goals', asc: false }, assists: { field: 'overall_assists', asc: false } },
+            milli: { goals: { field: 'overall_goals', asc: false }, assists: { field: 'overall_assists', asc: false } }
+        };
+        function sortStatsM(context, metric, field) {
+            const so = statSortM[context][metric];
+            if (so.field === field) so.asc = !so.asc;
+            else { so.field = field; so.asc = (field === 'name' || field === 'pos' || field === 'countryCode'); }
+            renderStatsPanel();
+        }
+        function statsSetContext(id) { statsActiveTab = id; renderStatsPanel(); }
+        function statsSetMetricTab(m) { statsMetricTab = m; renderStatsPanel(); }
+
+        function renderStatTableHTML(context, title, players, seasonsData, sortInfo, metric) {
+            statsV2EnsureCss();
             const isKulup = context === 'kulup';
-            if(!statExpanded[context]) statExpanded[context] = {};
-            
-            // Sıralama Algoritması
+            const metricNow = metric || 'all';   // 'goals' | 'assists' | 'all'
+            const showG = metricNow !== 'assists', showA = metricNow !== 'goals';
+            const per = (showG ? 1 : 0) + (showA ? 1 : 0);
+            const aSep = showG ? '' : 'stv2-sep ';   // yalnız asist gösteriliyorsa grup çizgisi A'da başlar
+            if (!statExpanded[context]) statExpanded[context] = {};
+
+            // --- Sıralama ---
             players.sort((a, b) => {
                 let valA = 0, valB = 0;
-                let f = sortInfo.field;
+                const f = sortInfo.field;
                 if (f === 'name' || f === 'pos' || f === 'countryCode') {
                     valA = (a[f] || '').toString().toLowerCase();
                     valB = (b[f] || '').toString().toLowerCase();
@@ -7937,240 +7512,211 @@ function closeTransferModal() {
                 } else if (f === 'overall_assists') {
                     valA = a.overallAssists; valB = b.overallAssists;
                 } else if (f.startsWith('s_')) {
-                    let parts = f.split('_'); let s = parts[1]; let type = parts[2];
+                    const parts = f.split('_'); const s = parts[1]; const type = parts[2];
                     valA = a.seasons[s] ? a.seasons[s][type === 'goals' ? 'totalGoals' : 'totalAssists'] : 0;
                     valB = b.seasons[s] ? b.seasons[s][type === 'goals' ? 'totalGoals' : 'totalAssists'] : 0;
                 } else if (f.startsWith('t_')) {
-                    let parts = f.split('_'); let s = parts[1]; let t = parts[2]; let type = parts[3];
+                    const parts = f.split('_'); const s = parts[1]; const t = parts[2]; const type = parts[3];
                     valA = a.seasons[s] && a.seasons[s].tournaments[t] ? a.seasons[s].tournaments[t][type] : 0;
                     valB = b.seasons[s] && b.seasons[s].tournaments[t] ? b.seasons[s].tournaments[t][type] : 0;
                 }
-                
                 if (valA < valB) return sortInfo.asc ? -1 : 1;
                 if (valA > valB) return sortInfo.asc ? 1 : -1;
                 return 0;
             });
 
-            const getSortIcon = (field) => {
-                if (sortInfo.field === field) return sortInfo.asc ? '<i class="fa-solid fa-chevron-up text-[10px] ml-1 text-emerald-400"></i>' : '<i class="fa-solid fa-chevron-down text-[10px] ml-1 text-emerald-400"></i>';
-                return '<i class="fa-solid fa-sort text-[10px] ml-1 opacity-30 group-hover/th:opacity-100 transition-opacity"></i>';
+            // Yalnızca aktif sütunda ok göster (kalabalığı azaltır); pasifte hover'da belirir, yer ayrılı
+            const arrow = (field) => sortInfo.field === field
+                ? `<i class="fa-solid ${sortInfo.asc ? 'fa-arrow-up' : 'fa-arrow-down'} text-[0.7em] ml-1"></i>`
+                : '<i class="fa-solid fa-arrow-down text-[0.7em] ml-1 opacity-0 group-hover/th:opacity-30 transition-opacity"></i>';
+            const hBtn = (field, label, colorCls, extra) =>
+                `<button onclick="sortStatsM('${context}', '${metricNow}', '${field}')" class="group/th inline-flex items-center justify-center font-black tracking-wider ${colorCls} hover:text-white transition-colors ${extra || ''}">${arrow(field)}</button>`;
+            const seg = (field, icon, ttl) => {
+                const on = sortInfo.field === field;
+                return `<button onclick="sortStatsM('${context}', '${metricNow}', '${field}')" title="${ttl}" class="flex items-center justify-center gap-1 px-2.5 py-1 rounded-md transition-colors ${on ? 'bg-emerald-500/15 text-emerald-300' : 'text-slate-400 hover:text-white hover:bg-slate-800'}"><i class="fa-solid ${icon}"></i>${on ? `<i class="fa-solid ${sortInfo.asc ? 'fa-arrow-up' : 'fa-arrow-down'} text-[0.65em]"></i>` : ''}</button>`;
             };
 
-            // Sol sabit (sticky) sütunların yatay koordinat hesaplamaları
-            const wNo = 20, wPos = 28, wName = 110, wCountry = 26;
-            const lPos = wNo, lName = wNo + wPos, lCountry = wNo + wPos + wName;
-
-            let th1 = `
-                <tr>
-                    <th rowspan="2" class="px-0.5 py-1 border-r border-b border-slate-700 bg-slate-950 z-[20] text-center text-slate-500 sticky align-middle text-[9px]" style="left: 0px; width: ${wNo}px; min-width: ${wNo}px; max-width: ${wNo}px;">#</th>
-                    <th rowspan="2" class="px-0.5 py-1 border-r border-b border-slate-700 bg-slate-950 z-[20] cursor-pointer transition-colors sticky group/th align-middle" style="left: ${lPos}px; width: ${wPos}px; min-width: ${wPos}px; max-width: ${wPos}px;" onclick="sortStats('${context}', 'pos')" title="Mevkiye Göre Sırala">
-                        <div class="flex items-center justify-center text-emerald-400 group-hover/th:text-white transition-colors"><i class="fa-solid fa-street-view text-xs"></i>${getSortIcon('pos')}</div>
-                    </th>
-                    <th rowspan="2" class="px-1 py-1 border-r border-b border-slate-700 bg-slate-950 z-[20] cursor-pointer transition-colors text-left sticky group/th align-middle" style="left: ${lName}px; width: ${wName}px; min-width: ${wName}px; max-width: ${wName}px;" onclick="sortStats('${context}', 'name')" title="İsme Göre Sırala">
-                        <div class="flex items-center justify-start text-emerald-400 group-hover/th:text-white transition-colors"><i class="fa-solid fa-font text-xs"></i>${getSortIcon('name')}</div>
-                    </th>
-                    ${isKulup ? `<th rowspan="2" class="px-0.5 py-1 border-r border-b border-slate-700 bg-slate-950 z-[20] cursor-pointer transition-colors text-center sticky group/th align-middle" style="left: ${lCountry}px; width: ${wCountry}px; min-width: ${wCountry}px; max-width: ${wCountry}px;" onclick="sortStats('${context}', 'countryCode')" title="Ülkeye Göre Sırala">
-                        <div class="flex items-center justify-center text-emerald-400 group-hover/th:text-white transition-colors"><i class="fa-solid fa-globe text-xs"></i>${getSortIcon('countryCode')}</div>
-                    </th>` : ''}
-            `;
-            
-            let th2 = `<tr>`;
+            // --- Başlık satırları ---
+            const topSticky = 'position:sticky;top:0;z-index:30;height:3em;';
+            const row2Sticky = 'position:sticky;top:3em;z-index:30;';
+            let th1 = `<tr>
+                <th rowspan="2" class="stv2-id stv2-idshadow bg-slate-950" style="position:sticky;left:0;top:0;z-index:40;">
+                    <div class="inline-flex items-center gap-0.5 p-0.5 rounded-lg bg-slate-900 border border-slate-700/60 text-[0.85em]">
+                        ${seg('pos', 'fa-street-view', 'Mevkiye Göre Sırala')}
+                        ${seg('name', 'fa-font', 'İsme Göre Sırala')}
+                        ${isKulup ? seg('countryCode', 'fa-globe', 'Ülkeye Göre Sırala') : ''}
+                    </div>
+                </th>`;
+            let th2 = '<tr>';
+            let totalCols = 1;
 
             seasonsList.forEach(season => {
                 const isExp = statExpanded[context][season];
                 const tours = seasonsData[season] || [];
-                const colspan = isExp ? 2 + (tours.length * 2) : 2;
-                
-                th1 += `
-                    <th colspan="${colspan}" class="p-2 border-r border-b ${isExp ? 'border-slate-700' : 'border-slate-500 border-r-2'} bg-slate-900 text-emerald-400 align-middle">
-                        <div class="flex items-center justify-center gap-2">
-                            <span class="bg-slate-950/60 text-emerald-400 px-2 py-0.5 rounded font-black shadow-inner tracking-widest text-[10px] border border-slate-700/50">${season}</span>
-                            <button onclick="toggleStatsExpand('${context}', '${season}')" class="text-slate-400 hover:text-emerald-400 transition-all bg-slate-800 hover:bg-slate-700 w-5 h-5 flex items-center justify-center rounded-full shadow border border-slate-600 hover:border-emerald-500/50 group" title="${isExp ? 'Daralt' : 'Turnuva Detayları'}">
-                                <i class="fa-solid ${isExp ? 'fa-angle-left' : 'fa-angle-right'} text-[9px] group-hover:scale-110 transition-transform"></i>
-                            </button>
-                        </div>
-                    </th>
-                `;
+                const colspan = isExp ? per + (tours.length * per) : per;
+                totalCols += colspan;
 
-                th2 += `<th class="p-2 border-r border-b border-slate-700 bg-slate-800 text-[10px] cursor-pointer hover:text-white text-green-400 group/th" onclick="sortStats('${context}', 's_${season}_goals')">G ${getSortIcon('s_'+season+'_goals')}</th>`;
-                th2 += `<th class="p-2 border-r border-b ${isExp ? 'border-slate-700' : 'border-slate-500 border-r-2'} bg-slate-800 text-[10px] cursor-pointer hover:text-white text-blue-400 group/th" onclick="sortStats('${context}', 's_${season}_assists')">A ${getSortIcon('s_'+season+'_assists')}</th>`;
-                
+                th1 += `<th colspan="${colspan}" class="stv2-sep bg-slate-900" style="${topSticky}">
+                    <div class="inline-flex items-stretch rounded-full overflow-hidden bg-slate-950/70 border border-slate-700/60 text-[0.85em]">
+                        <span class="px-3 py-1 font-black tracking-widest text-emerald-300">${season}</span>
+                        <button onclick="toggleStatsExpand('${context}', '${season}')" class="px-2 flex items-center border-l border-slate-700/60 text-slate-400 hover:text-emerald-300 hover:bg-slate-800 transition-colors" title="${isExp ? 'Daralt' : 'Turnuva Detayları'}">
+                            <i class="fa-solid ${isExp ? 'fa-angle-left' : 'fa-angle-right'} text-[0.8em]"></i>
+                        </button>
+                    </div>
+                </th>`;
+
+                if (showG) th2 += `<th class="stv2-sep bg-slate-900" style="${row2Sticky}">${hBtn('s_' + season + '_goals', 'G', 'text-green-400', 'text-[0.8em]')}</th>`;
+                if (showA) th2 += `<th class="${aSep}bg-slate-900" style="${row2Sticky}">${hBtn('s_' + season + '_assists', 'A', 'text-blue-400', 'text-[0.8em]')}</th>`;
+
                 if (isExp) {
                     tours.forEach((t, i) => {
-                        const isLast = (i === tours.length - 1);
                         const tLogo = getCompetitionLogo(t);
                         const labelHtml = tLogo
-                            ? `<img src="${tLogo}" alt="${escapeHtml(t)}" title="${escapeHtml(t)}" class="w-5 h-5 object-contain mx-auto">`
-                            : `<div class="max-w-[70px] truncate mx-auto" title="${t}">${t}</div>`;
-                        th2 += `<th class="p-2 border-r border-b border-slate-700 bg-slate-900 text-[9px] cursor-pointer hover:text-white text-green-400/80 group/th" onclick="sortStats('${context}', 't_${season}_${t}_goals')">${labelHtml}G ${getSortIcon('t_'+season+'_'+t+'_goals')}</th>`;
-                        th2 += `<th class="p-2 border-r border-b ${isLast ? 'border-slate-500 border-r-2' : 'border-slate-700'} bg-slate-900 text-[9px] cursor-pointer hover:text-white text-blue-400/80 group/th" onclick="sortStats('${context}', 't_${season}_${t}_assists')">${labelHtml}A ${getSortIcon('t_'+season+'_'+t+'_assists')}</th>`;
+                            ? `<img src="${tLogo}" alt="${escapeHtml(t)}" title="${escapeHtml(t)}" class="w-[1.3em] h-[1.3em] object-contain">`
+                            : `<span class="max-w-[5em] truncate text-slate-300" title="${escapeHtml(t)}">${escapeHtml(t)}</span>`;
+                        if (showG) th2 += `<th class="${i === 0 ? 'stv2-sep ' : ''}bg-slate-900" style="${row2Sticky}"><div class="flex flex-col items-center gap-0.5">${labelHtml}${hBtn('t_' + season + '_' + t + '_goals', 'G', 'text-green-400/80', 'text-[0.75em]')}</div></th>`;
+                        if (showA) th2 += `<th class="${(i === 0 ? aSep : '')}bg-slate-900" style="${row2Sticky}"><div class="flex flex-col items-center gap-0.5">${labelHtml}${hBtn('t_' + season + '_' + t + '_assists', 'A', 'text-blue-400/80', 'text-[0.75em]')}</div></th>`;
                     });
                 }
             });
 
-            // Genel Toplam Sütunları
-            // Genel Toplam Sütunları
-            th1 += `
-                <th colspan="2" class="p-2 border-b border-slate-700 bg-gradient-to-t from-emerald-900/20 to-transparent text-emerald-500 font-black tracking-[0.15em] text-[10px] uppercase align-middle">
-                    <div class="flex items-center justify-center gap-1.5">
-                        <i class="fa-solid fa-chart-line opacity-70"></i> GENEL TOPLAM
+            totalCols += per;
+            th1 += `<th colspan="${per}" class="stv2-sep bg-slate-900" style="${topSticky}">
+                    <div class="inline-flex items-center gap-1.5 text-[0.85em] font-black tracking-[0.15em] uppercase text-emerald-400">
+                        <i class="fa-solid fa-chart-line opacity-70"></i><span>GENEL TOPLAM</span>
                     </div>
-                </th></tr>
-            `;
-            th2 += `<th class="p-2 border-r border-b border-slate-700 bg-emerald-900/20 text-[10px] cursor-pointer hover:text-white text-green-400 group/th" onclick="sortStats('${context}', 'overall_goals')">G ${getSortIcon('overall_goals')}</th>`;
-            th2 += `<th class="p-2 border-b border-slate-700 bg-emerald-900/20 text-[10px] cursor-pointer hover:text-white text-blue-400 group/th" onclick="sortStats('${context}', 'overall_assists')">A ${getSortIcon('overall_assists')}</th></tr>`;
+                </th></tr>`;
+            if (showG) th2 += `<th class="stv2-sep bg-emerald-950" style="${row2Sticky}">${hBtn('overall_goals', 'G', 'text-green-400', 'text-[0.8em]')}</th>`;
+            if (showA) th2 += `<th class="${aSep}bg-emerald-950" style="${row2Sticky}">${hBtn('overall_assists', 'A', 'text-blue-400', 'text-[0.8em]')}</th>`;
+            th2 += '</tr>';
 
+            // --- Sütun bazlı en yüksek değerler (parlama için), tek seferde ---
+            let maxOverallGoals = 0, maxOverallAssists = 0;
+            const maxSeasonGoals = {}, maxSeasonAssists = {}, maxTourGoals = {}, maxTourAssists = {};
+            players.forEach(p => {
+                if (p.overallGoals > maxOverallGoals) maxOverallGoals = p.overallGoals;
+                if (p.overallAssists > maxOverallAssists) maxOverallAssists = p.overallAssists;
+                seasonsList.forEach(season => {
+                    const ps = p.seasons[season];
+                    if (!ps) return;
+                    if (!maxSeasonGoals[season] || ps.totalGoals > maxSeasonGoals[season]) maxSeasonGoals[season] = ps.totalGoals;
+                    if (!maxSeasonAssists[season] || ps.totalAssists > maxSeasonAssists[season]) maxSeasonAssists[season] = ps.totalAssists;
+                    (seasonsData[season] || []).forEach(t => {
+                        const pt = ps.tournaments[t];
+                        if (!pt) return;
+                        if (!maxTourGoals[season]) maxTourGoals[season] = {};
+                        if (!maxTourAssists[season]) maxTourAssists[season] = {};
+                        if (!maxTourGoals[season][t] || pt.goals > maxTourGoals[season][t]) maxTourGoals[season][t] = pt.goals;
+                        if (!maxTourAssists[season][t] || pt.assists > maxTourAssists[season][t]) maxTourAssists[season][t] = pt.assists;
+                    });
+                });
+            });
+
+            // --- Gövde ---
             let rowsHTML = '';
-            let sums = { overallGoals: 0, overallAssists: 0, seasons: {} };
+            const sums = { overallGoals: 0, overallAssists: 0, seasons: {} };
+            const dash = '<span class="text-slate-700">-</span>';
 
-            if(players.length === 0) {
-                rowsHTML = `<tr><td colspan="100%" class="text-center p-8 text-slate-500">Resmi bir gol veya asist verisi bulunmuyor.</td></tr>`;
+            if (players.length === 0) {
+                rowsHTML = `<tr><td colspan="${totalCols}" class="p-8 text-slate-500" style="text-align:center;padding:2em;">Resmi bir gol veya asist verisi bulunmuyor.</td></tr>`;
             } else {
                 players.forEach((p, idx) => {
-
-                    // --- YENİ: Sütun bazlı en yüksek değerleri hesapla (parlaklık/altın parlama için) ---
-let maxOverallGoals = 0, maxOverallAssists = 0;
-let maxSeasonGoals = {}, maxSeasonAssists = {};
-let maxTourGoals = {}, maxTourAssists = {};
-
-players.forEach(p => {
-    if (p.overallGoals > maxOverallGoals) maxOverallGoals = p.overallGoals;
-    if (p.overallAssists > maxOverallAssists) maxOverallAssists = p.overallAssists;
-
-    seasonsList.forEach(season => {
-        const pSeason = p.seasons[season];
-        if (!pSeason) return;
-        if (!maxSeasonGoals[season] || pSeason.totalGoals > maxSeasonGoals[season]) maxSeasonGoals[season] = pSeason.totalGoals;
-        if (!maxSeasonAssists[season] || pSeason.totalAssists > maxSeasonAssists[season]) maxSeasonAssists[season] = pSeason.totalAssists;
-
-        (seasonsData[season] || []).forEach(t => {
-            const pt = pSeason.tournaments[t];
-            if (!pt) return;
-            if (!maxTourGoals[season]) maxTourGoals[season] = {};
-            if (!maxTourAssists[season]) maxTourAssists[season] = {};
-            if (!maxTourGoals[season][t] || pt.goals > maxTourGoals[season][t]) maxTourGoals[season][t] = pt.goals;
-            if (!maxTourAssists[season][t] || pt.assists > maxTourAssists[season][t]) maxTourAssists[season][t] = pt.assists;
-        });
-    });
-});
-
-function getChipTierClass(val, max) {
-    if (!val || val <= 0) return 'chip-tier-zero';
-    if (max > 0 && val === max) return 'chip-glow-max';
-    const ratio = max > 0 ? val / max : 0;
-    if (ratio >= 0.7) return 'chip-tier-bright';
-    if (ratio >= 0.4) return 'chip-tier-mid';
-    return 'chip-tier-dim';
-}
-
                     sums.overallGoals += p.overallGoals;
                     sums.overallAssists += p.overallAssists;
-                    
-                    let photoHtml = p.photoUrl ? `<img src="${p.photoUrl}" class="w-4 h-4 rounded-full inline-block mr-1 object-cover bg-slate-800 shadow-sm border border-slate-700">` : `<div class="w-4 h-4 rounded-full inline-flex items-center justify-center bg-slate-700 border border-slate-600 shadow-sm text-[8px] font-bold mr-1">${p.name.charAt(0)}</div>`;
-                    let flagHtml = p.countryCode ? `<img src="https://flagcdn.com/24x18/${p.countryCode.toLowerCase()}.png" class="w-3.5 h-auto mx-auto shadow-sm rounded-[1px]">` : '-';
-                    
-                    rowsHTML += `<tr class="hover:bg-slate-800/80 transition-colors group">`;
-                    // Sticky columns setup
+
+                    const photoHtml = p.photoUrl
+                        ? `<img src="${p.photoUrl}" class="hidden sm:block w-[1.75em] h-[1.75em] rounded-full object-cover bg-slate-800 border border-slate-700 shrink-0">`
+                        : `<div class="hidden sm:flex w-[1.75em] h-[1.75em] rounded-full items-center justify-center bg-slate-700 border border-slate-600 text-[0.7em] font-bold shrink-0">${escapeHtml(p.name.charAt(0))}</div>`;
+                    const posHtml = p.pos === 'UNK'
+                        ? '<span class="stats-pos-pill text-slate-600">-</span>'
+                        : `<span class="stats-pos-pill pos-${escapeHtml(p.pos)}">${escapeHtml(p.pos)}</span>`;
+                    const flagInner = p.countryCode
+                        ? `<img src="https://flagcdn.com/24x18/${escapeHtml(p.countryCode.toLowerCase())}.png" class="h-[1em] w-auto rounded-[2px] shadow-sm" alt="">`
+                        : '<span class="text-slate-600">-</span>';
+                    const flagHtml = isKulup ? `<span class="hidden sm:flex pl-[0.8em] ml-auto items-center shrink-0">${flagInner}</span>` : '';
                     const rankCls = idx === 0 ? 'stats-rank-1' : idx === 1 ? 'stats-rank-2' : idx === 2 ? 'stats-rank-3' : '';
-                    rowsHTML += `<td class="px-0.5 py-1 border-r border-b border-slate-700/50 text-center bg-slate-900 group-hover:bg-slate-800 sticky z-[10]" style="left: 0px; width: ${wNo}px; min-width: ${wNo}px; max-width: ${wNo}px;"><span class="stats-rank-badge ${rankCls}" style="width: 14px; height: 14px; font-size: 8px;">${idx + 1}</span></td>`;
-                    rowsHTML += `<td class="px-0.5 py-1 border-r border-b border-slate-700/50 text-center bg-slate-900 group-hover:bg-slate-800 sticky z-[10]" style="left: ${lPos}px; width: ${wPos}px; min-width: ${wPos}px; max-width: ${wPos}px;">${p.pos === 'UNK' ? '<span class="text-slate-600">-</span>' : `<span class="stats-pos-pill pos-${p.pos}" style="font-size: 7px; padding: 1px 3px;">${p.pos}</span>`}</td>`;
-                    rowsHTML += `<td class="px-1 py-1 border-r border-b border-slate-700/50 text-left font-bold text-[10px] bg-slate-900 group-hover:bg-slate-800 sticky z-[10]" style="left: ${lName}px; width: ${wName}px; min-width: ${wName}px; max-width: ${wName}px;">
-                        <div class="flex items-center cursor-pointer hover:text-emerald-400 transition-colors" data-pname="${escapeHtml(p.name)}" onclick="openStatsPlayerProfile(this)" title="Profili Görüntüle">${photoHtml}<span class="truncate leading-none pt-0.5">${p.name}</span></div>
-                    </td>`;
-                    if (isKulup) {
-                        rowsHTML += `<td class="px-0.5 py-1 border-r border-b border-slate-700/50 text-center bg-slate-900 group-hover:bg-slate-800 sticky z-[10]" style="left: ${lCountry}px; width: ${wCountry}px; min-width: ${wCountry}px; max-width: ${wCountry}px;">${flagHtml}</td>`;
-                    }
-                    
+
+                    rowsHTML += `<tr class="group">
+                        <td class="stv2-id stv2-idshadow bg-slate-900 group-hover:bg-slate-800 transition-colors" style="position:sticky;left:0;z-index:20;">
+                            <div class="flex items-center gap-[0.6em]">
+                                <span class="stats-rank-badge ${rankCls}">${idx + 1}</span>
+                                ${posHtml}
+                                ${photoHtml}
+                                <span class="font-bold text-[0.92em] cursor-pointer hover:text-emerald-400 transition-colors" data-pname="${escapeHtml(p.name)}" onclick="openStatsPlayerProfile(this)" title="Profili Görüntüle">${escapeHtml(p.name)}</span>
+                                ${flagHtml}
+                            </div>
+                        </td>`;
+
                     seasonsList.forEach(season => {
-                        if(!sums.seasons[season]) sums.seasons[season] = { goals: 0, assists: 0, tours: {} };
+                        if (!sums.seasons[season]) sums.seasons[season] = { goals: 0, assists: 0, tours: {} };
                         const isExp = statExpanded[context][season];
                         const tours = seasonsData[season] || [];
-                        const pSeason = p.seasons[season] || { totalGoals: 0, totalAssists: 0, tournaments: {} };
-                        
-                        sums.seasons[season].goals += pSeason.totalGoals;
-                        sums.seasons[season].assists += pSeason.totalAssists;
-                        
-                        rowsHTML += `<td class="p-2 border-r border-b border-slate-700/50 text-center bg-green-900/5">${pSeason.totalGoals ? `<span class="stats-chip stats-chip-goal ${getChipTierClass(pSeason.totalGoals, maxSeasonGoals[season])}">${pSeason.totalGoals}</span>` : '<span class="text-slate-700">-</span>'}</td>`;
-                        rowsHTML += `<td class="p-2 border-r border-b ${isExp ? 'border-slate-700/50' : 'border-slate-500 border-r-2'} text-center bg-blue-900/5">${pSeason.totalAssists ? `<span class="stats-chip stats-chip-assist ${getChipTierClass(pSeason.totalAssists, maxSeasonAssists[season])}">${pSeason.totalAssists}</span>` : '<span class="text-slate-700">-</span>'}</td>`;
-                        
+                        const ps = p.seasons[season] || { totalGoals: 0, totalAssists: 0, tournaments: {} };
+                        sums.seasons[season].goals += ps.totalGoals;
+                        sums.seasons[season].assists += ps.totalAssists;
+
+                        if (showG) rowsHTML += `<td class="stv2-sep bg-green-900/5">${ps.totalGoals ? `<span class="stats-chip stats-chip-goal ${statsChipTier(ps.totalGoals, maxSeasonGoals[season])}">${ps.totalGoals}</span>` : dash}</td>`;
+                        if (showA) rowsHTML += `<td class="${aSep}bg-blue-900/5">${ps.totalAssists ? `<span class="stats-chip stats-chip-assist ${statsChipTier(ps.totalAssists, maxSeasonAssists[season])}">${ps.totalAssists}</span>` : dash}</td>`;
+
                         if (isExp) {
                             tours.forEach((t, i) => {
-                                const isLast = (i === tours.length - 1);
-                                if(!sums.seasons[season].tours[t]) sums.seasons[season].tours[t] = { goals: 0, assists: 0 };
-                                
-                                const tGoals = pSeason.tournaments[t] ? pSeason.tournaments[t].goals : 0;
-                                const tAssists = pSeason.tournaments[t] ? pSeason.tournaments[t].assists : 0;
-                                
-                                sums.seasons[season].tours[t].goals += tGoals;
-                                sums.seasons[season].tours[t].assists += tAssists;
-                                
-                                rowsHTML += `<td class="p-2 border-r border-b border-slate-700/50 text-center bg-green-900/5 hover:bg-green-900/30 transition-colors">${tGoals ? `<span class="stats-chip-goal-tour ${getChipTierClass(tGoals, (maxTourGoals[season] && maxTourGoals[season][t]) || 0)}">${tGoals}</span>` : '<span class="text-slate-700">-</span>'}</td>`;
-                                rowsHTML += `<td class="p-2 border-b border-r ${isLast ? 'border-slate-500 border-r-2' : 'border-slate-700/50'} text-center bg-blue-900/5 hover:bg-blue-900/30 transition-colors">${tAssists ? `<span class="stats-chip-assist-tour ${getChipTierClass(tAssists, (maxTourAssists[season] && maxTourAssists[season][t]) || 0)}">${tAssists}</span>` : '<span class="text-slate-700">-</span>'}</td>`;                        }
-                    
-                            )}
+                                if (!sums.seasons[season].tours[t]) sums.seasons[season].tours[t] = { goals: 0, assists: 0 };
+                                const tg = ps.tournaments[t] ? ps.tournaments[t].goals : 0;
+                                const ta = ps.tournaments[t] ? ps.tournaments[t].assists : 0;
+                                sums.seasons[season].tours[t].goals += tg;
+                                sums.seasons[season].tours[t].assists += ta;
+                                if (showG) rowsHTML += `<td class="${i === 0 ? 'stv2-sep ' : ''}bg-green-900/5">${tg ? `<span class="stats-chip-goal-tour ${statsChipTier(tg, (maxTourGoals[season] && maxTourGoals[season][t]) || 0)}">${tg}</span>` : dash}</td>`;
+                                if (showA) rowsHTML += `<td class="${(i === 0 ? aSep : '')}bg-blue-900/5">${ta ? `<span class="stats-chip-assist-tour ${statsChipTier(ta, (maxTourAssists[season] && maxTourAssists[season][t]) || 0)}">${ta}</span>` : dash}</td>`;
                             });
-                    
-                    rowsHTML += `<td class="p-2 border-r border-b border-slate-700/50 text-center bg-emerald-900/10"><span class="stats-chip stats-chip-goal-total ${getChipTierClass(p.overallGoals, maxOverallGoals)}">${p.overallGoals}</span></td>`;
-                    rowsHTML += `<td class="p-2 border-b border-slate-700/50 text-center bg-emerald-900/10"><span class="stats-chip stats-chip-assist-total ${getChipTierClass(p.overallAssists, maxOverallAssists)}">${p.overallAssists}</span></td>`;                    rowsHTML += `</tr>`;
+                        }
+                    });
+
+                    if (showG) rowsHTML += `<td class="stv2-sep bg-emerald-900/10"><span class="stats-chip stats-chip-goal-total ${statsChipTier(p.overallGoals, maxOverallGoals)}">${p.overallGoals}</span></td>`;
+                    if (showA) rowsHTML += `<td class="${aSep}bg-emerald-900/10"><span class="stats-chip stats-chip-assist-total ${statsChipTier(p.overallAssists, maxOverallAssists)}">${p.overallAssists}</span></td>`;
+                    rowsHTML += `</tr>`;
                 });
             }
 
-            // Footer (Genel Toplamlar)
-            let footerHTML = `
-                <tr class="bg-slate-950 font-black shadow-[0_-4px_6px_rgba(0,0,0,0.3)] relative">
-                    <td class="px-0.5 py-1 border-r border-slate-700 sticky left-0 bg-slate-950" style="left: 0px; width: ${wNo}px; z-index: 99;"></td>
-                    <td class="px-0.5 py-1 border-r border-slate-700 sticky bg-slate-950" style="left: ${lPos}px; width: ${wPos}px; z-index: 99;"></td>
-                    <td class="px-1 py-1 border-r border-slate-700 sticky bg-slate-950 text-right text-emerald-400 tracking-wider uppercase font-black text-[9px]" style="left: ${lName}px; width: ${wName}px; z-index: 99;"><i class="fa-solid fa-trophy text-yellow-500 mr-1 text-[8px]"></i>TOPLAM</td>
-                    ${isKulup ? `<td class="px-0.5 py-1 border-r border-slate-700 sticky bg-slate-950" style="left: ${lCountry}px; width: ${wCountry}px; z-index: 99;"></td>` : ''}
-            `;
-
+            // --- Alt toplam (her hücre yapışkan) ---
+            const fz = 'position:sticky;bottom:0;z-index:25;';
+            let footerHTML = `<tr class="font-black">
+                <td class="stv2-id stv2-idshadow bg-slate-950 text-emerald-400 uppercase tracking-wider text-[0.8em]" style="position:sticky;left:0;bottom:0;z-index:35;text-align:right;"><i class="fa-solid fa-trophy text-yellow-500 mr-1 text-[0.9em]"></i><span>TOPLAM</span></td>`;
             seasonsList.forEach(season => {
                 const isExp = statExpanded[context][season];
                 const tours = seasonsData[season] || [];
                 const sumS = sums.seasons[season] || { goals: 0, assists: 0, tours: {} };
-                
-                footerHTML += `<td class="p-3 border-r border-slate-700 text-center text-green-500 text-lg bg-slate-900">${sumS.goals}</td>`;
-                footerHTML += `<td class="p-3 border-r ${isExp ? 'border-slate-700' : 'border-slate-500 border-r-2'} text-center text-blue-500 text-lg bg-slate-900">${sumS.assists}</td>`;
-                
+                if (showG) footerHTML += `<td class="stv2-sep bg-slate-900 text-green-500 text-[1.15em]" style="${fz}">${sumS.goals}</td>`;
+                if (showA) footerHTML += `<td class="${aSep}bg-slate-900 text-blue-500 text-[1.15em]" style="${fz}">${sumS.assists}</td>`;
                 if (isExp) {
                     tours.forEach((t, i) => {
-                        const isLast = (i === tours.length - 1);
-                        const tGoals = sumS.tours[t] ? sumS.tours[t].goals : 0;
-                        const tAssists = sumS.tours[t] ? sumS.tours[t].assists : 0;
-                        
-                        footerHTML += `<td class="p-3 border-r border-slate-700 text-center text-green-500/80 bg-slate-900">${tGoals}</td>`;
-                        footerHTML += `<td class="p-3 border-r ${isLast ? 'border-slate-500 border-r-2' : 'border-slate-700'} text-center text-blue-500/80 bg-slate-900">${tAssists}</td>`;
+                        const tg = sumS.tours[t] ? sumS.tours[t].goals : 0;
+                        const ta = sumS.tours[t] ? sumS.tours[t].assists : 0;
+                        if (showG) footerHTML += `<td class="${i === 0 ? 'stv2-sep ' : ''}bg-slate-900 text-green-500/80" style="${fz}">${tg}</td>`;
+                        if (showA) footerHTML += `<td class="${(i === 0 ? aSep : '')}bg-slate-900 text-blue-500/80" style="${fz}">${ta}</td>`;
                     });
                 }
             });
+            if (showG) footerHTML += `<td class="stv2-sep bg-emerald-950 text-green-400 text-[1.25em]" style="${fz}">${sums.overallGoals}</td>`;
+            if (showA) footerHTML += `<td class="${aSep}bg-emerald-950 text-blue-400 text-[1.25em]" style="${fz}">${sums.overallAssists}</td>`;
+            footerHTML += '</tr>';
 
-            footerHTML += `<td class="p-3 border-r border-slate-700 text-center text-green-400 text-xl bg-emerald-950">${sums.overallGoals}</td>`;
-            footerHTML += `<td class="p-3 border-slate-700 text-center text-blue-400 text-xl bg-emerald-950">${sums.overallAssists}</td>`;
-            footerHTML += `</tr>`;
-
-            const headerBgClass = isKulup ? 'bg-emerald-900/30 border-emerald-800' : 'bg-red-900/30 border-red-800';
-            const headerTextClass = isKulup ? 'text-emerald-400' : 'text-red-400';
+            const isAst = metricNow === 'assists';
+            const headerBgClass = isAst ? 'bg-blue-900/30 border-blue-800' : 'bg-emerald-900/30 border-emerald-800';
+            const headerTextClass = isAst ? 'text-blue-400' : 'text-emerald-400';
 
             return `
                 <div class="flex-1 bg-slate-900 border border-slate-700 xl:rounded-xl rounded-b-xl rounded-tr-xl flex flex-col overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.4)] h-full">
                     <div class="p-3 ${headerBgClass} border-b justify-between items-center shrink-0 hidden xl:flex">
                         <h4 class="font-bold ${headerTextClass} text-base md:text-lg flex items-center gap-2">
-                            ${isKulup ? '<i class="fa-solid fa-shield-halved"></i>' : '<i class="fa-solid fa-flag"></i>'}
+                            <i class="fa-solid ${isAst ? 'fa-shoe-prints' : 'fa-futbol'}"></i>
                             ${title}
                         </h4>
                     </div>
                     <div class="flex-1 overflow-auto table-scroll relative">
-                        <table class="modern-stats-table w-max border-separate border-spacing-0 text-sm">
-                            <thead class="text-slate-400 text-[11px] uppercase tracking-wider">
-                                ${th1}
-                                ${th2}
-                            </thead>
-                            <tbody>
-                                ${rowsHTML}
-                            </tbody>
-                            <tfoot class="sticky bottom-0" style="z-index: 90;">
-                                ${footerHTML}
-                            </tfoot>
+                        <table class="stv2 w-full min-w-max">
+                            <thead>${th1}${th2}</thead>
+                            <tbody>${rowsHTML}</tbody>
+                            <tfoot>${footerHTML}</tfoot>
                         </table>
                     </div>
                 </div>
@@ -8321,7 +7867,6 @@ function applyQfbCollapsedState() {
          }
     }
 }
-
 
         // =====================================================================
         // --- FİKSTÜR PANELİ ---
@@ -8696,6 +8241,17 @@ function autoFillTeamLogo(nameInput, urlInputId) {
         }
 
         // "Victor Osimhen" -> "V. OSIMHEN"
+// "Victor OSIMHEN" / "V. OSIMHEN" -> "Osimhen" (yalnızca soyadı, baş harfleri büyük)
+function homeSurname(name) {
+    const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return '';
+    let last = parts[parts.length - 1];
+    if (last.length > 1 && last === last.toUpperCase()) {
+        last = last.toLowerCase().replace(/(^|[-'\u2019])(\p{L})/gu, (m, a, b) => a + b.toUpperCase());
+    }
+    return last;
+}
+
 function formatShortPlayerName(name) {
     if (!name) return '';
     const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -9490,14 +9046,14 @@ function renderFixturePanel() {
                         if (namedGoals.length) {
                             const groupedGoals = [];
                             namedGoals.forEach(ev => {
-                                const shortName = formatShortPlayerName(ev.scorer);
-                                const existing = groupedGoals.find(g => g.name === shortName && g.type === ev.type);
+                                const shortName = homeSurname(ev.scorer);
+                                const existing = groupedGoals.find(g => g.key === ev.scorer && g.type === ev.type);
                                 const minuteStr = ev.min ? `${escapeHtml(ev.min)}'` : '';
                                 if (existing) {
                                     if (minuteStr) existing.mins.push(minuteStr);
                                 } else {
                                     groupedGoals.push({
-                                        name: shortName,
+                                        name: shortName, key: ev.scorer,
                                         type: ev.type,
                                         mins: minuteStr ? [minuteStr] : []
                                     });
@@ -9995,7 +9551,7 @@ function renderFixturePanel() {
                                         const photoHtml = photo
                                             ? `<img src="${photo}" class="w-5 h-5 rounded-full object-cover bg-slate-800 shrink-0">`
                                             : `<div class="w-5 h-5 rounded-full bg-slate-700 flex items-center justify-center text-[9px] font-bold shrink-0">${escapeHtml(name.charAt(0))}</div>`;
-                                        return `<i class="fa-solid ${icon} text-yellow-400 text-[11px] shrink-0" style="filter: drop-shadow(0 0 4px rgba(250,204,21,0.85));"></i>${photoHtml}<span class="text-[10px] font-bold text-white truncate">${escapeHtml(formatShortPlayerName(name))}</span><span class="text-[10px] font-black text-yellow-400 shrink-0 ml-auto">${escapeHtml(score || '')}</span>`;
+                                        return `<i class="fa-solid ${icon} text-yellow-400 text-[11px] shrink-0" style="filter: drop-shadow(0 0 4px rgba(250,204,21,0.85));"></i>${photoHtml}<span class="text-[10px] font-bold text-white truncate">${escapeHtml(homeShortName(name))}</span><span class="text-[10px] font-black text-yellow-400 shrink-0 ml-auto">${escapeHtml(score || '')}</span>`;
                                     };
 
                                     const topStatsHtml = `
@@ -11050,11 +10606,6 @@ let isDraggingFormationNode = false;
 let draggedNodeIndex = null;
 let activeFormationNodeIndex = null;
 
-function toggleKadrolarMenu(e) {
-    e.stopPropagation();
-    const dd = document.getElementById('kadrolar-dropdown');
-    if (dd) dd.classList.toggle('hidden');
-}
 function closeKadrolarMenu() {
     const dd = document.getElementById('kadrolar-dropdown');
     if (dd) dd.classList.add('hidden');
@@ -11271,25 +10822,6 @@ function promptFormationPlayer(index, event) {
     // Açıldığında doğrudan pozisyona göre öneri yapsın diye manuel tetikliyoruz
     triggerFormationAutocomplete(input.value);
     setTimeout(() => input.focus(), 50);
-}
-
-function applyFormationPlayer() {
-    if (activeFormationNodeIndex !== null) {
-        tempFormation[activeFormationNodeIndex].name = document.getElementById('formation-player-input').value.trim();
-        tempFormation[activeFormationNodeIndex].pos = document.getElementById('formation-pos-input').value.trim().toUpperCase();
-        renderFormationNodes();
-    }
-    closeFormationSelector();
-}
-
-function clearFormationPlayer() {
-    if (activeFormationNodeIndex !== null) {
-        tempFormation[activeFormationNodeIndex].name = '';
-        document.getElementById('formation-player-input').value = '';
-        // Pos temizlenmiyor, sadece isim siliniyor ki mevki sabit kalsın.
-        renderFormationNodes();
-    }
-    closeFormationSelector();
 }
 
 function applyFormationPlayer() {
