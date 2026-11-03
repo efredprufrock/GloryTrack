@@ -535,3 +535,15 @@ body.theme-light[data-theme-family="green"] *::selection { background-color: #05
             padding: 4% 3%;
             box-sizing: border-box;
         }
+
+        /* Müsabaka tablosu (lig tablosu) taşma düzeltmesi */
+.lt-table td, .lt-table th { padding-left: 2px !important; padding-right: 2px !important; width: auto !important; }
+.lt-table td:nth-child(2) { padding-left: 4px !important; overflow: hidden; }
+.lt-table td:nth-child(2) > div { min-width: 0; gap: 6px !important; }
+.lt-table td:nth-child(2) span { min-width: 0; }
+.lt-table td:nth-child(2) i { display: none; }
+.lt-table td:nth-child(10) { font-size: 11px !important; }
+@media (min-width: 640px) { .lt-table td, .lt-table th { padding-left: 6px !important; padding-right: 6px !important; } }
+
+/* Lig tablosu: kapalı mod */
+table:has(.lt-closed) thead { display: none; }

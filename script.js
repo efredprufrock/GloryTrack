@@ -8440,6 +8440,35 @@ function formatShortPlayerName(name) {
     }
 }
 
+        // --- Lig tablosu görünüm modu: 'closed' | 'slice' (ilk 2 + kendi takımım çevresi, toplam 7) | 'full' ---
+        let ltViewModes = {};
+        try { ltViewModes = JSON.parse(localStorage.getItem('ltViewModes') || '{}') || {}; } catch (e) { ltViewModes = {}; }
+        function ltGetMode(tourId) { return ltViewModes[tourId] || 'slice'; }
+        function ltCycleMode(tourId) {
+            const order = ['closed', 'slice', 'full'];
+            ltViewModes[tourId] = order[(order.indexOf(ltGetMode(tourId)) + 1) % order.length];
+            try { localStorage.setItem('ltViewModes', JSON.stringify(ltViewModes)); } catch (e) {}
+            renderFixturePanel();
+        }
+        function ltModeButtonHtml(tourId, mode) {
+            const m = { closed: ['fa-eye-slash', 'Kapalı'], slice: ['fa-bullseye', 'Özet'], full: ['fa-table-list', 'Tam'] }[mode];
+            return `<button onclick="ltCycleMode('${tourId}')" class="text-[9px] bg-slate-800 hover:bg-slate-700 text-amber-300 px-2 py-0.5 rounded transition-colors" title="Tablo görünümü: Kapalı / Özet (7 takım) / Tam"><i class="fa-solid ${m[0]} mr-1"></i>${m[1]}</button>`;
+        }
+        function ltVisibleSet(table, mode) {
+            const n = table.length, all = new Set();
+            if (mode === 'closed') return all;
+            for (let i = 0; i < n; i++) all.add(i);
+            if (mode === 'full' || n <= 7) return all;
+            const mine = [ (managedTeams.kulup && managedTeams.kulup.name) || '', (managedTeams.milli && managedTeams.milli.name) || '' ]
+                .map(x => String(x).trim().toLowerCase()).filter(Boolean);
+            let own = table.findIndex(r => mine.includes(String(r.name || '').trim().toLowerCase()));
+            if (own === -1) own = 0;
+            const start = Math.min(Math.max(own - 2, 2), n - 5);
+            const vis = new Set([0, 1]);
+            for (let i = start; i < start + 5; i++) vis.add(i);
+            return vis;
+        }
+
         function toggleTournamentTable(tourId, enable) {
             const tour = customTournamentsData[activeFixtureSeason].find(t => t.id === tourId);
             if (!tour) return;
@@ -9296,7 +9325,11 @@ function renderFixturePanel() {
                                     // --- GRUP / LİG TABLOSU BÖLÜMÜ ---
                                     let tableSectionHtml = '';
                                     if (tableOn) {
+                                        const ltMode = ltGetMode(tour.id); const ltVis = ltVisibleSet(tour.table || [], ltMode); let ltPrev = -1;
                                         let tableRows = (tour.table || []).map((row, idx) => {
+                                            if (!ltVis.has(idx)) return '';
+                                            const ltGapHtml = (ltPrev !== -1 && idx - ltPrev > 1) ? `<tr class="lt-gap"><td colspan="10" class="text-center text-[9px] leading-none text-slate-500 py-0.5 select-none">⋯ ${idx - ltPrev - 1}</td></tr>` : '';
+                                            ltPrev = idx;
                                             // İlk sıra (Lider/Şampiyon) için daha hafif ve zarif parlama (glow) efekti
                                             const isWinner = (idx === 0);
                                             const textGlow = isWinner ? 'text-white drop-shadow-[0_0_3px_rgba(255,255,255,0.5)] font-black' : 'text-slate-300';
@@ -9304,7 +9337,7 @@ function renderFixturePanel() {
                                             const rankGlow = isWinner ? 'text-emerald-400 drop-shadow-[0_0_3px_rgba(52,211,153,0.6)] font-black' : 'text-slate-400 font-bold';
 
                                             return `
-                                            <tr class="border-b border-slate-800 bg-slate-800/20 hover:bg-slate-800/50 transition-colors">
+                                            ${ltGapHtml}<tr class="border-b border-slate-800 bg-slate-800/20 hover:bg-slate-800/50 transition-colors">
                                                 <td class="py-1 px-1.5 w-8 text-center outline-none focus:bg-slate-700 cursor-text rounded ${rankGlow}" contenteditable="true" onblur="updateCustomTournament('${tour.id}', ${idx}, 'rank', this)">${row.rank}</td>
                                                 <td class="py-1 px-1.5 font-bold rounded cursor-pointer hover:bg-slate-700/80 transition-colors group/edit ${nameGlow}" onclick="openCustomTourTeamModal('${tour.id}', ${idx})" title="Takım ve Logoyu Düzenle">
                                                     <div class="flex items-center gap-2">
@@ -9331,12 +9364,13 @@ function renderFixturePanel() {
                                                     <span class="text-[10px] text-slate-400 font-bold uppercase truncate"><i class="fa-solid fa-table-list mr-1"></i>Grup / Lig Tablosu</span>
                                                     <div class="flex gap-1 shrink-0">
                                                         ${!knockoutOn && tour.type !== 'Süper Lig' ? `<button onclick="toggleTournamentKnockouts('${tour.id}', true)" class="text-[9px] bg-slate-800 hover:bg-emerald-600 hover:text-white text-emerald-400 px-2 py-0.5 rounded transition-colors" title="+ Eleme Aşamaları Ekle"><i class="fa-solid fa-sitemap"></i></button>` : ''}
+                                                        ${ltModeButtonHtml(tour.id, ltMode)}
                                                         <button onclick="openTournamentTableBulkModal('${tour.id}')" class="text-[9px] bg-indigo-900/50 hover:bg-indigo-800 text-indigo-300 px-2 py-0.5 rounded transition-colors" title="Toplu Ekle"><i class="fa-solid fa-list-ol mr-1"></i>Toplu</button>
                                                         <button onclick="addRowToCustomTournament('${tour.id}')" class="text-[9px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-0.5 rounded transition-colors" title="Satır Ekle"><i class="fa-solid fa-plus"></i></button>
                                                         <button onclick="toggleTournamentTable('${tour.id}', false)" class="text-[9px] bg-red-900/40 hover:bg-red-800 text-red-300 px-2 py-0.5 rounded transition-colors" title="Bu Bölümü Sil"><i class="fa-solid fa-trash"></i></button>
                                                     </div>
                                                 </div>
-                                                <table class="w-full text-[11px] text-left text-slate-300 mb-1">
+                                                <table class="lt-table w-full table-fixed text-[10px] sm:text-[11px] text-left text-slate-300 mb-1"><colgroup><col style="width:8.5%"><col><col style="width:6.5%"><col style="width:6.5%"><col style="width:6.5%"><col style="width:6.5%"><col style="width:7%"><col style="width:7%"><col style="width:8.5%"><col style="width:8.5%"></colgroup>
                                                     <thead class="text-[9px] text-slate-400 uppercase bg-slate-900">
                                                         <tr>
                                                             <th class="p-1 border-slate-700 text-center">Sıra</th>
@@ -9352,7 +9386,7 @@ function renderFixturePanel() {
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        ${tableRows}
+                                                        ${ltMode === 'closed' ? `<tr class="lt-closed"><td colspan="10" class="text-center text-[10px] text-slate-500 py-1">${(tour.table || []).length}</td></tr>` : tableRows}
                                                     </tbody>
                                                 </table>
                                             </div>
