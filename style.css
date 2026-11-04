@@ -547,3 +547,176 @@ body.theme-light[data-theme-family="green"] *::selection { background-color: #05
 
 /* Lig tablosu: kapalı mod */
 table:has(.lt-closed) thead { display: none; }
+
+.table-scroll { overscroll-behavior-x: none; }
+
+/* Transfer paneli (mobil): sıralama butonları satırı boydan boya eşit aralıklı yayılsın */
+@media (max-width: 1023px) {
+  #trcontent-in > div:first-child > div.flex,
+  #trcontent-out > div:first-child > div.flex { flex: 1; justify-content: space-between; align-items: center; }
+  #trcontent-in > div:first-child > div.flex > button[onclick^="sortTransfers"],
+  #trcontent-out > div:first-child > div.flex > button[onclick^="sortTransfers"] { padding: 6px 2px; }
+}
+
+/* Transfer paneli: Shortlist / Gelenler / Gidenler renkli başlıkları aynı yükseklikte */
+#trcontent-shortlist > div:first-child,
+#trcontent-in > div:first-child,
+#trcontent-out > div:first-child { box-sizing: border-box; height: 44px; align-items: center; }
+@media (min-width: 1024px) {
+  #trcontent-shortlist > div:first-child,
+  #trcontent-in > div:first-child,
+  #trcontent-out > div:first-child { height: 52px; }
+}
+
+/* Gol/Asist tabloları (mobil): sütunlar ve kimlik alanı sıkılaştırıldı */
+@media (max-width: 1279px) {
+  table.stv2 th, table.stv2 td { padding: .45em .3em !important; }
+  table.stv2 th.stv2-id, table.stv2 td.stv2-id { padding-left: .4em !important; padding-right: .5em !important; }
+  table.stv2 td.stv2-id > div { gap: .3em !important; }
+  table.stv2 .stats-rank-badge { width: 1.5em !important; height: 1.5em !important; }
+  table.stv2 .stats-pos-pill { min-width: 2em !important; padding: .2em .25em !important; }
+  table.stv2 .stats-chip { min-width: 1.7em !important; padding: .1em .3em !important; }
+  table.stv2 .stats-chip-goal-total, table.stv2 .stats-chip-assist-total { min-width: 1.8em !important; padding: .1em .3em !important; }
+  table.stv2 .stats-chip-goal-tour, table.stv2 .stats-chip-assist-tour { min-width: 1.6em !important; padding: .1em .3em !important; }
+}
+
+/* Gol/Asist tabloları: sezon yazısı dikey, tüm veri hücreleri kare ve aynı boyutta (mobil + web) */
+table.stv2 thead th[colspan] { height: 3.4em !important; padding-top: .1em !important; padding-bottom: .1em !important; }
+table.stv2 thead tr:nth-child(2) th { top: 3.4em !important; }
+table.stv2 thead th[colspan] > div.inline-flex { flex-direction: column; align-items: center; }
+table.stv2 thead th[colspan] > div.inline-flex > span:first-child { writing-mode: vertical-rl; transform: rotate(180deg); padding: .1em .15em !important; font-size: .62em !important; line-height: 1 !important; letter-spacing: .02em !important; }
+table.stv2 thead th[colspan] > div.inline-flex > button { border-left: 0 !important; border-top: 1px solid rgba(100,116,139,.4); padding: .05em .4em !important; font-size: .7em !important; line-height: 1 !important; width: 100%; justify-content: center; }
+table.stv2 thead th:not(.stv2-id):not([colspan]),
+table.stv2 tbody td:not(.stv2-id),
+table.stv2 tfoot td:not(.stv2-id) { font-size: 1em !important; width: 3em; min-width: 3em; max-width: 3em; padding-left: 0 !important; padding-right: 0 !important; }
+table.stv2 tfoot td:not(.stv2-id) { font-weight: 900; }
+table.stv2 thead tr:nth-child(2) th button.group\/th { padding: .15em .25em !important; }
+table.stv2 .stats-chip, table.stv2 .stats-chip-goal-total, table.stv2 .stats-chip-assist-total,
+table.stv2 .stats-chip-goal-tour, table.stv2 .stats-chip-assist-tour {
+  display: inline-flex !important; align-items: center; justify-content: center;
+  width: 2em !important; height: 2em !important; min-width: 0 !important; padding: 0 !important;
+  font-size: .95em !important; line-height: 1; border-radius: .5em !important; }
+
+/* Gol/Asist tabloları: sıra · mevki · isim hizası */
+table.stv2 td.stv2-id > div { gap: .55em !important; align-items: center; }
+table.stv2 td.stv2-id .stats-rank-badge { width: 1.7em !important; height: 1.7em !important; min-width: 1.7em; display: inline-flex; align-items: center; justify-content: center; font-size: .78em !important; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1; }
+table.stv2 td.stv2-id .stats-pos-pill { display: inline-flex !important; align-items: center; justify-content: center; min-width: 2.7em !important; height: 1.9em; padding: 0 .4em !important; font-size: .68em !important; font-weight: 800; letter-spacing: .04em; line-height: 1; border-radius: .45em; background: rgba(148,163,184,.12) !important; border: 1px solid rgba(148,163,184,.18); }
+table.stv2 td.stv2-id [data-pname] { font-size: .95em !important; font-weight: 700; line-height: 1.2; letter-spacing: .01em; }
+table.stv2 th.stv2-id, table.stv2 td.stv2-id { padding-left: .6em !important; }
+
+/* Gol/Asist tabloları: tek panelli orta genişlikte (640–1279px) ölçeği ekran genişliğine göre büyüt */
+@media (min-width: 640px) and (max-width: 1279px) {
+  table.stv2 { font-size: clamp(13px, 1.7vw, 17px) !important; }
+}
+
+/* Eleme aşaması seçici: durağanken sade metin, üzerine gelince dropdown olarak belirir */
+select.ko-stage { -webkit-appearance: none; appearance: none; background-color: transparent !important; border-color: transparent !important; background-image: none; background-repeat: no-repeat; background-position: right .3rem center; background-size: .55rem; text-align: center; text-align-last: center; font-weight: 800 !important; letter-spacing: .08em; padding-left: .3rem !important; padding-right: .3rem !important; cursor: pointer; transition: background-color .15s, border-color .15s, box-shadow .15s; }
+select.ko-stage:hover, select.ko-stage:focus { background-color: rgba(15,23,42,.95) !important; border-color: rgba(148,163,184,.35) !important; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%2394a3b8' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
+select.ko-stage[data-stage="Çeyrek Final"] { color: #d08a4e !important; }
+select.ko-stage[data-stage="Yarı Final"]   { color: #c9d3df !important; }
+select.ko-stage[data-stage="Final"]        { color: #f5c542 !important; text-shadow: 0 0 8px rgba(245,197,66,.45); }
+body.theme-light select.ko-stage[data-stage="Çeyrek Final"] { color: #9a5b25 !important; }
+body.theme-light select.ko-stage[data-stage="Yarı Final"]   { color: #64748b !important; }
+body.theme-light select.ko-stage[data-stage="Final"]        { color: #a16207 !important; text-shadow: none; }
+body.theme-light select.ko-stage:hover, body.theme-light select.ko-stage:focus { background-color: rgba(255,255,255,.9) !important; border-color: rgba(44,36,32,.25) !important; }
+select.ko-stage option { background: #0f172a; color: #e2e8f0; }
+
+/* Eleme aşaması: QF / SF / F yuvarlak madalya rozeti */
+select.ko-stage { width: 2.25rem !important; height: 2.25rem; }
+select.ko-stage[data-stage="Çeyrek Final"], select.ko-stage[data-stage="Yarı Final"], select.ko-stage[data-stage="Final"] { border-radius: 9999px !important; border-width: 1.5px !important; border-style: solid !important; padding: 0 !important; font-size: 10px !important; letter-spacing: .04em; background-image: none !important; }
+select.ko-stage[data-stage="Çeyrek Final"] { border-color: rgba(208,138,78,.8) !important; background-color: rgba(208,138,78,.14) !important; }
+select.ko-stage[data-stage="Yarı Final"]   { border-color: rgba(201,211,223,.75) !important; background-color: rgba(201,211,223,.12) !important; }
+select.ko-stage[data-stage="Final"]        { border-color: rgba(245,197,66,.9) !important; background-color: rgba(245,197,66,.16) !important; box-shadow: 0 0 10px rgba(245,197,66,.35); }
+select.ko-stage[data-stage="Çeyrek Final"]:hover, select.ko-stage[data-stage="Yarı Final"]:hover, select.ko-stage[data-stage="Final"]:hover,
+select.ko-stage[data-stage="Çeyrek Final"]:focus, select.ko-stage[data-stage="Yarı Final"]:focus, select.ko-stage[data-stage="Final"]:focus { filter: brightness(1.25); box-shadow: 0 0 0 3px rgba(148,163,184,.15); }
+select.ko-stage[data-stage="Final"]:hover, select.ko-stage[data-stage="Final"]:focus { box-shadow: 0 0 12px rgba(245,197,66,.55); }
+body.theme-light select.ko-stage[data-stage="Çeyrek Final"] { border-color: rgba(154,91,37,.8) !important; background-color: rgba(154,91,37,.1) !important; }
+body.theme-light select.ko-stage[data-stage="Yarı Final"]   { border-color: rgba(100,116,139,.8) !important; background-color: rgba(100,116,139,.1) !important; }
+body.theme-light select.ko-stage[data-stage="Final"]        { border-color: rgba(161,98,7,.85) !important; background-color: rgba(161,98,7,.1) !important; box-shadow: none; }
+
+/* Avrupa Ligleri kartları: aç/kapa */
+.euro-head .euro-badge { display: none; }
+.euro-card[data-collapsed="1"] .euro-head .euro-badge { display: flex; }
+.euro-card[data-collapsed="1"] .euro-body { display: none; }
+.euro-card[data-collapsed="1"] .euro-head { margin-bottom: 0 !important; padding-bottom: 0 !important; border-bottom-color: transparent !important; }
+.euro-head .euro-chev { transition: transform .2s; }
+.euro-card[data-collapsed="1"] .euro-chev { transform: rotate(-90deg); }
+
+/* Ana sayfa Maçlar paneli: üçer maç sığmazsa sıkı mod */
+[data-hx="wrap"][data-dense="1"] { gap: 2px !important; }
+[data-hx="wrap"][data-dense="1"] .flex.flex-col { gap: 2px !important; }
+[data-hx="wrap"][data-dense="1"] [data-hxrow] { padding-top: 0 !important; padding-bottom: 0 !important; }
+[data-hx="wrap"][data-dense="1"] [data-hxrow] img { width: 18px !important; height: 18px !important; }
+[data-hx="wrap"][data-dense="1"] [data-hxrow] .score-display { font-size: 12px !important; line-height: 16px !important; }
+[data-hx="wrap"][data-dense="1"] [data-hx="mid"] > div > div { padding-top: .25rem !important; padding-bottom: .25rem !important; }
+[data-hx="wrap"][data-dense="1"] [data-hx="mid"] img { width: 22px !important; height: 22px !important; }
+
+
+/* ===== Eleme aşaması satırları: yarı yarıya daralt (Final hariç) ===== */
+div.group\/ko:not(:has(select.ko-stage[data-stage="Final"])) { padding-top: 2px !important; padding-bottom: 2px !important; gap: 8px !important; margin-bottom: 0 !important; }
+.space-y-2 > div.group\/ko:not(:has(select.ko-stage[data-stage="Final"])) { margin-top: 4px !important; }
+div.group\/ko:not(:has(select.ko-stage[data-stage="Final"])) select.ko-stage { height: 1.5rem !important; width: 1.75rem !important; font-size: 9px !important; padding: 0 !important; }
+div.group\/ko:not(:has(select.ko-stage[data-stage="Final"])) img { width: 1.25rem !important; height: 1.25rem !important; }
+div.group\/ko:not(:has(select.ko-stage[data-stage="Final"])) .w-8,
+div.group\/ko:not(:has(select.ko-stage[data-stage="Final"])) .sm\:w-10 { width: 1.5rem !important; height: 1.5rem !important; }
+div.group\/ko:not(:has(select.ko-stage[data-stage="Final"])) [onclick^="openKoScoreModal"] { height: auto !important; min-height: 20px !important; min-width: 44px !important; padding: 1px 8px !important; }
+div.group\/ko:not(:has(select.ko-stage[data-stage="Final"])) [onclick^="openKoScoreModal"] span { font-size: 11px !important; line-height: 1.1 !important; letter-spacing: .05em !important; }
+div.group\/ko:not(:has(select.ko-stage[data-stage="Final"])) button[onclick^="removeKnockoutMatch"] { padding: 0 4px !important; font-size: 10px !important; }
+
+
+/* ===== Fikstür: Gol & Asist detayları, görünür genişliğe sığar ===== */
+#fx-panels .table-scroll { container-type: inline-size; }
+#fx-panels tr[id^="fx-details-"] > td > div { position: sticky; left: 12px; width: calc(100cqw - 24px); }
+#fx-panels tr[id^="fx-details-"] .grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)) !important; }
+
+
+/* ===== Logolar ve oyuncu fotoğrafları yuvarlak içine alınmaz (kare, hafif köşe yumuşatmalı) ===== */
+img.rounded-full:not([referrerpolicy]),
+div.rounded-full.bg-slate-700.items-center,
+span.rounded-full.bg-slate-700.items-center,
+div.rounded-full.bg-slate-800.items-center,
+div.rounded-full.bg-slate-700\/70.items-center { border-radius: .3rem !important; }
+
+
+/* ===== Eleme satırları: QF / SF / F arka plan tonları ===== */
+div.group\/ko:has(select.ko-stage[data-stage="Çeyrek Final"]) { background: linear-gradient(90deg, rgba(176,112,58,.20), rgba(176,112,58,.05) 70%), #0f172a !important; border-color: rgba(176,112,58,.35) !important; }
+div.group\/ko:has(select.ko-stage[data-stage="Yarı Final"])   { background: linear-gradient(90deg, rgba(160,172,188,.18), rgba(160,172,188,.04) 70%), #0f172a !important; border-color: rgba(160,172,188,.32) !important; }
+div.group\/ko:has(select.ko-stage[data-stage="Final"])        { background: linear-gradient(90deg, rgba(212,160,23,.24), rgba(212,160,23,.06) 70%), #0f172a !important; }
+body.theme-light div.group\/ko:has(select.ko-stage[data-stage="Çeyrek Final"]) { background: linear-gradient(90deg, rgba(154,91,37,.16), rgba(154,91,37,.04) 70%), #fff !important; }
+body.theme-light div.group\/ko:has(select.ko-stage[data-stage="Yarı Final"])   { background: linear-gradient(90deg, rgba(100,116,139,.16), rgba(100,116,139,.04) 70%), #fff !important; }
+body.theme-light div.group\/ko:has(select.ko-stage[data-stage="Final"])        { background: linear-gradient(90deg, rgba(161,98,7,.18), rgba(161,98,7,.05) 70%), #fff !important; }
+
+
+/* ===== Fikstür: mobilde gol detayları sütunu varsayılan kapalı, üstteki ikonla açılır ===== */
+.fx-scorers-btn[data-on="1"] { background-color: rgb(5 150 105) !important; color: #fff !important; }
+@media (max-width: 639px) {
+    #fx-panels table[data-scorers="0"] { min-width: 0 !important; }
+    #fx-panels table[data-scorers="0"] thead th:last-child,
+    #fx-panels table[data-scorers="0"] tr.fixture-compact-row > td:last-child { display: none; }
+}
+
+
+/* ===== Gol Kralları: Gol ve Asist sütunları birbirinden bağımsız kaydırılır (web) ===== */
+@media (min-width: 1280px) {
+    #hcontent-goller > div:last-child { overflow: hidden !important; display: flex; flex-direction: column; }
+    #hcontent-goller > div:last-child > .space-y-1\.5 { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+    #hcontent-goller .xl\:grid { flex: 1; min-height: 0; grid-template-rows: minmax(0, 1fr); }
+    #hcontent-goller .xl\:grid > div { overflow-y: auto; min-height: 0; scrollbar-width: thin; scrollbar-color: rgba(100,116,139,.35) transparent; }
+    #hcontent-goller .xl\:grid > div > div:first-child { position: sticky; top: 0; z-index: 2; background: #0f172a; }
+    body.theme-light #hcontent-goller .xl\:grid > div > div:first-child { background: #fdfbf7; }
+}
+
+
+/* ===== Modern rozetler: yaş = yumuşak tonlu etiket, OVR = ilerleme halkası ===== */
+.mb-age { display: inline-flex; align-items: center; justify-content: center; height: 16px; min-width: 22px; padding: 0 5px; border-radius: 6px; font-size: 10px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; color: var(--c); background: color-mix(in srgb, var(--c) 16%, transparent); border: 1px solid color-mix(in srgb, var(--c) 35%, transparent); }
+.mb-ovr { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; flex-shrink: 0; font-size: 10px; font-weight: 900; line-height: 1; font-variant-numeric: tabular-nums; color: #f1f5f9; }
+.mb-ovr.sm { width: 22px; height: 22px; font-size: 9px; }
+.mb-ovr > i { position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(var(--c) calc(var(--v) * 1%), rgba(148,163,184,.2) 0); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2.5px)); mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2.5px)); }
+.mb-ovr > b { position: relative; font-weight: 900; }
+body.theme-light .mb-ovr { color: #0f172a; }
+body.theme-light .mb-ovr > i { background: conic-gradient(var(--c) calc(var(--v) * 1%), rgba(100,116,139,.25) 0); }
+
+
+/* ===== Lig Tablosu (ana sayfa): başlık üstündeki gereksiz boşluğu kaldır ===== */
+#hcontent-lig > div:last-child { padding-top: 0 !important; }
+#hcontent-lig thead th { top: 0 !important; padding-top: .4rem !important; }

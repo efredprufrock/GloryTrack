@@ -86,6 +86,7 @@ const TR_EN = {
 
     // --- ANA SAYFA (HOME) ---
     "İlk 11": "Starting 11",
+    "İlk 5": "Starting 5",
     "Tümü": "All",
     "Son 4 Maç": "Last 4 Matches",
     "Sıradaki Maç": "Next Match",
@@ -247,7 +248,10 @@ const TR_EN = {
     "Pozisyon, İsim Soyisim, Ülke, Yaş, Reyting": "Position, Full Name, Country, Age, Rating",
     "Örnek:": "Example:",
     "As Takım Kadroları": "First Team Squads",
-    "İLK 11": "STARTING 11",
+    "Akademi Kadroları": "Academy Squads",
+    "Milli Takım Kadroları": "National Team Squads",
+    "İlk 11": "Starting 11",
+    "İlk 5": "Starting 5",
     "YEDEK": "SUB",
     "REZERV": "RESERVE",
     "Oyuncuları sahada sürükleyerek dizebilirsiniz. İsim atamak için oyuncu noktasının yanındaki kalem ikonuna tıklayın.": "You can drag and drop players on the pitch. Click the pencil icon next to the player node to assign a name.",
@@ -317,6 +321,7 @@ const TR_EN = {
     "Sıra": "Rank",
     "Fikstür": "Fixtures",
     "O / G / B / M": "P / W / D / L",
+    "En Büyük G / M": "Biggest W / L",
     "Gol (A/Y)": "GOALS (F/A)",
     "İÇ": "HOME",
     "DEP": "AWAY",
@@ -328,7 +333,7 @@ const TR_EN = {
     "Asist Kralı ekle": "Add Top Assist",
     "ELEME AŞAMALARI": "KNOCKOUT STAGES",
     "+ Tur Ekle": "+ Add Round",
-    "Avrupa Ligleri (İlk 4)": "European Leagues (Top 4)",
+    "Diğer Ligler": "Other Leagues",
     "TIKLA VE DÜZENLE": "CLICK AND EDIT",
     "Tıkla ve Düzenle": "Click and Edit",
     "Toplu": "Bulk",
@@ -2567,7 +2572,7 @@ function handleFileUpload(event, type) {
                        </div>`
                     : `<div class="rounded-full bg-slate-700 border-[3px] border-slate-900 flex items-center justify-center font-black text-white shadow-lg shrink-0" style="width:${photoSize}; height:${photoSize}; font-size:clamp(10px, 6.5cqmin, 30px);">${escapeHtml((node.name || '?').charAt(0).toUpperCase())}</div>`;
                 return `
-                    <div class="absolute flex flex-col items-center transform -translate-x-1/2 -translate-y-1/2" style="left:${node.x}%; top:${node.y}%; width:clamp(64px, 24cqmin, 170px);">
+                    <div class="absolute flex flex-col items-center transform -translate-x-1/2 -translate-y-1/2" style="left:${node.x}%; top:${node.y}%; width:clamp(48px, 18cqmin, 130px);">
                         ${photoHtml}
                         <div class="flex items-center gap-1" style="margin-top:1px;">
                             <span class="pos-${node.pos || ''} bg-slate-950/90 font-black rounded border border-slate-700" style="font-size:${badgeFont}; padding:${badgePad};">${node.pos || ''}</span>
@@ -2604,7 +2609,7 @@ function handleFileUpload(event, type) {
         // ===================== ANA SAYFA: MAÇLAR PANELİ (sezon sütunu yok, dar satırlar, Sıradaki Maç daima ortada) =====================
         // Sıradaki Maç'ı panelin tam ortasına hizalar: üst ve alt blokları eşitler, sonra kaydırmayı ortalar.
         // ===================== ANA SAYFA: MAÇLAR PANELİ v7 — paneli dolduran maç listesi, Sıradaki Maç daima ortada, kaydırma yok =====================
-        function homeCenterNextMatch() {
+        function homeCenterNextMatch(mode) {
             const root = document.getElementById('hcontent-maclar');
             if (!root) return;
             const sc = root.querySelector('.overflow-y-auto');
@@ -2614,6 +2619,7 @@ function handleFileUpload(event, type) {
             const bot = root.querySelector('[data-hx="bot"]');
             if (!sc || !wrap || !top || !mid || !bot || !top.firstElementChild || !bot.firstElementChild) return;
             if (!sc.clientHeight) return; // Mobilde sekme gizliyse ölçülemez; sekme açılınca tekrar çalışır
+            wrap.dataset.dense = (mode === 'dense') ? '1' : ''; // üçer maç sığmıyorsa satırları daha da sıkılaştır
             const cs = getComputedStyle(sc);
             const inner = sc.clientHeight - (parseFloat(cs.paddingTop) || 0) - (parseFloat(cs.paddingBottom) || 0);
             const gap = parseFloat(getComputedStyle(wrap).rowGap) || 0;
@@ -2635,6 +2641,7 @@ function handleFileUpload(event, type) {
                 bestK = k;
             }
             const need = apply(bestK);
+            if (bestK < Math.min(3, maxK) && mode !== 'dense') { homeCenterNextMatch('dense'); return; }
             top.style.minHeight = need + 'px';
             bot.style.minHeight = need + 'px';
             wrap.style.minHeight = inner + 'px';
@@ -2767,7 +2774,7 @@ function handleFileUpload(event, type) {
                 const as = hasScore(m) ? m.awayScore : '-';
                 const tourLogo = getCompetitionLogo(m.tournament);
                 const tourHtml = tourLogo
-                    ? `<img src="${tourLogo}" alt="${escapeHtml(m.tournament || '')}" title="${escapeHtml(m.tournament || '')}" class="w-6 h-6 object-contain shrink-0">`
+                    ? `<img src="${tourLogo}" alt="${escapeHtml(m.tournament || '')}" title="${escapeHtml(m.tournament || '')}" class="w-5 h-5 sm:w-6 sm:h-6 object-contain shrink-0">`
                     : `<span class="text-[10px] text-slate-400 truncate min-w-0 max-w-[90px] sm:max-w-[130px]" title="${escapeHtml(m.tournament || '')}">${escapeHtml(m.tournament || '')}</span>`;
 
                 let resultClass = '';
@@ -2824,7 +2831,7 @@ function handleFileUpload(event, type) {
                     ? 'shadow-[0_0_15px_rgba(16,185,129,0.4)] border-emerald-500/60 relative z-10'
                     : 'border-slate-700/50';
                 // Sıradaki Maç satırı eski yüksekliğini korur; geçmiş/gelecek satırlar logolar küçülmeden daralır
-                const padClass = highlight ? 'px-2 py-2 sm:px-3 sm:py-3' : 'px-2 py-0.5 sm:px-3 sm:py-1';
+                const padClass = highlight ? 'px-2 py-1.5 sm:px-3 sm:py-2' : 'px-2 py-0.5 sm:px-3 sm:py-0.5';
 
                 const abbr = getRoundAbbr(m.round);
                 const glowingPhases = ['G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7', 'G8', 'R1', 'R2', 'R3', 'R4', 'R5', 'L32', 'L16', 'QF', 'SF', 'F', '3rd', 'PO'];
@@ -2840,19 +2847,19 @@ function handleFileUpload(event, type) {
                 ${roundHtml}
             </div>
             <div class="flex items-center justify-center gap-2 sm:gap-3">
-                <img src="${homeLogo}" class="w-6 h-6 sm:w-8 sm:h-8 object-contain">
+                <img src="${homeLogo}" class="${highlight ? 'w-6 h-6 sm:w-8 sm:h-8' : 'w-5 h-5 sm:w-6 sm:h-6'} object-contain">
                 <span class="score-display ${resultClass ? 'score-' + resultClass.replace('frow-', '') : 'text-white'} text-sm sm:text-base font-black w-10 sm:w-14 text-center">${hs}:${as}</span>
-                <img src="${awayLogo}" class="w-6 h-6 sm:w-8 sm:h-8 object-contain">
+                <img src="${awayLogo}" class="${highlight ? 'w-6 h-6 sm:w-8 sm:h-8' : 'w-5 h-5 sm:w-6 sm:h-6'} object-contain">
             </div>
             ${badgesHtml}
         </div>`;
             };
 
-            const h5 = (cls, text) => `<h5 class="text-[9px] sm:text-[10px] font-bold ${cls} uppercase tracking-widest mb-1 sm:mb-1.5">${text}</h5>`;
+            const h5 = () => '';
             const empty = (text) => `<div class="text-center text-slate-500 text-xs py-2">${text}</div>`;
 
             // Üst blok alta yaslı, alt blok üste yaslı; ikisi eşitlenince Sıradaki Maç tam ortada kalır (bkz. homeCenterNextMatch)
-            return `<div data-hx="wrap" class="flex flex-col gap-1 sm:gap-3">
+            return `<div data-hx="wrap" class="flex flex-col gap-1 sm:gap-2">
                 <div data-hx="top" class="flex-1 flex flex-col justify-end"><div>
                     ${h5('text-slate-400', 'Son Maçlar')}
                     <div class="flex flex-col gap-1">${pastList.length ? pastList.map(m => renderMatchRow(m, false)).join('') : empty('Oynanmış maç yok.')}</div>
@@ -2913,7 +2920,7 @@ function handleFileUpload(event, type) {
         function homeHeaderHtml(iconHtml, titleHtml, rightHtml, mobileTitleHtml) {
             const right = rightHtml || '';
             return `
-                <div class="hidden xl:flex bg-slate-800 border-b border-slate-700 p-3 shrink-0 justify-between items-center flex-wrap gap-2">
+                <div class="hidden xl:flex bg-slate-800 border-b border-slate-700 px-3 h-10 shrink-0 justify-between items-center flex-nowrap gap-2">
                     <h4 class="text-sm font-bold text-white">${iconHtml}${titleHtml}</h4>
                     ${right}
                 </div>
@@ -2940,12 +2947,12 @@ function handleFileUpload(event, type) {
             const i = HOME_POS_ORDER.indexOf(homePosCanon(pos));
             return i === -1 ? 99 : i;
         }
-        function homeLineupCtx() { return homeGlobalContext === 'milli' ? 'milli' : 'astakim'; }
+        function homeLineupCtx() { return homeGlobalContext === 'milli' ? 'milli' : homeSquadSub; }
 
         function homeEnsureIlk11(fctx) {
             if (!formations) formations = {};
             if (!formations[fctx] || typeof formations[fctx] !== 'object') formations[fctx] = { ilk11: null, yedek: null, rezerv: null };
-            if (!Array.isArray(formations[fctx].ilk11)) formations[fctx].ilk11 = JSON.parse(JSON.stringify(defaultFormation));
+            if (!Array.isArray(formations[fctx].ilk11)) formations[fctx].ilk11 = JSON.parse(JSON.stringify(defaultFormationFor(fctx)));
             return formations[fctx].ilk11;
         }
 
@@ -2994,7 +3001,7 @@ function handleFileUpload(event, type) {
 
         function renderHomeSquadEditor(fctx) {
             const arr = homeEnsureIlk11(fctx);
-            const pool = (fctx === 'milli' ? (squadData.milli || []) : [...(squadData.astakim || []), ...(squadData.akademi || [])]).filter(p => p && p.name);
+            const pool = (fctx === 'milli' ? (squadData.milli || []) : fctx === 'akademi' ? (squadData.akademi || []) : [...(squadData.astakim || []), ...(squadData.akademi || [])]).filter(p => p && p.name);
             const players = pool.map(p => ({ name: p.name, pos: p.pos || '', ovr: getPlayerCurrentStatsByName(p.name, fctx).ovr }))
                 .sort((a, b) => (parseInt(b.ovr) || 0) - (parseInt(a.ovr) || 0) || a.name.localeCompare(b.name, 'tr'));
             const used = (i) => new Set(arr.map((n, j) => (j !== i && n.name) ? n.name.trim().toLowerCase() : null).filter(Boolean));
@@ -3019,17 +3026,40 @@ function handleFileUpload(event, type) {
         }
 
                 // ===================== KADRO v3: modern rozetler (yaş: küçük pill, OVR: yuvarlak) + masaüstünde 2 sütun =====================
+        // ---- Modern rozetler: yaş = yumuşak tonlu etiket, OVR = ilerleme halkası ----
+        function mbOvrColor(o) {
+            const n = parseInt(o) || 0;
+            return n >= 95 ? '#6d8cff' : n >= 90 ? '#3b82f6' : n >= 85 ? '#22c55e' : n >= 80 ? '#4ade80' : n >= 75 ? '#a3e635'
+                : n >= 70 ? '#facc15' : n >= 65 ? '#fb923c' : n >= 60 ? '#f26a2e' : n >= 55 ? '#ef4444' : n >= 50 ? '#f87171' : '#a78bfa';
+        }
+        function mbAge(age) {
+            if (age === null || age === undefined || age === '') return '<span class="text-[9px] font-bold text-slate-600">-</span>';
+            return `<span class="mb-age" style="--c:${getAgeColor(age)}" title="Yaş">${escapeHtml(String(age))}</span>`;
+        }
+        function mbOvr(ovr, small) {
+            if (ovr === null || ovr === undefined || ovr === '') return '<span class="text-[10px] font-bold text-slate-600">-</span>';
+            const n = Math.max(0, Math.min(100, parseInt(ovr) || 0));
+            return `<span class="mb-ovr${small ? ' sm' : ''}" style="--c:${mbOvrColor(ovr)};--v:${n}" title="OVR"><i></i><b>${escapeHtml(String(ovr))}</b></span>`;
+        }
+
         function homeBadgeStyle(color) {
             const hex = String(color).replace('#', '');
             const r = parseInt(hex.substr(0, 2), 16), g = parseInt(hex.substr(2, 2), 16), b = parseInt(hex.substr(4, 2), 16);
-            const fg = ((0.299 * r + 0.587 * g + 0.114 * b) / 255) > 0.55 ? '#0b1220' : '#ffffff';
-            return `background-color:${color};color:${fg};box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 1px 3px rgba(0,0,0,.5)`;
+            // Sayı rengi her zaman siyah; siyahın okunması için koyu zeminler biraz açılır
+            const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+            const k = lum < 0.36 ? 0.5 : 0;
+            const mix = (v) => Math.round(v + (255 - v) * k);
+            const bg = k ? `rgb(${mix(r)},${mix(g)},${mix(b)})` : color;
+            const fg = '#000000';
+            return `background-color:${bg};color:${fg};box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 1px 3px rgba(0,0,0,.5)`;
         }
         function homeAgeBadge(age) {
+            return `<span class="w-6 shrink-0 flex justify-center">${mbAge(age)}</span>`;
             if (age === null || age === undefined || age === '') return '<span class="w-6 shrink-0 text-center text-[9px] font-bold text-slate-600">-</span>';
             return `<span class="w-6 shrink-0 flex justify-center"><span class="w-5 h-[15px] rounded-md flex items-center justify-center text-[9px] font-black tabular-nums leading-none" style="${homeBadgeStyle(getAgeColor(age))}">${escapeHtml(String(age))}</span></span>`;
         }
         function homeOvrBadge(ovr) {
+            return `<span class="w-7 shrink-0 flex justify-center">${mbOvr(ovr)}</span>`;
             if (ovr === null || ovr === undefined || ovr === '') return '<span class="w-7 shrink-0 text-center text-[10px] font-bold text-slate-600">-</span>';
             return `<span class="w-7 shrink-0 flex justify-center"><span class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black tabular-nums leading-none ring-2 ring-slate-900/80" style="${homeBadgeStyle(getOvrColor(ovr))}">${escapeHtml(String(ovr))}</span></span>`;
         }
@@ -3077,7 +3107,7 @@ function handleFileUpload(event, type) {
                 </div>`;
 
             const left = `<div class="flex flex-col xl:min-h-0">
-                ${head('İlk 11')}
+                ${head(fctx === 'akademi' ? 'İlk 5' : 'İlk 11')}
                 <div class="flex flex-col gap-[3px] flex-1">${starters.map(n => homeSquadRowHtml(n.name, n.pos, fctx, true)).join('')}</div>
             </div>`;
             const right = `<div class="mt-3 xl:mt-0 xl:overflow-y-auto hide-scrollbar xl:min-h-0">
@@ -3182,8 +3212,8 @@ function handleFileUpload(event, type) {
             if (!parts.length) return '';
             if (parts.length === 1) return parts[0];
             let last = parts[parts.length - 1];
-            if (last.length > 1 && last === last.toUpperCase()) {
-                last = last.toLowerCase().replace(/(^|[-'\u2019])(\p{L})/gu, (m, a, b) => a + b.toUpperCase());
+            if (last.length > 1 && (last === last.toUpperCase() || /\p{Lu}{3,}/u.test(last))) {
+                last = last.toLowerCase().replace(/(^|[-'\u2019])(\p{L})/gu, (m, a, b) => a + b.toUpperCase()).replace(/^(Mc|Mac(?=\p{L}{4}))(\p{L})/u, (m, a, b) => a + b.toUpperCase());
             }
             return parts[0].charAt(0).toUpperCase() + '. ' + last;
         }
@@ -3193,7 +3223,7 @@ function handleFileUpload(event, type) {
             const inner = logo
                 ? `<img src="${logo}" alt="" class="w-5 h-5 xl:w-3.5 xl:h-3.5 object-contain">`
                 : `<span class="text-[9px] sm:text-[10px] xl:text-[7px] font-black text-slate-300 bg-slate-800 border border-slate-700 rounded px-1 xl:px-0.5 leading-[14px] xl:leading-[11px] whitespace-nowrap">${escapeHtml(homeTourInitials(t))}</span>`;
-            return `<span class="flex-1 xl:flex-none xl:w-5 xl:shrink xl:min-w-[14px] min-w-0 flex items-center justify-center overflow-hidden" title="${escapeHtml(t || '-')}">${inner}</span>`;
+            return `<span class="flex-1 xl:flex-none xl:w-[15px] xl:shrink xl:min-w-[11px] xl:border-l xl:border-slate-700/25 min-w-0 flex items-center justify-center overflow-hidden" title="${escapeHtml(t || '-')}">${inner}</span>`;
         }
 
         function homeStatColumn(kind, players, season, context) {
@@ -3209,7 +3239,7 @@ function handleFileUpload(event, type) {
             const maxVal = Math.max(0, ...rows.map(p => p[field]));
             const allOpen = rows.length > 0 && rows.every(p => homeStatsOpen.has(kind + '|' + p.name));
             const vis = homeStatsMobileTab === kind ? 'flex' : 'hidden';
-            const borderCls = isGoal ? 'xl:border-r xl:border-slate-700/50 xl:pr-3' : '';
+            const borderCls = isGoal ? 'xl:border-r xl:border-slate-700/25 xl:pr-2' : 'xl:pl-2';
 
             // Her oyuncunun turnuva bazlı gol/asist dağılımı (fikstürdeki olaylardan)
             const detByName = {};
@@ -3235,7 +3265,7 @@ function handleFileUpload(event, type) {
             const dense = tours.length > 4;
             const leftW = 'w-36 sm:w-48 xl:w-auto xl:flex-1 min-w-0 shrink-0 xl:shrink';
             const colsW = 'flex-1 xl:flex-none xl:shrink min-w-0 flex items-center';
-            const totalW = 'w-12 sm:w-14 xl:w-8 shrink-0';
+            const totalW = 'w-12 sm:w-14 xl:w-6 shrink-0 xl:border-l xl:border-slate-700/25';
 
             const head = `<div class="flex items-center gap-1.5 xl:gap-1 px-[7px] sm:px-[9px] xl:px-1.5 pb-1.5">
                 <div class="${leftW} flex items-center gap-1.5 xl:gap-1">
@@ -3260,7 +3290,7 @@ function handleFileUpload(event, type) {
 
                     const cells = tours.map(t => {
                         const n = info.counts[t] || 0;
-                        return `<span class="flex-1 xl:flex-none xl:w-5 xl:shrink xl:min-w-[14px] min-w-0 text-center text-sm xl:text-[11px] ${n ? 'font-bold text-slate-200' : 'text-slate-600'}">${n || '-'}</span>`;
+                        return `<span class="flex-1 xl:flex-none xl:w-[15px] xl:shrink xl:min-w-[11px] xl:border-l xl:border-slate-700/25 min-w-0 text-center text-sm xl:text-[11px] ${n ? 'font-bold text-slate-200' : 'text-slate-600'}">${n || '-'}</span>`;
                     }).join('');
 
                     let detailHtml = '';
@@ -3275,10 +3305,10 @@ function handleFileUpload(event, type) {
                     return `<div class="bg-slate-900/60 border border-slate-700/50 rounded-lg min-w-0">
                         <div class="flex items-center gap-1.5 xl:gap-1 px-1.5 py-1.5 sm:px-2 sm:py-2 xl:py-1 cursor-pointer hover:bg-slate-800/40 rounded-lg transition-colors" onclick="homeToggleStatRow('${kind}', '${enc}')">
                             <div class="${leftW} flex items-center gap-1.5 xl:gap-1">
-                                <span class="w-4 xl:w-3.5 shrink-0 text-center text-xs xl:text-[11px] font-black ${rankCls}">${idx + 1}</span>
+                                <span class="w-4 xl:w-3 xl:-mr-0.5 shrink-0 text-center text-xs xl:text-[11px] font-black ${rankCls}">${idx + 1}</span>
                                 ${photoHtml}
-                                <span class="flex-1 min-w-0 text-sm xl:text-xs font-bold text-white truncate text-left" title="${escapeHtml(p.name)}">${escapeHtml(homeShortName(p.name))}</span>
-                                <i class="fa-solid fa-chevron-down text-[8px] text-slate-500 transition-transform shrink-0 ${open ? 'rotate-180' : ''}"></i>
+                                <span class="flex-1 min-w-0 text-sm xl:text-[11px] 2xl:text-xs font-bold text-white truncate text-left" title="${escapeHtml(p.name)}">${escapeHtml(homeShortName(p.name))}</span>
+                                <i class="fa-solid fa-chevron-down text-[8px] text-slate-500 transition-transform shrink-0 xl:hidden 2xl:inline ${open ? 'rotate-180' : ''}"></i>
                             </div>
                             <div class="${colsW}">${cells}</div>
                             <span class="${totalW} text-base xl:text-xs font-black ${accent} inline-flex items-center justify-end gap-1 xl:gap-0.5 ${glow}"><i class="fa-solid ${icon} text-xs xl:text-[10px]"></i>${p[field]}</span>
@@ -3304,7 +3334,7 @@ function handleFileUpload(event, type) {
 
             if (players.length === 0) return { headerHtml: '', bodyHtml: `<div class="text-center text-slate-500 text-xs sm:text-sm py-6">${escapeHtml(season)} sezonu için gol/asist verisi bulunmuyor.</div>` };
 
-            const bodyHtml = `<div class="flex flex-col xl:grid xl:grid-cols-2 xl:gap-3">${homeStatColumn('goal', players, season, context)}${homeStatColumn('assist', players, season, context)}</div>`;
+            const bodyHtml = `<div class="flex flex-col xl:grid xl:grid-cols-2 xl:gap-0">${homeStatColumn('goal', players, season, context)}${homeStatColumn('assist', players, season, context)}</div>`;
             return { headerHtml: '', bodyHtml };
         }
 
@@ -3315,11 +3345,11 @@ function handleFileUpload(event, type) {
                 return '<div class="text-center text-slate-500 text-sm py-6">Bu kadro için henüz İlk 11 belirlenmedi.<br><span class="text-xs">Kadro panelinden "Kadrolar" ikonuna tıklayarak oluşturabilirsiniz.</span></div>';
             }
 
-            const photoSize = 'clamp(32px, 16cqmin, 100px)';
-            const badgeFont = 'clamp(5px, 2.3cqmin, 8px)';
-            const badgePad = 'clamp(0px, 0.3cqmin, 1.5px) clamp(2px, 0.9cqmin, 5px)';
-            const nameFont = 'clamp(5.5px, 2.9cqmin, 11px)';
-            const namePad = 'clamp(1px, 0.5cqmin, 2.5px) clamp(2.5px, 1.3cqmin, 7.5px)';
+            const photoSize = 'clamp(22px, 11.5cqmin, 84px)';
+            const badgeFont = 'clamp(4px, 1.9cqmin, 7px)';
+            const badgePad = 'clamp(0px, 0.2cqmin, 1px) clamp(1.5px, 0.7cqmin, 4px)';
+            const nameFont = 'clamp(4.5px, 2.35cqmin, 9.5px)';
+            const namePad = 'clamp(0.5px, 0.35cqmin, 2px) clamp(2px, 1cqmin, 6px)';
 
             const nodesHtml = formData.filter(node => node.name).map(node => {
                 const photo = getPlayerPhotoByName(node.name);
@@ -3329,10 +3359,10 @@ function handleFileUpload(event, type) {
                        </div>`
                     : `<div class="rounded-full bg-slate-700 border-[3px] border-slate-900 flex items-center justify-center font-black text-white shadow-lg shrink-0" style="width:${photoSize}; height:${photoSize}; font-size:clamp(10px, 6.5cqmin, 30px);">${escapeHtml((node.name || '?').charAt(0).toUpperCase())}</div>`;
                 // Dikey sahadaki (x, y) -> yatay sahaya 90° döndürülmüş koordinat: kaleci solda, hücum sağa doğru
-                const left = 100 - (parseFloat(node.y) || 0);
-                const top = parseFloat(node.x) || 0;
+                const left = Math.min(94, Math.max(6, 100 - (parseFloat(node.y) || 0)));
+                const top = Math.min(88, Math.max(12, parseFloat(node.x) || 0));
                 return `
-                    <div class="absolute flex flex-col items-center transform -translate-x-1/2 -translate-y-1/2" style="left:${left}%; top:${top}%; width:clamp(64px, 24cqmin, 170px);">
+                    <div class="absolute flex flex-col items-center transform -translate-x-1/2 -translate-y-1/2" style="left:${left}%; top:${top}%; width:clamp(48px, 18cqmin, 130px);">
                         ${photoHtml}
                         <div class="flex items-center gap-1" style="margin-top:1px;">
                             <span class="pos-${node.pos || ''} bg-slate-950/90 font-black rounded border border-slate-700" style="font-size:${badgeFont}; padding:${badgePad};">${node.pos || ''}</span>
@@ -3524,8 +3554,8 @@ function handleFileUpload(event, type) {
 
             const squadToggle = isClub ? `
                 <div class="flex gap-1 bg-slate-900 rounded-full border border-slate-700 p-1">
-                    <button onclick="event.stopPropagation(); setHomeSquadSub('astakim')" class="px-3 py-1 rounded-full text-[10px] font-bold transition-colors ${homeSquadSub === 'astakim' ? pillOn : pillOff}">Ana Takım</button>
-                    <button onclick="event.stopPropagation(); setHomeSquadSub('akademi')" class="px-3 py-1 rounded-full text-[10px] font-bold transition-colors ${homeSquadSub === 'akademi' ? pillOn : pillOff}">Altyapı</button>
+                    <button onclick="event.stopPropagation(); setHomeSquadSub('astakim')" class="px-3 py-1 rounded-full text-[10px] font-bold transition-colors ${homeSquadSub === 'astakim' ? pillOn : pillOff}">As Takım</button>
+                    <button onclick="event.stopPropagation(); setHomeSquadSub('akademi')" class="px-3 py-1 rounded-full text-[10px] font-bold transition-colors ${homeSquadSub === 'akademi' ? pillOn : pillOff}">Akademi</button>
                 </div>` : '';
 
             const fixtureToggle = `
@@ -3573,15 +3603,15 @@ function handleFileUpload(event, type) {
                         <div class="flex-1 flex flex-col min-h-0 overflow-hidden xl:grid xl:grid-cols-3 xl:grid-rows-2 xl:gap-4 relative z-0">
 
                             <!-- 1. Kadro -->
-                            <div id="hcontent-kadro" class="${panelCls}">
-                                ${homeHeaderHtml('<i class="fa-solid fa-users text-emerald-400 mr-1.5"></i>', 'Kadro', homeSquadEditBtn())}
+                            <div id="hcontent-kadro" class="${panelCls} xl:order-1">
+                                ${homeHeaderHtml('<i class="fa-solid fa-users text-emerald-400 mr-1.5"></i>', 'Kadro', `<div class="flex items-center gap-2 shrink-0">${squadToggle}${homeSquadEditBtn()}</div>`)}
                                 <div class="${bodyCls}">
                                     ${renderHomeSquad(squadCtx)}
                                 </div>
                             </div>
 
                             <!-- 2. Maçlar -->
-                            <div id="hcontent-maclar" class="${panelCls}">
+                            <div id="hcontent-maclar" class="${panelCls} xl:order-2">
                                 ${homeHeaderHtml('<i class="fa-solid fa-calendar-days text-emerald-400 mr-1.5"></i>', 'Maçlar', fixtureToggle, 'Fikstür Özeti')}
                                 <div class="${bodyCls}">
                                     ${renderHomeFixtures(homeFixtureContext)}
@@ -3589,24 +3619,24 @@ function handleFileUpload(event, type) {
                             </div>
 
                             <!-- 3. Gol Kralları -->
-                            <div id="hcontent-goller" class="${panelCls}">
-                                ${homeHeaderHtml('<i class="fa-solid fa-futbol text-emerald-400 mr-1.5"></i>', `Gol Kralları <span class="text-[9px] text-slate-500 font-normal">(${escapeHtml(season || '')})</span>`, homeStatsMobileToggle(), `İstatistikler <span class="text-[9px] font-normal">(${escapeHtml(season || '')})</span>`)}
+                            <div id="hcontent-goller" class="${panelCls} xl:order-5">
+                                ${homeHeaderHtml('<i class="fa-solid fa-futbol text-emerald-400 mr-1.5"></i>', 'Gol Kralları', homeStatsMobileToggle(), 'İstatistikler')}
                                 <div class="${bodyCls}">
                                     ${(() => { const r = renderHomeTopScorers(homeStatsContext); return r.headerHtml + `<div class="space-y-1.5">${r.bodyHtml}</div>`; })()}
                                 </div>
                             </div>
 
                             <!-- 4. İlk 11 (masaüstünde yatay saha, mobilde dikey saha) -->
-                            <div id="hcontent-ilk11" class="${panelCls}">
-                                ${homeHeaderHtml('<i class="fa-solid fa-people-group text-emerald-400 mr-1.5"></i>', 'İlk 11', '')}
+                            <div id="hcontent-ilk11" class="${panelCls} xl:order-4">
+                                ${homeHeaderHtml('<i class="fa-solid fa-people-group text-emerald-400 mr-1.5"></i>', squadCtx === 'akademi' ? 'İlk 5' : 'İlk 11', '')}
                                 <div class="${bodyCls}">
-                                    <div class="xl:hidden h-full">${renderHomeFirst11(homeSquadContext)}</div>
-                                    <div class="hidden xl:block h-full">${renderHomeFirst11Landscape(homeSquadContext)}</div>
+                                    <div class="xl:hidden h-full">${renderHomeFirst11(squadCtx)}</div>
+                                    <div class="hidden xl:block h-full">${renderHomeFirst11Landscape(squadCtx)}</div>
                                 </div>
                             </div>
 
                             <!-- 5. Lig Tablosu -->
-                            <div id="hcontent-lig" class="${panelCls}">
+                            <div id="hcontent-lig" class="${panelCls} xl:order-3">
                                 ${homeHeaderHtml('<i class="fa-solid fa-table-list text-emerald-400 mr-1.5"></i>', 'Lig Tablosu', leagueRight)}
                                 <div class="${bodyCls}">
                                     ${renderHomeLeagueTable()}
@@ -3614,7 +3644,7 @@ function handleFileUpload(event, type) {
                             </div>
 
                             <!-- 6. Turnuvalar -->
-                            <div id="hcontent-turnuva" class="${panelCls}">
+                            <div id="hcontent-turnuva" class="${panelCls} xl:order-6">
                                 ${homeHeaderHtml('<i class="fa-solid fa-trophy text-emerald-400 mr-1.5"></i>', 'Turnuvalar', '')}
                                 <div class="${bodyCls}">
                                     ${renderHomeTournaments()}
@@ -3645,8 +3675,8 @@ function handleFileUpload(event, type) {
 
             // --- 1. MASAÜSTÜ GÖRÜNÜMÜ (Orijinal Yön: Satırlar = Sezonlar, Sütunlar = Turnuvalar) ---
             html += `
-                <div class="hidden sm:block w-full overflow-auto table-scroll border border-slate-700 rounded-xl bg-slate-900 flex-1 min-h-0 relative pb-4">
-                    <table class="w-full border-separate border-spacing-0 text-sm origin-top-left" style="transform: scale(${currentScale}); transform-origin: top left; width: calc(100% / ${currentScale});">
+                <div class="hidden sm:block w-full overflow-auto table-scroll border border-slate-700 rounded-xl bg-slate-900 flex-initial sm:flex-1 min-h-0 relative pb-4">
+                    <table class="w-full border-separate border-spacing-0 text-sm origin-top-left" style="zoom: ${currentScale};">
                         <thead class="bg-slate-950 sticky top-0 z-[40] shadow-md">
                             <tr>
                                 <th class="p-2 sticky left-0 bg-slate-950 z-[50] border-r border-b border-slate-700 w-24 min-w-[96px] shadow-[2px_0_5px_rgba(0,0,0,0.2)] align-middle">
@@ -3735,8 +3765,8 @@ function handleFileUpload(event, type) {
 
             // --- 2. MOBİL GÖRÜNÜM (Ters Çevrilmiş Yön: Satırlar = Turnuvalar, Sütunlar = Sezonlar) ---
             html += `
-                <div class="block sm:hidden w-full overflow-auto table-scroll border border-slate-700 rounded-xl bg-slate-900 flex-1 min-h-0 relative pb-4">
-                    <table class="w-max min-w-full border-separate border-spacing-0 text-sm origin-top-left" style="transform: scale(${currentScale}); transform-origin: top left; width: max-content;">
+                <div class="block sm:hidden w-full overflow-auto table-scroll border border-slate-700 rounded-xl bg-slate-900 flex-initial sm:flex-1 min-h-0 relative pb-4">
+                    <table class="w-max min-w-full border-separate border-spacing-0 text-sm origin-top-left" style="zoom: ${currentScale}; width: max-content;">
                         <thead class="bg-slate-950 sticky top-0 z-[40] shadow-md">
                             <tr>
                                 <th class="p-2 sticky left-0 bg-slate-950 z-[50] border-r border-b border-slate-700 w-24 min-w-[96px] shadow-[2px_0_5px_rgba(0,0,0,0.2)] align-middle text-center">
@@ -4080,8 +4110,8 @@ function handleFileUpload(event, type) {
                         </div>
                     </div>
                 </div>
-                <div class="w-full overflow-auto table-scroll border border-slate-700 rounded-xl bg-slate-900 flex-1 min-h-0 relative pb-4">
-                    <table class="w-max min-w-full border-separate border-spacing-0 text-sm origin-top-left" style="transform: scale(${currentScale}); transform-origin: top left; width: max-content;">
+                <div class="w-full overflow-auto table-scroll border border-slate-700 rounded-xl bg-slate-900 flex-initial sm:flex-1 min-h-0 relative pb-4">
+                    <table class="w-max min-w-full border-separate border-spacing-0 text-sm origin-top-left" style="zoom: ${currentScale}; width: max-content;">
                         <thead class="bg-slate-950 sticky top-0 z-[40] shadow-md">
                             <tr>
                                 <th class="p-2 border-r border-b border-slate-700 sticky left-0 bg-slate-950 z-[60] min-w-[80px] w-20 align-middle shadow-[2px_0_5px_rgba(0,0,0,0.2)]">
@@ -4254,8 +4284,8 @@ function handleFileUpload(event, type) {
                         </div>
                     </div>
                 </div>
-                <div class="w-full overflow-auto table-scroll border border-slate-700 rounded-xl bg-slate-900 flex-1 min-h-0 relative pb-4">
-                    <table class="w-max min-w-full border-separate border-spacing-0 text-sm origin-top-left" style="transform: scale(${currentScale}); transform-origin: top left; width: max-content;">
+                <div class="w-full overflow-auto table-scroll border border-slate-700 rounded-xl bg-slate-900 flex-initial sm:flex-1 min-h-0 relative pb-4">
+                    <table class="w-max min-w-full border-separate border-spacing-0 text-sm origin-top-left" style="zoom: ${currentScale}; width: max-content;">
                         <thead class="bg-slate-950 sticky top-0 z-[40] shadow-md">
                             <tr>
                                 <!-- Sol Sabit Logo Hücresi -->
@@ -5182,7 +5212,18 @@ function handleFileUpload(event, type) {
             // Fotoğraf (24px) + margin/padding boşlukları için sabit ~45px 
             // + Karakter başına ortalama 7px.
             // Ayrıca sütun başlığının ("İsim Soyisim") rahat sığabilmesi için en az 115px sınır.
+            // Mobilde isimler "A. MEHMET" biçiminde kısaltılır; sütun genişliği gerçek metin ölçümüyle hesaplanır
+            const sqIsMobile = window.innerWidth < 768;
+            const sqDispName = (n) => sqIsMobile ? formatShortPlayerName(n) : n;
             let dynamicNameWidth = Math.max(115, Math.floor(45 + (maxNameLength * 7)));
+            try {
+                const cv = document.createElement('canvas').getContext('2d');
+                cv.font = '700 12px ' + (getComputedStyle(document.body).fontFamily || 'sans-serif');
+                let maxTxt = 0;
+                (players || []).forEach(p => { if (p.name) maxTxt = Math.max(maxTxt, cv.measureText(sqDispName(p.name)).width); });
+                // foto (24) + boşluk (6) + metin + pay (16)
+                dynamicNameWidth = Math.max(sqIsMobile ? 100 : 115, Math.ceil(46 + maxTxt));
+            } catch (e) {}
 
             const staticCols = [
                 { id: 'pos', label: '<i class="fa-solid fa-street-view text-sm"></i>', title: 'Mevki', w: 32, align: 'center' },
@@ -5228,7 +5269,7 @@ function handleFileUpload(event, type) {
                 else if (n >= 60) colorClass = 'ovr-t8';
                 else if (n >= 55) colorClass = 'ovr-t9';
                 else if (n >= 50) colorClass = 'ovr-t10';
-                return `<span class="ovr-badge ${colorClass}">${ovr}</span>`;
+                return mbOvr(ovr, true);
             };
 
             const renderAgeBadge = (age) => {
@@ -5251,7 +5292,8 @@ function handleFileUpload(event, type) {
                     else if (n <= 35) colorClass = 'age-t8';
                 }
                 
-                return `<span class="age-badge ${colorClass}">${age}</span>`;
+                const ageHex = { 'age-t1': '#60a5fa', 'age-t2': '#93c5fd', 'age-t3': '#4ade80', 'age-t4': '#86efac', 'age-t5': '#d9f99d', 'age-t6': '#fde047', 'age-t7': '#fdba74', 'age-t8': '#fca5a5', 'age-t9': '#d8b4fe', 'age-acad-1': '#38bdf8', 'age-acad-2': '#3b82f6', 'age-acad-3': '#c084fc' };
+                return `<span class="mb-age" style="--c:${ageHex[colorClass] || '#d8b4fe'}">${age}</span>`;
             };
 
             const getTrBadge = (type, text, logo) => {
@@ -5292,7 +5334,7 @@ function handleFileUpload(event, type) {
             let html = `
                 <div class="w-full flex flex-wrap justify-between items-center mb-3 px-2 shrink-0 relative gap-y-3">
                     <div class="flex flex-nowrap items-center gap-2 w-max shrink-0 overflow-x-auto hide-scrollbar">
-                        ${(squadContext === 'astakim' || squadContext === 'milli') ? `<button onclick="openFormationModal('ilk11')" class="text-sm bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-600 rounded px-2 py-1.5 transition-colors shadow-sm flex items-center justify-center shrink-0 w-8 h-8" title="Kadrolar"><i class="fa-solid fa-people-group"></i></button>` : ''}
+                        ${(squadContext === 'astakim' || squadContext === 'akademi' || squadContext === 'milli') ? `<button onclick="openFormationModal('ilk11')" class="text-sm bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-600 rounded px-2 py-1.5 transition-colors shadow-sm flex items-center justify-center shrink-0 w-8 h-8" title="Kadrolar"><i class="fa-solid fa-people-group"></i></button>` : ''}
                         <button onclick="openPlayerInfoModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-lg flex items-center justify-center shrink-0" title="Oyuncu Ekle"><i class="fa-solid fa-user-plus"></i></button>
                         <button onclick="openSquadBulkModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-lg flex items-center justify-center shrink-0" title="Toplu Ekle"><i class="fa-solid fa-list-ol"></i></button>
                         <button onclick="toggleSquadColumnsCollapse()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-lg flex items-center justify-center shrink-0" title="Ülke/Yaş/OVR/Gelişim/Gol/Asist sütunlarını gizle veya göster">
@@ -5312,8 +5354,8 @@ function handleFileUpload(event, type) {
                         ${getScaleSelectorHtml()}
                     </div>
                 </div>
-                <div class="w-full overflow-auto table-scroll border border-slate-700 rounded-xl bg-slate-900 flex-1 min-h-0 relative pb-4">
-                    <table class="w-max min-w-full border-separate border-spacing-0 text-sm origin-top-left" style="transform: scale(${currentScale}); transform-origin: top left; width: max-content;">
+                <div class="w-full overflow-auto table-scroll border border-slate-700 rounded-xl bg-slate-900 flex-initial sm:flex-1 min-h-0 relative pb-4">
+                    <table class="w-max min-w-full border-separate border-spacing-0 text-sm origin-top-left" style="zoom: ${currentScale}; width: max-content;">
                         <thead class="bg-slate-950 sticky top-0 z-[60] shadow-md">
                             <tr>
             `;
@@ -5468,7 +5510,7 @@ function handleFileUpload(event, type) {
                             staticCols.forEach(c => {
                                 let content = '';
                                 if(c.id === 'pos') content = `<span class="pos-${p.pos} font-black text-[10px]">${p.pos}</span>`;
-                                else if(c.id === 'name') content = `<div class="flex items-center justify-start w-full overflow-hidden hover:text-emerald-400 cursor-pointer" onclick="openPlayerInfoModal('${p.id}')" title="Düzenle">${photoHtml}<span class="truncate text-xs font-bold">${safeName}</span></div>`;
+                                else if(c.id === 'name') content = `<div class="flex items-center justify-start w-full overflow-hidden hover:text-emerald-400 cursor-pointer" onclick="openPlayerInfoModal('${p.id}')" title="Düzenle">${photoHtml}<span class="truncate text-xs font-bold" title="${safeName}">${escapeHtml(sqDispName(p.name))}</span></div>`;
                                 else if(c.id === 'countryCode') content = flagHtml;
                                 else if(c.id === 'joinAge') content = `<div class="flex items-center justify-center w-full h-full">${renderAgeBadge(p.currentAge)}</div>`;
                                 else if(c.id === 'joinOvr') {
@@ -6864,8 +6906,8 @@ async function autoFetchPlayerPhoto(playerName, urlInputId) {
                                        'bg-blue-900/20 border-blue-500/30 hover:bg-blue-900/40';
                     
                     return `
-                        <div class="flex items-center gap-3 p-3 rounded-lg border transition-colors cursor-pointer group ${rowBgClass}" onclick="openShortlistModal('${t.id}')">
-                            <div class="w-10 h-10 rounded flex items-center justify-center font-black text-sm border border-slate-700/50 bg-slate-950 shadow-inner shrink-0 pos-${escapeHtml(t.pos)}">${escapeHtml(t.pos)}</div>
+                        <div class="flex items-center gap-2 sm:gap-3 px-2 py-1.5 sm:p-3 rounded-lg border transition-colors cursor-pointer group ${rowBgClass}" onclick="openShortlistModal('${t.id}')">
+                            <div class="w-7 h-7 sm:w-10 sm:h-10 rounded flex items-center justify-center font-black text-xs sm:text-sm border border-slate-700/50 bg-slate-950 shadow-inner shrink-0 pos-${escapeHtml(t.pos)}">${escapeHtml(t.pos)}</div>
                             <div class="flex-1 min-w-0 text-left">
                                 <p class="text-xs text-slate-300 leading-tight whitespace-pre-wrap">${escapeHtml(t.profile)}</p>
                             </div>
@@ -6895,32 +6937,32 @@ async function autoFetchPlayerPhoto(playerName, urlInputId) {
                     listHTML = `<div class="text-center p-4 text-slate-500 text-sm">Kayıtlı transfer bulunmuyor.</div>`;
                 } else {
                     tData.forEach(t => {
-                        let photoHtml = t.photoUrl ? `<img src="${t.photoUrl}" class="w-8 h-8 rounded-full object-cover shadow-sm bg-slate-800">` : `<div class="w-8 h-8 rounded-full flex items-center justify-center bg-slate-700 font-bold text-xs shadow-sm">${t.name.charAt(0)}</div>`;
+                        let photoHtml = t.photoUrl ? `<img src="${t.photoUrl}" class="w-7 h-7 rounded-full object-cover shadow-sm bg-slate-800 shrink-0">` : `<div class="w-7 h-7 rounded-full flex items-center justify-center bg-slate-700 font-bold text-xs shadow-sm shrink-0">${t.name.charAt(0)}</div>`;
                         let feeText = t.fee > 0 ? `€${t.fee.toLocaleString('tr-TR')}` : 'Bedelsiz';
                         let feeColor = type === 'in' ? (t.fee > 0 ? 'text-red-400' : 'text-emerald-400') : (t.fee > 0 ? 'text-emerald-400' : 'text-slate-400');
                         
                         listHTML += `
-                            <div class="flex items-center gap-3 p-3 bg-slate-800/50 hover:bg-slate-700/80 rounded-lg border border-slate-700/50 transition-colors cursor-pointer group" onclick="openTransferModal('${type}', '${t.id}')">
+                            <div class="flex items-center gap-2 sm:gap-3 px-2 py-1.5 sm:p-3 bg-slate-800/50 hover:bg-slate-700/80 rounded-lg border border-slate-700/50 transition-colors cursor-pointer group" onclick="openTransferModal('${type}', '${t.id}')">
                                 ${photoHtml}
                                 <div class="flex-1 min-w-0">
                                     <div class="flex justify-between items-start">
-                                        <h4 class="font-bold text-white text-sm truncate">
+                                        <h4 class="font-bold text-white text-sm leading-tight truncate">
                                             <span class="hover:text-emerald-400 transition-colors" data-pname="${escapeHtml(t.name)}" onclick="event.stopPropagation(); openStatsPlayerProfile(this)" title="Profili Görüntüle">${escapeHtml(t.name)}</span> 
                                             <span class="text-[10px] text-slate-400 font-normal ml-1 border border-slate-600 rounded px-1 pointer-events-none">${escapeHtml(t.season)}</span>
                                         </h4>
                                         <span class="font-bold text-sm ${feeColor} whitespace-nowrap">${feeText}</span>
                                     </div>
-                                    <div class="flex justify-between items-end mt-1 text-[11px] text-slate-400">
+                                    <div class="flex justify-between items-center mt-0.5 text-[11px] text-slate-400">
                                         <div class="flex items-center gap-2">
                                             <span class="font-bold pos-${t.pos}">${t.pos}</span>
-                                            <span>•</span>
-                                            <span>${t.age} Yaş</span>
-                                            <span>•</span>
-                                            <span class="text-emerald-500 font-bold">${t.ovr} OVR</span>
+                                             
+                                            ${mbAge(t.age)}
+                                             
+                                            ${mbOvr(t.ovr, true)}
                                         </div>
-                                        <div class="truncate text-right max-w-[120px]" title="${t.team}">
+                                        <div class="truncate text-right max-w-[160px]" title="${escapeHtml(t.team || '')}">
                                             ${type === 'in' ? '<i class="fa-solid fa-arrow-right-to-bracket text-emerald-500 mr-1"></i>' : '<i class="fa-solid fa-arrow-right-from-bracket text-red-500 mr-1"></i>'}
-                                            ${t.team || 'Bilinmiyor'}
+                                            ${(() => { const l = t.team ? getTeamLogoByName(t.team) : ''; return l ? `<img src="${l}" alt="" class="w-4 h-4 object-contain inline-block align-middle mr-1" onerror="this.style.display='none'">` : ''; })()}${escapeHtml(t.team || 'Bilinmiyor')}
                                         </div>
                                     </div>
                                 </div>
@@ -6934,40 +6976,40 @@ async function autoFetchPlayerPhoto(playerName, urlInputId) {
             let html = `
                 <div class="w-full flex flex-col h-full overflow-hidden">
                     <!-- Bilanço Kartı -->
-                    <div class="bg-slate-900 border border-slate-700 rounded-xl p-3 sm:px-4 sm:py-3 mb-2 shadow-sm shrink-0 flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <div class="bg-slate-900 border border-slate-700 rounded-xl p-2 sm:px-4 sm:py-3 mb-1.5 sm:mb-2 shadow-sm shrink-0 flex flex-col sm:flex-row items-center justify-between gap-1.5 sm:gap-3">
                         <div class="text-center sm:text-left">
-                            <h3 class="text-lg sm:text-xl font-black text-white tracking-wider flex items-center justify-center sm:justify-start gap-2">
+                            <h3 class="text-sm sm:text-xl font-black text-white tracking-wider flex items-center justify-center sm:justify-start gap-2">
                                 <i class="fa-solid fa-money-bill-transfer text-emerald-500"></i>
                                 TRANSFER PANELİ
                             </h3>
-                            <p class="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Gelen ve Giden Oyuncu Bilançosu</p>
+                            
                         </div>
-                        <div class="flex gap-3 sm:gap-6 items-center bg-slate-950 px-4 py-2 sm:px-5 sm:py-2.5 rounded-lg border border-slate-800 w-full sm:w-auto justify-center">
+                        <div class="flex gap-3 sm:gap-6 items-center bg-slate-950 px-2 py-1 sm:px-5 sm:py-2.5 rounded-lg border border-slate-800 w-full sm:w-auto justify-center">
                             <div class="text-center">
                                 <div class="text-[9px] text-slate-500 font-bold uppercase tracking-widest mb-0.5">Gider</div>
-                                <div class="text-base sm:text-lg font-black text-red-500">€${totalIn.toLocaleString('tr-TR')}</div>
+                                <div class="text-xs sm:text-lg font-black text-red-500">€${totalIn.toLocaleString('tr-TR')}</div>
                             </div>
                             <div class="text-center">
                                 <div class="text-[9px] text-slate-500 font-bold uppercase tracking-widest mb-0.5">Gelir</div>
-                                <div class="text-base sm:text-lg font-black text-emerald-500">€${totalOut.toLocaleString('tr-TR')}</div>
+                                <div class="text-xs sm:text-lg font-black text-emerald-500">€${totalOut.toLocaleString('tr-TR')}</div>
                             </div>
-                            <div class="w-px h-8 bg-slate-700"></div>
+                            <div class="w-px h-6 sm:h-8 bg-slate-700"></div>
                             <div class="text-center">
                                 <div class="text-[9px] text-slate-500 font-bold uppercase tracking-widest mb-0.5">Net Bilanço</div>
-                                <div class="text-xl sm:text-2xl font-black ${balanceColor}">${balanceSign}€${netBalance.toLocaleString('tr-TR')}</div>
+                                <div class="text-base sm:text-2xl font-black ${balanceColor}">${balanceSign}€${netBalance.toLocaleString('tr-TR')}</div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Sekmeler (Tabs - Sadece Mobilde Görünür) -->
                     <div class="flex lg:hidden gap-1 overflow-x-auto hide-scrollbar shrink-0 px-1 mb-2">
-                        <button onclick="switchTransferTab('shortlist')" id="trtab-shortlist" class="flex-1 px-4 py-3 text-lg bg-slate-900 text-blue-400 border border-slate-700 border-b-slate-900 rounded-t-xl transition-colors shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] relative z-10 -mb-[1px] flex items-center justify-center">
+                        <button onclick="switchTransferTab('shortlist')" id="trtab-shortlist" class="flex-1 px-4 py-1.5 sm:py-3 text-base sm:text-lg bg-slate-900 text-blue-400 border border-slate-700 border-b-slate-900 rounded-t-xl transition-colors shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] relative z-10 -mb-[1px] flex items-center justify-center">
                             <i class="fa-solid fa-list-check"></i>
                         </button>
-                        <button onclick="switchTransferTab('in')" id="trtab-in" class="flex-1 px-4 py-3 text-lg bg-slate-800/50 text-slate-400 border border-transparent border-b-slate-700 rounded-t-xl hover:bg-slate-800 hover:text-white transition-colors relative z-0 flex items-center justify-center cursor-pointer">
+                        <button onclick="switchTransferTab('in')" id="trtab-in" class="flex-1 px-4 py-1.5 sm:py-3 text-base sm:text-lg bg-slate-800/50 text-slate-400 border border-transparent border-b-slate-700 rounded-t-xl hover:bg-slate-800 hover:text-white transition-colors relative z-0 flex items-center justify-center cursor-pointer">
                             <i class="fa-solid fa-arrow-down text-emerald-400"></i>
                         </button>
-                        <button onclick="switchTransferTab('out')" id="trtab-out" class="flex-1 px-4 py-3 text-lg bg-slate-800/50 text-slate-400 border border-transparent border-b-slate-700 rounded-t-xl hover:bg-slate-800 hover:text-white transition-colors relative z-0 flex items-center justify-center cursor-pointer">
+                        <button onclick="switchTransferTab('out')" id="trtab-out" class="flex-1 px-4 py-1.5 sm:py-3 text-base sm:text-lg bg-slate-800/50 text-slate-400 border border-transparent border-b-slate-700 rounded-t-xl hover:bg-slate-800 hover:text-white transition-colors relative z-0 flex items-center justify-center cursor-pointer">
                             <i class="fa-solid fa-arrow-up text-red-400"></i>
                         </button>
                     </div>
@@ -6985,7 +7027,7 @@ async function autoFetchPlayerPhoto(playerName, urlInputId) {
                                     <i class="fa-solid fa-plus"></i> EKLE
                                 </button>
                             </div>
-                            <div class="flex-1 overflow-y-auto p-3 space-y-2 hide-scrollbar">
+                            <div class="flex-1 overflow-y-auto p-2 sm:p-3 space-y-1.5 sm:space-y-2 hide-scrollbar">
                                 ${renderShortlistList()}
                             </div>
                         </div>
@@ -6994,7 +7036,7 @@ async function autoFetchPlayerPhoto(playerName, urlInputId) {
                         <div id="trcontent-in" class="hidden lg:flex flex-1 flex-col bg-slate-900 border border-slate-700 lg:rounded-xl rounded-b-xl rounded-tr-xl overflow-hidden shadow-lg min-h-0 relative transition-all duration-300">
                             <div class="bg-emerald-900/30 border-b border-emerald-800 p-3 shrink-0 flex justify-between items-center">
                                 <h4 class="font-bold text-emerald-400 flex items-center gap-2">
-                                    <i class="fa-solid fa-arrow-down text-sm hidden lg:inline"></i> GELENLER
+                                    <i class="fa-solid fa-arrow-down text-sm hidden lg:inline"></i> <span class="hidden lg:inline">GELENLER</span>
                                 </h4>
                                 <div class="flex gap-1">
                                     <button onclick="sortTransfers('in', 'season')" class="text-emerald-400 hover:text-white p-1.5 rounded transition-colors group flex items-center" title="Sezona Göre Sırala">
@@ -7017,16 +7059,16 @@ async function autoFetchPlayerPhoto(playerName, urlInputId) {
                                     </button>
                                 </div>
                             </div>
-                            <div class="flex-1 overflow-y-auto p-3 space-y-2 hide-scrollbar">
+                            <div class="flex-1 overflow-y-auto p-2 sm:p-3 space-y-1.5 sm:space-y-2 hide-scrollbar">
                                 ${renderTransferList('in')}
                             </div>
                         </div>
 
                         <!-- Gidenler -->
                         <div id="trcontent-out" class="hidden lg:flex flex-1 flex-col bg-slate-900 border border-slate-700 lg:rounded-xl rounded-b-xl rounded-tr-xl overflow-hidden shadow-lg min-h-0 relative transition-all duration-300">
-                            <div class="bg-red-900/30 border-b border-red-800 p-3 shrink-0 flex justify-between items-center">
+                            <div class="bg-red-900/30 border-b border-red-800 p-2 sm:p-3 shrink-0 flex justify-between items-center">
                                 <h4 class="font-bold text-red-400 flex items-center gap-2">
-                                    <i class="fa-solid fa-arrow-up text-sm hidden lg:inline"></i> GİDENLER
+                                    <i class="fa-solid fa-arrow-up text-sm hidden lg:inline"></i> <span class="hidden lg:inline">GİDENLER</span>
                                 </h4>
                                 <div class="flex gap-1">
                                     <button onclick="sortTransfers('out', 'season')" class="text-red-400 hover:text-white p-1.5 rounded transition-colors group flex items-center" title="Sezona Göre Sırala">
@@ -7049,7 +7091,7 @@ async function autoFetchPlayerPhoto(playerName, urlInputId) {
                                     </button>
                                 </div>
                             </div>
-                            <div class="flex-1 overflow-y-auto p-3 space-y-2 hide-scrollbar">
+                            <div class="flex-1 overflow-y-auto p-2 sm:p-3 space-y-1.5 sm:space-y-2 hide-scrollbar">
                                 ${renderTransferList('out')}
                             </div>
                         </div>
@@ -7387,9 +7429,9 @@ function closeTransferModal() {
                 const logo = nm && typeof getTeamLogoByName === 'function' ? getTeamLogoByName(nm) : '';
                 const cls = isK ? 'bg-emerald-900/25 border-emerald-700/50 text-emerald-300' : 'bg-red-900/25 border-red-700/50 text-red-300';
                 return `<div class="hidden xl:flex shrink-0 items-center gap-2.5 px-4 py-2.5 mb-3 rounded-xl border ${cls}">
-                    <i class="fa-solid ${isK ? 'fa-shield-halved' : 'fa-flag'}"></i>
-                    <span class="font-black tracking-[0.18em] uppercase text-sm">${isK ? 'Kulüp' : 'Milli Takım'}</span>
-                    ${nm ? `<span class="ml-auto flex items-center gap-2 text-slate-300 font-bold text-sm min-w-0">${logo ? `<img src="${logo}" alt="" class="w-5 h-5 object-contain shrink-0">` : ''}<span class="truncate">${escapeHtml(nm)}</span></span>` : ''}
+                    ${logo ? `<img src="${logo}" alt="" class="w-5 h-5 sm:w-6 sm:h-6 object-contain shrink-0">` : `<i class="fa-solid ${isK ? 'fa-shield-halved' : 'fa-flag'}"></i>`}
+                    <span class="font-black tracking-[0.18em] uppercase text-sm truncate">${nm ? escapeHtml(nm) : (isK ? 'Kulüp' : 'Milli Takım')}</span>
+                     
                 </div>`;
             };
             const one = (P, m) => `
@@ -7544,7 +7586,7 @@ function closeTransferModal() {
                     <div class="inline-flex items-center gap-0.5 p-0.5 rounded-lg bg-slate-900 border border-slate-700/60 text-[0.85em]">
                         ${seg('pos', 'fa-street-view', 'Mevkiye Göre Sırala')}
                         ${seg('name', 'fa-font', 'İsme Göre Sırala')}
-                        ${isKulup ? seg('countryCode', 'fa-globe', 'Ülkeye Göre Sırala') : ''}
+                        
                     </div>
                 </th>`;
             let th2 = '<tr>';
@@ -7558,8 +7600,8 @@ function closeTransferModal() {
 
                 th1 += `<th colspan="${colspan}" class="stv2-sep bg-slate-900" style="${topSticky}">
                     <div class="inline-flex items-stretch rounded-full overflow-hidden bg-slate-950/70 border border-slate-700/60 text-[0.85em]">
-                        <span class="px-3 py-1 font-black tracking-widest text-emerald-300">${season}</span>
-                        <button onclick="toggleStatsExpand('${context}', '${season}')" class="px-2 flex items-center border-l border-slate-700/60 text-slate-400 hover:text-emerald-300 hover:bg-slate-800 transition-colors" title="${isExp ? 'Daralt' : 'Turnuva Detayları'}">
+                        <span class="px-1.5 py-0.5 sm:px-3 sm:py-1 font-black tracking-normal sm:tracking-widest text-[0.8em] sm:text-[1em] text-emerald-300">${season}</span>
+                        <button onclick="toggleStatsExpand('${context}', '${season}')" class="px-1 sm:px-2 flex items-center border-l border-slate-700/60 text-slate-400 hover:text-emerald-300 hover:bg-slate-800 transition-colors" title="${isExp ? 'Daralt' : 'Turnuva Detayları'}">
                             <i class="fa-solid ${isExp ? 'fa-angle-left' : 'fa-angle-right'} text-[0.8em]"></i>
                         </button>
                     </div>
@@ -7573,7 +7615,7 @@ function closeTransferModal() {
                         const tLogo = getCompetitionLogo(t);
                         const labelHtml = tLogo
                             ? `<img src="${tLogo}" alt="${escapeHtml(t)}" title="${escapeHtml(t)}" class="w-[1.3em] h-[1.3em] object-contain">`
-                            : `<span class="max-w-[5em] truncate text-slate-300" title="${escapeHtml(t)}">${escapeHtml(t)}</span>`;
+                            : `<span class="font-black text-slate-300 tracking-wide" title="${escapeHtml(t)}">${escapeHtml(String(t).split(/\s+/).filter(Boolean).map(w => Array.from(w)[0]).join('').slice(0, 3).toUpperCase())}</span>`;
                         if (showG) th2 += `<th class="${i === 0 ? 'stv2-sep ' : ''}bg-slate-900" style="${row2Sticky}"><div class="flex flex-col items-center gap-0.5">${labelHtml}${hBtn('t_' + season + '_' + t + '_goals', 'G', 'text-green-400/80', 'text-[0.75em]')}</div></th>`;
                         if (showA) th2 += `<th class="${(i === 0 ? aSep : '')}bg-slate-900" style="${row2Sticky}"><div class="flex flex-col items-center gap-0.5">${labelHtml}${hBtn('t_' + season + '_' + t + '_assists', 'A', 'text-blue-400/80', 'text-[0.75em]')}</div></th>`;
                     });
@@ -7583,7 +7625,7 @@ function closeTransferModal() {
             totalCols += per;
             th1 += `<th colspan="${per}" class="stv2-sep bg-slate-900" style="${topSticky}">
                     <div class="inline-flex items-center gap-1.5 text-[0.85em] font-black tracking-[0.15em] uppercase text-emerald-400">
-                        <i class="fa-solid fa-chart-line opacity-70"></i><span>GENEL TOPLAM</span>
+                        <i class="fa-solid fa-chart-line opacity-70"></i>
                     </div>
                 </th></tr>`;
             if (showG) th2 += `<th class="stv2-sep bg-emerald-950" style="${row2Sticky}">${hBtn('overall_goals', 'G', 'text-green-400', 'text-[0.8em]')}</th>`;
@@ -7633,7 +7675,7 @@ function closeTransferModal() {
                     const flagInner = p.countryCode
                         ? `<img src="https://flagcdn.com/24x18/${escapeHtml(p.countryCode.toLowerCase())}.png" class="h-[1em] w-auto rounded-[2px] shadow-sm" alt="">`
                         : '<span class="text-slate-600">-</span>';
-                    const flagHtml = isKulup ? `<span class="hidden sm:flex pl-[0.8em] ml-auto items-center shrink-0">${flagInner}</span>` : '';
+                    const flagHtml = '';
                     const rankCls = idx === 0 ? 'stats-rank-1' : idx === 1 ? 'stats-rank-2' : idx === 2 ? 'stats-rank-3' : '';
 
                     rowsHTML += `<tr class="group">
@@ -7680,7 +7722,7 @@ function closeTransferModal() {
             // --- Alt toplam (her hücre yapışkan) ---
             const fz = 'position:sticky;bottom:0;z-index:25;';
             let footerHTML = `<tr class="font-black">
-                <td class="stv2-id stv2-idshadow bg-slate-950 text-emerald-400 uppercase tracking-wider text-[0.8em]" style="position:sticky;left:0;bottom:0;z-index:35;text-align:right;"><i class="fa-solid fa-trophy text-yellow-500 mr-1 text-[0.9em]"></i><span>TOPLAM</span></td>`;
+                <td class="stv2-id stv2-idshadow bg-slate-950 text-emerald-400 uppercase tracking-wider text-[0.8em]" style="position:sticky;left:0;bottom:0;z-index:35;text-align:right;"><i class="fa-solid fa-trophy text-yellow-500 text-[0.9em]"></i></td>`;
             seasonsList.forEach(season => {
                 const isExp = statExpanded[context][season];
                 const tours = seasonsData[season] || [];
@@ -8210,7 +8252,7 @@ function autoFillTeamLogo(nameInput, urlInputId) {
             }
             
             // Eğer hiçbir yerde yoksa, ismin baş harflerinden otomatik bir logo üret
-            return `[https://ui-avatars.com/api/?name=$](https://ui-avatars.com/api/?name=$){encodeURIComponent(name)}&background=random&color=fff`;
+            return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff`;
         }
 
         function toggleFixtureRowExpand(matchId) {
@@ -8318,10 +8360,102 @@ function formatShortPlayerName(name) {
             { name: 'Swedish Allsvenskan', flag: 'se' }
         ];
 
+        // --- Takım adı alanları: veritabanından otomatik tamamlama (tüm takım adı girişlerinde) ---
+        let euAcEl = null, euAcActive = null, euAcIdx = -1, euAcMatches = [];
+        const EU_AC_SEL = '[data-euro-team], [data-team-ac]';
+        function euAcNorm(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim(); }
+        function euAcIsField(el) { return !!(el && el.matches && el.matches(EU_AC_SEL)); }
+        function euAcGet(el) { return el.isContentEditable ? el.innerText : el.value; }
+        function euAcClose() { if (euAcEl) euAcEl.style.display = 'none'; euAcMatches = []; euAcIdx = -1; }
+        function euAcHighlight() {
+            if (!euAcEl) return;
+            euAcEl.querySelectorAll('.eu-ac-item').forEach((el, i) => el.classList.toggle('bg-emerald-600', i === euAcIdx));
+        }
+        function euAcPick(i) {
+            const t = euAcMatches[i], el = euAcActive;
+            if (!t || !el) return;
+            if (el.isContentEditable) {
+                el.innerText = t.name;
+                euAcClose();
+                el.blur(); // onblur → kaydeder
+            } else {
+                el.value = t.name;
+                el.dispatchEvent(new Event('input', { bubbles: true }));
+                el.dispatchEvent(new Event('change', { bubbles: true }));
+                euAcClose();
+            }
+        }
+        function euAcShow(el) {
+            if (typeof FC26_TEAM_DATABASE === 'undefined') return;
+            const q = euAcNorm(euAcGet(el));
+            if (!q || q === 'takim adi' || q === 'team name') { euAcClose(); return; }
+            const starts = [], inc = [];
+            FC26_TEAM_DATABASE.forEach(t => {
+                if (!t || typeof t !== 'object' || !t.name) return;
+                const n = euAcNorm(t.name);
+                if (n.startsWith(q)) starts.push(t); else if (n.includes(q)) inc.push(t);
+            });
+            euAcMatches = starts.concat(inc).slice(0, 8);
+            if (!euAcMatches.length) { euAcClose(); return; }
+            if (!euAcEl) {
+                euAcEl = document.createElement('div');
+                euAcEl.id = 'euro-team-ac';
+                euAcEl.className = 'bg-slate-900 border border-slate-600 rounded-lg shadow-2xl overflow-y-auto text-xs';
+                euAcEl.style.cssText = 'position:fixed;z-index:99999;max-height:220px;display:none;';
+                euAcEl.addEventListener('mousedown', e => {
+                    e.preventDefault();
+                    const it = e.target.closest('.eu-ac-item');
+                    if (it) euAcPick(parseInt(it.dataset.i, 10));
+                });
+                document.body.appendChild(euAcEl);
+            }
+            euAcActive = el;
+            euAcIdx = 0;
+            euAcEl.innerHTML = euAcMatches.map((t, i) => `<div class="eu-ac-item flex items-center gap-2 px-2.5 py-1.5 cursor-pointer text-slate-200 hover:bg-emerald-600/70" data-i="${i}">${t.logo ? `<img src="${t.logo}" alt="" class="w-4 h-4 object-contain shrink-0" onerror="this.style.visibility='hidden'">` : '<span class="w-4 shrink-0"></span>'}<span class="truncate font-bold">${escapeHtml(t.name)}</span></div>`).join('');
+            const r = el.getBoundingClientRect();
+            euAcEl.style.left = r.left + 'px';
+            euAcEl.style.top = (r.bottom + 2) + 'px';
+            euAcEl.style.minWidth = Math.max(r.width, 180) + 'px';
+            euAcEl.style.display = 'block';
+            euAcHighlight();
+        }
+        // Takım adı veri listesi bağlı (datalist) tüm girişleri otomatik olarak bu arama kutusuna çevir
+        document.addEventListener('focusin', e => {
+            const el = e.target;
+            if (el && el.matches && el.matches('input[list="global-team-datalist"]')) {
+                el.setAttribute('data-team-ac', '1');
+                el.removeAttribute('list');
+                el.setAttribute('autocomplete', 'off');
+            }
+        });
+        document.addEventListener('input', e => { if (euAcIsField(e.target)) euAcShow(e.target); });
+        document.addEventListener('focusout', e => { if (euAcIsField(e.target)) euAcClose(); });
+        document.addEventListener('keydown', e => {
+            const el = e.target;
+            if (!euAcIsField(el)) return;
+            const open = euAcEl && euAcEl.style.display === 'block' && euAcMatches.length;
+            if (e.key === 'ArrowDown' && open) { e.preventDefault(); euAcIdx = (euAcIdx + 1) % euAcMatches.length; euAcHighlight(); }
+            else if (e.key === 'ArrowUp' && open) { e.preventDefault(); euAcIdx = (euAcIdx - 1 + euAcMatches.length) % euAcMatches.length; euAcHighlight(); }
+            else if (e.key === 'Enter') {
+                if (open) { e.preventDefault(); euAcPick(euAcIdx); }
+                else if (el.isContentEditable) { e.preventDefault(); el.blur(); }
+            }
+            else if (e.key === 'Escape') { euAcClose(); }
+        });
+        window.addEventListener('scroll', () => euAcClose(), true);
+        window.addEventListener('resize', () => euAcClose());
+
         function updateEuroLeague(season, league, index, field, element) {
             if (!euroLeaguesData[season]) euroLeaguesData[season] = {};
             if (!euroLeaguesData[season][league]) euroLeaguesData[season][league] = [{},{},{},{}];
             euroLeaguesData[season][league][index][field] = element.innerText.trim();
+            if (field === 'name') { // satırdaki takım logosunu anında güncelle
+                const slot = element.parentElement && element.parentElement.querySelector('.eu-tlogo');
+                if (slot) {
+                    const url = typeof getTeamLogoByName === 'function' ? getTeamLogoByName(element.innerText.trim()) : '';
+                    slot.innerHTML = url ? `<img src="${url}" alt="" class="w-4 h-4 object-contain" onerror="this.style.visibility='hidden'">` : '';
+                }
+            }
             saveToLocalStorage(); // Sayfayı yenilemeden sessizce kaydeder (Kullanıcının imleç odağı bozulmaz)
         }
 
@@ -8512,6 +8646,20 @@ function formatShortPlayerName(name) {
             [list[idx], list[newIdx]] = [list[newIdx], list[idx]];
             saveToLocalStorage();
             renderFixturePanel();
+        }
+
+        // --- Avrupa Ligleri kartları: aç/kapa (durum bu tarayıcıda saklanır) ---
+        let euroCollapsed = {};
+        try { euroCollapsed = JSON.parse(localStorage.getItem('euroLeagueCollapsed2') || '{}') || {}; } catch (e) { euroCollapsed = {}; }
+        function euroIsCollapsed(name) { return (name in euroCollapsed) ? !!euroCollapsed[name] : window.innerWidth < 768; }
+        function toggleEuroLeague(headEl) {
+            const card = headEl.closest('.euro-card');
+            const name = headEl.dataset.league;
+            if (!card || !name) return;
+            const next = card.dataset.collapsed !== '1';
+            card.dataset.collapsed = next ? '1' : '0';
+            euroCollapsed[name] = next;
+            try { localStorage.setItem('euroLeagueCollapsed2', JSON.stringify(euroCollapsed)); } catch (e) {}
         }
 
         function toggleCustomTournamentCollapse(tourId) {
@@ -8976,6 +9124,57 @@ function switchFixtureTab(idx) {
     });
 }
 
+function fxEventsHtml(m, ourLogo, oppLogo) {
+    return m.events.slice().sort((a, b) => (parseInt(a.min) || 0) - (parseInt(b.min) || 0)).map(ev => {
+        const isUs = ev.type === 'US';
+        const eventTeamLogo = isUs ? ourLogo : oppLogo;
+        const scorerPhoto = getPlayerPhotoByName(ev.scorer);
+        const scorerImg = scorerPhoto
+            ? `<img src="${scorerPhoto}" class="w-8 h-8 rounded-full object-cover border border-slate-600 shrink-0">`
+            : `<div class="w-8 h-8 rounded-full bg-slate-700 border border-slate-600 flex items-center justify-center text-[11px] font-bold shrink-0">${escapeHtml((ev.scorer || '?').charAt(0))}</div>`;
+
+        return `
+            <div class="flex items-center gap-2.5 min-w-0 text-left rounded-lg bg-slate-900/70 border border-slate-700/50 border-l-[3px] ${isUs ? 'border-l-emerald-500' : 'border-l-red-500/70'} pl-2 pr-3 py-1.5">
+                <span class="w-9 shrink-0 text-center text-xs font-black tabular-nums ${isUs ? 'text-emerald-300' : 'text-red-300'}">${ev.min ? escapeHtml(String(ev.min)) + "'" : '-'}</span>
+                ${eventTeamLogo ? `<img src="${eventTeamLogo}" class="w-5 h-5 object-contain shrink-0">` : '<div class="w-5 h-5 shrink-0"></div>'}
+                ${scorerImg}
+                <div class="flex-1 min-w-0">
+                    <div class="text-xs font-bold text-white truncate leading-tight" title="${escapeHtml(ev.scorer || '')}">${escapeHtml(homeShortName(ev.scorer)) || 'Bilinmiyor'}</div>
+                    ${ev.assist ? `<div class="text-[10px] font-semibold text-sky-400 truncate leading-tight mt-0.5" title="${escapeHtml(ev.assist)}"><i class="fa-solid fa-shoe-prints text-[8px] mr-1 opacity-80"></i>${escapeHtml(homeShortName(ev.assist))}</div>` : ''}
+                </div>
+            </div>`;
+    }).join('');
+}
+
+function fxEventsHtml(m, ourLogo, oppLogo) {
+    return m.events.slice().sort((a, b) => (parseInt(a.min) || 0) - (parseInt(b.min) || 0)).map(ev => {
+        const isUs = ev.type === 'US';
+        const eventTeamLogo = isUs ? ourLogo : oppLogo;
+        const scorerPhoto = getPlayerPhotoByName(ev.scorer);
+        const scorerImg = scorerPhoto
+            ? `<img src="${scorerPhoto}" class="w-8 h-8 rounded-full object-cover border border-slate-600 shrink-0">`
+            : `<div class="w-8 h-8 rounded-full bg-slate-700 border border-slate-600 flex items-center justify-center text-[11px] font-bold shrink-0">${escapeHtml((ev.scorer || '?').charAt(0))}</div>`;
+
+        return `
+            <div class="flex items-center gap-2.5 min-w-0 text-left rounded-lg bg-slate-900/70 border border-slate-700/50 border-l-[3px] ${isUs ? 'border-l-emerald-500' : 'border-l-red-500/70'} pl-2 pr-3 py-1.5">
+                <span class="w-9 shrink-0 text-center text-xs font-black tabular-nums ${isUs ? 'text-emerald-300' : 'text-red-300'}">${ev.min ? escapeHtml(String(ev.min)) + "'" : '-'}</span>
+                ${eventTeamLogo ? `<img src="${eventTeamLogo}" class="w-5 h-5 object-contain shrink-0">` : '<div class="w-5 h-5 shrink-0"></div>'}
+                ${scorerImg}
+                <div class="flex-1 min-w-0">
+                    <div class="text-xs font-bold text-white truncate leading-tight" title="${escapeHtml(ev.scorer || '')}">${escapeHtml(homeShortName(ev.scorer)) || 'Bilinmiyor'}</div>
+                    ${ev.assist ? `<div class="text-[10px] font-semibold text-sky-400 truncate leading-tight mt-0.5" title="${escapeHtml(ev.assist)}"><i class="fa-solid fa-shoe-prints text-[8px] mr-1 opacity-80"></i>${escapeHtml(homeShortName(ev.assist))}</div>` : ''}
+                </div>
+            </div>`;
+    }).join('');
+}
+
+let fxScorersOpen = false; // Mobilde gol detayları sütunu varsayılan kapalı
+function toggleFxScorers() {
+    fxScorersOpen = !fxScorersOpen;
+    document.querySelectorAll('#fx-panels table[data-scorers]').forEach(t => { t.dataset.scorers = fxScorersOpen ? '1' : '0'; });
+    document.querySelectorAll('.fx-scorers-btn').forEach(b => { b.dataset.on = fxScorersOpen ? '1' : '0'; });
+}
+
 function renderFixturePanel() {
             updateMockPlayers();
 
@@ -9003,6 +9202,28 @@ function renderFixturePanel() {
             const played = wins + draws + losses;
             const pts = wins * 3 + draws;
 
+            // Sezonun en farklı galibiyeti ve mağlubiyeti (skor farkı; eşitse atılan gol, sonra en yeni maç)
+            let bigW = null, bigL = null;
+            filtered.forEach(m => {
+                const hs = parseInt(m.homeScore), as = parseInt(m.awayScore);
+                if (isNaN(hs) || isNaN(as)) return;
+                const isHome = isOurTeam(m.home), isAway = isOurTeam(m.away);
+                if (!isHome && !isAway) return;
+                const us = isHome ? hs : as, them = isHome ? as : hs, diff = us - them;
+                if (diff === 0) return;
+                const cand = { m, diff: Math.abs(diff), scored: us, date: String(m.date || '') };
+                const better = (b) => !b || cand.diff > b.diff || (cand.diff === b.diff && (cand.scored > b.scored || (cand.scored === b.scored && cand.date >= b.date)));
+                if (diff > 0) { if (better(bigW)) bigW = cand; } else { if (better(bigL)) bigL = cand; }
+            });
+            const fxLogo = (n) => {
+                const l = getTeamLogoByName(n);
+                return l ? `<img src="${l}" alt="" class="w-4 h-4 object-contain shrink-0" title="${escapeHtml(n || '')}">`
+                    : `<span class="w-4 h-4 rounded-full bg-slate-700 text-[8px] font-bold flex items-center justify-center shrink-0" title="${escapeHtml(n || '')}">${escapeHtml((n || '?').charAt(0))}</span>`;
+            };
+            const fxBig = (b, cls) => b
+                ? `<span class="inline-flex items-center gap-1 whitespace-nowrap" title="${escapeHtml((b.m.home || '') + ' ' + parseInt(b.m.homeScore) + '-' + parseInt(b.m.awayScore) + ' ' + (b.m.away || ''))}">${fxLogo(b.m.home)}<span class="${cls}">${parseInt(b.m.homeScore)}-${parseInt(b.m.awayScore)}</span>${fxLogo(b.m.away)}</span>`
+                : '<span class="text-slate-600 font-normal">-</span>';
+
             const seasonTabsHtml = seasonsList.map(s => `
                 <button onclick="switchFixtureSeason('${s}')"
                     class="px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold border transition-all whitespace-nowrap
@@ -9012,10 +9233,10 @@ function renderFixturePanel() {
             `).join('');
 
             const filterHtml = `
-                <button onclick="setFixtureFilter('')" title="Tümü"
+                <button onclick="setFixtureFilter('')" title="Tümü (${matches.length})"
                     class="px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold border transition-all whitespace-nowrap
                         ${!filterTour ? 'bg-slate-500 text-white border-slate-400' : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white'}">
-                T (${matches.length})
+                T
             </button>
             ${[...new Set(matches.map(m => m.tournament).filter(Boolean))].map(t => {
                 const cnt = matches.filter(m => m.tournament === t).length;
@@ -9024,10 +9245,10 @@ function renderFixturePanel() {
                 const labelHtml = tLogo
                     ? `<img src="${tLogo}" alt="${escapeHtml(t)}" class="w-4 h-4 object-contain inline-block align-middle">`
                     : getTournamentAbbr(t);
-                return `<button onclick="setFixtureFilter('${safeTour}')" title="${t}"
+                return `<button onclick="setFixtureFilter('${safeTour}')" title="${t} (${cnt})"
                     class="px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold border transition-all whitespace-nowrap flex items-center gap-1.5
                         ${filterTour === t ? 'bg-emerald-700 text-white border-emerald-500' : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white'}">
-                    ${labelHtml} <span>(${cnt})</span>
+                    ${labelHtml}
                 </button>`;
             }).join('')}
         `;
@@ -9111,7 +9332,8 @@ function renderFixturePanel() {
                         const ourLogo = isHomeUs ? homeLogo : awayLogo;
                         const oppLogo = isHomeUs ? awayLogo : homeLogo;
 
-                        eventsListHtml = m.events.map(ev => {
+                        eventsListHtml = fxEventsHtml(m, ourLogo, oppLogo);
+                        if (false) eventsListHtml = m.events.map(ev => {
                             const eventTeamLogo = ev.type === 'US' ? ourLogo : oppLogo;
                             const scorerPhoto = getPlayerPhotoByName(ev.scorer);
                             const scorerImg = scorerPhoto
@@ -9193,7 +9415,7 @@ function renderFixturePanel() {
                             </td>
                         </tr>
                         <tr id="fx-details-${m.id}" class="bg-slate-950/60 fade-in ${isExpanded ? '' : 'hidden'}">
-                            <td colspan="7" class="p-3 border-b border-slate-700/60">
+                            <td colspan="8" class="p-3 border-b border-slate-700/60">
                                 <div class="flex justify-between items-center mb-2">
                                     <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"><i class="fa-solid fa-futbol mr-1 text-emerald-500"></i>Gol & Asist Detayları</span>
                                     <button onclick="event.stopPropagation(); openMatchResultModal('${activeFixtureSeason}', '${m.id}')" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-emerald-400 px-2 py-1 rounded transition-colors"><i class="fa-solid fa-pen mr-1"></i>Düzenle</button>
@@ -9226,13 +9448,14 @@ function renderFixturePanel() {
                             <h3 class="text-sm sm:text-lg font-bold text-white"><i class="fa-solid fa-calendar-days text-emerald-400 mr-2"></i>Fikstür</h3>
                             <div class="flex gap-1.5">
                                 <button onclick="openFixtureTextBulkModal('${activeFixtureSeason}')" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-1.5 py-0.5 sm:px-3 sm:py-1.5 rounded text-[10px] sm:text-xs transition-colors shadow flex items-center gap-1.5" title="Metin (Virgüllü) ile Toplu Ekle">
-                                    <i class="fa-solid fa-file-lines"></i><span class="hidden sm:inline"> Metin Ekle</span>
+                                    <i class="fa-solid fa-file-lines"></i>
                                 </button>
-                                <button onclick="openFixtureBulkModal('${activeFixtureSeason}')" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-1.5 py-0.5 sm:px-3 sm:py-1.5 rounded text-[10px] sm:text-xs transition-colors shadow flex items-center gap-1.5">
-                                    <i class="fa-solid fa-list-check"></i><span class="hidden sm:inline"> Toplu Ekle</span>
+                                <button onclick="openFixtureBulkModal('${activeFixtureSeason}')" title="Toplu Ekle" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-1.5 py-0.5 sm:px-3 sm:py-1.5 rounded text-[10px] sm:text-xs transition-colors shadow flex items-center gap-1.5">
+                                    <i class="fa-solid fa-list-check"></i>
                                 </button>
-                                <button onclick="openFixtureModal('${activeFixtureSeason}', null)" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-1.5 py-0.5 sm:px-3 sm:py-1.5 rounded text-[10px] sm:text-xs transition-colors shadow flex items-center gap-1.5">
-                                    <i class="fa-solid fa-plus"></i><span class="hidden sm:inline"> Ekle</span>
+                                <button onclick="toggleFxScorers()" data-on="${fxScorersOpen ? 1 : 0}" class="fx-scorers-btn sm:hidden bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold px-1.5 py-0.5 rounded text-[10px] transition-colors shadow flex items-center" title="Gol Detayları"><i class="fa-solid fa-futbol"></i></button>
+                                <button onclick="openFixtureModal('${activeFixtureSeason}', null)" title="Ekle" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-1.5 py-0.5 sm:px-3 sm:py-1.5 rounded text-[10px] sm:text-xs transition-colors shadow flex items-center gap-1.5">
+                                    <i class="fa-solid fa-plus"></i>
                                 </button>
                                 <button onclick="deleteBulkFixtures()" class="bg-red-900/50 hover:bg-red-800 text-red-200 font-bold px-1.5 py-0.5 sm:px-3 sm:py-1.5 rounded text-[10px] sm:text-xs transition-colors" title="Toplu Sil">
                                     <i class="fa-solid fa-trash-can"></i>
@@ -9253,9 +9476,9 @@ function renderFixturePanel() {
                                     <div class="text-[9px] text-slate-500 font-bold uppercase tracking-widest mb-0.5">Gol (A/Y)</div>
                                     <div class="text-xs font-black text-white">${gf} <span class="text-slate-500 font-normal">/ ${ga}</span></div>
                                 </div>
-                                <div class="bg-slate-950 border border-emerald-900/50 rounded p-1 sm:p-1 sm:p-1 sm:p-1 sm:p-1.5 text-center">
-                                    <div class="text-[9px] text-emerald-500 font-bold uppercase tracking-widest mb-0.5">Puan</div>
-                                    <div class="text-xs font-black text-emerald-400">${pts}</div>
+                                <div class="bg-slate-950 border border-slate-700 rounded p-1 sm:p-1 sm:p-1 sm:p-1 sm:p-1.5 text-center">
+                                    <div class="text-[9px] text-slate-500 font-bold uppercase tracking-widest mb-0.5">En Büyük G / M</div>
+                                    <div class="flex flex-wrap items-center justify-center gap-x-3 gap-y-0.5 text-xs font-black">${fxBig(bigW, 'text-green-400')}${fxBig(bigL, 'text-red-400')}</div>
                                 </div>
                             </div>` : ''}
 
@@ -9266,7 +9489,7 @@ function renderFixturePanel() {
 
                             <!-- Match Table -->
                             <div class="flex-1 overflow-auto table-scroll border border-slate-700 rounded-lg bg-slate-950 min-h-0">
-                                <table class="w-full border-separate border-spacing-0 text-xs min-w-[500px]">
+                                <table class="w-full border-separate border-spacing-0 text-xs min-w-[500px]" data-scorers="${fxScorersOpen ? 1 : 0}">
                                     <thead class="bg-slate-900 sticky top-0 z-10">
                                         <tr class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">
                                             <th class="p-0.5 text-center border-b border-slate-700 w-5" title="Maç No">#</th>
@@ -9304,8 +9527,8 @@ function renderFixturePanel() {
                                     <option value="Avrupa Şampiyonası">Avrupa Şampiyonası</option>
                                     <option value="CUSTOM" class="text-emerald-400 font-bold">+ Yeni / Özel Turnuva</option>
                                 </select>
-                                <button onclick="addCustomTournament()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-[9px] sm:text-[10px] font-bold transition-colors">
-                                    <i class="fa-solid fa-plus mr-1"></i>Ekle
+                                <button onclick="addCustomTournament()" title="Ekle" class="bg-emerald-600 hover:bg-emerald-500 text-white px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-[9px] sm:text-[10px] font-bold transition-colors">
+                                    <i class="fa-solid fa-plus"></i>
                                 </button>
                             </div>
                         </div>
@@ -9365,7 +9588,7 @@ function renderFixturePanel() {
                                                     <div class="flex gap-1 shrink-0">
                                                         ${!knockoutOn && tour.type !== 'Süper Lig' ? `<button onclick="toggleTournamentKnockouts('${tour.id}', true)" class="text-[9px] bg-slate-800 hover:bg-emerald-600 hover:text-white text-emerald-400 px-2 py-0.5 rounded transition-colors" title="+ Eleme Aşamaları Ekle"><i class="fa-solid fa-sitemap"></i></button>` : ''}
                                                         ${ltModeButtonHtml(tour.id, ltMode)}
-                                                        <button onclick="openTournamentTableBulkModal('${tour.id}')" class="text-[9px] bg-indigo-900/50 hover:bg-indigo-800 text-indigo-300 px-2 py-0.5 rounded transition-colors" title="Toplu Ekle"><i class="fa-solid fa-list-ol mr-1"></i>Toplu</button>
+                                                        <button onclick="openTournamentTableBulkModal('${tour.id}')" class="text-[9px] bg-indigo-900/50 hover:bg-indigo-800 text-indigo-300 px-2 py-0.5 rounded transition-colors" title="Toplu Ekle"><i class="fa-solid fa-list-ol"></i></button>
                                                         <button onclick="addRowToCustomTournament('${tour.id}')" class="text-[9px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-0.5 rounded transition-colors" title="Satır Ekle"><i class="fa-solid fa-plus"></i></button>
                                                         <button onclick="toggleTournamentTable('${tour.id}', false)" class="text-[9px] bg-red-900/40 hover:bg-red-800 text-red-300 px-2 py-0.5 rounded transition-colors" title="Bu Bölümü Sil"><i class="fa-solid fa-trash"></i></button>
                                                     </div>
@@ -9447,8 +9670,8 @@ function renderFixturePanel() {
                                                 : 'bg-slate-900 border-slate-700/50 shadow-sm';
 
                                             // Kazanan takımın logosunu parlatmak için dinamik sınıflar
-                                            let hLogoStyle = "w-8 h-8 object-contain drop-shadow-md transition-all duration-300";
-                                            let aLogoStyle = "w-8 h-8 object-contain drop-shadow-md transition-all duration-300";
+                                            let hLogoStyle = "w-6 h-6 sm:w-8 sm:h-8 object-contain drop-shadow-md transition-all duration-300";
+                                            let aLogoStyle = "w-6 h-6 sm:w-8 sm:h-8 object-contain drop-shadow-md transition-all duration-300";
                                             
                                             let matchResultLetter = '';
                                             let scoreBoxClass = 'bg-slate-950 border-slate-700 shadow-inner hover:border-slate-500';
@@ -9500,10 +9723,10 @@ function renderFixturePanel() {
                                             }
 
                                             return `
-                                            <div class="flex flex-col sm:flex-row justify-between items-center border rounded-lg p-2 mb-2 group/ko relative gap-3 transition-all ${rowStyle}">
+                                            <div class="flex flex-row justify-between items-center border rounded-lg px-1.5 py-1 sm:p-2 mb-0 sm:mb-2 group/ko relative gap-1.5 sm:gap-3 transition-all ${rowStyle}">
                                                 
                                                 <!-- Tur Dropdown (Daraltılmış) -->
-                                                <select class="bg-slate-950 ${textColorClass} font-bold uppercase tracking-widest text-[11px] w-16 text-center rounded px-1 py-1.5 border border-slate-800 outline-none ${focusBorderClass} cursor-pointer" onchange="updateKnockoutField('${tour.id}', '${ko.id}', 'stage', this)">
+                                                <select class="ko-stage bg-slate-950 ${textColorClass} font-bold uppercase tracking-wider sm:tracking-widest text-[10px] sm:text-[11px] w-11 sm:w-16 text-center rounded px-0.5 sm:px-1 py-1 sm:py-1.5 border border-slate-800 outline-none ${focusBorderClass} cursor-pointer" data-stage="${stage}" onchange="updateKnockoutField('${tour.id}', '${ko.id}', 'stage', this)">
                                                     <option value="R1" ${stage === 'R1' ? 'selected' : ''}>R1</option>
                                                     <option value="R2" ${stage === 'R2' ? 'selected' : ''}>R2</option>
                                                     <option value="R3" ${stage === 'R3' ? 'selected' : ''}>R3</option>
@@ -9518,23 +9741,23 @@ function renderFixturePanel() {
                                                 </select>
                                                 
                                                 <!-- İçerik Paneli -->
-                                                <div class="flex-1 flex items-center justify-center gap-4 w-full">
+                                                <div class="flex-1 flex items-center justify-center gap-2 sm:gap-4 w-full min-w-0">
                                                     
                                                     <!-- Ev Sahibi Logo / Ekle Butonu -->
                                                     <div class="flex items-center justify-end flex-1">
-                                                        <div class="w-10 h-10 flex items-center justify-center shrink-0 cursor-pointer transition-transform hover:scale-110" title="${escapeHtml(hName)}" onclick="editKnockoutTeam('${tour.id}', '${ko.id}', 'home', '${escapeHtml(hName)}', this)">
+                                                        <div class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center shrink-0 cursor-pointer transition-transform hover:scale-110" title="${escapeHtml(hName)}" onclick="editKnockoutTeam('${tour.id}', '${ko.id}', 'home', '${escapeHtml(hName)}', this)">
                                                             ${hName ? `<img src="${hLogo}" class="${hLogoStyle}" onerror="this.style.display='none'">` : `<i class="fa-solid fa-plus text-slate-600 hover:text-emerald-400 text-lg transition-colors"></i>`}
                                                         </div>
                                                     </div>
 
                                                     <!-- Skorlar (Tıklanabilir Sabit Yükseklikli Panel) -->
-                                                    <div class="flex flex-col items-center justify-center shrink-0 px-3 min-w-[64px] h-[34px] rounded-lg border z-10 cursor-pointer transition-colors ${scoreBoxClass}" onclick="openKoScoreModal('${tour.id}', '${ko.id}')" title="Skorları Düzenle">
+                                                    <div class="flex flex-col items-center justify-center shrink-0 px-2 sm:px-3 min-w-[54px] sm:min-w-[64px] h-[28px] sm:h-[34px] rounded-lg border z-10 cursor-pointer transition-colors ${scoreBoxClass}" onclick="openKoScoreModal('${tour.id}', '${ko.id}')" title="Skorları Düzenle">
                                                         ${scoreDisplayHtml}
                                                     </div>
 
                                                     <!-- Deplasman Logo / Ekle Butonu -->
                                                     <div class="flex items-center justify-start flex-1">
-                                                        <div class="w-10 h-10 flex items-center justify-center shrink-0 cursor-pointer transition-transform hover:scale-110" title="${escapeHtml(aName)}" onclick="editKnockoutTeam('${tour.id}', '${ko.id}', 'away', '${escapeHtml(aName)}', this)">
+                                                        <div class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center shrink-0 cursor-pointer transition-transform hover:scale-110" title="${escapeHtml(aName)}" onclick="editKnockoutTeam('${tour.id}', '${ko.id}', 'away', '${escapeHtml(aName)}', this)">
                                                             ${aName ? `<img src="${aLogo}" class="${aLogoStyle}" onerror="this.style.display='none'">` : `<i class="fa-solid fa-plus text-slate-600 hover:text-emerald-400 text-lg transition-colors"></i>`}
                                                         </div>
                                                     </div>
@@ -9542,7 +9765,7 @@ function renderFixturePanel() {
                                                 </div>
                                                 
                                                 <!-- Silme Butonu -->
-                                                <button onclick="removeKnockoutMatch('${tour.id}', '${ko.id}')" class="text-slate-600 hover:text-red-500 transition-colors p-1.5 rounded-full sm:absolute sm:-right-2 sm:-top-2 sm:bg-slate-900 sm:border border-slate-700 sm:shadow-lg shrink-0" title="Turu Sil"><i class="fa-solid fa-xmark"></i></button>
+                                                <button onclick="removeKnockoutMatch('${tour.id}', '${ko.id}')" class="text-slate-600 hover:text-red-500 transition-colors p-1 sm:p-1.5 rounded-full sm:absolute sm:-right-2 sm:-top-2 sm:bg-slate-900 sm:border border-slate-700 sm:shadow-lg shrink-0" title="Turu Sil"><i class="fa-solid fa-xmark"></i></button>
                                             </div>
                                         `;
                                         }).join('');
@@ -9553,7 +9776,7 @@ function renderFixturePanel() {
                                                 <span class="text-[10px] text-slate-400 font-bold uppercase truncate"><i class="fa-solid fa-sitemap mr-1"></i>Eleme Aşamaları</span>
                                                 <div class="flex gap-1 shrink-0">
                                                     ${!tableOn ? `<button type="button" onclick="toggleTournamentTable('\${tour.id}', true)" class="text-[9px] bg-slate-800 hover:bg-emerald-600 hover:text-white text-emerald-400 px-2 py-0.5 rounded transition-colors" title="+ Grup / Lig Tablosu Ekle"><i class="fa-solid fa-table-list"></i></button>` : ''}
-                                                    <button type="button" onclick="addKnockoutMatch('${tour.id}')" class="text-[9px] bg-slate-800 hover:bg-slate-700 text-emerald-400 px-2 py-0.5 rounded transition-colors"><i class="fa-solid fa-plus mr-1"></i>Tur Ekle</button>
+                                                    <button type="button" onclick="addKnockoutMatch('${tour.id}')" title="Tur Ekle" class="text-[9px] bg-slate-800 hover:bg-slate-700 text-emerald-400 px-2 py-0.5 rounded transition-colors"><i class="fa-solid fa-plus"></i></button>
                                                     <button type="button" onclick="toggleTournamentKnockouts('${tour.id}', false)" class="text-[9px] bg-red-900/40 hover:bg-red-800 text-red-300 px-2 py-0.5 rounded transition-colors" title="Bu Bölümü Sil"><i class="fa-solid fa-trash"></i></button>
                                                 </div>
                                             </div>
@@ -9662,34 +9885,37 @@ function renderFixturePanel() {
                     <!-- 3. SAĞ PANEL: DİĞER LİGLER (İlk 4) -->
                     <div class="fx-panel hidden xl:flex flex-col bg-slate-900 border border-slate-700 rounded-b-xl rounded-tr-xl xl:rounded-xl overflow-hidden shadow-lg flex-1 min-h-0 xl:h-full relative z-0">
                         <div class="bg-slate-800 border-b border-slate-700 p-1.5 sm:p-3 shrink-0 flex justify-between items-center flex-wrap gap-2">
-                            <h3 class="text-sm sm:text-lg font-bold text-white"><i class="fa-solid fa-globe mr-2 text-blue-400"></i>Avrupa Ligleri (İlk 4)</h3>
+                            <h3 class="text-sm sm:text-lg font-bold text-white"><i class="fa-solid fa-globe mr-2 text-blue-400"></i>Diğer Ligler</h3>
                             <div class="flex items-center gap-2">
-                                <button onclick="openEuroLeaguesBulkModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-[9px] sm:text-[10px] font-bold transition-colors shadow flex items-center gap-1">
-                                    <i class="fa-solid fa-list-ol"></i> Toplu Ekle
+                                <button onclick="openEuroLeaguesBulkModal()" title="Toplu Ekle" class="bg-indigo-600 hover:bg-indigo-500 text-white px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-[9px] sm:text-[10px] font-bold transition-colors shadow flex items-center gap-1">
+                                    <i class="fa-solid fa-list-ol"></i>
                                 </button>
                                 <span class="text-sm text-slate-400 hidden lg:inline cursor-help" title="Tıkla ve Düzenle"><i class="fa-solid fa-pen"></i></span>
                             </div>
                         </div>
-                        <div class="p-4 overflow-y-auto custom-scrollbar h-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2 gap-4 content-start">
+                        <div class="p-2 sm:p-4 overflow-y-auto custom-scrollbar h-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2 gap-1.5 sm:gap-4 content-start">
                             
                             ${EURO_LEAGUES_LIST.map(league => {
                                 const lData = (euroLeaguesData[activeFixtureSeason] && euroLeaguesData[activeFixtureSeason][league.name]) ? euroLeaguesData[activeFixtureSeason][league.name] : [{},{},{},{}];
+                                const euChampName = (lData[0] && lData[0].name) ? String(lData[0].name) : '';
+                                const euChampLogo = euChampName && typeof getTeamLogoByName === 'function' ? getTeamLogoByName(euChampName) : '';
                                 
                                 return `
-                                <div class="bg-slate-950 p-3 rounded-lg border border-slate-700 shadow-sm">
-                                    <h4 class="text-sm font-bold text-slate-200 mb-2 flex items-center gap-2 border-b border-slate-800 pb-2">
-                                        <img src="https://flagcdn.com/24x18/${league.flag}.png" class="w-4 h-3 rounded-sm drop-shadow"> ${league.name}
+                                <div class="euro-card bg-slate-950 p-2 sm:p-3 rounded-lg border border-slate-700 shadow-sm" data-collapsed="${euroIsCollapsed(league.name) ? 1 : 0}">
+                                    <h4 onclick="toggleEuroLeague(this)" data-league="${league.name}" class="euro-head cursor-pointer select-none text-sm font-bold text-slate-200 mb-1 sm:mb-2 flex items-center gap-2 border-b border-slate-800 pb-1 sm:pb-2">
+                                        <img src="https://flagcdn.com/24x18/${league.flag}.png" class="w-4 h-3 rounded-sm drop-shadow"> <span class="truncate">${league.name}</span><span class="euro-badge ml-auto items-center gap-1.5 shrink-0 min-w-0">${euChampLogo ? `<i class="fa-solid fa-trophy text-yellow-500 text-[10px] drop-shadow-[0_0_4px_rgba(234,179,8,0.7)]"></i><img src="${euChampLogo}" alt="" title="${escapeHtml(euChampName)}" class="w-5 h-5 object-contain" onerror="this.style.display='none'">` : ''}</span><i class="euro-chev fa-solid fa-chevron-down text-[10px] text-slate-500 shrink-0 ${euChampLogo ? 'ml-1.5' : 'ml-auto'}"></i>
                                     </h4>
-                                    <div class="space-y-1">
+                                    <div class="euro-body space-y-1">
                                         ${[0,1,2,3].map(i => {
                                             const tName = lData[i].name || 'Takım Adı';
                                             const tPts = lData[i].pts || '0 P';
+                                            const tLogo = lData[i].name && typeof getTeamLogoByName === 'function' ? getTeamLogoByName(lData[i].name) : '';
                                             const colors = ['emerald', 'blue', 'blue', 'orange'];
                                             return `
-                                            <div class="flex justify-between items-center text-xs p-1.5 hover:bg-slate-800 rounded transition-colors border-l-2 border-${colors[i]}-500">
+                                            <div class="flex justify-between items-center text-xs px-1.5 py-0.5 sm:p-1.5 hover:bg-slate-800 rounded transition-colors border-l-2 border-${colors[i]}-500">
                                                 <div class="flex gap-2 items-center w-full min-w-0 pr-2">
-                                                    <span class="w-4 text-center text-${colors[i]}-400 font-bold shrink-0">${i+1}</span>
-                                                    <span class="font-bold text-slate-300 w-full text-left outline-none focus:bg-slate-700 px-1 rounded cursor-text truncate" contenteditable="true" onblur="updateEuroLeague('${activeFixtureSeason}', '${league.name}', ${i}, 'name', this)" title="Takım Adını Düzenle">${tName}</span>
+                                                    <span class="w-4 text-center text-${colors[i]}-400 font-bold shrink-0">${i+1}</span><span class="eu-tlogo w-4 h-4 shrink-0 flex items-center justify-center">${tLogo ? `<img src="${tLogo}" alt="" class="w-4 h-4 object-contain" onerror="this.style.visibility='hidden'">` : ''}</span>
+                                                    <span class="font-bold text-slate-300 w-full text-left outline-none focus:bg-slate-700 px-1 rounded cursor-text truncate" contenteditable="true" onblur="updateEuroLeague('${activeFixtureSeason}', '${league.name}', ${i}, 'name', this)" title="Takım Adını Düzenle" data-euro-team="1">${tName}</span>
                                                 </div>
                                                 <span class="font-bold text-${colors[i]}-400 outline-none focus:bg-slate-700 px-1 rounded cursor-text whitespace-nowrap shrink-0" contenteditable="true" onblur="updateEuroLeague('${activeFixtureSeason}', '${league.name}', ${i}, 'pts', this)" title="Puanı Düzenle">${tPts}</span>
                                             </div>
@@ -10634,6 +10860,16 @@ const defaultFormation = [
     { x: 50, y: 12, name: '', pos: 'ST' }
 ];
 
+function defaultFormationFor(ctx) {
+    if (ctx === 'akademi') return [
+        { x: 50, y: 85, name: '', pos: 'GK' },
+        { x: 15, y: 45, name: '', pos: 'LM' },
+        { x: 35, y: 50, name: '', pos: 'CM' },
+        { x: 65, y: 50, name: '', pos: 'CM' },
+        { x: 85, y: 45, name: '', pos: 'RM' }
+    ];
+    return defaultFormation;
+}
 let activeFormationContext = null;
 let tempFormation = [];
 let isDraggingFormationNode = false;
@@ -10652,22 +10888,22 @@ document.addEventListener('click', function(e) {
 function openFormationModal(kadroType = 'ilk11') {
     activeFormationContext = squadContext;
     activeFormationType = kadroType;
-    document.getElementById('formation-title').innerText = (squadContext === 'astakim' ? 'As Takım' : 'Milli Takım') + ' Kadroları';
+    document.getElementById('formation-title').innerText = (squadContext === 'astakim' ? 'As Takım' : (squadContext === 'akademi' ? 'Akademi' : 'Milli Takım')) + ' Kadroları';
     
     if (!formations) formations = { astakim: { ilk11: null, yedek: null, rezerv: null }, milli: { ilk11: null, yedek: null, rezerv: null } };
     if (!formations[activeFormationContext]) formations[activeFormationContext] = { ilk11: null, yedek: null, rezerv: null };
 
     tempFormationsAll = {
-        ilk11: JSON.parse(JSON.stringify(formations[activeFormationContext].ilk11 || defaultFormation)),
-        yedek: JSON.parse(JSON.stringify(formations[activeFormationContext].yedek || defaultFormation)),
-        rezerv: JSON.parse(JSON.stringify(formations[activeFormationContext].rezerv || defaultFormation))
+        ilk11: JSON.parse(JSON.stringify(formations[activeFormationContext].ilk11 || defaultFormationFor(activeFormationContext))),
+        yedek: JSON.parse(JSON.stringify(formations[activeFormationContext].yedek || defaultFormationFor(activeFormationContext))),
+        rezerv: JSON.parse(JSON.stringify(formations[activeFormationContext].rezerv || defaultFormationFor(activeFormationContext)))
     };
     tempFormation = tempFormationsAll[activeFormationType];
     
     // Eski kayıtlarda pozisyon yoksa varsayılanı ata
     tempFormation.forEach((node, idx) => {
         if (node.pos === undefined || node.pos === '') {
-            node.pos = defaultFormation[idx] ? defaultFormation[idx].pos : 'POS';
+            node.pos = defaultFormationFor(activeFormationContext)[idx] ? defaultFormationFor(activeFormationContext)[idx].pos : 'POS';
         }
     });
     
@@ -10687,7 +10923,7 @@ function switchFormationType(type) {
     tempFormation = tempFormationsAll[type];
     tempFormation.forEach((node, idx) => {
         if (node.pos === undefined || node.pos === '') {
-            node.pos = defaultFormation[idx] ? defaultFormation[idx].pos : 'POS';
+            node.pos = defaultFormationFor(activeFormationContext)[idx] ? defaultFormationFor(activeFormationContext)[idx].pos : 'POS';
         }
     });
     renderFormationTabs();
@@ -10723,7 +10959,7 @@ function saveFormation() {
 
 function resetFormation() {
     if(confirm('Bu sekmedeki (' + (KADRO_TYPE_LABELS[activeFormationType] || activeFormationType) + ') dizilişi ve oyuncuları sıfırlamak istediğinize emin misiniz?')) {
-        tempFormationsAll[activeFormationType] = JSON.parse(JSON.stringify(defaultFormation));
+        tempFormationsAll[activeFormationType] = JSON.parse(JSON.stringify(defaultFormationFor(activeFormationContext)));
         tempFormation = tempFormationsAll[activeFormationType];
         renderFormationNodes();
         closeFormationSelector();
@@ -10999,7 +11235,7 @@ function triggerFormationAutocomplete(val) {
     const posVal = document.getElementById('formation-pos-input').value.trim().toUpperCase();
     
     // Doğru kadroyu çek (Milli vs Kulüp)
-    let squadPls = activeFormationContext === 'milli' ? (squadData.milli || []) : [...(squadData.astakim || []), ...(squadData.akademi || [])];
+    let squadPls = activeFormationContext === 'milli' ? (squadData.milli || []) : activeFormationContext === 'akademi' ? (squadData.akademi || []) : [...(squadData.astakim || []), ...(squadData.akademi || [])];
     squadPls = squadPls.filter(p => p.name);
 
     let matches = [];
