@@ -720,3 +720,33 @@ body.theme-light .mb-ovr > i { background: conic-gradient(var(--c) calc(var(--v)
 /* ===== Lig Tablosu (ana sayfa): başlık üstündeki gereksiz boşluğu kaldır ===== */
 #hcontent-lig > div:last-child { padding-top: 0 !important; }
 #hcontent-lig thead th { top: 0 !important; padding-top: .4rem !important; }
+
+/* ===== Maç giriş ekranı: zaman çizgisi ===== */
+.fev-tl { position: relative; display: grid; grid-template-columns: minmax(0,1fr) 52px minmax(0,1fr); row-gap: 8px; align-items: center; padding: 2px 0; }
+.fev-tl::before { content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: #334155; transform: translateX(-50%); }
+.fev-bub { position: relative; z-index: 1; margin: auto; width: 44px; height: 24px; border-radius: 99px; background: #1e293b; border: 2px solid #fbbf24; display: flex; align-items: center; justify-content: center; }
+.fev-bub.opp { border-color: #f87171; } .fev-bub.og { border-color: #a855f7; }
+.fev-bub input { width: 100%; background: transparent; border: 0; outline: 0; text-align: center; color: #fbbf24; font-size: 11px; font-weight: 900; padding: 0; -moz-appearance: textfield; appearance: textfield; }
+.fev-bub.opp input { color: #f87171; } .fev-bub.og input { color: #c084fc; }
+.fev-bub input::-webkit-outer-spin-button, .fev-bub input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.fev-card { display: flex; align-items: center; gap: 6px; min-width: 0; background: #0e1628; border: 1px solid #243049; border-radius: 10px; padding: 5px 7px; }
+.fev-card.l { border-right: 3px solid var(--fc); text-align: right; }
+.fev-card.r { border-left: 3px solid var(--fc); }
+.fev-card.us { --fc: #34d399; } .fev-card.opp { --fc: #f87171; } .fev-card.og { --fc: #a855f7; }
+.fev-fields { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.fev-card.l .fev-in { text-align: right; }
+.fev-in { width: 100%; background: transparent; border: 0; outline: 0; color: #e2e8f0; font-size: 12px; font-weight: 700; padding: 1px 0; }
+.fev-in::placeholder { color: #475569; font-weight: 600; }
+.fev-in.fev-as { color: #38bdf8; font-size: 10px; font-weight: 600; }
+.fev-del { flex-shrink: 0; width: 18px; height: 18px; border-radius: 6px; border: 0; cursor: pointer; font-size: 9px; color: #f87171; background: rgba(239,68,68,.12); display: flex; align-items: center; justify-content: center; }
+.fev-del:hover { background: #ef4444; color: #fff; }
+.fev-card.r .fev-del { order: 2; }
+.fev-add { display: inline-flex; align-items: center; gap: 5px; border-radius: 10px; padding: 6px 12px; font-size: 11px; font-weight: 800; cursor: pointer; background: rgba(16,185,129,.14); color: #34d399; border: 1px dashed rgba(16,185,129,.5); }
+.fev-add.opp { background: rgba(248,113,113,.1); color: #f87171; border-color: rgba(248,113,113,.5); }
+.fev-add.og { background: rgba(168,85,247,.1); color: #c084fc; border-color: rgba(168,85,247,.45); padding: 6px 9px; }
+.fev-add:hover { filter: brightness(1.25); }
+body.theme-light .fev-tl::before { background: #cbd5e1; }
+body.theme-light .fev-bub { background: #fdfbf7; }
+body.theme-light .fev-card { background: #fdfbf7; border-color: #d1c6b4; }
+body.theme-light .fev-in { color: #0f172a; }
+body.theme-light .fev-in.fev-as { color: #0369a1; }

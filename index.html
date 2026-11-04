@@ -915,8 +915,10 @@
             <div id="fm-events-container" class="flex-1 overflow-y-auto space-y-1 sm:space-y-2 pr-1 hide-scrollbar min-h-[60px]">
                 <!-- Olaylar buraya yüklenecek -->
             </div>
-            <div class="flex justify-end mt-1 sm:mt-2 shrink-0 pr-1">
-                <button onclick="addFixtureEvent()" title="Olay Ekle" class="bg-emerald-700 hover:bg-emerald-600 text-white text-[10px] sm:text-xs font-bold w-6 h-6 sm:w-8 sm:h-8 rounded flex items-center justify-center transition-colors"><i class="fa-solid fa-plus"></i></button>
+            <div class="flex justify-center items-center gap-2 mt-1 sm:mt-2 shrink-0">
+                <button onclick="addFixtureEvent('US')" class="fev-add us"><i class="fa-solid fa-plus"></i> Bizim gol</button>
+                <button onclick="addFixtureEvent('OPP')" class="fev-add opp"><i class="fa-solid fa-plus"></i> Rakip gol</button>
+                <button onclick="addFixtureEvent('OG')" title="Kendi kalesine" class="fev-add og"><i class="fa-solid fa-rotate-left"></i></button>
             </div>
 
             <div class="flex justify-end items-center mt-2 sm:mt-5 pt-2 sm:pt-4 border-t border-slate-700 shrink-0">

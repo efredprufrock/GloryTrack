@@ -599,6 +599,8 @@ const TR_EN = {
     // --- MAÇ SONUCU MODALI (MATCH RESULT MODAL) ---
     "Diğer": "Other",
     "Henüz olay eklenmedi.": "No events added yet.",
+    "Bizim gol": "Our goal",
+    "Rakip gol": "Opp. goal",
     "Dk": "Min",
     "⚽ Biz": "⚽ Us",
     "⚽ Rakip": "⚽ Opponent",
@@ -10204,9 +10206,9 @@ function renderFixturePanel() {
             renderQuickFixtureBar();
         }
 
-        function addFixtureEvent() {
+        function addFixtureEvent(type) {
             syncFixtureEvents();
-            fixtureEventsTemp.push({ min: '', type: 'US', scorer: '', assist: '' });
+            fixtureEventsTemp.push({ min: '', type: type || 'US', scorer: '', assist: '' });
             renderFixtureEvents();
         }
 
@@ -10228,7 +10230,57 @@ function renderFixturePanel() {
             });
         }
 
-            function renderFixtureEvents() {
+            function fevMinChanged() {
+            syncFixtureEvents();
+            const n = v => (v === '' || v === undefined || isNaN(parseInt(v))) ? 9999 : parseInt(v);
+            fixtureEventsTemp.sort((a, b) => n(a.min) - n(b.min));
+            renderFixtureEvents();
+        }
+
+        function renderFixtureEvents() {
+            const container = document.getElementById('fm-events-container');
+            if (!container) return;
+            if (fixtureEventsTemp.length === 0) {
+                container.innerHTML = '<div class="text-center text-slate-600 text-xs py-4"><i class="fa-solid fa-futbol mr-1"></i>Henüz olay eklenmedi.</div>';
+                updateScoreFromEvents();
+                return;
+            }
+            const match = (fixtureData[activeFixtureSeason] || []).find(m => m.id === activeFixtureMatchId);
+            let weAreHome = true;
+            if (match) {
+                const ctx = getFixtureMatchContext(match);
+                const ourName = ctx === 'milli' ? (managedTeams.milli.name || '') : (managedTeams.kulup.name || '');
+                weAreHome = match.home === ourName;
+            }
+            const rows = fixtureEventsTemp.map((ev, i) => {
+                const cls = ev.type === 'US' ? 'us' : (ev.type === 'OG' ? 'og' : 'opp');
+                const left = ev.type === 'US' ? weAreHome : !weAreHome;
+                const ph = cls === 'us' ? 'Gol atan' : (cls === 'og' ? 'K.K. oyuncu' : 'Rakip golcü');
+                const list = cls === 'opp' ? '' : 'list="squad-players-list"';
+                const assist = cls === 'us'
+                    ? `<input type="text" id="fev_assist_${i}" value="${escapeHtml(ev.assist || '')}" list="squad-players-list" placeholder="Asist" class="fev-in fev-as" autocomplete="off">`
+                    : '';
+                const card = `
+                    <div class="fev-card ${cls} ${left ? 'l' : 'r'}">
+                        <button type="button" class="fev-del" onclick="syncFixtureEvents(); removeFixtureEvent(${i})" title="Sil"><i class="fa-solid fa-xmark"></i></button>
+                        <div class="fev-fields">
+                            <input type="hidden" id="fev_type_${i}" value="${ev.type}">
+                            <input type="text" id="fev_scorer_${i}" value="${escapeHtml(ev.scorer || '')}" ${list} placeholder="${ph}" oninput="syncFixtureEvents(); updateScoreFromEvents();" class="fev-in" autocomplete="off">
+                            ${assist}
+                        </div>
+                    </div>`;
+                const bub = `<div class="fev-bub ${cls}"><input type="number" id="fev_min_${i}" value="${escapeHtml(String(ev.min ?? ''))}" placeholder="Dk" min="1" max="130" onchange="fevMinChanged()"></div>`;
+                return (left ? card : '<div></div>') + bub + (left ? '<div></div>' : card);
+            }).join('');
+            container.innerHTML = `<div class="fev-tl">${rows}</div>`;
+            updateScoreFromEvents();
+
+            setTimeout(() => {
+                container.scrollTop = container.scrollHeight;
+            }, 10);
+        }
+
+        function renderFixtureEventsLegacy() {
             const container = document.getElementById('fm-events-container');
             if (!container) return;
             if (fixtureEventsTemp.length === 0) {
