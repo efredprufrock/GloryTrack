@@ -8,6 +8,10 @@
     <!-- Site İkonu (Favicon) -->
     <link rel="icon" type="image/png" href="favicon.png">
     
+    <!-- Google Fonts: Figtree (gövde) + Sora (başlık/sayı) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800;900&family=Sora:wght@500;600;700;800&display=swap&subset=latin-ext" rel="stylesheet">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
@@ -427,7 +431,62 @@
             <button onclick="closePlayerInfoModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white z-10"><i class="fa-solid fa-xmark text-xl"></i></button>
             
             <!-- GÖRÜNTÜLEME (PROFIL) MODU -->
-            <div id="pi-view-section" class="hidden flex-col items-center w-full mt-2">
+            <div id="pi-view-section" class="hidden flex-col w-full">
+                <div class="relative w-36 h-36 mb-3 -mt-20 mx-auto flex items-end justify-center">
+                    <div class="absolute bottom-0 w-36 h-36 rounded-full border-[6px] border-slate-800 shadow-2xl bg-slate-900"></div>
+                    <img id="pi-view-photo" src="" class="relative z-10 object-cover object-top pointer-events-none drop-shadow-lg" style="width:100%; height:138%;" onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name=Oyuncu&background=334155&color=fff'">
+                    <div class="absolute bottom-1 right-2 border-[3px] border-slate-800 rounded shadow-md bg-slate-800 z-20"><div id="pi-view-flag-container"></div></div>
+                </div>
+                <h3 id="pi-view-name" class="text-2xl font-black text-white text-center leading-tight">İsim Soyisim</h3>
+                <p class="mt-1.5 mb-4 flex items-center justify-center gap-2 text-sm text-slate-400 font-medium">
+                    <span id="pi-view-pos" class="font-black px-2 py-0.5 rounded bg-slate-900/80 border border-slate-700">POS</span>
+                    <span>•</span><span id="pi-view-role">Rol</span>
+                </p>
+                <div class="pi-strip">
+                    <div><div class="pi-sl">Güncel OVR</div><div class="pi-sv"><span id="pi-view-current-ovr">-</span><span id="pi-view-delta-container"></span></div><div id="pi-view-join-ovr" class="pi-ss">Geliş OVR: -</div></div>
+                    <div><div class="pi-sl">Güncel Yaş</div><div class="pi-sv"><span id="pi-view-current-age">-</span></div><div id="pi-view-join-age" class="pi-ss">Geliş Yaşı: -</div></div>
+                    <div><div class="pi-sl">Takımda</div><div class="pi-sv" id="pi-view-seasons">-</div><div class="pi-ss">&nbsp;</div></div>
+                </div>
+                <div style="display:none">
+                    <img id="pi-view-photo" src="" class="object-cover object-top shrink-0 bg-slate-900 pointer-events-none" style="width:64px;height:64px;border-radius:50%;border:3px solid #ef4444" onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name=Oyuncu&background=334155&color=fff'">
+                    <div class="flex-1 min-w-0">
+                        <h3 id="pi-view-name" class="text-xl font-black text-white leading-tight truncate">İsim Soyisim</h3>
+                        <div class="mt-1.5 flex items-center gap-1.5 flex-wrap text-xs text-slate-400 font-medium">
+                            <span id="pi-view-pos" class="font-black px-2 py-0.5 rounded bg-slate-900/80 border border-slate-700">POS</span>
+                            <span id="pi-view-role">Rol</span><span>·</span>
+                            <span id="pi-view-flag-container" class="pi-flag"></span><span>·</span>
+                            <span><span id="pi-view-current-age">-</span> yaş</span>
+                        </div>
+                    </div>
+                    <div class="text-right shrink-0">
+                        <div id="pi-view-current-ovr" class="font-black leading-none text-emerald-400" style="font-size:36px">-</div>
+                        <div id="pi-view-delta-container" class="mt-1.5 flex justify-end"></div>
+                    </div>
+                </div>
+                <div id="pi-tabs" class="pi-tabs">
+                    <button type="button" class="pi-tab active" data-t="genel" onclick="piSetTab('genel')">Genel</button>
+                    <button type="button" class="pi-tab" data-t="gelisim" onclick="piSetTab('gelisim')">Gelişim</button>
+                    <button type="button" class="pi-tab" data-t="istatistik" onclick="piSetTab('istatistik')">İstatistik</button>
+                </div>
+                <div id="pi-tab-body" class="pt-3 w-full" style="min-height:200px"></div>
+                <div class="flex justify-between w-full gap-2 mt-4">
+                    <button id="btn-view-archive" type="button" onclick="toggleArchivePlayer()" class="px-3 py-2.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 font-medium text-xs sm:text-sm flex-1 transition-colors whitespace-nowrap">
+                        <i class="fa-solid fa-box-archive mr-1"></i> Arşive Taşı
+                    </button>
+                    <button id="btn-view-promote" type="button" onclick="promotePlayer()" class="hidden px-3 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm flex-1 transition-colors shadow-lg whitespace-nowrap">
+                        <i class="fa-solid fa-arrow-up mr-1"></i> Yükselt
+                    </button>
+                    <button type="button" onclick="togglePlayerEditMode()" class="px-3 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs sm:text-sm flex-1 transition-colors shadow-lg whitespace-nowrap">
+                        <i class="fa-solid fa-pen mr-1"></i> Düzenle
+                    </button>
+                </div>
+                <div style="display:none">
+                    <span id="pi-view-join-ovr"></span><span id="pi-view-join-age"></span>
+                    <div id="pi-view-pot-container" class="hidden"><span id="pi-view-pot"></span></div>
+                </div>
+            </div>
+            <!-- ESKİ PROFİL (artık kullanılmıyor, silinebilir) -->
+            <div id="pi-view-section-old" style="display:none!important">
                 <!-- Fotoğrafı büyütüp (w-36 h-36) negatif margin (-mt-20) ile yukarı taşırdık -->
                 <div class="relative w-36 h-36 mb-4 -mt-20 flex items-end justify-center">
                     <!-- Kenarlığı arka planla aynı renk (slate-800) ve kalın (border-[6px]) yaparak şık bir kesik efekti verdik -->
@@ -918,7 +977,7 @@
             <div class="flex justify-center items-center gap-2 mt-1 sm:mt-2 shrink-0">
                 <button onclick="addFixtureEvent('US')" class="fev-add us"><i class="fa-solid fa-plus"></i> Bizim gol</button>
                 <button onclick="addFixtureEvent('OPP')" class="fev-add opp"><i class="fa-solid fa-plus"></i> Rakip gol</button>
-                <button onclick="addFixtureEvent('OG')" title="Kendi kalesine" class="fev-add og"><i class="fa-solid fa-rotate-left"></i></button>
+                 
             </div>
 
             <div class="flex justify-end items-center mt-2 sm:mt-5 pt-2 sm:pt-4 border-t border-slate-700 shrink-0">

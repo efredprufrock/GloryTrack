@@ -750,3 +750,163 @@ body.theme-light .fev-bub { background: #fdfbf7; }
 body.theme-light .fev-card { background: #fdfbf7; border-color: #d1c6b4; }
 body.theme-light .fev-in { color: #0f172a; }
 body.theme-light .fev-in.fev-as { color: #0369a1; }
+
+.fev-card.l .fev-del { order: -1; }
+
+/* ===== Ana sayfa Maçlar paneli: kutular alanı dolduracak şekilde ölçeklenir (--hxs) ===== */
+[data-hx="wrap"] { --hxs: 1; }
+[data-hx="wrap"][data-scaled="1"] [data-hxrow] { padding-top: calc(2px * var(--hxs) + var(--hxp, 0px)) !important; padding-bottom: calc(2px * var(--hxs) + var(--hxp, 0px)) !important; }
+[data-hx="wrap"][data-scaled="1"] [data-hxrow] img { width: calc(24px * var(--hxs)) !important; height: calc(24px * var(--hxs)) !important; }
+[data-hx="wrap"][data-scaled="1"] [data-hxrow] .score-display { font-size: calc(15px * var(--hxs)) !important; line-height: 1.15 !important; }
+[data-hx="wrap"][data-scaled="1"] [data-hx="mid"] > div > div { padding-top: calc(7px * var(--hxs) + var(--hxp, 0px)) !important; padding-bottom: calc(7px * var(--hxs) + var(--hxp, 0px)) !important; }
+[data-hx="wrap"][data-scaled="1"] [data-hx="mid"] img { width: calc(30px * var(--hxs)) !important; height: calc(30px * var(--hxs)) !important; }
+
+[data-hx="wrap"][data-scaled="1"] [data-hxrow] span.shrink-0.rounded.font-black { width: calc(11px + 4.5px * var(--hxs)) !important; height: calc(11px + 4.5px * var(--hxs)) !important; font-size: calc(5.5px + 3px * var(--hxs)) !important; }
+[data-hx="wrap"][data-scaled="1"] [data-hxrow] span.inline-flex.border { font-size: calc(5px + 3px * var(--hxs)) !important; padding: calc(1.5px + 1px * var(--hxs)) calc(3px + 2px * var(--hxs)) !important; }
+[data-hx="wrap"][data-scaled="1"] [data-hx="mid"] span.shrink-0.rounded.font-black { width: calc(12px + 5px * var(--hxs)) !important; height: calc(12px + 5px * var(--hxs)) !important; font-size: calc(6px + 3.5px * var(--hxs)) !important; }
+[data-hx="wrap"][data-scaled="1"] [data-hx="mid"] span.inline-flex.border { font-size: calc(5px + 3px * var(--hxs)) !important; padding: calc(1.5px + 1px * var(--hxs)) calc(3px + 2px * var(--hxs)) !important; }
+[data-hx="wrap"][data-scaled="1"] [data-hx="mid"] .score-display { font-size: calc(16px * var(--hxs)) !important; }
+[data-hx="wrap"] [data-hxrow], [data-hx="wrap"] [data-hxrow] *, [data-hx="wrap"] [data-hx="mid"] > div > div, [data-hx="wrap"] [data-hx="mid"] > div > div * { transition: none !important; }
+
+/* ===== Maçlar paneli (mobil): turnuva logosu, aşama rozeti ve sonuç rozetleri küçük kalsın ===== */
+@media (max-width: 639px) {
+  [data-hx="wrap"][data-scaled="1"] [data-hxrow] img { width: min(calc(24px * var(--hxs)), 30px) !important; height: min(calc(24px * var(--hxs)), 30px) !important; }
+  [data-hx="wrap"][data-scaled="1"] [data-hx="mid"] img { width: min(calc(30px * var(--hxs)), 38px) !important; height: min(calc(30px * var(--hxs)), 38px) !important; }
+  [data-hx="wrap"][data-scaled="1"] [data-hxrow] .score-display { font-size: min(calc(15px * var(--hxs)), 20px) !important; }
+  [data-hx="wrap"][data-scaled="1"] [data-hx="mid"] .score-display { font-size: min(calc(16px * var(--hxs)), 22px) !important; }
+  [data-hx="wrap"][data-scaled="1"] [data-hxrow] > div:first-child img,
+  [data-hx="wrap"][data-scaled="1"] [data-hx="mid"] > div > div > div:first-child img { width: 16px !important; height: 16px !important; }
+  [data-hx="wrap"][data-scaled="1"] [data-hxrow] span.inline-flex.border,
+  [data-hx="wrap"][data-scaled="1"] [data-hx="mid"] span.inline-flex.border { font-size: 7px !important; padding: 2px 4px !important; margin-left: 2px !important; }
+  [data-hx="wrap"][data-scaled="1"] [data-hxrow] span.shrink-0.rounded.font-black,
+  [data-hx="wrap"][data-scaled="1"] [data-hx="mid"] span.shrink-0.rounded.font-black { width: 14px !important; height: 14px !important; font-size: 8px !important; }
+}
+
+/* ===== Font seti: Figtree + Sora ===== */
+:root{
+  --font-body:'Figtree', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-head:'Sora', 'Figtree', ui-sans-serif, system-ui, sans-serif;
+}
+html, body, body.font-sans, button, input, select, textarea{
+  font-family: var(--font-body) !important;
+}
+/* Başlıklar ve büyük/kalın sayılar */
+h1, h2, h3, h4,
+.font-black,
+.score-display,
+[data-hx="wrap"] .font-black{
+  font-family: var(--font-head) !important;
+  letter-spacing: -0.01em;
+}
+/* FontAwesome ikonları bozulmasın */
+.fa, .fas, .far, .fab, .fa-solid, .fa-regular, .fa-brands,
+[class^="fa-"], [class*=" fa-"]{
+  font-family: 'Font Awesome 6 Free', 'Font Awesome 6 Brands' !important;
+}
+.fa-brands, .fab{ font-family: 'Font Awesome 6 Brands' !important; }
+/* Tablo ve skorlarda sabit genişlikli rakamlar */
+table, .score-display, [data-hx="wrap"]{
+  font-variant-numeric: tabular-nums;
+}
+
+/* ===== Gol/Asist v7: ısı haritalı kariyer tablosu ===== */
+.stv2 .stv2-heat{display:inline-block;min-width:2.6em;padding:.3em 0;border-radius:.45em;font-weight:800;font-size:.95em;line-height:1.1}
+.stv2 .stv2-heat-s{min-width:2.1em;font-size:.82em;padding:.25em 0}
+.stv2 .stv2-total{font-weight:900;font-size:1.25em}
+
+/* ===== Gol/Asist v7b: başlık sığdırma + turnuva rozetleri ===== */
+.stv2 .stv2-hfit{container-type:inline-size;width:100%;overflow:hidden;text-align:center;white-space:nowrap}
+.stv2 .stv2-hfit button{font-size:min(.8em,17cqw);letter-spacing:0;white-space:nowrap;max-width:100%}
+.stv2 td.stv2-mw{min-width:5em}
+.stv2 .stv2-cell{display:inline-flex;align-items:center;justify-content:center;gap:.35em;white-space:nowrap}
+.stv2 .stv2-tc{display:inline-flex;align-items:center;gap:.12em}
+.stv2 .stv2-tchip{display:inline-block;min-width:1.35em;padding:.1em .18em;border-radius:.3em;font-size:.58em;font-weight:800;line-height:1.2;text-align:center}
+
+/* v7c: sezon başlığında turnuva rozeti geçişi */
+.stv2 .stv2-hrow{display:flex;align-items:center;justify-content:center;gap:.35em}
+.stv2 .stv2-hrow button:first-child{min-width:0;overflow:hidden;font-size:min(.8em,14cqw)}
+.stv2 .stv2-tgl{flex:none;font-size:.62em;line-height:1;padding:.3em .4em;border-radius:.4em;border:1px solid rgba(148,163,184,.3);color:#94a3b8;transition:color .15s,background .15s}
+.stv2 .stv2-tgl:hover{color:#fff}
+.stv2 .stv2-tgl.on{color:#6ee7b7;border-color:rgba(16,185,129,.45);background:rgba(16,185,129,.15)}
+
+.stv2 .stv2-tchip{min-width:1.9em}
+.stv2 .stv2-tchip.stv2-tce{visibility:hidden}
+
+/* ===== Ana sayfa İlk 11 (yatay): modern saha + eşit boy kartlar ===== */
+.home-xi-container{position:relative;width:100%;height:100%;min-height:0;border-radius:.6rem;overflow:hidden;
+  background:repeating-linear-gradient(90deg,#17703f 0 8.333%,#1a7a45 8.333% 16.666%);
+  box-shadow:inset 0 0 70px rgba(0,0,0,.38);border:1px solid rgba(255,255,255,.14);--xw:60px}
+.home-xi-container .xi-lines{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.home-xi-container .xi-card{position:absolute;transform:translate(-50%,-50%);width:var(--xw);height:calc(var(--xw)*1.42);
+  box-sizing:border-box;padding:calc(var(--xw)*.06) calc(var(--xw)*.07);border-radius:calc(var(--xw)*.14);
+  display:flex;flex-direction:column;align-items:stretch;gap:calc(var(--xw)*.03);
+  background:linear-gradient(180deg,color-mix(in srgb,var(--c) 30%,#16203a),#0d1527 85%);
+  border:1px solid color-mix(in srgb,var(--c) 75%,transparent);box-shadow:0 6px 14px rgba(0,0,0,.45);overflow:hidden}
+.home-xi-container .xi-top{display:flex;align-items:center;justify-content:space-between;line-height:1}
+.home-xi-container .xi-ovr{font-size:calc(var(--xw)*.24);font-weight:900;letter-spacing:-.02em}
+.home-xi-container .xi-pos{font-size:calc(var(--xw)*.13);font-weight:800}
+.home-xi-container .xi-photo{flex:1;min-height:0;display:flex;align-items:flex-end;justify-content:center}
+.home-xi-container .xi-img{max-width:100%;max-height:100%;width:auto;height:100%;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 2px 3px rgba(0,0,0,.45))}
+.home-xi-container .xi-ph{width:78%;aspect-ratio:1;border-radius:calc(var(--xw)*.12);background:#334155;color:#e2e8f0;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:calc(var(--xw)*.3)}
+.home-xi-container .xi-name{font-size:calc(var(--xw)*.165);font-weight:800;color:#fff;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.15}
+
+/* ===== Tüm sitede kadro kartları: dikey saha + formasyon editörü ===== */
+.xi-scope .xi-lines{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.xi-scope .xi-card{position:absolute;transform:translate(-50%,-50%);width:var(--xw);height:calc(var(--xw)*1.42);
+  box-sizing:border-box;padding:calc(var(--xw)*.06) calc(var(--xw)*.07);border-radius:calc(var(--xw)*.14);
+  display:flex;flex-direction:column;align-items:stretch;gap:calc(var(--xw)*.03);
+  background:linear-gradient(180deg,color-mix(in srgb,var(--c) 30%,#16203a),#0d1527 85%);
+  border:1px solid color-mix(in srgb,var(--c) 75%,transparent);box-shadow:0 6px 14px rgba(0,0,0,.45);overflow:hidden}
+.xi-scope .xi-top{display:flex;align-items:center;justify-content:space-between;line-height:1}
+.xi-scope .xi-ovr{font-size:calc(var(--xw)*.24);font-weight:900;letter-spacing:-.02em}
+.xi-scope .xi-pos{font-size:calc(var(--xw)*.13);font-weight:800}
+.xi-scope .xi-photo{flex:1;min-height:0;display:flex;align-items:flex-end;justify-content:center}
+.xi-scope .xi-img{max-width:100%;max-height:100%;width:auto;height:100%;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 2px 3px rgba(0,0,0,.45))}
+.xi-scope .xi-ph{width:78%;aspect-ratio:1;border-radius:calc(var(--xw)*.12);background:#334155;color:#e2e8f0;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:calc(var(--xw)*.3)}
+.xi-scope .xi-name{font-size:calc(var(--xw)*.165);font-weight:800;color:#fff;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.15}
+.home-xi-container.vert{background:repeating-linear-gradient(180deg,#17703f 0 8.333%,#1a7a45 8.333% 16.666%)}
+#pitch-container{background:repeating-linear-gradient(180deg,#17703f 0 8.333%,#1a7a45 8.333% 16.666%)!important;box-shadow:inset 0 0 70px rgba(0,0,0,.38)}
+#formation-nodes.xi-scope{container-type:size;--xw:clamp(40px,min(17cqw,12cqh),84px)}
+.xi-scope .xi-card.xi-edit{overflow:visible;cursor:grab;z-index:10;user-select:none;touch-action:none}
+.xi-scope .xi-card.xi-edit:active{cursor:grabbing}
+.xi-scope .xi-card.xi-edit:hover{z-index:20}
+.xi-scope .xi-pen{position:absolute;top:-9px;right:-9px;width:22px;height:22px;border-radius:50%;background:#2563eb;color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center;opacity:0;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.5);transition:opacity .15s}
+.xi-scope .xi-card.xi-edit:hover .xi-pen{opacity:1}
+@media (hover:none){.xi-scope .xi-pen{opacity:.9}}
+.xi-scope .xi-img{pointer-events:none}
+
+/* ===== Oyuncu profil kartı v2 ===== */
+.pi-tabs{display:flex;gap:4px;width:100%;padding:4px;border-radius:.65rem;background:rgba(15,23,42,.7)}
+.pi-tab{flex:1;text-align:center;font-size:12px;font-weight:800;padding:.4rem;border-radius:.45rem;color:#64748b;transition:background .15s,color .15s}
+.pi-tab:hover{color:#cbd5e1}
+.pi-tab.active{background:#2563eb;color:#fff}
+.pi-flag img{width:18px;height:auto;display:inline-block;vertical-align:-2px;border-radius:2px}
+#player-info-modal #pi-view-section{align-items:stretch}
+
+.pi-strip{display:grid;grid-template-columns:1fr 1fr 1fr;width:100%;margin-bottom:10px;border-radius:.75rem;border:1px solid rgba(71,85,105,.5);background:rgba(15,23,42,.5)}
+.pi-strip>div{text-align:center;padding:.6rem .3rem}
+.pi-strip>div+div{border-left:1px solid rgba(71,85,105,.4)}
+.pi-sl{font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#64748b}
+.pi-sv{display:flex;align-items:center;justify-content:center;gap:6px;font-size:26px;font-weight:900;line-height:1.1;margin-top:3px;color:#fff}
+.pi-ss{font-size:10px;color:#64748b;margin-top:2px}
+#pi-tab-body{padding-top:12px}
+
+/* ===== Toplu oyuncu düzenleme paneli ===== */
+.pb-wrap{overflow:auto;position:relative}
+table.pb{border-collapse:separate;border-spacing:0;font-size:12px;min-width:max-content;width:100%}
+table.pb th,table.pb td{padding:5px 6px;border-bottom:1px solid rgba(71,85,105,.35);white-space:nowrap;vertical-align:middle}
+table.pb thead th{position:sticky;top:0;z-index:3;background:#1e293b;color:#94a3b8;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;text-align:center;border-bottom:1px solid rgba(71,85,105,.7)}
+table.pb thead tr:nth-child(2) th{top:27px;z-index:3}
+table.pb th.pb-g{background:#1e293b}
+table.pb th.pb-g2{background:#223049}
+table.pb td.pb-id,table.pb th.pb-id{position:sticky;left:0;z-index:2;background:#1e293b;text-align:left}
+table.pb thead th.pb-id{z-index:4}
+table.pb td.pb-n{background:transparent;width:54px}
+table.pb td.pb-n:nth-child(8n+7),table.pb td.pb-n:nth-child(8n+8){background:rgba(255,255,255,.025)}
+table.pb tr.pb-arch td{opacity:.55}
+.pb-in{background:rgba(15,23,42,.65);border:1px solid rgba(71,85,105,.7);border-radius:6px;padding:4px 7px;color:#fff;font-size:12px;outline:none;width:100%}
+.pb-in:focus{border-color:#3b82f6}
+.pb-in.pb-chg{border-color:#f59e0b;background:rgba(245,158,11,.14)}
+.pb-num{width:48px;text-align:center;padding:4px 2px}
+.pb-ph{width:26px;height:26px;border-radius:50%;object-fit:cover;object-position:top;flex-shrink:0;background:#334155}
+.pb-ph0{display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#e2e8f0}
