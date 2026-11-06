@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no, viewport-fit=cover">
-    <title>FC26 Kariyer Paneli</title>
+    <title>GloryTrack</title>
     
     <!-- Site İkonu (Favicon) -->
     <link rel="icon" type="image/png" href="favicon.png">
@@ -134,7 +134,7 @@
                 <div>
                     <label class="block text-left text-sm font-medium text-slate-300 mb-1">Turnuva Adı</label>
                     <div class="flex gap-2 mb-2">
-                        <input type="text" id="tour-name-input" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white" list="global-tournament-datalist" onchange="autoFillTournamentLogo(this, 'tour-url-input')">
+                        <select id="tour-name-input" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white" onchange="tourModalChange(this)"></select>
                         <button onclick="searchTeamLogos('tour')" class="bg-blue-600 hover:bg-blue-500 px-3 rounded text-white whitespace-nowrap" title="Logoları Ara"><i class="fa-solid fa-search"></i> Ara</button>
                     </div>
                     <div id="tour-logo-results" class="flex gap-2 overflow-x-auto hidden py-2 mb-2 hide-scrollbar bg-slate-950/50 rounded px-2 items-center border border-slate-700/50"></div>
@@ -148,10 +148,18 @@
                     </div>
                 </div>
                 <div>
+                    <label class="block text-left text-sm font-medium text-slate-300 mb-1">Kupa Görseli (gerçek kupa fotoğrafı) URL / Dosya</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="cup-url-input" placeholder="https://... (boşsa varsayılan altın kupa çizimi)" class="flex-1 bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white text-sm">
+                        <input type="file" id="cup-file-input" class="hidden" accept="image/*" onchange="handleFileUpload(event, 'cup')">
+                        <button type="button" id="cup-upload-btn" onclick="document.getElementById('cup-file-input').click()" class="bg-slate-700 px-4 py-2 rounded-lg text-slate-300"><i class="fa-solid fa-upload"></i></button>
+                    </div>
+                </div>
+                <div>
                     <label class="block text-left text-sm font-medium text-slate-300 mb-1">Sütun Rengi</label>
                     <div class="flex items-center gap-3">
-                        <input type="color" id="tour-color-input" class="w-12 h-10 bg-transparent rounded cursor-pointer border-none outline-none">
-                        <span class="text-xs text-slate-400">Bu renk sütun zeminine uygulanır.</span>
+                        <input type="color" id="tour-color-input" disabled class="w-12 h-10 bg-transparent rounded border-none outline-none opacity-80">
+                        <span class="text-xs text-slate-400">Renk, seçilen turnuvaya göre otomatik belirlenir.</span>
                     </div>
                 </div>
             </div>
@@ -416,10 +424,11 @@
             </div>
             
             <div class="mt-4 flex flex-wrap justify-between items-center gap-3 border-t border-slate-700 pt-4 shrink-0">
-                <button onclick="addMatchSlot()" class="px-4 py-2 rounded bg-slate-700 hover:bg-slate-600 text-emerald-400 text-sm font-bold transition-colors"><i class="fa-solid fa-plus mr-2"></i>Yeni Maç Ekle</button>
+                <button onclick="addMatchSlot()" class="mm-icobtn" title="Yeni Maç Ekle"><i class="fa-solid fa-plus"></i></button>
                 <div class="flex gap-2">
-                    <button onclick="closeMatchEditorModal()" class="px-5 py-2.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-medium">İptal</button>
-                    <button onclick="saveMatchData()" class="px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold">Sonuçları Kaydet</button>
+                    <button id="mm-edit" onclick="mmEnterEdit()" class="mm-icobtn" title="Düzenle"><i class="fa-solid fa-pen"></i></button>
+                    <button id="mm-cancel" onclick="matchEditCancel()" class="hidden px-5 py-2.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-medium">İptal</button>
+                    <button id="mm-save" onclick="saveMatchData()" class="hidden px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold">Sonuçları Kaydet</button>
                 </div>
             </div>
         </div>
@@ -890,7 +899,7 @@
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-400 mb-1">Müsabaka</label>
-                    <input type="text" id="fm-tournament" list="fm-tournament-list" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-sm text-white outline-none focus:border-emerald-500" placeholder="Lig, Kupa...">
+                    <select id="fm-tournament" onchange="tourSelChange(this, 'all')" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-sm text-white outline-none focus:border-emerald-500"></select>
                     <datalist id="fm-tournament-list"></datalist>
                 </div>
                 <div class="sm:col-span-2">

@@ -910,3 +910,177 @@ table.pb tr.pb-arch td{opacity:.55}
 .pb-num{width:48px;text-align:center;padding:4px 2px}
 .pb-ph{width:26px;height:26px;border-radius:50%;object-fit:cover;object-position:top;flex-shrink:0;background:#334155}
 .pb-ph0{display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#e2e8f0}
+
+/* ===== Kupa dolabı ===== */
+.tc-tg{display:inline-flex;gap:2px;padding:3px;border-radius:.65rem;background:rgba(2,6,23,.6);border:1px solid rgba(71,85,105,.6)}
+.tc-tg button{font-size:12px;font-weight:800;padding:.4rem .9rem;border-radius:.45rem;color:#64748b;transition:background .15s,color .15s;white-space:nowrap}
+.tc-tg button:hover{color:#cbd5e1}
+.tc-tg button.on{background:#d97706;color:#fff}
+.tc-split{display:grid;grid-template-columns:1fr;gap:16px;overflow:auto}
+.tc-pane{min-width:0}
+.tc-subtabs{display:flex;gap:4px;padding:4px;border-radius:.65rem;background:rgba(2,6,23,.6);border:1px solid rgba(71,85,105,.6);margin-bottom:12px;flex-shrink:0}
+.tc-subtabs button{flex:1;text-align:center;font-size:12px;font-weight:800;padding:.45rem;border-radius:.45rem;color:#64748b;white-space:nowrap}
+.tc-subtabs button.on{background:#2563eb;color:#fff}
+.tc-split[data-tab="vitrin"]>.tc-pane-t{display:none}
+.tc-split[data-tab="zaman"]>.tc-pane-v{display:none}
+@media(min-width:900px){.tc-subtabs{display:none}.tc-split>.tc-pane{display:block!important;overflow:auto;min-height:0}.tc-split{grid-template-columns:minmax(0,1fr) minmax(0,1fr);overflow:hidden}}
+.tc-col{min-width:0}
+.tc-glass{border:2px solid #3a2a18;border-radius:14px;padding:16px 10px 6px;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,0) 28%),radial-gradient(ellipse at 50% 0,rgba(251,191,36,.12),transparent 60%),#0b1120;box-shadow:inset 0 0 40px rgba(0,0,0,.6)}
+.tc-shelf{margin-bottom:22px}
+.tc-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 8px;align-items:end;min-height:150px}
+.tc-board{height:12px;border-radius:4px;margin-top:4px;background:linear-gradient(180deg,#3f2a14,#1f140a);box-shadow:0 10px 18px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.12)}
+.tc-item{position:relative;text-align:center;display:flex;flex-direction:column;align-items:center}
+.tc-cup{height:90px;display:flex;align-items:flex-end;justify-content:center}
+.tc-name{font-size:11.5px;font-weight:800;color:#e2e8f0;margin-top:8px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tc-pill{display:inline-block;font-size:11px;font-weight:800;padding:2px 9px;border-radius:99px;background:rgba(251,191,36,.12);color:#fbbf24;border:1px solid rgba(251,191,36,.3);margin-top:4px}
+.tc-ss{font-size:10.5px;color:#64748b;margin-top:4px;margin-bottom:4px}
+.tc-pen{position:absolute;top:0;right:4px;width:22px;height:22px;border-radius:50%;background:#1e293b;color:#fff;font-size:10px;opacity:0;transition:opacity .15s;z-index:3}
+.tc-item:hover .tc-pen{opacity:1}
+@media(hover:none){.tc-pen{opacity:.8}}
+.tc-chip{font-size:11px;font-weight:800;padding:.3rem .7rem;border-radius:99px;border:1px solid rgba(71,85,105,.7);color:#94a3b8}
+.tc-chip.on{border-color:#d97706;color:#fbbf24}
+.tc-timeline{position:relative;padding-left:26px}
+.tc-timeline:before{content:"";position:absolute;left:8px;top:8px;bottom:8px;width:3px;border-radius:3px;background:linear-gradient(#fbbf24,#334155)}
+.tc-tl-item{position:relative;padding-bottom:18px}
+.tc-dot{position:absolute;left:-26px;top:3px;width:19px;height:19px;border-radius:50%;background:#1e293b;border:3px solid #0f172a;box-shadow:0 0 0 2px #334155}
+.tc-dot.on{background:#fbbf24;box-shadow:0 0 0 2px #fbbf24}
+.tc-star{font-size:10.5px;font-weight:900;padding:3px 9px;border-radius:99px;background:linear-gradient(90deg,#f59e0b,#fbbf24);color:#1f1300}
+.tc-tile{display:flex;align-items:center;gap:9px;border:1px solid;border-radius:12px;padding:6px 12px 6px 6px}
+.tc-tile b{font-size:12.5px;color:#fff}
+.tc-tlogo{width:38px;height:38px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.tc-tlogo img{max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,.45))}
+
+/* --- Mobil Kupalar (A+D) --- */
+.tm-modes{display:flex;gap:4px;padding:3px;border-radius:.6rem;background:rgba(2,6,23,.6);border:1px solid rgba(71,85,105,.6);margin-bottom:8px;flex-shrink:0}
+.tm-modes button{flex:1;font-size:11px;font-weight:800;padding:.4rem;border-radius:.4rem;color:#64748b;text-align:center}
+.tm-modes button.on{background:#059669;color:#fff}
+.tm-body{flex:1;min-height:0;overflow:auto;border:1px solid #334155;border-radius:.75rem;background:#0f172a}
+.tm-tbl{border-collapse:separate;border-spacing:0;table-layout:fixed;width:max-content}
+.tm-tbl th,.tm-tbl td{padding:0}
+.tm-corner{position:sticky;left:0;top:0;z-index:5;width:48px;min-width:48px;height:34px;background:#020617;color:#64748b;font-size:14px;border-right:1px solid #334155;border-bottom:1px solid #334155}
+.tm-sh{position:sticky;top:0;z-index:4;width:64px;min-width:64px;max-width:64px;height:34px;background:#0f172a;color:#10b981;font-size:10px;font-weight:800;border-right:1px solid #1e293b;border-bottom:1px solid #334155}
+.tm-add{position:sticky;top:0;z-index:4;width:36px;min-width:36px;background:#0f172a;border-bottom:1px solid #334155;color:#10b981;font-size:16px}
+.tm-tl{position:sticky;left:0;z-index:3;width:48px;min-width:48px;height:64px;background:#020617;border-right:1px solid #334155;border-bottom:1px solid #1e293b;text-align:center}
+.tm-tile{width:40px;height:40px;margin:0 auto;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.tm-tile img{max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,.45))}
+.tm-c{width:64px;min-width:64px;max-width:64px;height:64px;border-right:1px solid;border-bottom:1px solid;position:relative}
+.tm-cin{position:relative;width:64px;height:63px;overflow:hidden}
+.tm-champ{position:absolute;left:12px;top:12px;width:40px;height:40px;object-fit:contain;filter:drop-shadow(0 2px 3px rgba(0,0,0,.5))}
+.tm-ru{position:absolute;right:3px;bottom:3px;width:16px;height:16px;object-fit:contain}
+.tm-pad{border-bottom:1px solid #1e293b}
+.tm-chips{display:flex;gap:6px;padding:8px;overflow-x:auto;position:sticky;top:0;z-index:5;background:#0f172a}
+.tm-chips button{flex-shrink:0;padding:6px 12px;border-radius:99px;font-size:11px;font-weight:800;background:#1e293b;color:#94a3b8}
+.tm-chips button.on{background:#059669;color:#fff}
+.tm-chips .tm-plus{color:#10b981}
+.tm-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:0 8px 8px}
+.tm-card{position:relative;height:118px;border-radius:14px;border:1px solid;padding:8px 6px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;overflow:hidden}
+.tm-top{display:flex;align-items:center;gap:4px;width:100%;min-width:0}
+.tm-mini{width:20px;height:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
+.tm-mini img{max-width:100%;max-height:100%;object-fit:contain}
+.tm-nm{font-size:8px;font-weight:800;color:#cbd5e1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tm-big{width:54px;height:54px;object-fit:contain;filter:drop-shadow(0 3px 4px rgba(0,0,0,.5))}
+.tm-empty{width:54px;height:54px;border-radius:50%;border:2px dashed #475569;color:#475569;display:flex;align-items:center;justify-content:center;font-size:20px}
+.tm-who{font-size:9px;font-weight:700;color:#e2e8f0;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tm-ru2{position:absolute;right:6px;bottom:24px;width:18px;height:18px;object-fit:contain}
+.tm-newcup{padding:10px;text-align:center}
+.tm-newcup button{color:#10b981;font-size:12px;font-weight:700;padding:8px 14px;border:1px solid #059669;border-radius:.4rem}
+
+@media(min-width:640px){.tm-modes{max-width:320px;width:100%;margin-left:auto;margin-right:auto}.tm-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;padding:0 12px 12px}.tm-card{height:160px;padding:10px 8px}.tm-big{width:72px;height:72px}.tm-empty{width:72px;height:72px;font-size:26px}.tm-nm{font-size:10px}.tm-who{font-size:11px}.tm-mini{width:22px;height:22px}.tm-ru2{width:24px;height:24px;bottom:32px}.tm-chips{padding:12px}}
+
+.tour-title-sel{background:transparent;color:inherit;font:inherit;font-weight:800;max-width:100%;min-width:0;text-overflow:ellipsis;outline:none;cursor:pointer;border-radius:.3rem;padding:0 .25rem;border:0;-webkit-appearance:none;appearance:none}
+.tour-title-sel:hover,.tour-title-sel:focus{background:rgba(30,41,59,.7)}
+.tour-title-sel option,.tour-title-sel optgroup{background:#0f172a;color:#e2e8f0;font-weight:600}
+
+/* --- Logolu turnuva seçici --- */
+#tour-pop{position:fixed;z-index:600;background:#0f172a;border:1px solid #475569;border-radius:12px;box-shadow:0 18px 40px rgba(0,0,0,.6);display:flex;flex-direction:column;overflow:hidden}
+.tp-search{padding:8px;border-bottom:1px solid #1e293b;flex-shrink:0}
+.tp-search input{width:100%;background:#020617;border:1px solid #334155;border-radius:8px;padding:6px 10px;font-size:13px;color:#e2e8f0;outline:none}
+.tp-search input:focus{border-color:#10b981}
+.tp-list{overflow-y:auto;padding:4px;flex:1;min-height:0}
+.tp-g{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#64748b;padding:8px 8px 4px}
+.tp-row{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:8px;cursor:pointer;color:#e2e8f0;font-size:13px;font-weight:600}
+.tp-row:hover,.tp-row.hl{background:#1e293b}
+.tp-row.sel{background:rgba(5,150,105,.25)}
+.tp-nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tp-ab{margin-left:auto;font-size:10px;font-weight:800;color:#64748b;flex-shrink:0}
+.tp-act{color:#34d399;font-weight:700}
+.tp-ph{color:#64748b;font-style:italic}
+
+/* ===== Maç Sonuçları paneli (görüntüleme/düzenleme) ===== */
+.mm-icobtn{width:40px;height:40px;border-radius:12px;background:#1e293b;border:1px solid #334155;color:#e2e8f0;display:inline-flex;align-items:center;justify-content:center;transition:.15s}
+.mm-icobtn:hover{background:#334155;color:#fff}
+.mm-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.mm-stat{background:#0f172a;border:1px solid #243248;border-radius:12px;padding:8px 6px;text-align:center}
+.mm-stat b{display:block;font-size:20px;font-weight:900;color:#e2e8f0;line-height:1.1}
+.mm-stat span{font-size:10px;font-weight:700;color:#94a3b8;letter-spacing:.04em}
+.mm-stat.w b{color:#6ee7b7}.mm-stat.d b{color:#fcd34d}.mm-stat.l b{color:#fca5a5}
+.mm-rail{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.mm-badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px 4px 4px;font-size:11px;border:1.5px solid transparent;background:#1e293b;color:#cbd5e1;transition:.15s}
+.mm-badge b{width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:900}
+.mm-badge span{font-weight:800;letter-spacing:.03em}
+button.mm-badge{cursor:pointer;opacity:.7}
+button.mm-badge:hover{opacity:1}
+.mm-badge.on{opacity:1;border-color:currentColor;box-shadow:0 0 0 3px rgba(148,163,184,.12)}
+.mm-badge.w{color:#6ee7b7}.mm-badge.w b{background:#065f46;color:#d1fae5}
+.mm-badge.d{color:#fcd34d}.mm-badge.d b{background:#a16207;color:#fef3c7}
+.mm-badge.l{color:#fca5a5}.mm-badge.l b{background:#991b1b;color:#fee2e2}
+.mm-badge.n{color:#94a3b8}.mm-badge.n b{background:#334155;color:#cbd5e1}
+.mm-card{background:#0f172a;border:1px solid #243248;border-radius:16px;padding:16px}
+.mm-card-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.mm-tour{display:flex;align-items:center;gap:10px;min-width:0}
+.mm-tour b{display:block;font-size:13px;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mm-tour small{display:flex;align-items:center;gap:5px;font-size:11px;color:#94a3b8}
+.mm-res{font-size:11px;font-weight:900;padding:4px 10px;border-radius:999px;letter-spacing:.06em}
+.mm-res.w{background:#065f46;color:#6ee7b7}.mm-res.d{background:#854d0e;color:#fde68a}.mm-res.l{background:#7f1d1d;color:#fca5a5}.mm-res.n{background:#334155;color:#94a3b8}
+.mm-board{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:18px 0 12px}
+.mm-team{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0;text-align:center}
+.mm-team b{font-size:12px;color:#e2e8f0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mm-crest{width:60px;height:60px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.mm-crest img{max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,.45))}
+.mm-tl{width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.mm-tl img{max-width:100%;max-height:100%;object-fit:contain}
+.mm-tl b{font-size:11px;font-weight:900;color:#94a3b8}
+.mm-crest b{font-size:14px;font-weight:900;color:#cbd5e1}
+.mm-score{font-size:42px;font-weight:900;letter-spacing:.04em;color:#f8fafc;white-space:nowrap}
+.mm-score i{font-style:normal;color:#475569;margin:0 .12em}
+.mm-goals{border-top:1px solid #243248;padding-top:8px}
+.mm-goal{display:flex;align-items:center;gap:10px;padding:6px 0;font-size:13px}
+.mm-min{min-width:36px;text-align:center;font-size:11px;font-weight:800;color:#fbbf24;background:rgba(251,191,36,.1);border-radius:6px;padding:2px 6px}
+.mm-dot{width:8px;height:8px;border-radius:50%;background:#34d399;flex-shrink:0}
+.mm-goal.opp .mm-dot{background:#f87171}
+.mm-gtxt{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;color:#e2e8f0}
+.mm-gtxt>i{color:#94a3b8;font-size:11px}
+.mm-gtxt small{color:#94a3b8;font-size:11px;display:inline-flex;align-items:center;gap:4px}
+.mm-nogoal{text-align:center;font-size:12px;color:#64748b;padding:8px 0}
+.mm-addgoal{margin-top:8px;width:32px;height:28px;border-radius:8px;border:1px dashed #475569;color:#34d399;display:inline-flex;align-items:center;justify-content:center;font-size:12px}
+.mm-addgoal:hover{background:#1e293b}
+
+/* Logo spot ışığı: kutu yok; logonun arkasında silik, yuvarlak bir ışık lekesi */
+.logo-spot,.tm-tile,.tm-mini,.tc-tlogo,.mm-tl,.mm-crest{position:relative;overflow:visible}
+.logo-spot::before,.tm-tile::before,.tm-mini::before,.tc-tlogo::before,.mm-tl::before,.mm-crest::before{content:"";position:absolute;inset:-7px;border-radius:50%;background:radial-gradient(circle,rgba(226,232,240,.38) 0%,rgba(226,232,240,.14) 55%,transparent 72%);pointer-events:none}
+.tm-mini::before{inset:-4px}
+.logo-out,.logo-spot img,.tm-tile img,.tm-mini img,.tc-tlogo img,.mm-tl img,.mm-crest img{position:relative;filter:drop-shadow(0 0 1.5px rgba(255,255,255,.7)) !important}
+
+/* Kupalar üst çubuğu: web'de ikon + Tablo/Kupa Dolabı solda, Izgara/Sezon sağda tek satırda */
+.tm-modes-web{display:none;margin-bottom:0}
+@media(min-width:640px){
+  .tm-modes-web{display:flex;width:220px;max-width:none;margin:0}
+  .tm-modes:not(.tm-modes-web){display:none}
+}
+
+/* Kupalar tablosu: turnuva sütunları kare ve --tcol ile ölçeklenir */
+#tc-table thead th:not(:first-child),#tc-table tbody td.dynamic-bg{width:var(--tcol);min-width:var(--tcol);max-width:var(--tcol);height:var(--tcol)}
+#tc-table thead .logo-spot{width:calc(var(--tcol)*.66);height:calc(var(--tcol)*.66)}
+
+/* Gol-Asist podyumu: 1. kutu 1.5x, 2. kutu 1.25x, 3. kutu 1x (fotoğraf ve kutu yüksekliği --k ile ölçeklenir) */
+.pd-box{padding-block:calc(.5rem * var(--k,1))}
+.pd-ph{width:calc(2rem * var(--k,1));height:calc(2rem * var(--k,1))}
+@media(min-width:640px){.pd-ph{width:calc(2.25rem * var(--k,1));height:calc(2.25rem * var(--k,1))}}
+
+.tour-title-sel,.tour-title-sel.has-logo{background-color:transparent!important;box-shadow:none!important}
+.tour-title-sel:hover,.tour-title-sel:focus{background-color:rgba(30,41,59,.45)!important}
+
+.el-sel{background:transparent;color:inherit;font:inherit;font-weight:700;field-sizing:content;min-width:0;max-width:100%;border:0;outline:none;cursor:pointer;-webkit-appearance:none;appearance:none;padding:0 .25rem;border-radius:.3rem;text-overflow:ellipsis}
+.el-sel:hover,.el-sel:focus{background:rgba(30,41,59,.8)}
+.el-sel option{background:#0f172a;color:#e2e8f0;font-weight:600}
+

@@ -22,7 +22,20 @@ const TR_EN = {
     "Kupalar": "Trophies",
     "Maçlar": "Matches",
     "Kadro": "Squad",
+    "Ulusal Ligler": "Domestic Leagues",
+    "Ulusal Kupalar": "Domestic Cups",
+    "Avrupa / Kıtalararası": "Europe / Intercontinental",
+    "Milli Takım": "National Team",
+    "Özel": "Custom",
+    "Eşlenmemiş": "Unmatched",
     "Ana Takım": "Main",
+    "Müsabaka Seç": "Select Competition",
+    "Turnuva Seç": "Select Tournament",
+    "Renk, seçilen turnuvaya göre otomatik belirlenir.": "Color is set automatically from the selected tournament.",
+    "Vitrin": "Showcase",
+    "Izgara": "Grid",
+    "Yeni Kupa Ekle": "Add New Cup",
+    "Zaman Çizelgesi": "Timeline",
     "Henüz gol yok.": "No goals yet.",
     "Henüz asist yok.": "No assists yet.",
     "Kadroyu Düzenle": "Edit Squad",
@@ -667,7 +680,62 @@ const TR_EN = {
         "Kadroda": "In Squad",
         "Yedek": "Substitute",
         "Genç Milli": "Youth Int.",
-        "İzlemede": "Monitoring"
+        "İzlemede": "Monitoring",
+        "Kupa Görseli (gerçek kupa fotoğrafı) URL / Dosya": "Trophy Image (real trophy photo) URL / File",
+        "Renk, seçilen turnuvaya göre otomatik belirlenir.": "Color is set automatically based on the selected tournament.",
+        "Turnuva Seç": "Select Tournament",
+        "⚠ Katalogda karşılığı olmayan turnuvalar": "⚠ Tournaments not found in the catalog",
+        "Bu kayıtlar listelerde ⚠ ile görünür. İlgili alanda doğru turnuvayı seçerek veya \"+ Yeni / Özel Turnuva\" ile ekleyerek düzeltebilirsin.": "These records appear with ⚠ in the lists. Fix them by selecting the correct tournament in the relevant field or by adding it with \"+ New / Custom Tournament\".",
+        "Henüz yok": "None yet",
+        "Henüz kazanılmış kupa yok.": "No trophies won yet.",
+        "kupa": "trophies",
+        "farklı turnuva": "different tournaments",
+        "kupalı sezon": "seasons with trophies",
+        "Kazanılmayanları gizle": "Hide unwon",
+        "Kazanılmayanları göster": "Show unwon",
+        "Kupa yok": "No trophies",
+        "★ SEZON ŞAMPİYONU": "★ SEASON CHAMPION",
+        "Zaman Çizelgesi": "Timeline",
+        "Tablo": "Table",
+        "Kupa Dolabı": "Trophy Cabinet",
+        "Rakip": "Opponent",
+        "Müsabaka Seç": "Select Competition",
+        "Sonuç": "Result",
+        "W (Galibiyet)": "W (Win)",
+        "L (Mağlup)": "L (Loss)",
+        "Gol Detayı Ekle": "Add Goal Detail",
+        "Kayıtlı maç bulunmuyor. Yeni maç ekleyin.": "No matches recorded. Add a new match.",
+        "Bu kadroda oyuncu bulunmuyor.": "There are no players in this squad.",
+        "Maç yok": "No matches",
+        "Deplasman Logo": "Away Logo",
+        "https://... (boşsa varsayılan altın kupa çizimi)": "https://... (default gold trophy drawing if empty)",
+        "Kupa görselini / turnuvayı düzenle": "Edit trophy image / tournament",
+        "Gol (Örn: Icardi)": "Goal (e.g. Icardi)",
+        "Asist (Örn: Mertens)": "Assist (e.g. Mertens)",
+        "Golu Sil": "Delete Goal",
+        "Maçı Sil": "Delete Match",
+        "Toplu Yaş/OVR Gir": "Bulk Enter Age/OVR",
+        "Turnuva Dağılımını Göster / Gizle": "Show / Hide Tournament Breakdown",
+        "İç Saha / Home": "Home venue",
+        "Deplasman / Away": "Away venue",
+        "Tarafsız Saha / Neutral": "Neutral venue",
+        "Gol Detayları": "Goal Details",
+        "Turnuvayı listeden seçin": "Select a tournament from the list",
+        "Mevkiye göre grupla": "Group by position",
+        "Tüm oyuncuları toplu sırala": "Sort all players together",
+        "Hazırlık Maçı": "Friendly",
+        "Avrupa / Kıtalararası": "Europe / Intercontinental",
+        "Özel": "Custom",
+        "FIFA Kulüpler Dünya Kupası": "FIFA Club World Cup",
+        "Kulüpler Dünya Kupası": "Club World Cup",
+        "Afrika Uluslar Kupası": "Africa Cup of Nations",
+        "Dünya Kupası Elemeleri": "World Cup Qualifiers",
+        "Avrupa Şampiyonası Elemeleri": "European Championship Qualifiers",
+        "YAZ Transfer Dönemi": "SUMMER Transfer Window",
+        "KIŞ Transfer Dönemi": "WINTER Transfer Window",
+        "Eylül - Aralık Gelişimi": "Sep - Dec Progress",
+        "Pozisyon, İsim Soyisim, Yaş, Reyting, Kulübü, Forma Sayısı": "Position, Full Name, Age, Rating, Club, Caps",
+        "Gol Detayı Yok": "No goal details"
     };
 
 // ===================== ÇEVİRİ MOTORU EKİ: kalıp (pattern) çevirileri + alert/confirm/prompt çevirisi =====================
@@ -688,7 +756,15 @@ const TR_EN_PATTERNS = [
     { re: /^(.+) · Toplu Düzenle$/, en: '$1 · Bulk Edit', enRe: /^(.+) · Bulk Edit$/, tr: '$1 · Toplu Düzenle', dictArg: true },
     { re: /^Geliş OVR: (.+)$/, en: 'Joining OVR: $1', enRe: /^Joining OVR: (.+)$/, tr: 'Geliş OVR: $1' },
     { re: /^Geliş Yaşı: (.+)$/, en: 'Joining Age: $1', enRe: /^Joining Age: (.+)$/, tr: 'Geliş Yaşı: $1' },
-    { re: /^(.+) ekle$/, en: 'Add $1', enRe: /^Add (.+)$/, tr: '$1 ekle', dictArg: true }
+    { re: /^(.+) ekle$/, en: 'Add $1', enRe: /^Add (.+)$/, tr: '$1 ekle', dictArg: true },
+    { re: /^(.+) Takım Ekle$/, en: 'Add team to $1', enRe: /^Add team to (.+)$/, tr: '$1 Takım Ekle' },
+    { re: /^Tümü \((.+)\)$/, en: 'All ($1)', enRe: /^All \((.+)\)$/, tr: 'Tümü ($1)' },
+    { re: /^%(.+) kullanılıyor\. Yedek almayı unutmayın\.$/, en: '$1% used. Remember to back up.', enRe: /^(.+)% used\. Remember to back up\.$/, tr: '%$1 kullanılıyor. Yedek almayı unutmayın.' },
+    { re: /^%(.+) kullanılıyor\. ⚠️ Depolama alanı dolmak üzere! Yedek alıp bazı verileri temizleyin\.$/, en: '$1% used. ⚠️ Storage is almost full! Back up and clear some data.', enRe: /^(.+)% used\. ⚠️ Storage is almost full! Back up and clear some data\.$/, tr: '%$1 kullanılıyor. ⚠️ Depolama alanı dolmak üzere! Yedek alıp bazı verileri temizleyin.' },
+    { re: /^Kariyer toplamı · 1 kupa$/, en: 'Career total · 1 trophy', enRe: /^Career total · 1 trophy$/, tr: 'Kariyer toplamı · 1 kupa' },
+    { re: /^Kariyer toplamı · (\d+) kupa$/, en: 'Career total · $1 trophies', enRe: /^Career total · (\d+) trophies$/, tr: 'Kariyer toplamı · $1 kupa' },
+    { re: /^1 kupa$/, en: '1 trophy', enRe: /^1 trophy$/, tr: '1 kupa' },
+    { re: /^(\d+) kupa$/, en: '$1 trophies', enRe: /^(\d+) trophies$/, tr: '$1 kupa' }
 ];
 
 // İkinci geçiş: birebir sözlük eşleşmesi olmayan metin düğümlerine kalıpları uygular.
@@ -773,11 +849,38 @@ const TR_EN_DIALOG = {
     "içindeki tüm veriler kalıcı olarak silinecektir. Emin misiniz?": "- all data inside will be permanently deleted. Are you sure?",
     "\"Lig Adı, Takım Adı, Puan\"": "\"League Name, Team Name, Points\"",
     "\"Sıra, Takım Adı, Pld, W, D, L, GF, GA, GD, Puan\"": "\"Rank, Team Name, Pld, W, D, L, GF, GA, GD, Points\"",
-    "Emin misiniz?": "Are you sure?"
+    "Emin misiniz?": "Are you sure?",
+    "Yeni turnuva adı (kataloğa eklenecek):": "New tournament name (will be added to the catalog):",
+    "Lütfen listeden bir turnuva seçin.": "Please select a tournament from the list.",
+    "Bu turnuva tabloda zaten var.": "This tournament is already in the table.",
+    "Takım adı zorunludur!": "Team name is required!",
+    "Bu rakibi/sütunu tablodan tamamen silmek istediğinize emin misiniz?": "Are you sure you want to completely delete this opponent/column from the table?",
+    "Lütfen eklenecek oyuncu listesini girin!": "Please enter the list of players to add!",
+    "Bu oyuncu artık kadroda kayıtlı değil.": "This player is no longer registered in the squad.",
+    "İsim zorunludur!": "Name is required!",
+    "Oyuncuyu silmek istediğinize emin misiniz?": "Are you sure you want to delete this player?",
+    "Oyuncunun arşiv durumunu değiştirmek istediğinize emin misiniz?": "Are you sure you want to change the player's archive status?",
+    "Oyuncuyu As Takıma yükseltmek istediğinize emin misiniz? (Oyuncu Akademi listesinde 'PROMOTED' bölümüne alınır ve As Takım kadrosuna kopyalanır.)": "Are you sure you want to promote the player to the First Team? (The player moves to the 'PROMOTED' section of the Academy list and is copied to the First Team squad.)",
+    "Hiçbir oyuncu için yaş veya OVR girilmedi.": "No age or OVR was entered for any player.",
+    "Lütfen takım adını girin!": "Please enter the team name!",
+    "Lütfen eklenecek takımları girin!": "Please enter the teams to add!",
+    "Geçerli veya listede olmayan yeni takım bulunamadı.": "No valid new team (not already in the list) was found.",
+    "Bu takımı lig tarihinden kalıcı olarak silmek istediğinize emin misiniz?": "Are you sure you want to permanently delete this team from the league history?",
+    "Hiçbir takım için puan girilmedi.": "No points were entered for any team.",
+    "Oyuncu adı zorunludur!": "Player name is required!",
+    "Bu transfer kaydını silmek istediğinize emin misiniz?": "Are you sure you want to delete this transfer record?",
+    "Mevki zorunludur!": "Position is required!",
+    "Bu hedefi silmek istediğinize emin misiniz?": "Are you sure you want to delete this target?",
+    "Lütfen bir logo URL girin, dosya yükleyin veya arama sonuçlarından seçin!": "Please enter a logo URL, upload a file, or choose from the search results!",
+    "Not: Yerel olarak yüklenen büyük logo görselleri depolama alanını hızla doldurabilir. Mümkünse URL ile logo kullanın.": "Note: Large locally uploaded logo images can fill up storage quickly. Use a logo URL if possible.",
+    "Maç No, Müsabaka, Home/Away/Neutral, Ev Sahibi, Deplasman, (Hafta), (Ülke)": "Match No, Competition, Home/Away/Neutral, Home Team, Away Team, (Week), (Country)",
+    "\"Pozisyon, İsim, Ülke, Yaş, Reyting\"": "\"Position, Name, Country, Age, Rating\""
 };
 const TR_EN_DIALOG_REGEX = [
     [/"([^"]+)" sezonunu tüm panellerden kalıcı olarak silmek istediğinize emin misiniz\?/, 'Are you sure you want to permanently delete the "$1" season from all panels?'],
-    [/(.+) dizilişi ve oyuncuları sıfırlamak istediğinize emin misiniz\?/, 'Are you sure you want to reset the formation and players ($1)?']
+    [/(.+) dizilişi ve oyuncuları sıfırlamak istediğinize emin misiniz\?/, 'Are you sure you want to reset the formation and players ($1)?'],
+    [/^(\d+) oyuncu ve mevcut yüz fotoğrafları başarıyla kadroya eklendi!/, '$1 players and their existing face photos were successfully added to the squad!'],
+    [/Geçerli formatta oyuncu bulunamadı\. Lütfen ("[^"]+") formatına uyduğunuzdan emin olun\./, 'No valid players found. Please make sure you follow the $1 format.']
 ];
 function i18nDialogText(msg) {
     if (typeof currentLang === 'undefined' || currentLang !== 'en' || typeof msg !== 'string') return msg;
@@ -832,13 +935,23 @@ function applyStoredThemeFamily() {
     document.body.setAttribute('data-theme-family', localStorage.getItem('fc26_theme_family') || 'green');
 }
 
-let currentLang = localStorage.getItem('fc26_lang') || 'tr';
+let currentLang = localStorage.getItem('fc26_lang') || 'en';
 const I18N_ATTRS = ['placeholder', 'title', 'aria-label'];
 
 function i18nTranslateAttrs(el, dict) {
     I18N_ATTRS.forEach(attr => {
         const val = el.getAttribute && el.getAttribute(attr);
-        if (val && dict[val]) el.setAttribute(attr, dict[val]);
+        if (val && dict[val]) { el.setAttribute(attr, dict[val]); return; }
+        if (val && val.length <= 200) {
+            const toEn = dict === TR_EN;
+            for (const p of TR_EN_PATTERNS) {
+                const re = toEn ? p.re : p.enRe, tpl = toEn ? p.en : p.tr;
+                const mm = re && tpl ? val.match(re) : null;
+                if (!mm || p.dictArg) continue;
+                el.setAttribute(attr, tpl.replace('$1', dict[mm[1]] || mm[1]));
+                return;
+            }
+        }
     });
 }
 
@@ -887,7 +1000,7 @@ function stopI18nObserver() {
 function updateLangButton() {
     const el = document.getElementById('btn-lang-label');
     if (el) el.textContent = currentLang === 'en' ? 'EN' : 'TR';
-    document.title = currentLang === 'en' ? 'FC26 Career Panel' : 'FC26 Kariyer Paneli';
+    document.title = 'GloryTrack';
     document.documentElement.lang = currentLang;
 }
 
@@ -996,6 +1109,7 @@ function escapeHtml(str) {
         let activeGroupInfo = { context: null, groupType: null, groupIndex: null };
         let activeMatchInfo = { season: null, oppId: null, oppName: null };
         let activeMatchesTemp = [];
+        let matchEditMode = false, matchViewIdx = 0, matchEditSnapshot = '', matchModalFresh = false;
         let formations = { astakim: { ilk11: null, yedek: null, rezerv: null }, milli: { ilk11: null, yedek: null, rezerv: null } };
         let activeFormationType = 'ilk11';
         let tempFormationsAll = { ilk11: null, yedek: null, rezerv: null };
@@ -1011,6 +1125,14 @@ function escapeHtml(str) {
         let squadData = { astakim: [], akademi: [], milli: [] };
         let squadSort = { field: 'joinOvr', asc: false };
         let squadColumnsCollapsed = window.innerWidth < 768; // Mobilde default kapalı başlasın
+
+        let squadFlatSort = false;
+        try { squadFlatSort = localStorage.getItem('squadFlatSort') === '1'; } catch (e) {}
+        function toggleSquadFlatSort() {
+            squadFlatSort = !squadFlatSort;
+            try { localStorage.setItem('squadFlatSort', squadFlatSort ? '1' : '0'); } catch (e) {}
+            renderSquadGrid();
+        }
 
         function toggleSquadColumnsCollapse() {
             squadColumnsCollapsed = !squadColumnsCollapsed;
@@ -1066,8 +1188,347 @@ function escapeHtml(str) {
         // fixtureData[season] = [ { id, date, tournament, home, away, homeScore, awayScore, events:[{min,type,scorer,assist}] }, ... ]
         let fixtureData = {};
         let euroLeaguesData = {};
+        let euroSlotsData = {};
         let competitionLogos = {};
         let customTournamentsData = {};
+
+        // ===================== TURNUVA KATALOĞU (tek kaynak: ad, kısa ad, renk, logo) =====================
+        // g: grup | n: standart ad | s: kısa ad | c: sabit renk | f: logo veritabanındaki ad | a: eski/alternatif yazımlar
+        const TOURNAMENT_CATALOG = [
+            { g:'Ulusal Ligler', n:'Süper Lig', s:'SL', c:'#b91c1c', a:['Trendyol Süper Lig'] },
+            { g:'Ulusal Ligler', n:'Premier League', s:'PL', c:'#3730a3', a:['English Premier League'] },
+            { g:'Ulusal Ligler', n:'La Liga', s:'LL', c:'#ef4444', f:'LALIGA EA Sports', a:['LaLiga','LALIGA'] },
+            { g:'Ulusal Ligler', n:'Bundesliga', s:'BL', c:'#dc2626' },
+            { g:'Ulusal Ligler', n:'Serie A', s:'SA', c:'#1d4ed8' },
+            { g:'Ulusal Ligler', n:'Ligue 1', s:'L1', c:'#0f172a' },
+            { g:'Ulusal Ligler', n:'Liga Portugal', s:'LP', c:'#14b8a6' },
+            { g:'Ulusal Ligler', n:'Eredivisie', s:'ERE', c:'#1e3a8a' },
+            { g:'Ulusal Ligler', n:'Belgian 1A Pro League', s:'JPL', c:'#000000', f:'Jupiler Pro League', a:['Jupiler Pro League','Belgian Pro League'] },
+            { g:'Ulusal Ligler', n:'Scottish Premiership', s:'SPL', c:'#1e3a8a', f:'Premiership' },
+            { g:'Ulusal Ligler', n:'Norwegian Eliteserien', s:'ELI', c:'#1e3a8a', f:'Eliteserien', a:['Eliteserien'] },
+            { g:'Ulusal Ligler', n:'EFL Championship', s:'EFC', c:'#b45309' },
+            { g:'Ulusal Ligler', n:'MLS', s:'MLS', c:'#0f766e' },
+            { g:'Ulusal Ligler', n:'Liga MX', s:'LMX', c:'#15803d' },
+            { g:'Ulusal Ligler', n:'EFL League One', s:'EL1', c:'#0369a1', f:'EFL League One' },
+            { g:'Ulusal Ligler', n:'EFL League Two', s:'EL2', c:'#a16207', f:'EFL League Two' },
+            { g:'Ulusal Ligler', n:'Ligue 2', s:'L2', c:'#1e40af' },
+            { g:'Ulusal Ligler', n:'Serie B', s:'SB', c:'#0e7490', f:'Serie BKT', a:['Serie BKT'] },
+            { g:'Ulusal Ligler', n:'La Liga 2', s:'LL2', c:'#b91c1c', f:'LALIGA Hypermotion', a:['LaLiga 2','LALIGA Hypermotion','Segunda División'] },
+            { g:'Ulusal Ligler', n:'2. Bundesliga', s:'B2', c:'#b91c1c', a:['Bundesliga 2'] },
+            { g:'Ulusal Ligler', n:'Allsvenskan', s:'ALL', c:'#1d4ed8' },
+            { g:'Ulusal Ligler', n:'Ekstraklasa', s:'EKS', c:'#b91c1c' },
+            { g:'Ulusal Ligler', n:'Danish Superliga', s:'DSL', c:'#b91c1c', f:'Danish Super League', a:['Danish Super League','Superliga'] },
+            { g:'Ulusal Ligler', n:'A-League', s:'AL', c:'#15803d' },
+            { g:'Ulusal Ligler', n:'Liga Profesional', s:'LPA', c:'#0ea5e9' },
+            { g:'Ulusal Kupalar', n:'Türkiye Kupası', s:'TK', c:'#7f1d1d' },
+            { g:'Ulusal Kupalar', n:'Türkiye Süper Kupası', s:'TSK', c:'#475569' },
+            { g:'Ulusal Kupalar', n:'FA Cup', s:'FAC', c:'#991b1b' },
+            { g:'Ulusal Kupalar', n:'EFL Cup', s:'EFL', c:'#115e59', a:['EFL Carabao Cup','Carabao Cup','League Cup'] },
+            { g:'Ulusal Kupalar', n:'Community Shield', s:'CS', c:'#854d0e' },
+            { g:'Ulusal Kupalar', n:'Copa del Rey', s:'CDR', c:'#b45309' },
+            { g:'Ulusal Kupalar', n:'DFB-Pokal', s:'DFB', c:'#7f1d1d', a:['DFB Pokal'] },
+            { g:'Ulusal Kupalar', n:'Coppa Italia', s:'CI', c:'#1e40af' },
+            { g:'Ulusal Kupalar', n:'Coupe de France', s:'CDF', c:'#1d4ed8' },
+            { g:'Ulusal Kupalar', n:'Taça de Portugal', s:'TDP', c:'#166534' },
+            { g:'Ulusal Kupalar', n:'KNVB Cup', s:'KNV', c:'#c2410c' },
+            { g:'Ulusal Kupalar', n:'Vertu Trophy', s:'VT', c:'#0f766e', a:['EFL Trophy','Papa Johns Trophy','Bristol Street Motors Trophy'] },
+            { g:'Ulusal Kupalar', n:'DFL-Supercup', s:'DSC', c:'#475569', a:['DFL Supercup'] },
+            { g:'Ulusal Kupalar', n:'Supercopa de España', s:'SCE', c:'#b45309', a:['Supercopa de Espana'] },
+            { g:'Ulusal Kupalar', n:'Supercoppa Italiana', s:'SCI', c:'#1e40af' },
+            { g:'Ulusal Kupalar', n:'Trophée des Champions', s:'TDC', c:'#1d4ed8', a:['Trophee des Champions'] },
+            { g:'Avrupa / Kıtalararası', n:'UEFA Şampiyonlar Ligi', s:'UCL', c:'#1e3a8a', f:'UEFA Champions League', a:['UEFA Champions League','Şampiyonlar Ligi','Champions League'] },
+            { g:'Avrupa / Kıtalararası', n:'UEFA Avrupa Ligi', s:'UEL', c:'#ea580c', f:'UEFA Europa League', a:['UEFA Europa League','Avrupa Ligi','Europa League'] },
+            { g:'Avrupa / Kıtalararası', n:'UEFA Konferans Ligi', s:'UECL', c:'#16a34a', f:'UEFA Europa Conference League', a:['UEFA Europa Conference League','Konferans Ligi','UEFA Conference League','Conference League'] },
+            { g:'Avrupa / Kıtalararası', n:'UEFA Süper Kupa', s:'USC', c:'#475569', f:'UEFA Super Cup', a:['UEFA Super Cup'] },
+            { g:'Avrupa / Kıtalararası', n:'FIFA Kulüpler Dünya Kupası', s:'CWC', c:'#854d0e', a:['FIFA Club World Cup','Kulüpler Dünya Kupası'] },
+            { g:'Avrupa / Kıtalararası', n:'CAF Champions League', s:'CAF', c:'#15803d' },
+            { g:'Avrupa / Kıtalararası', n:'AFC Champions League', s:'AFC', c:'#0e7490' },
+            { g:'Avrupa / Kıtalararası', n:'CONCACAF Champions Cup', s:'CCC', c:'#1d4ed8' },
+            { g:'Milli Takım', n:'Dünya Kupası', s:'DK', c:'#7c2d12', f:'FIFA World Cup', a:['FIFA World Cup','World Cup'] },
+            { g:'Milli Takım', n:'UEFA Avrupa Şampiyonası', s:'AŞ', c:'#1d4ed8', f:'UEFA European Championship', a:['Avrupa Şampiyonası','UEFA European Championship','Euro','EURO'] },
+            { g:'Milli Takım', n:'UEFA Uluslar Ligi', s:'UNL', c:'#0369a1', a:['UEFA Nations League','Nations League','Uluslar Ligi'] },
+            { g:'Milli Takım', n:'Copa America', s:'CA', c:'#15803d', a:['Copa América'] },
+            { g:'Milli Takım', n:'Afrika Uluslar Kupası', s:'AFCON', c:'#a16207', a:['Africa Cup of Nations','AFCON'] },
+            { g:'Milli Takım', n:'Dünya Kupası Elemeleri', s:'DKE', c:'#9a3412', a:['World Cup Qualifiers','WC Qualifiers'] },
+            { g:'Milli Takım', n:'Avrupa Şampiyonası Elemeleri', s:'AŞE', c:'#1e40af', a:['Euro Qualifiers','EURO Qualifiers'] },
+            { g:'Milli Takım', n:'Dostluk Maçı', s:'DM', c:'#475569', a:['Friendly','International Friendly','Hazırlık Maçı'] },
+            { g:'Diğer', n:'Pre-Season Friendly', s:'PF', c:'#475569', a:['Sezon Öncesi Hazırlık','Preseason Friendly','Pre Season Friendly'] }
+        ];
+        let customCatalog = [];   // '+ Yeni / Özel Turnuva' ile eklenenler (kayıt dosyasına yazılır)
+        let _tourIdx = null, _tourIdxKey = -1;
+
+        function tourNorm(s) { return String(s == null ? '' : s).toLocaleLowerCase('tr').replace(/[^a-z0-9çğıöşüâî]+/g, ''); }
+        function tourAll() { return TOURNAMENT_CATALOG.concat(customCatalog); }
+        function tourIndex() {
+            if (_tourIdx && _tourIdxKey === customCatalog.length) return _tourIdx;
+            const m = new Map();
+            tourAll().forEach(e => [e.n].concat(e.a || []).forEach(x => { const k = tourNorm(x); if (k && !m.has(k)) m.set(k, e); }));
+            _tourIdx = m; _tourIdxKey = customCatalog.length;
+            return m;
+        }
+        function tourFind(name) { return name ? (tourIndex().get(tourNorm(name)) || null) : null; }
+        function tourCanon(name) { const e = tourFind(name); return e ? e.n : (name || ''); }
+        function tourCatalogLogo(name) {
+            const e = tourFind(name);
+            if (!e || typeof FC26_TOURNAMENT_DATABASE === 'undefined') return null;
+            const keys = [e.f, e.n].concat(e.a || []).filter(Boolean).map(tourNorm);
+            const hit = FC26_TOURNAMENT_DATABASE.find(t => t && typeof t === 'object' && t.name && keys.includes(tourNorm(t.name.replace(/:\s*$/, ''))));
+            return hit ? hit.logo : null;
+        }
+        // <option> listesi. scope: 'club' | 'milli' | 'all'. opts.newValue: '+ Yeni' seçeneğinin value'su (null = gösterme)
+        function tourSelectOptions(selected, scope, opts) {
+            scope = scope || 'all'; opts = opts || {};
+            const cur = tourFind(selected);
+            const curName = cur ? cur.n : (selected || '');
+            const groups = {};
+            tourAll().forEach(e => {
+                const ok = scope === 'all' || (scope === 'milli' ? e.g === 'Milli Takım' : e.g !== 'Milli Takım') || e.n === curName;
+                if (ok) (groups[e.g] = groups[e.g] || []).push(e);
+            });
+            let html = '';
+            Object.keys(groups).forEach(g => {
+                html += `<optgroup label="${escapeHtml(g)}">` + groups[g].map(e => `<option value="${escapeHtml(e.n)}"${e.n === curName ? ' selected' : ''}>${escapeHtml(e.n)}</option>`).join('') + `</optgroup>`;
+            });
+            if (selected && !cur) html += `<optgroup label="Eşlenmemiş"><option value="${escapeHtml(selected)}" selected>⚠ ${escapeHtml(selected)}</option></optgroup>`;
+            const nv = opts.newValue === undefined ? '__NEW__' : opts.newValue;
+            if (nv) html += `<option value="${nv}">+ Yeni / Özel Turnuva</option>`;
+            return html;
+        }
+        function tourSetSelect(id, value, scope) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.innerHTML = '<option value="">Turnuva Seç</option>' + tourSelectOptions(value, scope);
+            el.value = value ? tourCanon(value) : '';
+            el.dataset.prev = el.value;
+        }
+        function tourNewCustom() {
+            const raw = prompt('Yeni turnuva adı (kataloğa eklenecek):');
+            if (!raw || !raw.trim()) return null;
+            return tourRegister(raw.trim());
+        }
+        // Adı katalogda arar; yoksa renk/kısa adı otomatik üretip özel kataloğa ekler. Standart adı döndürür.
+        function tourRegister(name) {
+            const ex = tourFind(name);
+            if (ex) return ex.n;
+            const pal = ['#0e7490', '#7c3aed', '#be185d', '#b45309', '#047857', '#4338ca', '#a21caf', '#0369a1'];
+            let hs = 0; for (const ch of name) hs = (hs * 31 + ch.charCodeAt(0)) >>> 0;
+            customCatalog.push({ g: 'Özel', n: name, s: (name.split(/\s+/).map(w => w.charAt(0)).join('').toUpperCase().slice(0, 4) || name.slice(0, 3).toUpperCase()), c: pal[hs % pal.length], custom: true });
+            saveToLocalStorage();
+            return name;
+        }
+        // Dropdown değişince '+ Yeni' seçildiyse yeni turnuvayı oluşturup seçer
+        function tourSelChange(sel, scope) {
+            if (sel.value === '__NEW__') {
+                const n = tourNewCustom();
+                const hasPh = !!sel.querySelector('option[value=""]');
+                const phText = hasPh ? sel.querySelector('option[value=""]').textContent : '';
+                if (n) {
+                    sel.innerHTML = (hasPh ? `<option value="">${escapeHtml(phText)}</option>` : '') + tourSelectOptions(n, scope);
+                    sel.value = n;
+                } else {
+                    sel.value = sel.dataset.prev || '';
+                }
+            }
+            sel.dataset.prev = sel.value;
+        }
+        // Kupalar paneli turnuva penceresi: seçimde logo + sabit renk otomatik gelir
+        function tourModalChange(sel) {
+            tourSelChange(sel, 'all');
+            const e = tourFind(sel.value);
+            if (!e) return;
+            const logo = tourCatalogLogo(e.n);
+            const urlEl = document.getElementById('tour-url-input');
+            if (logo && urlEl) {
+                urlEl.value = logo;
+                fileUploads.tournament = null;
+                const b = document.getElementById('tour-upload-btn');
+                if (b) b.classList.replace('text-emerald-400', 'text-slate-300');
+            }
+            const cEl = document.getElementById('tour-color-input');
+            if (cEl) cEl.value = e.c;
+        }
+        // Kayıtlı tüm verilerdeki turnuva adlarını standart ada çevirir; eşleşmeyenleri bildirir
+        function tourMigrateAll() {
+            const unmatched = new Set();
+            const fix = (name) => { if (!name) return name; const e = tourFind(name); if (e) return e.n; unmatched.add(name); return name; };
+            const walk = (o, d) => {
+                if (!o || typeof o !== 'object' || d > 8) return;
+                if (Array.isArray(o)) { o.forEach(x => walk(x, d + 1)); return; }
+                for (const k in o) { if (k === 'tournament' && typeof o[k] === 'string') o[k] = fix(o[k]); else walk(o[k], d + 1); }
+            };
+            walk(matchDataStore, 0); walk(fixtureData, 0);
+            Object.values(customTournamentsData || {}).forEach(arr => (arr || []).forEach(t => { if (t && t.type) t.type = fix(t.type); }));
+            tournamentsList.forEach(t => {
+                const e = tourFind(t.name);
+                if (e) { t.name = e.n; t.colorHex = e.c; } else if (t.name && t.name !== 'Yeni Kupa') unmatched.add(t.name);
+            });
+            Object.keys(competitionLogos || {}).forEach(k => {
+                const e = tourFind(k);
+                if (e && e.n !== k) { if (!competitionLogos[e.n]) competitionLogos[e.n] = competitionLogos[k]; delete competitionLogos[k]; }
+            });
+            window.__tourUnmatched = [...unmatched];
+            if (unmatched.size) setTimeout(tourNotifyUnmatched, 900);
+        }
+        // Kart zemini: katalog rengi (varsa sınıf tabanlı renklerin üstüne yazar)
+        function tourCardStyle(name) {
+            const e = tourFind(name);
+            return e ? `style="background-color:${e.c}26;border-color:${e.c}66"` : '';
+        }
+        // ===================== LOGOLU TURNUVA SEÇİCİ (tüm turnuva dropdown'ları için) =====================
+        // Native <select> içine görsel konamadığı için, turnuva select'ine dokunulunca logolu/aramalı bir açılır liste gösterilir.
+        // Değer yine select'te tutulur ve 'change' olayı tetiklenir; mevcut onchange kodları aynen çalışır.
+        const TOUR_SEL_QUERY = '.tour-sel,#custom-tour-select,#tour-name-input,#fm-tournament,.fb-tournament,[id^="m_tour_"]';
+        let _tpEl = null, _tpSel = null, _tpHl = -1;
+        function tourIsSel(el) { return !!(el && el.tagName === 'SELECT' && el.matches(TOUR_SEL_QUERY) && !el.disabled); }
+        function tourLogoOf(name) { if (!name) return ''; try { return getCompetitionLogo(name) || ''; } catch (e) { return ''; } }
+        function tourLogoTile(name, size) {
+            const u = tourLogoOf(name), e = tourFind(name), pad = Math.round(size * 0.14);
+            const ab = `<b style="font-size:${Math.max(7, Math.round(size * 0.34))}px;color:#334155${u ? ';display:none' : ''}">${escapeHtml(e ? e.s : '')}</b>`;
+            const inner = (u ? `<img src="${escapeHtml(u)}" alt="" style="max-width:100%;max-height:100%;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='inline'">` : '') + ab;
+            return `<span style="width:${size}px;height:${size}px;border-radius:${Math.round(size * 0.28)}px;background:#e2e8f0;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;padding:${pad}px">${inner}</span>`;
+        }
+        // Kapalıyken select'in sol tarafında seçili turnuvanın logosu görünsün
+        function tourSyncSelect(sel) {
+            if (!tourIsSel(sel) && !(sel && sel.matches && sel.matches(TOUR_SEL_QUERY))) return;
+            const u = tourLogoOf(sel.value);
+            const st = sel.style;
+            const clear = () => { sel.classList.remove('has-logo'); st.backgroundImage = st.backgroundRepeat = st.backgroundSize = st.backgroundOrigin = st.backgroundPosition = st.paddingLeft = ''; };
+            if (!u) { clear(); return; }
+            // Logoyu 16x16 kutuya orantılı sığdır (geniş logolar bozulmasın, döşenmesin)
+            const im = new Image();
+            im.onload = () => {
+                if (sel.dataset.tlogo !== u) return;
+                const nw = im.naturalWidth || 16, nh = im.naturalHeight || 16, k = Math.min(16 / nw, 16 / nh);
+                const w = Math.max(1, Math.round(nw * k)), h = Math.max(1, Math.round(nh * k));
+                sel.classList.add('has-logo');
+                st.backgroundImage = `url("${u.replace(/"/g, '%22')}"), linear-gradient(#e2e8f0,#e2e8f0)`;
+                st.backgroundRepeat = 'no-repeat';
+                st.backgroundSize = `${w}px ${h}px, 22px 22px`;
+                st.backgroundPosition = `${9 + (16 - w) / 2}px center, 6px center`;
+                st.paddingLeft = '36px';
+            };
+            im.onerror = () => { if (sel.dataset.tlogo === u) clear(); };
+            sel.dataset.tlogo = u;
+            im.src = u;
+        }
+        function tourClosePicker() {
+            if (_tpEl) { _tpEl.remove(); _tpEl = null; }
+            if (_tpSel) delete _tpSel.dataset.autoAdd;
+            _tpSel = null; _tpHl = -1;
+        }
+        function tourPick(idx) {
+            const sel = _tpSel;
+            const auto = sel && sel.dataset.autoAdd;
+            tourClosePicker();
+            if (!sel || !sel.options[idx]) return;
+            sel.selectedIndex = idx;
+            sel.dispatchEvent(new Event('change', { bubbles: true }));
+            tourSyncSelect(sel);
+            if (auto && sel.value) addCustomTournament();
+        }
+        function tourOpenPicker(sel, anchor) {
+            if (_tpEl && _tpSel === sel) { tourClosePicker(); return; }
+            tourClosePicker();
+            _tpSel = sel;
+            const items = [];
+            Array.from(sel.children).forEach(ch => {
+                if (ch.tagName === 'OPTGROUP') {
+                    items.push({ g: ch.label });
+                    Array.from(ch.children).forEach(o => items.push({ i: o.index, v: o.value, t: o.textContent }));
+                } else if (ch.tagName === 'OPTION') {
+                    items.push({ i: ch.index, v: ch.value, t: ch.textContent });
+                }
+            });
+            const pop = document.createElement('div');
+            pop.id = 'tour-pop';
+            pop.innerHTML = `<div class="tp-search"><input type="text" placeholder="Ara" autocomplete="off"></div><div class="tp-list"></div>`;
+            document.body.appendChild(pop);
+            _tpEl = pop;
+            const list = pop.querySelector('.tp-list'), inp = pop.querySelector('input');
+            const render = (q) => {
+                const nq = tourNorm(q || '');
+                let html = '', pendingG = null, shown = 0;
+                items.forEach(it => {
+                    if (it.g !== undefined) { pendingG = it.g; return; }
+                    const isAct = it.v === '__NEW__' || it.v === 'CUSTOM', isPh = it.v === '';
+                    if (nq) {
+                        if (isPh) return;
+                        const e = tourFind(it.v);
+                        const hay = tourNorm(it.t) + '|' + (e ? [e.s].concat(e.a || []).map(tourNorm).join('|') : '');
+                        if (!isAct && !hay.includes(nq)) return;
+                    }
+                    if (pendingG !== null) { html += `<div class="tp-g">${escapeHtml(pendingG)}</div>`; pendingG = null; }
+                    const sel_ = it.v === sel.value && !isAct;
+                    if (isPh) html += `<div class="tp-row tp-ph" data-i="${it.i}">${escapeHtml(it.t)}</div>`;
+                    else if (isAct) html += `<div class="tp-row tp-act" data-i="${it.i}"><i class="fa-solid fa-plus"></i>${escapeHtml(it.t.replace(/^\+\s*/, ''))}</div>`;
+                    else { const e = tourFind(it.v); html += `<div class="tp-row${sel_ ? ' sel' : ''}" data-i="${it.i}">${tourLogoTile(it.v, 26)}<span class="tp-nm">${escapeHtml(it.t)}</span><span class="tp-ab">${escapeHtml(e ? e.s : '')}</span></div>`; }
+                    shown++;
+                });
+                list.innerHTML = html || `<div class="tp-g">—</div>`;
+                _tpHl = -1;
+                const selRow = list.querySelector('.tp-row.sel'); if (selRow && !nq) selRow.scrollIntoView({ block: 'center' });
+            };
+            render('');
+            const rows = () => Array.from(list.querySelectorAll('.tp-row'));
+            const hl = (n) => { const r = rows(); if (!r.length) return; _tpHl = (n + r.length) % r.length; r.forEach((x, k) => x.classList.toggle('hl', k === _tpHl)); r[_tpHl].scrollIntoView({ block: 'nearest' }); };
+            inp.addEventListener('input', () => render(inp.value));
+            inp.addEventListener('keydown', ev => {
+                if (ev.key === 'ArrowDown') { ev.preventDefault(); hl(_tpHl + 1); }
+                else if (ev.key === 'ArrowUp') { ev.preventDefault(); hl(_tpHl - 1); }
+                else if (ev.key === 'Enter') { ev.preventDefault(); const r = rows(); const t = r[_tpHl >= 0 ? _tpHl : 0]; if (t) tourPick(parseInt(t.dataset.i)); }
+                else if (ev.key === 'Escape') { ev.preventDefault(); tourClosePicker(); }
+            });
+            list.addEventListener('click', ev => { const row = ev.target.closest('.tp-row'); if (row) tourPick(parseInt(row.dataset.i)); });
+            // Konum
+            const r = (anchor || sel).getBoundingClientRect(), vw = window.innerWidth, vh = window.innerHeight;
+            const w = Math.min(Math.max(anchor ? 300 : r.width, 280), vw - 16);
+            pop.style.width = w + 'px';
+            pop.style.left = Math.min(Math.max(8, anchor ? r.right - w : r.left), vw - w - 8) + 'px';
+            const below = vh - r.bottom - 8, above = r.top - 8;
+            if (below >= 260 || below >= above) { pop.style.top = (r.bottom + 4) + 'px'; pop.style.maxHeight = Math.min(400, below) + 'px'; }
+            else { pop.style.bottom = (vh - r.top + 4) + 'px'; pop.style.maxHeight = Math.min(400, above) + 'px'; }
+            if (window.innerWidth > 640) inp.focus();
+        }
+        function tourPickerInit() {
+            if (window.__tourPickerReady) return;
+            window.__tourPickerReady = true;
+            const down = (e) => {
+                const t = e.target;
+                if (_tpEl && _tpEl.contains(t)) return;
+                if (t && t.closest && t.closest('[data-tour-add]')) return;
+                const s = t && t.closest ? t.closest('select') : null;
+                if (tourIsSel(s)) { e.preventDefault(); tourOpenPicker(s); }
+                else tourClosePicker();
+            };
+            document.addEventListener('mousedown', down, true);
+            document.addEventListener('touchstart', down, { capture: true, passive: false });
+            document.addEventListener('keydown', e => {
+                if (e.key === 'Escape' && _tpEl) { tourClosePicker(); return; }
+                const s = e.target;
+                if (tourIsSel(s) && [' ', 'Enter', 'ArrowDown', 'ArrowUp'].includes(e.key)) { e.preventDefault(); tourOpenPicker(s); }
+            }, true);
+            document.addEventListener('change', e => { if (tourIsSel(e.target)) tourSyncSelect(e.target); }, true);
+            window.addEventListener('resize', tourClosePicker);
+            window.addEventListener('scroll', e => { if (_tpEl && !_tpEl.contains(e.target)) tourClosePicker(); }, true);
+            const scan = (root) => { if (!root || root.nodeType !== 1) return; if (root.matches && root.matches(TOUR_SEL_QUERY)) tourSyncSelect(root); root.querySelectorAll && root.querySelectorAll(TOUR_SEL_QUERY).forEach(tourSyncSelect); };
+            new MutationObserver(ms => ms.forEach(m => {
+                if (m.target && m.target.nodeType === 1 && m.target.tagName === 'SELECT') tourSyncSelect(m.target);
+                m.addedNodes.forEach(scan);
+            })).observe(document.body, { childList: true, subtree: true });
+            scan(document.body);
+        }
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', tourPickerInit); else tourPickerInit();
+
+        function tourNotifyUnmatched() {
+            const list = window.__tourUnmatched || [];
+            try { if (!list.length || sessionStorage.getItem('tourNoticeShown') === list.join('|')) return; sessionStorage.setItem('tourNoticeShown', list.join('|')); } catch (e) {}
+            if (document.getElementById('tour-unmatched-note')) return;
+            const d = document.createElement('div');
+            d.id = 'tour-unmatched-note';
+            d.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);bottom:76px;z-index:300;max-width:92vw;width:420px;background:#1e293b;border:1px solid #f59e0b;border-radius:12px;padding:12px 14px;color:#e2e8f0;font-size:12px;box-shadow:0 10px 30px rgba(0,0,0,.5)';
+            d.innerHTML = `<div style="font-weight:800;color:#fbbf24;margin-bottom:4px">⚠ Katalogda karşılığı olmayan turnuvalar</div><div style="color:#cbd5e1;margin-bottom:8px">${list.map(escapeHtml).join(', ')}</div><div style="color:#94a3b8;margin-bottom:8px">Bu kayıtlar listelerde ⚠ ile görünür. İlgili alanda doğru turnuvayı seçerek veya "+ Yeni / Özel Turnuva" ile ekleyerek düzeltebilirsin.</div><button onclick="this.parentNode.remove()" style="background:#f59e0b;color:#111827;font-weight:800;padding:4px 12px;border-radius:8px">Tamam</button>`;
+            document.body.appendChild(d);
+        }
         let activeFixtureSeason = null;
         let activeFixtureMatchId = null;
         let fixtureFilter = { tournament: '' };
@@ -1295,7 +1756,7 @@ function getFlagIcon(countryCode) {
             return {
                 seasonsList, trophyData, tournamentsList, managedTeams, opponentsConfig,
                 matchDataStore, playerRoles, squadData, leagueHistoryData, transferData, fixtureData, isSetupComplete,
-                euroLeaguesData, customTournamentsData, competitionLogos, formations
+                euroLeaguesData, euroSlotsData, customTournamentsData, competitionLogos, formations, customCatalog
             };
         }
 
@@ -1344,6 +1805,7 @@ function getFlagIcon(countryCode) {
             if (data.customTournamentsData) customTournamentsData = data.customTournamentsData;
             if (data.isSetupComplete !== undefined) isSetupComplete = data.isSetupComplete;
             if (data.competitionLogos) competitionLogos = data.competitionLogos;
+            if (Array.isArray(data.customCatalog)) customCatalog = data.customCatalog;
             if (data.formations) {
                 formations = data.formations;
                 ['astakim', 'milli'].forEach(ctx => {
@@ -1361,6 +1823,7 @@ function getFlagIcon(countryCode) {
             }
 
             // Geriye dönük uyumluluk: eski yedeklerde "milli" kadrosu bulunmayabilir
+            tourMigrateAll();
             if (!squadData.milli) squadData.milli = [];
             if (!playerRoles.milli) playerRoles.milli = ['Kadroda', 'Yedek', 'Genç Milli', 'İzlemede'];
 
@@ -1982,6 +2445,7 @@ function getFlagIcon(countryCode) {
                 delete trophyData[season];
                 delete fixtureData[season];
                 delete euroLeaguesData[season];
+                delete euroSlotsData[season];
                 delete customTournamentsData[season];
                 ['kulup', 'milli'].forEach(ctx => {
                     if (matchDataStore[ctx]) delete matchDataStore[ctx][season];
@@ -2543,7 +3007,7 @@ function handleFileUpload(event, type) {
             const link = document.createElement('a');
             const teamName = managedTeams.kulup.name.replace(/\s+/g, '_');
             link.href = url;
-            link.download = `FC26_${teamName}_Kariyer_Yedek.json`;
+            link.download = `GloryTrack_${teamName}_Backup.json`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -2633,7 +3097,7 @@ function handleFileUpload(event, type) {
                 </div>`;
             }).join('');
             return `
-                <div class="home-xi-container vert">
+                <div class="home-xi-container vert" data-ctx="${context}">
                     <svg class="xi-lines" viewBox="0 0 62 100" preserveAspectRatio="none" aria-hidden="true">
                         <g fill="none" stroke="rgba(255,255,255,.4)" stroke-width="1.4" vector-effect="non-scaling-stroke">
                             <rect x="3" y="2" width="56" height="96" vector-effect="non-scaling-stroke"/>
@@ -3663,7 +4127,7 @@ function handleFileUpload(event, type) {
             }).join('');
 
             return `
-                <div class="home-xi-container">
+                <div class="home-xi-container" data-ctx="${context}">
                     <svg class="xi-lines" viewBox="0 0 100 62" preserveAspectRatio="none" aria-hidden="true">
                         <g fill="none" stroke="rgba(255,255,255,.4)" stroke-width="1.4" vector-effect="non-scaling-stroke">
                             <rect x="2" y="3" width="96" height="56" vector-effect="non-scaling-stroke"/>
@@ -3681,7 +4145,122 @@ function handleFileUpload(event, type) {
         }
 
         // Kartlar eşit boyda; oyuncular çizgilere (sütunlara) hizalanır ve üst üste binmez
+        // Milli takım İlk 11: kart ölçeği kulüpteki (A Takım) ile aynı; kartlar yalnızca çakışma varsa, en az sapmayla kaydırılır
+        function homeXiSolve(pts, w, W, H, vertical) {
+            const PAD = 8, GAP = 5, R = 1.42, h = w * R;
+            const minX = PAD + w / 2, maxX = W - PAD - w / 2, minY = PAD + h / 2, maxY = H - PAD - h / 2;
+            const P = pts.map(p => ({ x: Math.min(maxX, Math.max(minX, p.x)), y: Math.min(maxY, Math.max(minY, p.y)) }));
+            const clamp = (p) => { p.x = Math.min(maxX, Math.max(minX, p.x)); p.y = Math.min(maxY, Math.max(minY, p.y)); };
+            for (let it = 0; it < 200; it++) {
+                let moved = false;
+                for (let i = 0; i < P.length; i++) for (let j = i + 1; j < P.length; j++) {
+                    const a = P[i], b = P[j];
+                    const ox = w + GAP - Math.abs(a.x - b.x), oy = h + GAP - Math.abs(a.y - b.y);
+                    if (ox <= 0 || oy <= 0) continue;
+                    moved = true;
+                    if (vertical ? !(ox <= oy * 2) : (oy <= ox * 2)) { const sg = (a.y === b.y ? (i % 2 ? 1 : -1) : Math.sign(a.y - b.y)) * oy / 2; a.y += sg; b.y -= sg; }
+                    else { const sg = (a.x === b.x ? (i % 2 ? 1 : -1) : Math.sign(a.x - b.x)) * ox / 2; a.x += sg; b.x -= sg; }
+                    clamp(a); clamp(b);
+                }
+                if (!moved) break;
+            }
+            let clash = false;
+            for (let i = 0; i < P.length && !clash; i++) for (let j = i + 1; j < P.length; j++) {
+                if (w + GAP - Math.abs(P[i].x - P[j].x) > 0.5 && h + GAP - Math.abs(P[i].y - P[j].y) > 0.5) { clash = true; break; }
+            }
+            return { P, clash };
+        }
+        function homeFitXIRef(box) {
+            const W = box.clientWidth, H = box.clientHeight;
+            const cards = Array.from(box.querySelectorAll(':scope > .xi-card'));
+            if (!W || !H || !cards.length) return false;
+            const vertical = box.classList.contains('vert');
+            const club = formations && formations.astakim && formations.astakim.ilk11;
+            const nodes = Array.isArray(club) ? club.filter(n => n && n.name) : [];
+            if (!nodes.length) return false;
+            // 1) Kulüp (A Takım) formasyonunun bu panel boyutundaki kart genişliği
+            const cpts = nodes.map(n => {
+                const nx = parseFloat(n.x) || 0, ny = parseFloat(n.y) || 0;
+                const left = vertical ? Math.min(94, Math.max(6, nx)) : Math.min(94, Math.max(6, 100 - ny));
+                const top = vertical ? Math.min(92, Math.max(8, ny)) : Math.min(88, Math.max(12, nx));
+                return { x: left / 100 * W, y: top / 100 * H };
+            });
+            let w = Math.min(96, (H - 16) / 1.42, (W - 16));
+            while (homeXiSolve(cpts, w, W, H, vertical).clash && w > 26) w -= 2;
+            // 2) Aynı genişlikte milli kartlarını yerleştir
+            const res = homeXiSolve(cards.map(c => ({ x: parseFloat(c.dataset.l0) / 100 * W, y: parseFloat(c.dataset.t0) / 100 * H })), w, W, H, vertical);
+            box.style.setProperty('--xw', w.toFixed(1) + 'px');
+            cards.forEach((c, i) => {
+                c.style.left = res.P[i].x.toFixed(1) + 'px';
+                c.style.top = res.P[i].y.toFixed(1) + 'px';
+            });
+            return true;
+        }
+
+        // İlk 11 / İlk 5 sahası (kulüp, akademi, milli — hepsi aynı kural):
+        // kart genişliği yalnızca panel boyutundan hesaplanır (bir hatta 4 kart sığacak şekilde), formasyondan etkilenmez.
+        // Kartlar formasyondaki koordinatlarında durur; kaydırma/çakışma düzeltmesi YAPILMAZ (sadece saha dışına taşmaz).
+        function homeFitXIFixed(box) {
+            const W = box.clientWidth, H = box.clientHeight;
+            const cards = Array.from(box.querySelectorAll(':scope > .xi-card'));
+            if (!W || !H || !cards.length) return false;
+            const PAD = 8, GAP = 5, R = 1.42;
+            const vertical = box.classList.contains('vert');
+            const wA = vertical ? ((W - 2 * PAD) / 4 - GAP) : ((((H - 2 * PAD) / 4) - GAP) / R);   // 4 kart yan yana
+            const wB = vertical ? ((((H - 2 * PAD) / 5) - GAP) / R) : (((W - 2 * PAD) / 5) - GAP);   // 5 hat arka arkaya
+            const w = Math.max(26, Math.min(96, wA, wB));
+            const h = w * R;
+            box.style.setProperty('--xw', w.toFixed(1) + 'px');
+            const minX = PAD + w / 2, maxX = W - PAD - w / 2, minY = PAD + h / 2, maxY = H - PAD - h / 2;
+            const clampP = (p) => { p.x = Math.min(maxX, Math.max(minX, p.x)); p.y = Math.min(maxY, Math.max(minY, p.y)); };
+            const P = cards.map(c => ({ x: parseFloat(c.dataset.l0) / 100 * W, y: parseFloat(c.dataset.t0) / 100 * H }));
+            P.forEach(clampP);
+            // 1) Aynı hattaki kartlar (derinlik ekseninde yakın) bir grup sayılır. Grupta çakışma varsa kartlar
+            //    uçlar sabit kalacak şekilde eşit aralıkla (simetrik) dağıtılır; yer yetmezse merkezden açılır.
+            const dk = vertical ? 'y' : 'x', ck = vertical ? 'x' : 'y';
+            const step = (vertical ? w : h) + GAP;
+            const cLo = vertical ? minX : minY, cHi = vertical ? maxX : maxY;
+            const order = P.map((p, i) => i).sort((a, b) => P[a][dk] - P[b][dk]);
+            const groups = [];
+            order.forEach(i => { const g = groups[groups.length - 1]; if (g && P[i][dk] - P[g[g.length - 1]][dk] <= w * 0.75) g.push(i); else groups.push([i]); });
+            groups.forEach(g => {
+                if (g.length < 2) return;
+                g.sort((a, b) => P[a][ck] - P[b][ck]);
+                let tight = false;
+                for (let k = 1; k < g.length; k++) if (P[g[k]][ck] - P[g[k - 1]][ck] < step - 0.5) tight = true;
+                if (!tight) return;
+                const lo = P[g[0]][ck], hi = P[g[g.length - 1]][ck], n = g.length;
+                let d = (hi - lo) / (n - 1), start = lo;
+                if (d < step) { d = step; start = (lo + hi) / 2 - d * (n - 1) / 2; }
+                const end = start + d * (n - 1);
+                if (start < cLo) start = cLo; else if (end > cHi) start -= end - cHi;
+                g.forEach((idx, k) => { P[idx][ck] = start + d * k; });
+            });
+            P.forEach(clampP);
+            // 2) Farklı hatlar arasında kalan çakışmalar: iki kart da eşit miktarda (yarı yarıya) ayrılır
+            for (let it = 0; it < 120; it++) {
+                let moved = false;
+                for (let i = 0; i < P.length; i++) for (let j = i + 1; j < P.length; j++) {
+                    const a = P[i], b = P[j];
+                    const ox = w + GAP - Math.abs(a.x - b.x), oy = h + GAP - Math.abs(a.y - b.y);
+                    if (ox <= 0 || oy <= 0) continue;
+                    moved = true;
+                    if (ox < oy) { const sg = (a.x === b.x ? (i % 2 ? 1 : -1) : Math.sign(a.x - b.x)) * ox / 2; a.x += sg; b.x -= sg; }
+                    else { const sg = (a.y === b.y ? (i % 2 ? 1 : -1) : Math.sign(a.y - b.y)) * oy / 2; a.y += sg; b.y -= sg; }
+                    clampP(a); clampP(b);
+                }
+                if (!moved) break;
+            }
+            cards.forEach((c, i) => {
+                c.style.left = P[i].x.toFixed(1) + 'px';
+                c.style.top = P[i].y.toFixed(1) + 'px';
+            });
+            return true;
+        }
+
         function homeFitXI(box) {
+            if (homeFitXIFixed(box)) return;
+            if (box.dataset.ctx === 'milli' && homeFitXIRef(box)) return;
             const W = box.clientWidth, H = box.clientHeight;
             if (!W || !H) return;
             const cards = Array.from(box.querySelectorAll(':scope > .xi-card'));
@@ -4102,22 +4681,171 @@ function handleFileUpload(event, type) {
             switchHomeTab(homeActiveTab);
         }
 
+// ===================== KUPA DOLABI (Trophy Cabinet) =====================
+let trophyView = 'table';        // 'table' | 'cabinet'
+let trophyShowEmpty = false;     // kazanılmayan turnuvaları vitrinde göster
+
+function setTrophyView(v) { trophyView = v; renderTrophiesGrid(); }
+let trophyCabTab = 'vitrin';     // dar ekranda: 'vitrin' | 'zaman'
+function setTrophyCabTab(t) {
+    trophyCabTab = t;
+    const sp = document.querySelector('.tc-split');
+    if (sp) sp.dataset.tab = t;
+    document.querySelectorAll('.tc-subtabs button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
+}
+function toggleTrophyEmpty() { trophyShowEmpty = !trophyShowEmpty; renderTrophiesGrid(); }
+
+// Şampiyon takım, yönetilen kulüp/milli takımın adıyla eşleşiyorsa kupa bizimdir
+function trophyIsMine(cell) {
+    if (!cell || !cell.champion) return false;
+    const n = String(cell.champion.name || '').trim().toLowerCase();
+    if (!n) return false;
+    return ['kulup', 'milli'].some(k => {
+        const m = String((managedTeams[k] && managedTeams[k].name) || '').trim().toLowerCase();
+        return m && m === n;
+    });
+}
+
+function trophyCupHtml(t, idx, won, h) {
+    if (t.cupUrl) {
+        return `<img src="${escapeHtml(t.cupUrl)}" alt="${escapeHtml(t.name)}" style="height:${h}px;max-width:${Math.round(h * 1.3)}px;object-fit:contain;${won ? 'filter:drop-shadow(0 8px 12px rgba(245,158,11,.4))' : 'filter:grayscale(1);opacity:.3'}">`;
+    }
+    const g = won ? ['#fde68a', '#f59e0b', '#b45309', '#d97706', '#92400e'] : ['#64748b', '#475569', '#334155', '#334155', '#1e293b'];
+    const col = escapeHtml(t.colorHex || '#475569');
+    const w = Math.round(h * 0.87);
+    return `<svg width="${w}" height="${h}" viewBox="0 0 60 69" style="${won ? 'filter:drop-shadow(0 8px 12px rgba(245,158,11,.35))' : 'opacity:.35'}"><defs><linearGradient id="tcg${idx}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${g[0]}"/><stop offset=".55" stop-color="${g[1]}"/><stop offset="1" stop-color="${g[2]}"/></linearGradient></defs><path d="M14 6h32v14c0 11-7 19-16 19S14 31 14 20z" fill="url(#tcg${idx})"/><path d="M14 10H5c0 10 4 16 12 18M46 10h9c0 10-4 16-12 18" fill="none" stroke="${g[3]}" stroke-width="3"/><rect x="26" y="38" width="8" height="12" fill="${g[3]}"/><rect x="16" y="50" width="28" height="8" rx="2" fill="${g[2]}"/><rect x="12" y="58" width="36" height="6" rx="2" fill="${g[4]}"/>${won ? `<circle cx="30" cy="22" r="7" fill="${col}" opacity=".9"/>` : ''}<path d="M22 10c3-2 12-2 16 0" stroke="#fff" stroke-opacity=".5" stroke-width="2" fill="none"/></svg>`;
+}
+
+function renderTrophyCabinet() {
+    const esc = (s) => escapeHtml(String(s));
+    // Turnuva başına kazanılan sezonlar + sezon başına kazanılan turnuvalar
+    const winsByT = {}, winsBySeason = {};
+    tournamentsList.forEach(t => { winsByT[t.id] = []; });
+    seasonsList.forEach(s => {
+        winsBySeason[s] = [];
+        tournamentsList.forEach(t => {
+            const cell = trophyData[s] && trophyData[s][t.id];
+            if (trophyIsMine(cell)) { winsByT[t.id].push(s); winsBySeason[s].push(t); }
+        });
+    });
+    const wonT = tournamentsList.filter(t => winsByT[t.id].length).sort((a, b) => winsByT[b.id].length - winsByT[a.id].length);
+    const lostT = tournamentsList.filter(t => !winsByT[t.id].length);
+    const total = wonT.reduce((a, t) => a + winsByT[t.id].length, 0);
+    const winSeasons = seasonsList.filter(s => winsBySeason[s].length).length;
+
+    // ---- SOL: Cam vitrin ----
+    const items = wonT.map(t => ({ t, won: true })).concat(trophyShowEmpty ? lostT.map(t => ({ t, won: false })) : []);
+    const idxOf = (t) => tournamentsList.indexOf(t);
+    let shelves = '';
+    for (let i = 0; i < items.length; i += 3) {
+        const row = items.slice(i, i + 3).map(({ t, won }) => {
+            const ss = winsByT[t.id];
+            const seasonTxt = ss.length > 3 ? ss.slice(0, 3).join(' · ') + ` +${ss.length - 3}` : ss.join(' · ');
+            return `<div class="tc-item group" style="opacity:${won ? 1 : .55}">
+                <button onclick="openTournamentModal('${t.id}')" class="tc-pen" title="Kupa görselini / turnuvayı düzenle"><i class="fa-solid fa-pen"></i></button>
+                <div class="tc-cup">${trophyCupHtml(t, idxOf(t), won, 84)}</div>
+                <div class="tc-name" title="${esc(t.name)}">${esc(t.name)}</div>
+                ${won ? `<div class="tc-pill">×${ss.length}</div><div class="tc-ss">${esc(seasonTxt)}</div>` : '<div class="tc-ss">Henüz yok</div>'}
+            </div>`;
+        }).join('');
+        shelves += `<div class="tc-shelf"><div class="tc-row">${row}</div><div class="tc-board"></div></div>`;
+    }
+    if (!items.length) {
+        const noName = !(managedTeams.kulup && managedTeams.kulup.name) && !(managedTeams.milli && managedTeams.milli.name);
+        shelves = `<div class="text-center text-slate-400 text-sm py-12 px-6">Henüz kazanılmış kupa yok.<br><span class="text-xs text-slate-500">Kupa, tablodaki şampiyon takım kutusuna ${noName ? 'yönettiğiniz takımın adını girdiğinizde (önce takım adını tanımlayın)' : '<b>' + esc(managedTeams.kulup.name || managedTeams.milli.name) + '</b> yazdığınızda'} dolaba eklenir.</span></div>`;
+    }
+    const left = `
+        <div class="tc-col">
+            <div class="tc-glass">${shelves}</div>
+            <div class="flex items-center justify-between flex-wrap gap-2 mt-3 px-1">
+                <div class="flex gap-5 text-xs text-slate-400">
+                    <span><b class="text-amber-400 text-lg">${total}</b> kupa</span>
+                    <span><b class="text-amber-400 text-lg">${wonT.length}</b> farklı turnuva</span>
+                    <span><b class="text-amber-400 text-lg">${winSeasons}</b> kupalı sezon</span>
+                </div>
+                <button onclick="toggleTrophyEmpty()" class="tc-chip ${trophyShowEmpty ? 'on' : ''}">${trophyShowEmpty ? '<i class="fa-solid fa-eye-slash mr-1"></i>Kazanılmayanları gizle' : '<i class="fa-solid fa-eye mr-1"></i>Kazanılmayanları göster'}</button>
+            </div>
+        </div>`;
+
+    // ---- SAĞ: Sezon zaman çizgisi ----
+    let tl = '';
+    seasonsList.slice().reverse().forEach(s => {
+        const l = winsBySeason[s];
+        tl += `<div class="tc-tl-item"><span class="tc-dot ${l.length ? 'on' : ''}"></span>
+            <div class="flex items-center gap-2.5 flex-wrap mb-2">
+                <b class="text-white text-base">${esc(s)}</b>
+                ${l.length ? `<span class="tc-pill">${l.length} kupa</span>` : '<span class="text-xs text-slate-500">Kupa yok</span>'}
+                ${l.length >= 3 ? '<span class="tc-star">★ SEZON ŞAMPİYONU</span>' : ''}
+            </div>
+            ${l.length ? `<div class="flex flex-wrap gap-2">${l.map(t => `<div class="tc-tile" style="border-color:${esc(t.colorHex || '#475569')};background:linear-gradient(135deg,${esc(t.colorHex || '#475569')}55,rgba(11,19,36,.9))"><span class="tc-tlogo"><img src="${esc(t.logoUrl)}" alt=""></span><b>${esc(t.name)}</b></div>`).join('')}</div>` : ''}
+        </div>`;
+    });
+    const dist = wonT.length ? `
+        <div class="mt-2 pt-4 border-t border-slate-700/60">
+            <div class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-2">Kariyer toplamı · ${total} kupa</div>
+            <div class="flex h-3 rounded-full overflow-hidden gap-0.5">${wonT.map(t => `<i style="flex:${winsByT[t.id].length};background:${esc(t.colorHex || '#475569')};filter:brightness(1.6)" title="${esc(t.name)}: ${winsByT[t.id].length}"></i>`).join('')}</div>
+            <div class="flex flex-wrap gap-x-3 gap-y-1 mt-2 text-[11px]">${wonT.map(t => `<span><b class="text-amber-400">${winsByT[t.id].length}×</b> <span class="text-slate-500">${esc(t.name)}</span></span>`).join('')}</div>
+        </div>` : '';
+    const right = `<div class="tc-col"><div class="tc-timeline">${tl}</div>${dist}</div>`;
+
+    return `<div class="flex-1 min-h-0 flex flex-col">
+        <div class="tc-subtabs">
+            <button onclick="setTrophyCabTab('vitrin')" class="${trophyCabTab === 'vitrin' ? 'on' : ''}" data-t="vitrin"><i class="fa-solid fa-trophy mr-1.5"></i>Vitrin</button>
+            <button onclick="setTrophyCabTab('zaman')" class="${trophyCabTab === 'zaman' ? 'on' : ''}" data-t="zaman"><i class="fa-solid fa-timeline mr-1.5"></i>Zaman Çizelgesi</button>
+        </div>
+        <div class="tc-split flex-1 min-h-0" data-tab="${trophyCabTab}">
+            <div class="tc-pane tc-pane-v">${left}</div>
+            <div class="tc-pane tc-pane-t">${right}</div>
+        </div>
+    </div>`;
+}
+
+        // Turnuva sütunlarını (kare) pencere genişliğine göre ölçekler
+        function trophyFitCols() {
+            const tbl = document.getElementById('tc-table');
+            if (!tbl || !tournamentsList.length) return;
+            const wrap = tbl.parentElement;
+            const sc = (typeof currentScale === 'number' && currentScale > 0) ? currentScale : 1;
+            const avail = wrap.clientWidth / sc - 64 - 4; // 64px: sol sezon sütunu
+            const size = Math.max(52, Math.min(140, Math.floor(avail / tournamentsList.length)));
+            tbl.style.setProperty('--tcol', size + 'px');
+        }
+        if (!window.__tcFitBound) {
+            window.__tcFitBound = true;
+            window.addEventListener('resize', () => trophyFitCols());
+        }
+
         // --- KUPALAR TABLOSU ---
         function renderTrophiesGrid() {
+            setTimeout(trophyFitCols, 0);
             let html = `
-                <div class="w-full flex justify-between items-center mb-3 px-2 shrink-0">
-                    <h3 class="text-2xl font-bold text-white"><i class="fa-solid fa-trophy text-yellow-500"></i></h3>
+                <div class="w-full flex flex-wrap justify-between items-center mb-3 px-2 shrink-0 gap-y-2 gap-x-3">
+                    <div class="flex items-center gap-3">
+                        <h3 class="text-2xl font-bold text-white"><i class="fa-solid fa-trophy text-yellow-500"></i></h3>
+                        <div class="tc-tg">
+                            <button onclick="setTrophyView('table')" class="${trophyView === 'table' ? 'on' : ''}"><i class="fa-solid fa-table-cells mr-1.5"></i>Tablo</button>
+                            <button onclick="setTrophyView('cabinet')" class="${trophyView === 'cabinet' ? 'on' : ''}"><i class="fa-solid fa-trophy mr-1.5"></i>Kupa Dolabı</button>
+                        </div>
+                    </div>
                     <div class="flex items-center gap-4">
-                         
+                        ${trophyView === 'table' ? renderTrophyModes('web') : ''}
                         ${getScaleSelectorHtml()}
+                        ${trophyView === 'table' ? `<button onclick="addTournamentColumn()" class="hidden sm:flex items-center justify-center w-7 h-7 rounded-md bg-transparent hover:bg-yellow-400/10 text-yellow-400 hover:text-yellow-300 transition-colors" title="Kupa Ekle"><i class="fa-solid fa-plus text-base"></i></button>` : ''}
                     </div>
                 </div>
             `;
 
+            if (trophyView === 'cabinet') {
+                html = html.replace(getScaleSelectorHtml(), '');
+                html += renderTrophyCabinet();
+                updateContentArea(`<div class="w-full flex flex-col h-full min-h-0 overflow-hidden">${html}</div>`);
+                return;
+            }
+
             // --- 1. MASAÜSTÜ GÖRÜNÜMÜ (Orijinal Yön: Satırlar = Sezonlar, Sütunlar = Turnuvalar) ---
             html += `
-                <div class="hidden sm:block w-full overflow-auto table-scroll border border-slate-700 rounded-xl bg-slate-900 flex-initial sm:flex-1 min-h-0 relative pb-4">
-                    <table class="w-full border-separate border-spacing-0 text-sm origin-top-left" style="zoom: ${currentScale};">
+                ${renderTrophyModes()}<div class="${trophyMobMode === 'grid' ? 'hidden sm:block' : 'hidden'} w-full overflow-auto table-scroll border border-slate-700 rounded-xl bg-slate-900 flex-1 min-h-0 relative pb-4">
+                    <table id="tc-table" class="border-separate border-spacing-0 text-sm origin-top-left" style="--tcol:96px; transform: scale(${currentScale}); transform-origin: top left; width: max-content; table-layout: fixed;">
                         <thead class="bg-slate-950 sticky top-0 z-[40] shadow-md">
                             <tr>
                                 <th class="p-1 sticky left-0 bg-slate-950 z-[50] border-r border-b border-slate-700 w-16 min-w-[64px] shadow-[2px_0_5px_rgba(0,0,0,0.2)] align-middle">
@@ -4129,10 +4857,10 @@ function handleFileUpload(event, type) {
                 const isFirst = idx === 0;
                 const isLast = idx === tournamentsList.length - 1;
                 html += `
-                    <th class="p-1.5 border-r border-b border-slate-700 min-w-[52px] bg-slate-900 group relative">
-                        <div class="flex items-center justify-center h-11 w-full mx-auto" title="${t.name}">
-                            <div class="bg-slate-200 p-1 rounded-lg flex items-center justify-center h-10 w-10 shadow-[0_0_8px_rgba(255,255,255,0.15)] transition-transform group-hover:scale-105">
-                                <img src="${t.logoUrl}" alt="${t.name}" class="max-w-full max-h-full object-contain drop-shadow-sm">
+                    <th class="p-1.5 border-r border-b border-slate-700 w-24 min-w-[96px] max-w-[96px] h-24 bg-slate-900 group relative">
+                        <div class="flex items-center justify-center h-full w-full mx-auto" title="${t.name}">
+                            <div class="logo-spot flex items-center justify-center h-16 w-16 transition-transform group-hover:scale-105">
+                                <img src="${t.logoUrl}" alt="${t.name}" class="max-w-full max-h-full object-contain logo-out">
                             </div>
                         </div>
                         <button onclick="openTournamentModal('${t.id}')" class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 bg-slate-800 text-white rounded p-1.5 text-xs z-[45] transition-opacity hover:bg-blue-600" title="Turnuvayı Düzenle">
@@ -4149,9 +4877,7 @@ function handleFileUpload(event, type) {
                     </th>`;
             });
 
-            html += `<th class="p-2 border-r border-b border-slate-700 bg-slate-900 align-middle w-10 min-w-[40px]">
-                        <button onclick="addTournamentColumn()" class="text-emerald-500 hover:text-emerald-400" title="Kupa Ekle"><i class="fa-solid fa-plus-circle text-lg"></i></button>
-                    </th>`;
+            // (Kupa Ekle butonu artık üst çubukta)
 
             html += `</tr></thead><tbody>`;
 
@@ -4182,7 +4908,7 @@ function handleFileUpload(event, type) {
                     }
 
                     html += `
-                        <td class="p-0 dynamic-bg relative group h-28 w-28 sm:w-auto sm:h-16 align-middle" 
+                        <td class="p-0 dynamic-bg relative group h-28 w-28 sm:w-24 sm:min-w-[96px] sm:max-w-[96px] sm:h-24 align-middle" 
                             style="background-color: ${t.colorHex}22; border-color: ${t.colorHex}66;">
                             ${logosHtml}
                             <button onclick="openTrophyModal('${season}', '${t.id}', '${t.name}')" 
@@ -4193,7 +4919,7 @@ function handleFileUpload(event, type) {
                         </td>
                     `;
                 });
-                html += `<td class="border-b border-slate-800 bg-slate-900/10"></td></tr>`;
+                html += `</tr>`;
             });
             
             html += `<tr>
@@ -4206,7 +4932,7 @@ function handleFileUpload(event, type) {
 
             // --- 2. MOBİL GÖRÜNÜM (Ters Çevrilmiş Yön: Satırlar = Turnuvalar, Sütunlar = Sezonlar) ---
             html += `
-                <div class="block sm:hidden w-full overflow-auto table-scroll border border-slate-700 rounded-xl bg-slate-900 flex-initial sm:flex-1 min-h-0 relative pb-4">
+                ${renderTrophyMobile()}<div class="hidden w-full overflow-auto table-scroll border border-slate-700 rounded-xl bg-slate-900 flex-1 min-h-0 relative pb-4">
                     <table class="w-max min-w-full border-separate border-spacing-0 text-sm origin-top-left" style="zoom: ${currentScale}; width: max-content;">
                         <thead class="bg-slate-950 sticky top-0 z-[40] shadow-md">
                             <tr>
@@ -4240,8 +4966,8 @@ function handleFileUpload(event, type) {
                 html += `
                     <td class="p-2 py-4 sticky left-0 bg-slate-950 z-[30] border-r border-b border-slate-700 text-center shadow-[2px_0_5px_rgba(0,0,0,0.2)] w-24 min-w-[96px] align-middle relative group/tour">
                         <div class="flex items-center justify-center h-16 w-full mx-auto" title="${t.name}">
-                            <div class="bg-slate-200 p-1.5 rounded-xl flex items-center justify-center h-14 w-14 shadow-[0_0_8px_rgba(255,255,255,0.15)] transition-transform group-hover/tour:scale-105 mx-auto">
-                                <img src="${t.logoUrl}" alt="${t.name}" class="max-w-full max-h-full object-contain drop-shadow-sm">
+                            <div class="logo-spot flex items-center justify-center h-14 w-14 transition-transform group-hover/tour:scale-105 mx-auto">
+                                <img src="${t.logoUrl}" alt="${t.name}" class="max-w-full max-h-full object-contain logo-out">
                             </div>
                         </div>
                         <button onclick="openTournamentModal('${t.id}')" class="absolute top-1 right-1 opacity-0 group-hover/srow:opacity-100 bg-slate-800 text-white rounded p-1 text-[10px] z-[45] transition-opacity hover:bg-blue-600" title="Turnuvayı Düzenle">
@@ -4279,7 +5005,7 @@ function handleFileUpload(event, type) {
                     }
 
                     html += `
-                        <td class="p-0 dynamic-bg relative group h-28 w-28 sm:w-auto sm:h-16 align-middle" 
+                        <td class="p-0 dynamic-bg relative group h-28 w-28 sm:w-24 sm:min-w-[96px] sm:max-w-[96px] sm:h-24 align-middle" 
                             style="background-color: ${t.colorHex}22; border-color: ${t.colorHex}66;">
                             ${logosHtml}
                             <button onclick="openTrophyModal('${season}', '${t.id}', '${t.name}')" 
@@ -4292,7 +5018,7 @@ function handleFileUpload(event, type) {
                 });
                 
                 // Artı (Yeni Sezon) Sütununu Hizalama Boşluğu
-                html += `<td class="border-b border-slate-800 bg-slate-900/10"></td></tr>`;
+                html += `</tr>`;
             });
 
             html += `
@@ -4305,6 +5031,60 @@ function handleFileUpload(event, type) {
             `;
             
             updateContentArea(`<div class="w-full flex flex-col h-full min-h-0 overflow-hidden">${html}</div>`);
+        }
+
+        // --- MOBİL KUPALAR: A (sabit ölçekli sıkı ızgara) + D (sezon seçici + kutucuklar) ---
+        let trophyMobMode = 'grid';      // 'grid' | 'season'
+        let trophyMobSeason = null;
+        function setTrophyMobMode(m) { trophyMobMode = m; renderTrophiesGrid(); }
+        function setTrophyMobSeason(s) { trophyMobSeason = s; renderTrophiesGrid(); }
+        function renderTrophyModes(web) {
+            return `<div class="tm-modes${web ? ' tm-modes-web' : ''}">
+                <button onclick="setTrophyMobMode('grid')" class="${trophyMobMode === 'grid' ? 'on' : ''}"><i class="fa-solid fa-table-cells mr-1.5"></i>Izgara</button>
+                <button onclick="setTrophyMobMode('season')" class="${trophyMobMode === 'season' ? 'on' : ''}"><i class="fa-solid fa-trophy mr-1.5"></i>Sezon</button>
+            </div>`;
+        }
+        function renderTrophyMobile() {
+            const q = (v) => String(v == null ? '' : v).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+            const cellOf = (season, t) => (trophyData[season] && trophyData[season][t.id]) ? trophyData[season][t.id] : null;
+            let h = `<div class="${trophyMobMode === 'grid' ? 'sm:hidden ' : ''}w-full flex-1 min-h-0 flex flex-col">
+                <div class="tm-body table-scroll">`;
+
+            if (trophyMobMode === 'grid') {
+                h += `<table class="tm-tbl"><thead><tr><th class="tm-corner"><i class="fa-solid fa-trophy"></i></th>`;
+                seasonsList.forEach(se => { h += `<th class="tm-sh">${se}</th>`; });
+                h += `<th class="tm-add"><button onclick="addNewSeason()"><i class="fa-solid fa-plus-circle"></i></button></th></tr></thead><tbody>`;
+                tournamentsList.forEach(t => {
+                    h += `<tr><td class="tm-tl" onclick="openTournamentModal('${t.id}')"><div class="tm-tile" title="${q(t.name)}">${t.logoUrl ? `<img src="${t.logoUrl}" alt="">` : ''}</div></td>`;
+                    seasonsList.forEach(se => {
+                        const c = cellOf(se, t);
+                        let inner = '';
+                        if (c && c.champion && c.champion.logoUrl) inner += `<img class="tm-champ" src="${c.champion.logoUrl}" title="${q(c.champion.name)}" alt="">`;
+                        if (c && c.runnerUp && c.runnerUp.logoUrl) inner += `<img class="tm-ru" src="${c.runnerUp.logoUrl}" title="${q(c.runnerUp.name)}" alt="">`;
+                        h += `<td class="tm-c" style="background:${t.colorHex}22;border-color:${t.colorHex}55" onclick="openTrophyModal('${se}','${t.id}','${q(t.name)}')"><div class="tm-cin">${inner}</div></td>`;
+                    });
+                    h += `<td class="tm-pad"></td></tr>`;
+                });
+                h += `</tbody></table>`;
+            } else {
+                if (!trophyMobSeason || !seasonsList.includes(trophyMobSeason)) trophyMobSeason = seasonsList[0];
+                h += `<div class="tm-chips">`;
+                seasonsList.forEach(se => { h += `<button onclick="setTrophyMobSeason('${se}')" class="${se === trophyMobSeason ? 'on' : ''}">${se}</button>`; });
+                h += `<button onclick="addNewSeason()" class="tm-plus"><i class="fa-solid fa-plus"></i></button></div><div class="tm-grid">`;
+                tournamentsList.forEach(t => {
+                    const c = cellOf(trophyMobSeason, t);
+                    const has = c && c.champion && c.champion.logoUrl;
+                    h += `<div class="tm-card" style="background:linear-gradient(160deg,${t.colorHex}aa,#0b1220);border-color:${t.colorHex}" onclick="openTrophyModal('${trophyMobSeason}','${t.id}','${q(t.name)}')">
+                        <div class="tm-top"><span class="tm-mini">${t.logoUrl ? `<img src="${t.logoUrl}" alt="">` : ''}</span><span class="tm-nm">${escapeHtml(t.name)}</span></div>
+                        ${has ? `<img class="tm-big" src="${c.champion.logoUrl}" alt="">` : `<div class="tm-empty">+</div>`}
+                        <div class="tm-who">${has ? escapeHtml(c.champion.name || '') : '—'}</div>
+                        ${c && c.runnerUp && c.runnerUp.logoUrl ? `<img class="tm-ru2" src="${c.runnerUp.logoUrl}" title="${q(c.runnerUp.name)}" alt="">` : ''}
+                    </div>`;
+                });
+                h += `</div>`;
+            }
+            h += `<div class="tm-newcup"><button onclick="addTournamentColumn()"><i class="fa-solid fa-plus mr-1"></i> Yeni Kupa Ekle</button></div></div></div>`;
+            return h;
         }
 
         function clearTrophyCell() {
@@ -4398,9 +5178,13 @@ function handleFileUpload(event, type) {
             editingTournamentId = tId;
             const tObj = tournamentsList.find(t => t.id === tId);
             
-            document.getElementById('tour-name-input').value = tObj.name;
+            tourSetSelect('tour-name-input', tObj.name === 'Yeni Kupa' ? '' : tObj.name, 'all');
             document.getElementById('tour-url-input').value = tObj.logoUrl;
             document.getElementById('tour-color-input').value = tObj.colorHex;
+            document.getElementById('cup-url-input').value = tObj.cupUrl || '';
+            fileUploads.cup = null;
+            document.getElementById('cup-file-input').value = '';
+            document.getElementById('cup-upload-btn').classList.replace('text-emerald-400', 'text-slate-300');
             
             document.getElementById('tour-logo-results').innerHTML = '';
             document.getElementById('tour-logo-results').classList.add('hidden');
@@ -4420,14 +5204,19 @@ function handleFileUpload(event, type) {
 
         function saveTournament() {
             const name = document.getElementById('tour-name-input').value.trim();
+            if (!name || name === '__NEW__') { alert('Lütfen listeden bir turnuva seçin.'); return; }
+            if (tournamentsList.some(t => t.id !== editingTournamentId && tourNorm(t.name) === tourNorm(name))) { alert('Bu turnuva tabloda zaten var.'); return; }
             const url = document.getElementById('tour-url-input').value.trim();
-            const color = document.getElementById('tour-color-input').value;
+            const _ce = tourFind(name);
+            const color = _ce ? _ce.c : document.getElementById('tour-color-input').value;
             const finalLogo = fileUploads.tournament || url;
 
             const tObj = tournamentsList.find(t => t.id === editingTournamentId);
             if (name) tObj.name = name;
             if (finalLogo) tObj.logoUrl = finalLogo;
             if (color) tObj.colorHex = color;
+            const cupRaw = document.getElementById('cup-url-input').value.trim();
+            tObj.cupUrl = fileUploads.cup || (cupRaw.startsWith('Yerel Dosya') ? (tObj.cupUrl || '') : cupRaw);
 
             saveToLocalStorage();
             closeTournamentModal();
@@ -4612,8 +5401,8 @@ function handleFileUpload(event, type) {
                 const winRateStr = matchRecordHtml(opp.id);
                 const flag = (opp.name && opp.country) ? getFlagIcon(opp.country) : '';
                 const logoBox = opp.name
-                    ? `<div class="relative h-10 w-10 mx-auto bg-slate-200/90 rounded p-1 shadow">
-                            <img src="${getTeamLogoByName(opp.name)}" title="${escapeHtml(opp.name)}" class="w-full h-full object-contain">
+                    ? `<div class="logo-spot relative h-10 w-10 mx-auto">
+                            <img src="${getTeamLogoByName(opp.name)}" title="${escapeHtml(opp.name)}" class="w-full h-full object-contain logo-out">
                             ${flag ? `<span class="absolute -bottom-1 -right-1 scale-[0.6] origin-bottom-right drop-shadow">${flag}</span>` : ''}
                        </div>`
                     : `<div class="h-10 w-10 mx-auto rounded border border-dashed border-slate-600 flex items-center justify-center text-slate-500"><i class="fa-solid fa-plus text-xs"></i></div>`;
@@ -5341,7 +6130,8 @@ function handleFileUpload(event, type) {
 
         function openMatchEditor(season, oppId, oppName) {
             activeMatchInfo = { season, oppId, oppName };
-            document.getElementById('match-editor-subtitle').innerText = `${season} Sezonu - ${oppName}`;
+            matchModalFresh = true;
+            document.getElementById('match-editor-subtitle').innerText = currentLang === 'en' ? `${season} Season - ${oppName}` : `${season} Sezonu - ${oppName}`;
             
             if (!matchDataStore[matchContext][season]) matchDataStore[matchContext][season] = {};
             let savedMatches = matchDataStore[matchContext][season][oppId];
@@ -5378,6 +6168,7 @@ function handleFileUpload(event, type) {
         }
 
         function syncMatchSlotsToTemp() {
+            if (activeMatchesTemp.length > 0 && !document.getElementById('m_res_0')) return; // görüntüleme modunda form yok
             let newData = [];
             for(let i=0; i<activeMatchesTemp.length; i++) {
                 if(document.getElementById(`m_res_${i}`)) {
@@ -5411,6 +6202,8 @@ function handleFileUpload(event, type) {
         }
 
         function addMatchSlot() {
+            if (!matchEditMode) { matchEditSnapshot = JSON.stringify(activeMatchesTemp); matchEditMode = true; }
+            matchViewIdx = activeMatchesTemp.length;
             syncMatchSlotsToTemp();
             activeMatchesTemp.push({ result: '', location: 'H', teamScore: '', oppScore: '', tournament: '', events: [] });
             renderMatchSlotsUI();
@@ -5436,11 +6229,19 @@ function handleFileUpload(event, type) {
         }
 
         function renderMatchSlotsUI() {
+            if (matchModalFresh) {
+                matchModalFresh = false;
+                matchViewIdx = 0;
+                matchEditMode = !activeMatchesTemp.some(mmHasData);
+                matchEditSnapshot = JSON.stringify(activeMatchesTemp);
+            }
+            mmSyncFooter();
+            if (!matchEditMode) { renderMatchViewUI(); return; }
             let html = '';
-            const optionsList = matchContext === 'milli' ? ["Dostluk Maçı", "Dünya Kupası", "Avrupa Şampiyonası"] : tournamentOptions;
+            const tourScope = matchContext === 'milli' ? 'milli' : 'club';
 
             activeMatchesTemp.forEach((m, i) => {
-                let tourOptionsHtml = optionsList.map(t => `<option value="${t}" ${m.tournament === t ? 'selected' : ''}>${t}</option>`).join('');
+                let tourOptionsHtml = tourSelectOptions(m.tournament, tourScope);
                 let eventsHtml = '';
                 if (m.events && m.events.length > 0) {
                     m.events.forEach((ev, evIdx) => {
@@ -5463,8 +6264,8 @@ function handleFileUpload(event, type) {
                     <div class="bg-slate-900 p-3 rounded-lg border border-slate-700 relative group/slot">
                         <button onclick="removeMatchSlot(${i})" class="absolute top-2 right-2 text-slate-500 hover:text-red-500 opacity-0 group-hover/slot:opacity-100 transition-opacity" title="Maçı Sil"><i class="fa-solid fa-trash"></i></button>
                         <div class="flex flex-wrap items-center gap-2 pr-6 border-b border-slate-700/50 pb-3">
-                            <span class="text-xs text-slate-400 font-bold w-12 border-b border-slate-700 pb-1">Maç ${i+1}</span>
-                            <select id="m_tour_${i}" class="bg-slate-800 text-xs text-white p-1.5 rounded border border-slate-600 outline-none w-32 focus:border-emerald-500">
+                            ${mmBadgeHtml(m, i, false, false)}
+                            <select id="m_tour_${i}" onchange="tourSelChange(this, '${tourScope}')" class="bg-slate-800 text-xs text-white p-1.5 rounded border border-slate-600 outline-none w-32 focus:border-emerald-500">
                                 <option value="">Müsabaka Seç</option>
                                 ${tourOptionsHtml}
                             </select>
@@ -5487,7 +6288,7 @@ function handleFileUpload(event, type) {
                         </div>
                         <div class="mt-2">
                             ${eventsHtml}
-                            <button onclick="addMatchEvent(${i})" class="text-emerald-500 text-xs mt-2 hover:text-emerald-400 transition-colors font-bold"><i class="fa-solid fa-plus mr-1"></i> Gol Detayı Ekle</button>
+                            <button onclick="addMatchEvent(${i})" class="mm-addgoal" title="Gol Detayı Ekle"><i class="fa-solid fa-plus"></i></button>
                         </div>
                     </div>
                 `;
@@ -5498,6 +6299,124 @@ function handleFileUpload(event, type) {
             }
 
             document.getElementById('match-slots-container').innerHTML = html;
+        }
+
+        // ===== Maç Sonuçları paneli: görüntüleme (varsayılan) / düzenleme modu =====
+        function mmHasData(m) {
+            return !!(m && (m.result || m.fixtureId || m.tournament || (m.teamScore !== '' && m.teamScore != null) || (m.events && m.events.length)));
+        }
+        function mmResultOf(m) {
+            if (m.result) return m.result;
+            const a = parseInt(m.teamScore), b = parseInt(m.oppScore);
+            if (isNaN(a) || isNaN(b)) return '';
+            return a > b ? 'W' : (a === b ? 'D' : 'L');
+        }
+        function mmScoreTxt(m) {
+            const f = v => (v === '' || v == null || isNaN(parseInt(v))) ? '–' : parseInt(v);
+            return f(m.teamScore) + '–' + f(m.oppScore);
+        }
+        function mmBadgeHtml(m, i, active, clickable) {
+            const r = mmResultOf(m);
+            const cls = r === 'W' ? 'w' : (r === 'D' ? 'd' : (r === 'L' ? 'l' : 'n'));
+            const inner = `<b>${r || '–'}</b><span>${mmScoreTxt(m)}</span>`;
+            return clickable
+                ? `<button type="button" class="mm-badge ${cls}${active ? ' on' : ''}" onclick="mmSelect(${i})">${inner}</button>`
+                : `<span class="mm-badge ${cls}">${inner}</span>`;
+        }
+        function mmFindOpp() {
+            const o = opponentsConfig[matchContext];
+            if (!o) return null;
+            const lists = [(o.domestic && o.domestic.teams) || []].concat((o.foreign || []).map(g => g.teams || []));
+            for (const l of lists) { const t = l.find(x => x.id === activeMatchInfo.oppId); if (t) return t; }
+            return null;
+        }
+        function mmCrest(url, name) {
+            const ini = escapeHtml(String(name || '?').trim().split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase());
+            if (url && !String(url).includes('ui-avatars.com')) return `<span class="mm-crest"><img src="${escapeHtml(url)}" alt="" onerror="this.style.display='none';this.nextSibling.style.display='flex'"><b style="display:none">${ini}</b></span>`;
+            return `<span class="mm-crest"><b>${ini}</b></span>`;
+        }
+        function mmOppLogo(opp, name) {
+            const ok = u => u && typeof u === 'string' && /^(https?:|data:|\/|\.)/.test(u) && !u.includes('ui-avatars.com');
+            if (opp && ok(opp.logoUrl)) return opp.logoUrl;
+            try { const u = getTeamLogoByName(name); if (ok(u)) return u; } catch (e) {}
+            return '';
+        }
+        function mmTourLogo(name) {
+            const u = tourLogoOf(name), e = tourFind(name);
+            const ab = `<b style="${u ? 'display:none' : ''}">${escapeHtml(e ? e.s : '')}</b>`;
+            return `<span class="mm-tl">${u ? `<img src="${escapeHtml(u)}" alt="" onerror="this.style.display='none';this.nextSibling.style.display='inline'">` : ''}${ab}</span>`;
+        }
+        function mmSelect(i) { matchViewIdx = i; renderMatchViewUI(); }
+        function mmSyncFooter() {
+            const set = (id, show) => { const el = document.getElementById(id); if (el) el.classList.toggle('hidden', !show); };
+            set('mm-edit', !matchEditMode);
+            set('mm-cancel', matchEditMode);
+            set('mm-save', matchEditMode);
+        }
+        function mmEnterEdit() {
+            matchEditSnapshot = JSON.stringify(activeMatchesTemp);
+            matchEditMode = true;
+            renderMatchSlotsUI();
+        }
+        function matchEditCancel() {
+            let prev = [];
+            try { prev = JSON.parse(matchEditSnapshot) || []; } catch (e) {}
+            if (!prev.some(mmHasData)) { closeMatchEditorModal(); return; }
+            activeMatchesTemp = prev;
+            matchEditMode = false;
+            renderMatchSlotsUI();
+        }
+        function renderMatchViewUI() {
+            const box = document.getElementById('match-slots-container');
+            const list = activeMatchesTemp;
+            if (!list.length) { box.innerHTML = `<div class="text-center text-slate-500 text-sm py-4">Kayıtlı maç bulunmuyor. Yeni maç ekleyin.</div>`; return; }
+            if (matchViewIdx >= list.length || matchViewIdx < 0) matchViewIdx = 0;
+            let w = 0, d = 0, l = 0, gf = 0, ga = 0;
+            list.forEach(m => {
+                const r = mmResultOf(m);
+                if (r === 'W') w++; else if (r === 'D') d++; else if (r === 'L') l++;
+                const a = parseInt(m.teamScore), b = parseInt(m.oppScore);
+                if (!isNaN(a)) gf += a; if (!isNaN(b)) ga += b;
+            });
+            const stat = (v, label, cls) => `<div class="mm-stat ${cls}"><b>${v}</b><span>${label}</span></div>`;
+            const m = list[matchViewIdx];
+            const r = mmResultOf(m);
+            const rCls = r === 'W' ? 'w' : (r === 'D' ? 'd' : (r === 'L' ? 'l' : 'n'));
+            const locTxt = m.location === 'A' ? 'Deplasman' : (m.location === 'N' ? 'Tarafsız' : 'İç Saha');
+            const locIco = m.location === 'A' ? 'fa-plane' : (m.location === 'N' ? 'fa-flag' : 'fa-house');
+            const mine = managedTeams[matchContext === 'milli' ? 'milli' : 'kulup'] || {};
+            const opp = mmFindOpp() || {};
+            const oppName = activeMatchInfo.oppName || opp.name || '';
+            const tour = m.tournament || '';
+            const ev = (m.events || []).map((e, k) => ({ e, k })).sort((a, b) => {
+                const x = parseInt(a.e.min), y = parseInt(b.e.min);
+                if (isNaN(x) && isNaN(y)) return a.k - b.k;
+                if (isNaN(x)) return 1; if (isNaN(y)) return -1;
+                return x - y || a.k - b.k;
+            }).map(o => o.e);
+            const goalsHtml = ev.length ? ev.map(e => {
+                const isOpp = e.type === 'OPP';
+                const nm = e.scorer ? escapeHtml(e.scorer) : (isOpp ? 'Rakip' : '–');
+                return `<div class="mm-goal ${isOpp ? 'opp' : 'us'}"><span class="mm-min">${e.min ? escapeHtml(e.min) + "'" : '–'}</span><span class="mm-dot"></span><div class="mm-gtxt"><i class="fa-solid fa-futbol"></i><b>${nm}</b>${e.assist ? `<small><i class="fa-solid fa-shoe-prints"></i>${escapeHtml(e.assist)}</small>` : ''}</div></div>`;
+            }).join('') : `<div class="mm-nogoal">Gol Detayı Yok</div>`;
+
+            box.innerHTML = `
+                <div class="mm-stats">
+                    ${stat(w, 'Galibiyet', 'w')}${stat(d, 'Beraberlik', 'd')}${stat(l, 'Mağlubiyet', 'l')}${stat(gf + '–' + ga, 'Gol', 'g')}
+                </div>
+                <div class="mm-rail">${list.map((x, i) => mmBadgeHtml(x, i, i === matchViewIdx, true)).join('')}</div>
+                <div class="mm-card">
+                    <div class="mm-card-top">
+                        <div class="mm-tour">${tour ? mmTourLogo(tour) : ''}<div><b>${escapeHtml(tour || '–')}</b><small><i class="fa-solid ${locIco}"></i>${locTxt}</small></div></div>
+                        <span class="mm-res ${rCls}">${r || '–'}</span>
+                    </div>
+                    <div class="mm-board">
+                        <div class="mm-team">${mmCrest(mine.logoUrl, mine.name)}<b>${escapeHtml(mine.name || '–')}</b></div>
+                        <div class="mm-score">${mmScoreTxt(m).replace('–', '<i>:</i>')}</div>
+                        <div class="mm-team">${mmCrest(mmOppLogo(opp, oppName), oppName)}<b>${escapeHtml(oppName || '–')}</b></div>
+                    </div>
+                    <div class="mm-goals">${goalsHtml}</div>
+                </div>`;
         }
 
         function closeMatchEditorModal() {
@@ -5701,6 +6620,10 @@ function handleFileUpload(event, type) {
             // Mobilde isimler "A. MEHMET" biçiminde kısaltılır; sütun genişliği gerçek metin ölçümüyle hesaplanır
             const sqIsMobile = window.innerWidth < 768;
             const sqDispName = (n) => sqIsMobile ? formatShortPlayerName(n) : n;
+            // Mobilde kadro tablosu yarı ölçekte (zoom gerçek yerleşimi küçültür, alt kısımda boş kaydırma kalmaz)
+            const sqScaleCss = sqIsMobile
+                ? ((typeof CSS !== 'undefined' && CSS.supports && CSS.supports('zoom', '0.5')) ? 'zoom: 0.5;' : 'transform: scale(0.5); transform-origin: top left;')
+                : `transform: scale(${currentScale}); transform-origin: top left;`;
             let dynamicNameWidth = Math.max(115, Math.floor(45 + (maxNameLength * 7)));
             try {
                 const cv = document.createElement('canvas').getContext('2d');
@@ -5824,6 +6747,7 @@ function handleFileUpload(event, type) {
                         <button onclick="openPlayerInfoModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-lg flex items-center justify-center shrink-0" title="Oyuncu Ekle"><i class="fa-solid fa-user-plus"></i></button>
                         <button onclick="openPlayerBulkEdit()" class="text-white px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-lg flex items-center justify-center shrink-0 hover:brightness-110" style="background:${squadContext === 'milli' ? '#f43f5e' : squadContext === 'akademi' ? '#f59e0b' : '#0ea5e9'}" title="Toplu Düzenle"><i class="fa-solid fa-table-list"></i></button>
                         <button onclick="openSquadBulkModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-lg flex items-center justify-center shrink-0" title="Toplu Ekle"><i class="fa-solid fa-list-ol"></i></button>
+                        <button onclick="toggleSquadFlatSort()" class="${squadFlatSort ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-slate-700 hover:bg-slate-600 text-slate-200'} px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-lg flex items-center justify-center shrink-0" title="${squadFlatSort ? 'Mevkiye göre grupla' : 'Tüm oyuncuları toplu sırala'}"><i class="fa-solid ${squadFlatSort ? 'fa-arrow-down-wide-short' : 'fa-layer-group'}"></i></button>
                         <button onclick="toggleSquadColumnsCollapse()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-lg flex items-center justify-center shrink-0" title="Ülke/Yaş/OVR/Gelişim/Gol/Asist sütunlarını gizle veya göster">
                             <i class="fa-solid ${squadColumnsCollapsed ? 'fa-chevron-right' : 'fa-chevron-left'}"></i>
                         </button>
@@ -5842,7 +6766,7 @@ function handleFileUpload(event, type) {
                     </div>
                 </div>
                 <div class="w-full overflow-auto table-scroll border border-slate-700 rounded-xl bg-slate-900 flex-initial sm:flex-1 min-h-0 relative pb-4">
-                    <table class="w-max min-w-full border-separate border-spacing-0 text-sm origin-top-left" style="zoom: ${currentScale}; width: max-content;">
+                    <table class="w-max min-w-full border-separate border-spacing-0 text-sm origin-top-left" data-sq="1" style="${sqScaleCss} width: max-content;">
                         <thead class="bg-slate-950 sticky top-0 z-[60] shadow-md">
                             <tr>
             `;
@@ -5955,8 +6879,8 @@ function handleFileUpload(event, type) {
                     });
 
                     let resultHtml = '';
-                    groups.forEach(group => {
-                        let groupPlayers = list.filter(p => getGroupForPos(p.pos) === group.id);
+                    (squadFlatSort ? [{ id: 'ALL' }] : groups).forEach(group => {
+                        let groupPlayers = squadFlatSort ? list.slice() : list.filter(p => getGroupForPos(p.pos) === group.id);
                         if (groupPlayers.length === 0) return;
 
                         groupPlayers.sort((a, b) => {
@@ -6161,6 +7085,34 @@ function handleFileUpload(event, type) {
             html += `</tbody></table></div>`;
             
             updateContentArea(`<div class="w-full flex flex-col h-full min-h-0 overflow-hidden">${html}</div>`);
+            sqFitScale();
+        }
+
+        // Kadro tablosu ölçeği: güncel kadro (arşiv/promoted ayracına kadar) tek ekrana sığacak en büyük ölçek (en fazla %100).
+        // Ayrılanlar (arşiv) bölümü ekranın altında kalır, kaydırınca görünür. Hem mobil hem web için geçerlidir.
+        function sqFitScale() {
+            const tbl = document.querySelector('table[data-sq]');
+            if (!tbl || !tbl.parentElement) return;
+            const wrap = tbl.parentElement;
+            const C = wrap.clientHeight;
+            if (!C) return;
+            const useZoom = typeof CSS !== 'undefined' && CSS.supports && CSS.supports('zoom', '1');
+            const apply = (z) => {
+                if (useZoom) { tbl.style.transform = ''; tbl.style.zoom = z; }
+                else { tbl.style.zoom = ''; tbl.style.transform = `scale(${z})`; tbl.style.transformOrigin = 'top left'; }
+            };
+            apply(1);
+            const sep = tbl.querySelector('td.h-14[colspan]');
+            const row = sep ? sep.parentElement : null;
+            const H = row ? (row.getBoundingClientRect().top - tbl.getBoundingClientRect().top) : tbl.getBoundingClientRect().height;
+            if (!H) return;
+            const z = Math.max(0.35, Math.min(1, C / H));
+            apply(z.toFixed(3));
+        }
+        if (!window.__sqFitBound) {
+            window.__sqFitBound = true;
+            let _sqT = null;
+            window.addEventListener('resize', () => { clearTimeout(_sqT); _sqT = setTimeout(sqFitScale, 120); });
         }
 
         // Toplu Ekleme Modalını Aç
@@ -7703,8 +8655,8 @@ function piRenderProfile(p) {
             transferData.out.forEach(t => totalOut += (t.fee || 0));
 
             let netBalance = totalOut - totalIn;
-            let balanceColor = netBalance >= 0 ? 'text-emerald-400' : 'text-red-400';
-            let balanceSign = netBalance >= 0 ? '+' : '';
+            let balanceColor = netBalance > 0 ? '#4ade80' : (netBalance < 0 ? '#f87171' : '#facc15'); // artı: yeşil, 0: sarı, eksi: kırmızı
+            let balanceSign = netBalance > 0 ? '+' : '';
 
             const getSortIcon = (type, field) => {
                 if (transferSort[type].field === field) return transferSort[type].asc ? '<i class="fa-solid fa-chevron-up text-[10px] ml-1 opacity-100"></i>' : '<i class="fa-solid fa-chevron-down text-[10px] ml-1 opacity-100"></i>';
@@ -7809,12 +8761,12 @@ function piRenderProfile(p) {
                             </div>
                             <div class="text-center">
                                 <div class="text-[9px] text-slate-500 font-bold uppercase tracking-widest mb-0.5">Gelir</div>
-                                <div class="text-xs sm:text-lg font-black text-emerald-500">€${totalOut.toLocaleString('tr-TR')}</div>
+                                <div class="text-xs sm:text-lg font-black text-emerald-500"><span style="color:#4ade80">€${totalOut.toLocaleString('tr-TR')}</span></div>
                             </div>
                             <div class="w-px h-6 sm:h-8 bg-slate-700"></div>
                             <div class="text-center">
                                 <div class="text-[9px] text-slate-500 font-bold uppercase tracking-widest mb-0.5">Net Bilanço</div>
-                                <div class="text-base sm:text-2xl font-black ${balanceColor}">${balanceSign}€${netBalance.toLocaleString('tr-TR')}</div>
+                                <div class="text-base sm:text-2xl font-black ${balanceColor}"><span style="color:${balanceColor}">${balanceSign}€${netBalance.toLocaleString('tr-TR')}</span></div>
                             </div>
                         </div>
                     </div>
@@ -8416,7 +9368,7 @@ function closeTransferModal() {
                 if (ps[sKey] > maxS) maxS = ps[sKey];
             }));
             const heat = (v, max) => v
-                ? `<span class="stv2-heat" style="background:color-mix(in srgb, ${acc} ${Math.round(10 + 62 * (v / (max || 1)))}%, transparent);${(v / (max || 1)) > 0.55 ? 'color:#0b1220;' : ''}">${v}</span>`
+                ? `<span class="stv2-heat" style="background:color-mix(in srgb, ${acc} ${Math.round(10 + 38 * (v / (max || 1)))}%, transparent);color:#f8fafc;text-shadow:0 1px 2px rgba(0,0,0,.55);box-shadow:inset 0 0 0 1px color-mix(in srgb, ${acc} ${Math.round(25 + 40 * (v / (max || 1)))}%, transparent);">${v}</span>`
                 : '<span class="text-slate-700">-</span>';
 
             // Turnuva rozetleri: renk sabit (turnuva sırası), dizilim artan toplam (en çok olan en sağda)
@@ -8449,12 +9401,12 @@ function closeTransferModal() {
             // --- Podyum (ilk 3) ---
             const medal = ['#fbbf24', '#cbd5e1', '#d97706'];
             const top = byTotal.slice(0, 3);
-            const podium = top.length ? `<div class="grid gap-2 p-3 pb-2 shrink-0" style="grid-template-columns:repeat(${top.length},minmax(0,1fr))">${top.map((p, i) => {
+            const podium = top.length ? `<div class="grid gap-2 p-3 pb-2 shrink-0" style="grid-template-columns:repeat(${top.length},minmax(0,1fr));align-items:end">${top.map((p, i) => {
                 const m = medal[i];
                 const ph = p.photoUrl
-                    ? `<img src="${p.photoUrl}" class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg object-cover shrink-0" alt="">`
-                    : `<div class="flex w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-slate-700 items-center justify-center font-bold text-slate-300 shrink-0">${escapeHtml(p.name.charAt(0))}</div>`;
-                return `<div class="flex items-center gap-1.5 sm:gap-2.5 min-w-0 px-2 sm:px-3 py-2 rounded-xl cursor-pointer hover:brightness-125 transition" style="background:linear-gradient(120deg, color-mix(in srgb, ${m} 14%, transparent), transparent 85%);border:1px solid color-mix(in srgb, ${m} 38%, transparent)" data-pname="${escapeHtml(p.name)}" onclick="openStatsPlayerProfile(this)" title="${escapeHtml(p.name)}">
+                    ? `<img src="${p.photoUrl}" class="pd-ph rounded-lg object-cover shrink-0" alt="">`
+                    : `<div class="flex pd-ph rounded-lg bg-slate-700 items-center justify-center font-bold text-slate-300 shrink-0">${escapeHtml(p.name.charAt(0))}</div>`;
+                return `<div class="flex items-center gap-1.5 sm:gap-2.5 min-w-0 px-2 sm:px-3 pd-box rounded-xl cursor-pointer hover:brightness-125 transition" style="--k:${[1.5, 1.25, 1][i] || 1};background:linear-gradient(120deg, color-mix(in srgb, ${m} 14%, transparent), transparent 85%);border:1px solid color-mix(in srgb, ${m} 38%, transparent)" data-pname="${escapeHtml(p.name)}" onclick="openStatsPlayerProfile(this)" title="${escapeHtml(p.name)}">
                     ${ph}
                     <div class="min-w-0"><div class="text-[10px] font-black" style="color:${m}">#${i + 1}</div><div class="hidden sm:block font-bold text-sm truncate text-white">${escapeHtml(homeSurname(p.name))}</div></div>
                     <span class="ml-auto font-black text-lg sm:text-2xl leading-none" style="color:${m}">${p[totKey]}</span>
@@ -8595,18 +9547,18 @@ function closeTransferModal() {
                 (seasonsData[s] || []).forEach(t => { const pt = ps.tournaments[t]; if (pt && pt[tKey] > maxT) maxT = pt[tKey]; });
             }));
             const heat = (v, max, small) => v
-                ? `<span class="stv2-heat${small ? ' stv2-heat-s' : ''}" style="background:color-mix(in srgb, ${acc} ${Math.round(10 + 62 * (v / (max || 1)))}%, transparent);${(v / (max || 1)) > 0.55 ? 'color:#0b1220;' : ''}">${v}</span>`
+                ? `<span class="stv2-heat${small ? ' stv2-heat-s' : ''}" style="background:color-mix(in srgb, ${acc} ${Math.round(10 + 38 * (v / (max || 1)))}%, transparent);color:#f8fafc;text-shadow:0 1px 2px rgba(0,0,0,.55);box-shadow:inset 0 0 0 1px color-mix(in srgb, ${acc} ${Math.round(25 + 40 * (v / (max || 1)))}%, transparent);">${v}</span>`
                 : '<span class="text-slate-700">-</span>';
 
             // --- Podyum (ilk 3) ---
             const medal = ['#fbbf24', '#cbd5e1', '#d97706'];
             const top = byTotal.slice(0, 3);
-            const podium = top.length ? `<div class="grid gap-2 p-3 pb-2 shrink-0" style="grid-template-columns:repeat(${top.length},minmax(0,1fr))">${top.map((p, i) => {
+            const podium = top.length ? `<div class="grid gap-2 p-3 pb-2 shrink-0" style="grid-template-columns:repeat(${top.length},minmax(0,1fr));align-items:end">${top.map((p, i) => {
                 const m = medal[i];
                 const ph = p.photoUrl
-                    ? `<img src="${p.photoUrl}" class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg object-cover shrink-0" alt="">`
-                    : `<div class="flex w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-slate-700 items-center justify-center font-bold text-slate-300 shrink-0">${escapeHtml(p.name.charAt(0))}</div>`;
-                return `<div class="flex items-center gap-1.5 sm:gap-2.5 min-w-0 px-2 sm:px-3 py-2 rounded-xl cursor-pointer hover:brightness-125 transition" style="background:linear-gradient(120deg, color-mix(in srgb, ${m} 14%, transparent), transparent 85%);border:1px solid color-mix(in srgb, ${m} 38%, transparent)" data-pname="${escapeHtml(p.name)}" onclick="openStatsPlayerProfile(this)" title="${escapeHtml(p.name)}">
+                    ? `<img src="${p.photoUrl}" class="pd-ph rounded-lg object-cover shrink-0" alt="">`
+                    : `<div class="flex pd-ph rounded-lg bg-slate-700 items-center justify-center font-bold text-slate-300 shrink-0">${escapeHtml(p.name.charAt(0))}</div>`;
+                return `<div class="flex items-center gap-1.5 sm:gap-2.5 min-w-0 px-2 sm:px-3 pd-box rounded-xl cursor-pointer hover:brightness-125 transition" style="--k:${[1.5, 1.25, 1][i] || 1};background:linear-gradient(120deg, color-mix(in srgb, ${m} 14%, transparent), transparent 85%);border:1px solid color-mix(in srgb, ${m} 38%, transparent)" data-pname="${escapeHtml(p.name)}" onclick="openStatsPlayerProfile(this)" title="${escapeHtml(p.name)}">
                     ${ph}
                     <div class="min-w-0"><div class="text-[10px] font-black" style="color:${m}">#${i + 1}</div><div class="hidden sm:block font-bold text-sm truncate text-white">${escapeHtml(homeSurname(p.name))}</div></div>
                     <span class="ml-auto font-black text-lg sm:text-2xl leading-none" style="color:${m}">${p[totKey]}</span>
@@ -9171,7 +10123,8 @@ function applyQfbCollapsedState() {
             if (competitionLogos && competitionLogos[name]) return competitionLogos[name];
             // 2. Yoksa: Kupalar panelindeki turnuva listesiyle isim eşleşmesi (büyük/küçük harf duyarsız)
             const match = tournamentsList.find(t => t.name.toLowerCase() === name.toLowerCase());
-            return match ? match.logoUrl : null;
+            if (match && match.logoUrl) return match.logoUrl;
+            return tourCatalogLogo(name);
         }
 
 let activeCompetitionLogoName = null;
@@ -9402,7 +10355,118 @@ function autoFillTeamLogo(nameInput, urlInputId) {
 }
 
 // Takım isminden logosunu bulan yardımcı motor
+        // --- FC26 lisanssız takım adları → gerçek ad + gerçek logo ---
+        // Bir yerde "Lombardia FC" yazılsa bile sitede "Inter" ve logosu görünür.
+        // "Gerçek Ad (as "Takma Ad")" biçimindeki veritabanı kayıtlarından otomatik öğrenilir.
+        // Ek eşleşme gerekirse TEAM_ALIAS_EXTRA'ya  'Takma Ad': 'Gerçek Ad'  satırı ekle.
+        const TEAM_ALIASES = {};
+        const TEAM_ALIAS_EXTRA = { 'Lombardia FC': 'Inter', 'Lombardia': 'Inter', 'Milano FC': 'Milan', 'Milano': 'Milan', 'Bergamo Calcio': 'Atalanta', 'Bergamo': 'Atalanta', 'Latium': 'Lazio' };
+        // Veritabanında logosu olmayan takımlar için (gerçek logo adresi)
+        const TEAM_LOGO_OVERRIDES = { 'Atalanta': 'https://upload.wikimedia.org/wikipedia/en/6/66/AtalantaBC.svg' };
+        function teamNorm(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim(); }
+        function teamCanon(name) { if (!name) return name; return TEAM_ALIASES[teamNorm(name)] || name; }
+        function teamAliasInit() {
+            if (typeof FC26_TEAM_DATABASE === 'undefined' || FC26_TEAM_DATABASE.__aliased) return;
+            Object.keys(TEAM_ALIAS_EXTRA).forEach(a => { TEAM_ALIASES[teamNorm(a)] = TEAM_ALIAS_EXTRA[a]; });
+            const db = FC26_TEAM_DATABASE, cleaned = new Set();
+            const nm = t => typeof t === 'string' ? t : (t && t.name);
+            db.forEach((t, i) => {
+                const raw = nm(t), m = raw && String(raw).match(/^(.*?)\s*\(as\s*"?([^")]*)/);
+                if (!m) return;
+                const base = m[1].trim();
+                TEAM_ALIASES[teamNorm(m[2])] = base;
+                cleaned.add(teamNorm(base));
+                if (typeof t === 'string') db[i] = base; else t.name = base;
+            });
+            Object.keys(TEAM_LOGO_OVERRIDES).forEach(n => {
+                const i = db.findIndex(t => nm(t) === n);
+                if (i >= 0 && typeof db[i] === 'string') db[i] = { name: n, logo: TEAM_LOGO_OVERRIDES[n] };
+                else if (i < 0) db.push({ name: n, logo: TEAM_LOGO_OVERRIDES[n] });
+            });
+            // Temizlenen adlardan yinelenenleri ele (logolu olan kalsın)
+            const best = new Map();
+            db.forEach((t, i) => {
+                const n = nm(t); if (!n) return;
+                const k = teamNorm(n); if (!cleaned.has(k) && !TEAM_LOGO_OVERRIDES[n]) return;
+                const has = !!(t && typeof t === 'object' && t.logo), cur = best.get(k);
+                if (!cur || (has && !cur.has)) best.set(k, { i: i, has: has });
+            });
+            for (let i = db.length - 1; i >= 0; i--) {
+                const n = nm(db[i]); if (!n) continue;
+                const b = best.get(teamNorm(n)); if (b && b.i !== i) db.splice(i, 1);
+            }
+            db.__aliased = true;
+        }
+        function teamAliasDom(root) {
+            if (!root || !document.body) return;
+            const base = root.nodeType === 3 ? root.parentNode : root;
+            if (!base || base.nodeType !== 1) return;
+            const w = document.createTreeWalker(base, NodeFilter.SHOW_TEXT), list = [];
+            let n; while ((n = w.nextNode())) list.push(n);
+            const ae = document.activeElement;
+            list.forEach(tn => {
+                const v = tn.nodeValue; if (!v || v.length > 40) return;
+                const t = v.trim(); if (!t) return;
+                const c = TEAM_ALIASES[teamNorm(t)];
+                if (!c || c === t) return;
+                const p = tn.parentNode; if (p && /^(SCRIPT|STYLE|TEXTAREA)$/.test(p.nodeName)) return;
+                if (ae && ae.isContentEditable && ae.contains(tn)) return; // yazarken bozma
+                tn.nodeValue = v.replace(t, c);
+            });
+        }
+        teamAliasInit();
+        document.addEventListener('DOMContentLoaded', () => {
+            teamAliasInit();
+            teamAliasDom(document.body);
+            new MutationObserver(ms => ms.forEach(m => {
+                if (m.type === 'characterData') teamAliasDom(m.target);
+                else m.addedNodes.forEach(x => teamAliasDom(x));
+            })).observe(document.body, { childList: true, subtree: true, characterData: true });
+        });
+        // --- Tüm takım logolarının arkasına çok hafif dairesel ışıma (sınıf: tm-lg) ---
+        function tmLogoSet() {
+            const s = new Set(), add = u => { if (u && typeof u === 'string') s.add(u); };
+            try { (FC26_TEAM_DATABASE || []).forEach(t => t && t.logo && add(t.logo)); } catch (e) {}
+            try {
+                ['kulup', 'milli'].forEach(c => {
+                    add(managedTeams[c] && managedTeams[c].logoUrl);
+                    const o = opponentsConfig[c]; if (!o) return;
+                    ((o.domestic && o.domestic.teams) || []).forEach(t => add(t.logoUrl));
+                    (o.foreign || []).forEach(g => (g.teams || []).forEach(t => add(t.logoUrl)));
+                });
+            } catch (e) {}
+            try { Object.keys(trophyData).forEach(se => Object.keys(trophyData[se] || {}).forEach(id => { const c = trophyData[se][id]; if (c) { add(c.champion && c.champion.logoUrl); add(c.runnerUp && c.runnerUp.logoUrl); } })); } catch (e) {}
+            try { Object.keys(customTournamentsData).forEach(se => (customTournamentsData[se] || []).forEach(t => { (t.groups || []).forEach(g => (g.teams || []).forEach(x => add(x.logo))); (t.knockouts || []).forEach(k => { add(k.homeLogo); add(k.awayLogo); }); })); } catch (e) {}
+            return s;
+        }
+        function tmMarkLogos(root, set) {
+            const base = root && (root.nodeType === 1 ? root : root.parentNode);
+            if (!base || !base.querySelectorAll) return;
+            const imgs = base.tagName === 'IMG' ? [base] : base.querySelectorAll('img:not(.tm-lg)');
+            imgs.forEach(im => {
+                const s = im.getAttribute('src') || ''; if (!s) return;
+                if (set.has(s) || /football-logos\.cc\/logos\/(?!tournaments\/)/.test(s)) im.classList.add('tm-lg');
+            });
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            tmMarkLogos(document.body, tmLogoSet());
+            new MutationObserver(ms => {
+                const set = tmLogoSet();
+                ms.forEach(m => { if (m.type === 'attributes') tmMarkLogos(m.target, set); else m.addedNodes.forEach(x => tmMarkLogos(x, set)); });
+            }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['src'] });
+        });
+        // Giriş alanlarında takma adı gerçek adla değiştir (kayıt işleyicilerinden ÖNCE çalışır)
+        document.addEventListener('change', e => {
+            const el = e.target;
+            if (el && el.tagName === 'INPUT' && /^(text|search)$/.test(el.type || 'text')) { const c = TEAM_ALIASES[teamNorm(el.value)]; if (c) el.value = c; }
+        }, true);
+        document.addEventListener('blur', e => {
+            const el = e.target;
+            if (el && el.isContentEditable && el.innerText) { const c = TEAM_ALIASES[teamNorm(el.innerText)]; if (c && c !== el.innerText.trim()) el.innerText = c; }
+        }, true);
+
         function getTeamLogoByName(name) {
+            name = teamCanon(name);
             if (!name || name === '-') return '';
             
             // Önce kendi yönettiğimiz takımlara (Kulüp/Milli) bakalım
@@ -9479,10 +10543,17 @@ function homeSurname(name) {
 
 function formatShortPlayerName(name) {
     if (!name) return '';
+    // Yazıldığı büyük/küçük harf korunur ("A. Mehmet", "A. McLoughlin"); tamamı büyük yazılmışsa baş harf büyük, kalanı küçük olur
+    const fix = (w) => {
+        if (w.length < 3 || !/\p{Lu}{2}/u.test(w.slice(1))) return w; // zaten düzgün yazılmış (McLoughlin, DeBruyne) -> dokunma
+        return w.toLowerCase().replace(/\u0307/g, '')
+            .replace(/(^|[-'’])(\p{L})/gu, (m, p, c) => p + c.toUpperCase())      // Smith-Rowe, O'Brien
+            .replace(/^(Mc)(\p{L})/u, (m, p, c) => p + c.toUpperCase())            // McLoughlin, McConnell
+            .replace(/^(Mac)(\p{L})/u, (m, p, c) => /^Mac\p{Lu}/u.test(w) ? p + c.toUpperCase() : m); // MacDonald (yalnızca "MacDONALD" yazıldıysa)
+    };
     const parts = name.trim().split(/\s+/).filter(Boolean);
-    if (parts.length === 1) return parts[0].toUpperCase();
-    const last = parts[parts.length - 1];
-    return `${parts[0].charAt(0).toUpperCase()}. ${last.toUpperCase()}`;
+    if (parts.length === 1) return fix(parts[0]);
+    return `${parts[0].charAt(0).toUpperCase()}. ${fix(parts[parts.length - 1])}`;
 }
 
         // Turnuva ismine göre satır arka plan rengini belirleyen fonksiyon
@@ -9571,14 +10642,18 @@ function formatShortPlayerName(name) {
         function euAcShow(el) {
             if (typeof FC26_TEAM_DATABASE === 'undefined') return;
             const q = euAcNorm(euAcGet(el));
-            if (!q || q === 'takim adi' || q === 'team name') { euAcClose(); return; }
+            let _lt = null;
+            if (!q || q === 'takim adi' || q === 'team name') {
+                _lt = (el.dataset && el.dataset.euLg) ? euLeagueTeams(el.dataset.euLg) : [];
+                if (!_lt.length) { euAcClose(); return; }
+            }
             const starts = [], inc = [];
             FC26_TEAM_DATABASE.forEach(t => {
                 if (!t || typeof t !== 'object' || !t.name) return;
                 const n = euAcNorm(t.name);
                 if (n.startsWith(q)) starts.push(t); else if (n.includes(q)) inc.push(t);
             });
-            euAcMatches = starts.concat(inc).slice(0, 8);
+            euAcMatches = _lt ? _lt : starts.concat(inc).slice(0, 8);
             if (!euAcMatches.length) { euAcClose(); return; }
             if (!euAcEl) {
                 euAcEl = document.createElement('div');
@@ -9611,6 +10686,44 @@ function formatShortPlayerName(name) {
                 el.setAttribute('autocomplete', 'off');
             }
         });
+        // --- Diğer Ligler: boş takım yerine tıklayınca o ligin takımlarını öner ---
+        const EURO_TOP_FLIGHT = {
+            'Premier League': ['Arsenal','Aston Villa','Bournemouth','Brentford','Brighton','Burnley','Chelsea','Crystal Palace','Everton','Fulham','Leeds United','Liverpool','Manchester City','Manchester United','Newcastle United','Nottingham Forest','Sunderland','Tottenham','West Ham','Wolverhampton'],
+            'Serie A': ['Bologna','Cagliari','Como','Cremonese','Fiorentina','Genoa','Inter','Juventus','Lazio','Lecce','Milan','Napoli','Parma','Pisa','Roma','Sassuolo','Torino','Udinese'],
+            'La Liga': ['Alavés','Athletic Bilbao','Atlético Madrid','FC Barcelona','Celta Vigo','Elche','Espanyol','Getafe','Girona','Levante','Mallorca','Osasuna','Rayo Vallecano','Real Betis','Real Madrid','Real Oviedo','Real Sociedad','Sevilla','Valencia','Villarreal'],
+            'Bundesliga': ['Bayern Munich','Borussia Dortmund','RB Leipzig','VfB Stuttgart','Eintracht Frankfurt','Bayer Leverkusen','Borussia Mönchengladbach','VfL Wolfsburg','SC Freiburg','Union Berlin','FC St. Pauli','Werder Bremen','1899 Hoffenheim','FC Augsburg','Mainz 05','1. FC Heidenheim','1. FC Köln','Hamburger SV'],
+            'Ligue 1': ['Paris Saint-Germain','Olympique de Marseille','AS Monaco','OGC Nice','LOSC Lille','Olympique Lyonnais','Stade Rennais FC','RC Strasbourg Alsace','Racing Club de Lens','Stade Brestois 29','Toulouse FC','Nantes','Angers SCO','Le Havre','Auxerre','FC Lorient','FC Metz','Paris FC']
+        };
+        const EURO_LEAGUE_COUNTRY = {
+            'Süper Lig':'turkey','Liga Portugal':'portugal','Eredivisie':'netherlands','Belgian 1A Pro League':'belgium','Scottish Premiership':'scotland',
+            'Norwegian Eliteserien':'norway','Swedish Allsvenskan':'sweden','Allsvenskan':'sweden','EFL Championship':'england','EFL League One':'england','EFL League Two':'england',
+            'MLS':'usa','Liga MX':'mexico','Ligue 2':'france','Serie B':'italy','La Liga 2':'spain','2. Bundesliga':'germany','Ekstraklasa':'poland',
+            'Danish Superliga':'denmark','A-League':'australia','Liga Profesional':'argentina'
+        };
+        function euLeagueTeams(lg) {
+            if (typeof FC26_TEAM_DATABASE === 'undefined') return [];
+            const db = FC26_TEAM_DATABASE.filter(t => t && typeof t === 'object' && t.name && t.logo && !/national-team/.test(t.logo));
+            const canon = (typeof tourCanon === 'function') ? tourCanon(lg) : lg;
+            let pool = [];
+            if (EURO_TOP_FLIGHT[canon]) {
+                const set = new Set(EURO_TOP_FLIGHT[canon].map(euAcNorm));
+                pool = db.filter(t => set.has(euAcNorm(t.name)));
+            } else if (EURO_LEAGUE_COUNTRY[canon]) {
+                pool = db.filter(t => t.logo.includes('/logos/' + EURO_LEAGUE_COUNTRY[canon] + '/'));
+            }
+            const seen = new Set();
+            return pool.filter(t => { const k = euAcNorm(t.name); if (seen.has(k)) return false; seen.add(k); return true; })
+                       .sort((a, b) => a.name.localeCompare(b.name));
+        }
+        document.addEventListener('focusin', e => {
+            const el = e.target;
+            if (!euAcIsField(el) || !el.dataset.euLg || !el.isContentEditable) return;
+            const q = euAcNorm(el.innerText);
+            if (q && q !== 'takim adi' && q !== 'team name') return;
+            const r = document.createRange(); r.selectNodeContents(el);
+            const s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+            euAcShow(el);
+        });
         document.addEventListener('input', e => { if (euAcIsField(e.target)) euAcShow(e.target); });
         document.addEventListener('focusout', e => { if (euAcIsField(e.target)) euAcClose(); });
         document.addEventListener('keydown', e => {
@@ -9625,7 +10738,26 @@ function formatShortPlayerName(name) {
             }
             else if (e.key === 'Escape') { euAcClose(); }
         });
-        window.addEventListener('scroll', () => euAcClose(), true);
+        window.addEventListener('scroll', e => { if (euAcEl && e.target && euAcEl.contains && euAcEl.contains(e.target)) return; euAcClose(); }, true);
+        // Diğer Ligler: Tab / Shift+Tab ile aynı türdeki alanlar arasında (puan→puan, takım→takım) gez
+        document.addEventListener('keydown', e => {
+            if (e.key !== 'Tab') return;
+            const el = e.target;
+            if (!el || !el.matches) return;
+            const sel = el.matches('[data-euro-team]') ? '[data-euro-team]' : (el.matches('[data-euro-pts]') ? '[data-euro-pts]' : null);
+            if (!sel) return;
+            const panel = el.closest('.fx-panel') || document;
+            const all = [...panel.querySelectorAll(sel)].filter(x => x.offsetParent !== null);
+            const idx = all.indexOf(el);
+            const next = all[idx + (e.shiftKey ? -1 : 1)];
+            if (!next) return;
+            e.preventDefault();
+            euAcClose();
+            el.blur();
+            next.focus();
+            const r = document.createRange(); r.selectNodeContents(next);
+            const s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+        });
         window.addEventListener('resize', () => euAcClose());
 
         function updateEuroLeague(season, league, index, field, element) {
@@ -9639,7 +10771,71 @@ function formatShortPlayerName(name) {
                     slot.innerHTML = url ? `<img src="${url}" alt="" class="w-4 h-4 object-contain" onerror="this.style.visibility='hidden'">` : '';
                 }
             }
+            euroSyncTrophies(season, league);
             saveToLocalStorage(); // Sayfayı yenilemeden sessizce kaydeder (Kullanıcının imleç odağı bozulmaz)
+        }
+
+        // --- DİĞER LİGLER: seçilebilir lig kartları + Kupalar bağlantısı ---
+        function euroSlots(season) {
+            const s = euroSlotsData[season];
+            return (Array.isArray(s) && s.length) ? s : EURO_LEAGUES_LIST.map(l => l.name);
+        }
+        function euroEnsureSlot(season, name) {
+            const cur = euroSlots(season).slice();
+            if (!cur.includes(name)) { cur.push(name); euroSlotsData[season] = cur; }
+        }
+        function euroLeagueInfo(name) {
+            const f = EURO_LEAGUES_LIST.find(l => l.name === name);
+            return { name: name, flag: f ? f.flag : '' };
+        }
+        function euroFlagHtml(league) {
+            if (league.flag) return `<img src="https://flagcdn.com/24x18/${league.flag}.png" class="w-4 h-3 rounded-sm drop-shadow shrink-0">`;
+            const u = tourLogoOf(league.name);
+            return u ? `<img src="${escapeHtml(u)}" alt="" class="w-4 h-4 object-contain shrink-0">` : '';
+        }
+        function euroLeagueOptions(selected) {
+            const list = tourAll().filter(e => e.g === 'Ulusal Ligler');
+            let html = list.map(e => `<option value="${escapeHtml(e.n)}"${e.n === selected ? ' selected' : ''}>${escapeHtml(e.n)}</option>`).join('');
+            if (!list.some(e => e.n === selected)) html = `<option value="${escapeHtml(selected)}" selected>${escapeHtml(selected)}</option>` + html;
+            return html;
+        }
+        function setEuroSlot(season, idx, name) {
+            const cur = euroSlots(season).slice();
+            cur[idx] = name;
+            euroSlotsData[season] = cur;
+            euroSyncTrophies(season, name);
+            saveToLocalStorage();
+            renderFixturePanel();
+        }
+        // Ligin 1. ve 2. sırasındaki takımı Kupalar sekmesindeki ilgili turnuva kutusuna yazar
+        function euroSyncTrophies(season, league) {
+            const d = euroLeaguesData[season] && euroLeaguesData[season][league];
+            if (!d) return;
+            const valid = n => (n && String(n).trim() && n !== 'Takım Adı' && n !== 'Team Name') ? String(n).trim() : '';
+            const names = { champion: valid(d[0] && d[0].name), runnerUp: valid(d[1] && d[1].name) };
+            const canon = tourCanon(league);
+            let t = tournamentsList.find(x => tourCanon(x.name) === canon);
+            if (!t) {
+                if (!names.champion && !names.runnerUp) return;
+                const ce = tourFind(league);
+                t = { id: 'lg_' + Date.now(), name: canon, logoUrl: tourLogoOf(league) || '', colorHex: ce ? ce.c : '#475569' };
+                tournamentsList.push(t);
+            }
+            if (!trophyData[season]) trophyData[season] = {};
+            const cell = trophyData[season][t.id] || { champion: null, runnerUp: null };
+            ['champion', 'runnerUp'].forEach(role => {
+                const n = names[role], cur = cell[role];
+                if (n) {
+                    if (!cur || cur.name !== n) {
+                        const lg = (typeof getTeamLogoByName === 'function' ? getTeamLogoByName(n) : '') || `https://ui-avatars.com/api/?name=${encodeURIComponent(n)}&background=random&color=fff&bold=true&size=300`;
+                        cell[role] = { name: n, logoUrl: lg, auto: true };
+                    }
+                } else if (cur && cur.auto) {
+                    cell[role] = null;
+                }
+            });
+            if (cell.champion || cell.runnerUp) trophyData[season][t.id] = cell;
+            else delete trophyData[season][t.id];
         }
 
         // --- AVRUPA LİGLERİ TOPLU EKLEME ---
@@ -9677,7 +10873,9 @@ function formatShortPlayerName(name) {
                 const pts = parts[2] || '';
                 if (!teamName) return;
 
-                const matchedLeague = EURO_LEAGUES_LIST.find(l => l.name.toLowerCase() === rawLeague.toLowerCase());
+                const _el = tourFind(rawLeague);
+                const matchedLeague = (_el && _el.g === 'Ulusal Ligler') ? { name: _el.n } : EURO_LEAGUES_LIST.find(l => l.name.toLowerCase() === rawLeague.toLowerCase());
+                if (matchedLeague) euroEnsureSlot(activeFixtureSeason, matchedLeague.name);
                 if (!matchedLeague) { unmatchedLeagues.add(rawLeague); return; }
 
                 if (!touchedLeagues.has(matchedLeague.name)) {
@@ -9696,6 +10894,8 @@ function formatShortPlayerName(name) {
                 saveToLocalStorage();
                 closeEuroLeaguesBulkModal();
                 renderFixturePanel();
+                touchedLeagues.forEach(n => euroSyncTrophies(activeFixtureSeason, n));
+                saveToLocalStorage();
                 let msg = `${addedCount} takım başarıyla eklendi!`;
                 if (unmatchedLeagues.size > 0) msg += `\n\nEşleşmeyen lig adları (kontrol edin):\n${[...unmatchedLeagues].join(', ')}`;
                 alert(msg);
@@ -9706,6 +10906,15 @@ function formatShortPlayerName(name) {
 
         const KNOCKOUT_DEFAULT_TYPES = ['UEFA Şampiyonlar Ligi', 'UEFA Avrupa Ligi', 'UEFA Konferans Ligi', 'Dünya Kupası', 'UEFA Avrupa Şampiyonası', 'Türkiye Kupası'];
 
+        // + butonu: turnuva seçiciyi butonun altında açar; seçilen turnuva doğrudan eklenir
+        function openTourAddPicker(btn) {
+            const sel = document.getElementById('custom-tour-select');
+            if (!sel) return;
+            sel.selectedIndex = -1;
+            sel.dataset.autoAdd = '1';
+            tourOpenPicker(sel, btn);
+        }
+
         function addCustomTournament() {
             let type = document.getElementById('custom-tour-select').value;
             let isCustom = false;
@@ -9713,7 +10922,9 @@ function formatShortPlayerName(name) {
             if (type === 'CUSTOM') {
                 type = prompt('Turnuva adını girin (Örn: Hazırlık Kupası, Copa America):');
                 if (!type || type.trim() === '') return;
-                isCustom = true;
+                const _known = !!tourFind(type.trim());
+                type = tourRegister(type.trim());
+                isCustom = !_known;
             }
             
             if(!customTournamentsData[activeFixtureSeason]) customTournamentsData[activeFixtureSeason] = [];
@@ -9736,7 +10947,12 @@ function formatShortPlayerName(name) {
         function updateCustomTournamentName(id, element) {
             const tour = customTournamentsData[activeFixtureSeason].find(t => t.id === id);
             if (tour) {
-                tour.type = element.innerText.trim() || 'İsimsiz Turnuva';
+                if (element.value === '__NEW__') {
+                    const n = tourNewCustom();
+                    if (n) tour.type = n;
+                } else if (element.value) {
+                    tour.type = element.value;
+                }
                 saveToLocalStorage();
                 // Rengin (arka planın) güncellenmesi için tabloyu yeniden çizelim
                 renderFixturePanel();
@@ -10543,7 +11759,7 @@ function renderFixturePanel() {
                     const tourLogo = getCompetitionLogo(m.tournament);
                     const safeTourJs = (m.tournament || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
                     const tourCellContent = tourLogo
-                        ? `<div class="w-7 h-7 mx-auto rounded-full bg-slate-700/70 border border-slate-600/60 p-1 flex items-center justify-center shadow-sm overflow-hidden"><img src="${tourLogo}" alt="${escapeHtml(m.tournament||'')}" class="w-full h-full object-contain"></div>`
+                        ? `<div class="w-5 h-5 mx-auto flex items-center justify-center"><img src="${tourLogo}" alt="${escapeHtml(m.tournament||'')}" class="w-full h-full object-contain" style="filter:none"></div>`
                         : `<span class="truncate block">${m.tournament || '-'}</span>`;
                     const logoBtnHtml = m.tournament
                         ? `<button onclick="event.stopPropagation(); openCompetitionLogoModal('${safeTourJs}')" class="text-slate-500 hover:text-yellow-400" title="Logo Ekle/Değiştir"><i class="fa-solid fa-image text-[8px]"></i></button>`
@@ -10699,18 +11915,11 @@ function renderFixturePanel() {
                             <h3 class="text-sm sm:text-lg font-bold text-white"><i class="fa-solid fa-trophy mr-2 text-yellow-500"></i>Müsabaka Tabloları</h3>
                             
                             <div class="flex gap-2">
-                                <select id="custom-tour-select" class="bg-slate-900 border border-slate-600 text-[9px] sm:text-[10px] text-slate-300 rounded p-0.5 sm:p-1 outline-none focus:border-emerald-500">
-                                    <option value="Süper Lig">Süper Lig</option>
-                                    <option value="Türkiye Kupası">Türkiye Kupası</option>
-                                    <option value="UEFA Şampiyonlar Ligi">UEFA Şampiyonlar Ligi</option>
-                                    <option value="UEFA Avrupa Ligi">UEFA Avrupa Ligi</option>
-                                    <option value="UEFA Konferans Ligi">UEFA Konferans Ligi</option>
-                                    <option value="Sezon Öncesi Hazırlık">Sezon Öncesi Hazırlık</option>
-                                    <option value="Dünya Kupası">Dünya Kupası</option>
-                                    <option value="Avrupa Şampiyonası">Avrupa Şampiyonası</option>
+                                <select id="custom-tour-select" class="hidden">
+                                    ${tourSelectOptions('', 'all', { newValue: null })}
                                     <option value="CUSTOM" class="text-emerald-400 font-bold">+ Yeni / Özel Turnuva</option>
                                 </select>
-                                <button onclick="addCustomTournament()" title="Ekle" class="bg-emerald-600 hover:bg-emerald-500 text-white px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-[9px] sm:text-[10px] font-bold transition-colors">
+                                <button onclick="openTourAddPicker(this)" data-tour-add="1" title="Ekle" class="bg-emerald-600 hover:bg-emerald-500 text-white px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-[9px] sm:text-[10px] font-bold transition-colors">
                                     <i class="fa-solid fa-plus"></i>
                                 </button>
                             </div>
@@ -11036,11 +12245,11 @@ function renderFixturePanel() {
                                     }
                                     if (champName) {
                                         const photoTag = champLogo ? `<img src="${champLogo}" class="w-5 h-5 rounded-full object-cover shadow-sm bg-slate-800 border border-slate-700">` : `<div class="w-5 h-5 rounded-full bg-slate-700 flex items-center justify-center text-[10px] font-bold text-white shadow-sm">${champName.charAt(0)}</div>`;
-                                        champHtml = `<div class="absolute left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-slate-900 px-3 py-0.5 rounded-full border border-yellow-500/50 shadow-[0_0_12px_rgba(234,179,8,0.4)] z-10 pointer-events-none"><i class="fa-solid fa-trophy text-yellow-500 text-xs drop-shadow-[0_0_5px_rgba(234,179,8,0.8)]"></i>${photoTag}<span class="text-xs text-white font-black truncate max-w-[120px] tracking-wide">${escapeHtml(champName)}</span></div>`;
+                                        champHtml = `<div class="absolute left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-slate-900 px-3 py-0.5 rounded-full border border-yellow-500/50 shadow-[0_0_12px_rgba(234,179,8,0.4)] z-10 pointer-events-none"><i class="fa-solid fa-trophy text-yellow-500 text-xs drop-shadow-[0_0_5px_rgba(234,179,8,0.8)]"></i>${photoTag}</div>`;
                                     }
 
                                     return `
-                                    <div class="relative group/tour ${getCustomTournamentCardBg(tour.type)} p-2 rounded-lg border shadow-sm">
+                                    <div class="relative group/tour ${getCustomTournamentCardBg(tour.type)} p-2 rounded-lg border shadow-sm" ${tourCardStyle(tour.type)}>
                                         <div class="absolute -top-2 -left-2 flex flex-col gap-0.5 opacity-0 group-hover/tour:opacity-100 transition-opacity z-10">
                                             <button onclick="moveCustomTournament('${tour.id}', -1)" ${tIdx === 0 ? 'disabled' : ''} class="bg-slate-700 hover:bg-emerald-600 disabled:opacity-30 disabled:cursor-not-allowed text-white w-5 h-5 rounded-full text-[10px] flex items-center justify-center shadow-lg" title="Yukarı Taşı"><i class="fa-solid fa-chevron-up"></i></button>
                                             <button onclick="moveCustomTournament('${tour.id}', 1)" ${tIdx === cTours.length - 1 ? 'disabled' : ''} class="bg-slate-700 hover:bg-emerald-600 disabled:opacity-30 disabled:cursor-not-allowed text-white w-5 h-5 rounded-full text-[10px] flex items-center justify-center shadow-lg" title="Aşağı Taşı"><i class="fa-solid fa-chevron-down"></i></button>
@@ -11048,7 +12257,8 @@ function renderFixturePanel() {
                                         <button onclick="deleteCustomTournament('${tour.id}')" class="absolute -top-2 -right-2 bg-red-600 hover:bg-red-500 text-white w-5 h-5 rounded-full text-[10px] flex items-center justify-center opacity-0 group-hover/tour:opacity-100 transition-opacity z-10 shadow-lg" title="Tüm Kartı Sil"><i class="fa-solid fa-times"></i></button>
                                         <h4 class="relative text-sm font-bold text-emerald-400 mb-2 border-b border-slate-800 pb-1 flex items-center justify-between gap-2">
                                             <div class="flex items-center gap-1 min-w-0">
-                                                <span class="truncate outline-none focus:bg-slate-800/80 rounded px-1 transition-colors hover:bg-slate-800/60 cursor-text" contenteditable="true" onblur="updateCustomTournamentName('${tour.id}', this)" title="Turnuva ismini düzenlemek için tıklayın">${tour.type}</span>
+                                                ${tourLogoOf(tour.type) ? `<img src="${escapeHtml(tourLogoOf(tour.type))}" alt="" class="w-5 h-5 object-contain shrink-0" style="background:none;filter:none">` : ''}
+                                                <select onchange="updateCustomTournamentName('${tour.id}', this)" class="tour-title-sel" title="Turnuvayı listeden seçin">${tourSelectOptions(tour.type, 'all')}</select>
                                             </div>
                                             ${champHtml}
                                             <button onclick="toggleCustomTournamentCollapse('${tour.id}')" class="p-1 hover:text-white cursor-pointer relative z-20" title="Daralt/Genişlet">
@@ -11073,12 +12283,13 @@ function renderFixturePanel() {
                                 <button onclick="openEuroLeaguesBulkModal()" title="Toplu Ekle" class="bg-indigo-600 hover:bg-indigo-500 text-white px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-[9px] sm:text-[10px] font-bold transition-colors shadow flex items-center gap-1">
                                     <i class="fa-solid fa-list-ol"></i>
                                 </button>
-                                <span class="text-sm text-slate-400 hidden lg:inline cursor-help" title="Tıkla ve Düzenle"><i class="fa-solid fa-pen"></i></span>
+                                
                             </div>
                         </div>
                         <div class="p-2 sm:p-4 overflow-y-auto custom-scrollbar h-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2 gap-1.5 sm:gap-4 content-start">
                             
-                            ${EURO_LEAGUES_LIST.map(league => {
+                            ${euroSlots(activeFixtureSeason).map((lgName, euroSlotIdx) => {
+                                const league = euroLeagueInfo(lgName);
                                 const lData = (euroLeaguesData[activeFixtureSeason] && euroLeaguesData[activeFixtureSeason][league.name]) ? euroLeaguesData[activeFixtureSeason][league.name] : [{},{},{},{}];
                                 const euChampName = (lData[0] && lData[0].name) ? String(lData[0].name) : '';
                                 const euChampLogo = euChampName && typeof getTeamLogoByName === 'function' ? getTeamLogoByName(euChampName) : '';
@@ -11086,21 +12297,21 @@ function renderFixturePanel() {
                                 return `
                                 <div class="euro-card bg-slate-950 p-2 sm:p-3 rounded-lg border border-slate-700 shadow-sm" data-collapsed="${euroIsCollapsed(league.name) ? 1 : 0}">
                                     <h4 onclick="toggleEuroLeague(this)" data-league="${league.name}" class="euro-head cursor-pointer select-none text-sm font-bold text-slate-200 mb-1 sm:mb-2 flex items-center gap-2 border-b border-slate-800 pb-1 sm:pb-2">
-                                        <img src="https://flagcdn.com/24x18/${league.flag}.png" class="w-4 h-3 rounded-sm drop-shadow"> <span class="truncate">${league.name}</span><span class="euro-badge ml-auto items-center gap-1.5 shrink-0 min-w-0">${euChampLogo ? `<i class="fa-solid fa-trophy text-yellow-500 text-[10px] drop-shadow-[0_0_4px_rgba(234,179,8,0.7)]"></i><img src="${euChampLogo}" alt="" title="${escapeHtml(euChampName)}" class="w-5 h-5 object-contain" onerror="this.style.display='none'">` : ''}</span><i class="euro-chev fa-solid fa-chevron-down text-[10px] text-slate-500 shrink-0 ${euChampLogo ? 'ml-1.5' : 'ml-auto'}"></i>
+                                        ${euroFlagHtml(league)}<select class="el-sel" onclick="event.stopPropagation()" onchange="setEuroSlot('${activeFixtureSeason}', ${euroSlotIdx}, this.value)" title="Ligi değiştir">${euroLeagueOptions(league.name)}</select><span class="euro-badge ml-auto items-center gap-1.5 shrink-0 min-w-0">${euChampLogo ? `<i class="fa-solid fa-trophy text-yellow-500 text-[10px] drop-shadow-[0_0_4px_rgba(234,179,8,0.7)]"></i><img src="${euChampLogo}" alt="" title="${escapeHtml(euChampName)}" class="w-5 h-5 object-contain" onerror="this.style.display='none'">` : ''}</span><i class="euro-chev fa-solid fa-chevron-down text-[10px] text-slate-500 shrink-0 ${euChampLogo ? 'ml-1.5' : 'ml-auto'}"></i>
                                     </h4>
                                     <div class="euro-body space-y-1">
                                         ${[0,1,2,3].map(i => {
                                             const tName = lData[i].name || 'Takım Adı';
-                                            const tPts = lData[i].pts || '0 P';
+                                            const tPts = String(lData[i].pts || '0').replace(/\s*P$/i, '');
                                             const tLogo = lData[i].name && typeof getTeamLogoByName === 'function' ? getTeamLogoByName(lData[i].name) : '';
                                             const colors = ['emerald', 'blue', 'blue', 'orange'];
                                             return `
                                             <div class="flex justify-between items-center text-xs px-1.5 py-0.5 sm:p-1.5 hover:bg-slate-800 rounded transition-colors border-l-2 border-${colors[i]}-500">
                                                 <div class="flex gap-2 items-center w-full min-w-0 pr-2">
                                                     <span class="w-4 text-center text-${colors[i]}-400 font-bold shrink-0">${i+1}</span><span class="eu-tlogo w-4 h-4 shrink-0 flex items-center justify-center">${tLogo ? `<img src="${tLogo}" alt="" class="w-4 h-4 object-contain" onerror="this.style.visibility='hidden'">` : ''}</span>
-                                                    <span class="font-bold text-slate-300 w-full text-left outline-none focus:bg-slate-700 px-1 rounded cursor-text truncate" contenteditable="true" onblur="updateEuroLeague('${activeFixtureSeason}', '${league.name}', ${i}, 'name', this)" title="Takım Adını Düzenle" data-euro-team="1">${tName}</span>
+                                                    <span class="font-bold text-slate-300 w-full text-left outline-none focus:bg-slate-700 px-1 rounded cursor-text truncate" contenteditable="true" onblur="updateEuroLeague('${activeFixtureSeason}', '${league.name}', ${i}, 'name', this)" title="Takım Adını Düzenle" data-euro-team="1" data-eu-lg="${league.name}">${tName}</span>
                                                 </div>
-                                                <span class="font-bold text-${colors[i]}-400 outline-none focus:bg-slate-700 px-1 rounded cursor-text whitespace-nowrap shrink-0" contenteditable="true" onblur="updateEuroLeague('${activeFixtureSeason}', '${league.name}', ${i}, 'pts', this)" title="Puanı Düzenle">${tPts}</span>
+                                                <span class="font-bold text-${colors[i]}-400 outline-none focus:bg-slate-700 px-1 rounded cursor-text whitespace-nowrap shrink-0" contenteditable="true" onblur="updateEuroLeague('${activeFixtureSeason}', '${league.name}', ${i}, 'pts', this)" title="Puanı Düzenle" data-euro-pts="1">${tPts}</span>
                                             </div>
                                             `;
                                         }).join('')}
@@ -11161,7 +12372,7 @@ function renderFixturePanel() {
             activeFixtureSeason = season;
             activeFixtureMatchId = matchId;
 
-            const dl = document.getElementById('fm-tournament-list');
+            const dl = null; // artık açılır menü (select) kullanılıyor
             if (dl) dl.innerHTML = getFixtureTournaments().map(t => `<option value="${t}">`).join('');
 
             document.getElementById('fm-modal-subtitle').textContent = season + ' Sezonu';
@@ -11173,7 +12384,7 @@ function renderFixturePanel() {
                 const match = (fixtureData[season] || []).find(m => m.id === matchId);
                 if (match) {
                     document.getElementById('fm-matchno').value = match.matchNo || '';
-                    document.getElementById('fm-tournament').value = match.tournament || '';
+                    tourSetSelect('fm-tournament', match.tournament || '', 'all');
                     document.getElementById('fm-ground').value = match.ground || 'home';
                     document.getElementById('fm-home').value = match.home || '';
                     document.getElementById('fm-away').value = match.away || '';
@@ -11184,7 +12395,7 @@ function renderFixturePanel() {
                 document.getElementById('fm-modal-title').textContent = 'Fikstür Planla';
                 deleteBtn.classList.add('hidden');
                 document.getElementById('fm-matchno').value = '';
-                document.getElementById('fm-tournament').value = '';
+                tourSetSelect('fm-tournament', '', 'all');
                 document.getElementById('fm-ground').value = 'home';
                 document.getElementById('fm-home').value = managedTeams.kulup.name || '';
                 document.getElementById('fm-away').value = '';
@@ -11238,7 +12449,7 @@ function renderFixturePanel() {
 
         function saveFixtureMatch() {
             const matchNo = parseInt(document.getElementById('fm-matchno').value);
-            const tournament = document.getElementById('fm-tournament').value.trim();
+            const tournament = tourCanon(document.getElementById('fm-tournament').value.trim());
             const ground = document.getElementById('fm-ground').value;
             const home = document.getElementById('fm-home').value.trim();
             const away = document.getElementById('fm-away').value.trim();
@@ -11716,7 +12927,7 @@ function renderFixturePanel() {
                     <input type="number" class="fb-matchno w-full bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-xs text-center text-white focus:border-emerald-500 outline-none" placeholder="No" value="${defaultMatchNo}">
                 </div>
                 <div class="col-span-2">
-                    <input type="text" list="global-tournament-datalist" class="fb-tournament w-full bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-xs text-white focus:border-emerald-500 outline-none" placeholder="Müsabaka">
+                    <select onchange="tourSelChange(this, 'all')" class="fb-tournament w-full bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-xs text-white focus:border-emerald-500 outline-none"><option value="">Müsabaka Seç</option>${tourSelectOptions('', 'all')}</select>
                 </div>
                 <div class="col-span-2">
                     <select class="fb-ground w-full bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-xs text-white focus:border-emerald-500 outline-none">
@@ -11872,7 +13083,7 @@ function renderFixturePanel() {
                     if (parts.length >= 5) {
                         const matchNoStr = parts[0];
                         const matchNo = parseInt(matchNoStr) || 999;
-                        const tournament = parts[1] || '';
+                        const tournament = tourCanon(parts[1] || '');
                         
                         // Zemin (Ground) algılama
                         let rawGround = (parts[2] || '').toLowerCase();
