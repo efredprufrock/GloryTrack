@@ -13,7 +13,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800;900&family=Sora:wght@500;600;700;800&display=swap&subset=latin-ext" rel="stylesheet">
     <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind artık tailwind.css dosyasından yükleniyor -->
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Chart.js -->
@@ -26,6 +26,7 @@
     <!-- FC26 Takım & Turnuva Veritabanı (Otomatik Tamamlama İçin) -->
     <script src="team-tournament-data.js"></script>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="tailwind.css?v=1">
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans h-[100dvh] flex flex-col-reverse sm:flex-row selection:bg-emerald-500 selection:text-white overflow-hidden">
 
@@ -33,8 +34,8 @@
 
     <!-- Sol/Alt Panel (Ana Menü Sidebar) -->
     <aside class="w-full h-[60px] sm:w-20 sm:h-full min-h-0 bg-slate-950 border-t sm:border-t-0 sm:border-r border-slate-800 flex flex-row sm:flex-col items-center sm:py-3 shrink-0 z-[60] overflow-x-auto sm:overflow-y-auto hide-scrollbar sm:sidebar-scroll pb-safe">
-        <div class="hidden sm:flex mb-3 items-center justify-center w-full px-2 shrink-0">
-            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-slate-800 rounded-full flex items-center justify-center border border-slate-700 shadow-inner overflow-hidden cursor-pointer hover:scale-105 transition-transform" onclick="openManagedTeamModal()" title="Takımı Düzenle">
+        <div class="flex sm:mb-3 items-center justify-center sm:w-full pl-2 pr-0.5 sm:px-2 shrink-0">
+            <div class="w-9 h-9 sm:w-12 sm:h-12 bg-slate-800 rounded-full flex items-center justify-center border border-slate-700 shadow-inner overflow-hidden cursor-pointer hover:scale-105 transition-transform" onclick="openManagedTeamModal()" title="Takımı Düzenle">
                 <img id="sidebar-team-logo" src="https://ui-avatars.com/api/?name=FC&background=random&color=fff" alt="Logo" class="w-full h-full object-contain p-0.5">
             </div>
         </div>
@@ -441,20 +442,14 @@
             
             <!-- GÖRÜNTÜLEME (PROFIL) MODU -->
             <div id="pi-view-section" class="hidden flex-col w-full">
-                <div class="relative w-36 h-36 mb-3 -mt-20 mx-auto flex items-end justify-center">
-                    <div class="absolute bottom-0 w-36 h-36 rounded-full border-[6px] border-slate-800 shadow-2xl bg-slate-900"></div>
-                    <img id="pi-view-photo" src="" class="relative z-10 object-cover object-top pointer-events-none drop-shadow-lg" style="width:100%; height:138%;" onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name=Oyuncu&background=334155&color=fff'">
-                    <div class="absolute bottom-1 right-2 border-[3px] border-slate-800 rounded shadow-md bg-slate-800 z-20"><div id="pi-view-flag-container"></div></div>
-                </div>
-                <h3 id="pi-view-name" class="text-2xl font-black text-white text-center leading-tight">İsim Soyisim</h3>
-                <p class="mt-1.5 mb-4 flex items-center justify-center gap-2 text-sm text-slate-400 font-medium">
-                    <span id="pi-view-pos" class="font-black px-2 py-0.5 rounded bg-slate-900/80 border border-slate-700">POS</span>
-                    <span>•</span><span id="pi-view-role">Rol</span>
-                </p>
-                <div class="pi-strip">
-                    <div><div class="pi-sl">Güncel OVR</div><div class="pi-sv"><span id="pi-view-current-ovr">-</span><span id="pi-view-delta-container"></span></div><div id="pi-view-join-ovr" class="pi-ss">Geliş OVR: -</div></div>
-                    <div><div class="pi-sl">Güncel Yaş</div><div class="pi-sv"><span id="pi-view-current-age">-</span></div><div id="pi-view-join-age" class="pi-ss">Geliş Yaşı: -</div></div>
-                    <div><div class="pi-sl">Takımda</div><div class="pi-sv" id="pi-view-seasons">-</div><div class="pi-ss">&nbsp;</div></div>
+                <div id="pi-hero" class="pih">
+                    <img id="pi-view-photo" src="" class="pih-ph" onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name=Oyuncu&background=334155&color=fff'">
+                    <div class="pih-nm">
+                        <h3 id="pi-view-name" class="pih-name">İsim Soyisim</h3>
+                        <div class="pih-meta"><span id="pi-view-pos" class="font-black px-2 py-0.5 rounded bg-slate-900/80 border border-slate-700">POS</span><span id="pi-view-role">Rol</span><span class="pih-dot">·</span><span id="pi-view-flag-container" class="pih-flag"></span><span id="pih-country" class="pih-cn"></span></div>
+                    </div>
+                    <div class="pih-foot"><span><span>Yaş</span> <b id="pi-view-current-age">-</b></span><span><span>Sezon</span> <b id="pih-sea">-</b></span></div>
+                    <div id="pi-shield" class="pih-sh"></div>
                 </div>
                 <div style="display:none">
                     <img id="pi-view-photo" src="" class="object-cover object-top shrink-0 bg-slate-900 pointer-events-none" style="width:64px;height:64px;border-radius:50%;border:3px solid #ef4444" onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name=Oyuncu&background=334155&color=fff'">

@@ -4,7 +4,6 @@
 // otomatik tamamlama (datalist) önerileri sağlar.
 
 const FC26_TEAM_DATABASE = [
-    "\" generic)",
     { name: "Algeria", logo: "https://assets.football-logos.cc/logos/algeria/700x700/algeria-national-team.4c3d5d41.png" }, //
     { name: "Argentina", logo: "https://assets.football-logos.cc/logos/argentina/700x700/argentina-national-team.83b3320e.png" }, //
     { name: "Australia", logo: "https://assets.football-logos.cc/logos/australia/700x700/australia-national-team.25ee3a16.png" }, //
@@ -762,16 +761,16 @@ const FC26_TOURNAMENT_DATABASE = [
     { name: "DFB-Pokal", logo: "https://assets.football-logos.cc/logos/germany/700x700/dfb-pokal.97dbec3a.png" },
     { name: "DFL-Supercup", logo: "https://www.pngkey.com/png/full/382-3828269_dfl-supercup-2018-logo.png" },
     { name: "EFL Championship:", logo: "https://assets.football-logos.cc/logos/england/256x256/efl-championship.988911c5.png" },
-    { name: "EFL Cup", logo: "https://assets.football-logos.cc/logos/england/256x256/english-football-league.b10406bb.png" },
+    { name: "EFL Cup", logo: "https://assets.football-logos.cc/logos/england/256x256/efl-cup.fa5ac6ff.png" },
     { name: "EFL League One:", logo: "https://assets.football-logos.cc/logos/england/256x256/efl-league-one.83123912.png" },
     { name: "EFL League Two:", logo: "https://assets.football-logos.cc/logos/england/256x256/efl-league-two.e6102071.png" },
-    { name: "EFL Carabao Cup", logo: "https://assets.football-logos.cc/logos/england/256x256/efl-cup.fa5ac6ff.png" },
+    { name: "EFL Carabao Cup", logo: "https://assets.football-logos.cc/logos/england/512x512/efl-cup.667da864.png" },
     { name: "Ekstraklasa", logo: "https://assets.football-logos.cc/logos/poland/700x700/ekstraklasa.007755e8.png" },
     { name: "Eliteserien", logo: "https://assets.football-logos.cc/logos/norway/700x700/eliteserien--no-text.5ff5cbeb.png" },
-    { name: "Eredivisie", logo: "https://assets.football-logos.cc/logos/netherlands/700x700/eredivisie.846bf0f7.png" },
+    { name: "Eredivisie", logo: "https://assets.football-logos.cc/logos/netherlands/512x512/eredivisie--white-monochrome.5fb24a39.png" },
     { name: "FA Cup", logo: "https://assets.football-logos.cc/logos/england/256x256/emirates-fa-cup.a5da3afb.png" },
     { name: "FIFA World Cup", logo: "https://assets.football-logos.cc/logos/tournaments/700x700/fifa-world-cup-2026.7042846f.png" },
-    { name: "Hero ISL", logo: "https://thumb.wikimedia.org/wikipedia/en/thumb/b/b0/Indian_Super_League_logo.svg/1280px-Indian_Super_League_logo.svg.png" },
+    { name: "Hero ISL", logo: "https://assets.football-logos.cc/logos/india/700x700/indian-super-league.09e49309.png" },
     { name: "Jupiler Pro League", logo: "https://assets.football-logos.cc/logos/belgium/700x700/jupiler-pro-league.0a11c474.png" },
     { name: "K League 2:", logo: "https://assets.football-logos.cc/logos/south-korea/700x700/k-league-1.e050e629.png" },
     { name: "KNVB Cup", logo: "https://assets.football-logos.cc/logos/netherlands/700x700/knvb-cup.a908d441.png" },
@@ -780,7 +779,7 @@ const FC26_TOURNAMENT_DATABASE = [
     { name: "Liga MX", logo: "https://assets.football-logos.cc/logos/mexico/700x700/liga-mx.32510f86.png" },
     { name: "Liga Portugal", logo: "https://assets.football-logos.cc/logos/portugal/700x700/primeira-liga.bedff667.png" },
     { name: "Liga Profesional", logo: "https://assets.football-logos.cc/logos/argentina/700x700/argentina-primera-division.57664552.png" },
-    { name: "Ligue 1:", logo: "https://assets.football-logos.cc/logos/france/256x256/ligue-1.5be98861.png" },
+    { name: "Ligue 1:", logo: "https://assets.football-logos.cc/logos/france/512x512/ligue-1--white.4072671a.png" },
     { name: "Ligue 2:", logo: "https://assets.football-logos.cc/logos/france/256x256/ligue-2.c49605da.png" },
     { name: "MBS Pro League", logo: "https://upload.wikimedia.org/wikipedia/en/7/75/Roshn_Saudi_League_Logo.svg" },
     { name: "MLS", logo: "https://assets.football-logos.cc/logos/usa/700x700/mls.c0d2b1af.png" },
@@ -795,14 +794,14 @@ const FC26_TOURNAMENT_DATABASE = [
     { name: "Superliga", logo: "https://assets.football-logos.cc/logos/romania/700x700/superliga.79a0a87b.png" },
     { name: "Süper Lig", logo: "https://assets.footylogos.com/logos/super-lig-turkey/super-lig-turkey-logo-footylogos.svg" },
     { name: "Taça de Portugal", logo: "https://assets.football-logos.cc/logos/portugal/700x700/taca-de-portugal.5ace9934.png" },
-    { name: "Trophée des Champions", logo: "upload.wikimedia.org/wikipedia/tr/a/a8/Trophée_des_Champions.png" },
+    { name: "Trophée des Champions", logo: "https://upload.wikimedia.org/wikipedia/tr/a/a8/Trophée_des_Champions.png" },
     { name: "Türkiye Kupası", logo: "https://upload.wikimedia.org/wikipedia/tr/6/61/Ziraat_Türkiye_Kupası_logosu.png" },
-    { name: "Türkiye Süper Kupası", logo: "https://thumb.wikimedia.org/wikipedia/tr/thumb/8/8f/2025_Süper_Kupa.png/330px-2025_Süper_Kupa.png" },
-    { name: "UEFA Champions League", logo: "https://assets.football-logos.cc/logos/tournaments/700x700/uefa-champions-league.c16cec3d.png" },
-    { name: "UEFA Europa Conference League", logo: "https://assets.football-logos.cc/logos/tournaments/700x700/uefa-conference-league.4a977457.png" },
-    { name: "UEFA Europa League", logo: "https://assets.football-logos.cc/logos/tournaments/700x700/uefa-europa-league.cec59481.png" },
+    { name: "Türkiye Süper Kupası", logo: "https://upload.wikimedia.org/wikipedia/tr/thumb/8/8f/2025_Süper_Kupa.png/330px-2025_Süper_Kupa.png" },
+    { name: "UEFA Champions League", logo: "https://assets.football-logos.cc/logos/tournaments/512x512/uefa-champions-league--no-text-white.8a19633c.png" },
+    { name: "UEFA Europa Conference League", logo: "https://assets.football-logos.cc/logos/tournaments/512x512/uefa-conference-league--no-text.11cffd52.png" },
+    { name: "UEFA Europa League", logo: "https://assets.football-logos.cc/logos/tournaments/512x512/uefa-europa-league--no-text.f5242ab6.png" },
     { name: "UEFA European Championship", logo: "https://assets.football-logos.cc/logos/tournaments/700x700/uefa-euro-2028.803d4112.png" },
-    { name: "UEFA Super Cup", logo: "https://assets.football-logos.cc/logos/tournaments/700x700/uefa-super-cup.73cc7e25.png" }
+    { name: "UEFA Super Cup", logo: "https://assets.football-logos.cc/logos/tournaments/512x512/uefa-super-cup--white.9c22dbe7.png" }
 ];
 
 // Sayfa açıldığında (ve dil değiştiğinde) global datalist'leri doldurur.
