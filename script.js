@@ -55,6 +55,27 @@ const TR_EN = {
     "Bu sezon için lig tablosu yok.": "No league table for this season.",
     "Bu sezon için turnuva yok.": "No tournaments for this season.",
     "Lig Tarihi": "League History",
+    "Defter": "Notebook",
+    "Favori yap": "Make favourite",
+    "Favori oyuncu": "Favourite player",
+    "Sezon Özeti": "Season Summary",
+    "Son karşılaşmalar": "Recent meetings",
+    "İç Saha / Deplasman": "Home / Away",
+    "Gol A/Y": "Goals F/A",
+    "Bu rakibe en çok gol atanlar": "Top scorers vs this opponent",
+    "En farklı galibiyet": "Biggest win",
+    "En ağır yenilgi": "Heaviest defeat",
+    "Gol kaydı yok": "No goals recorded",
+    "Bize en çok gol atanlar": "Top scorers against us",
+    "Henüz bu rakiple oynanmış maç yok.": "No matches against this opponent yet.",
+    "Yönetilen Takımlar": "Managed Teams",
+    "Kulübün ve milli takımın kimliği · tema rengi": "Club and national team identity · theme color",
+    "Opsiyonel": "Optional",
+    "Takım adı": "Team name",
+    "Logo ara": "Search logo",
+    "Logo bağlantısı": "Logo link",
+    "Milli takım": "National team",
+    "Koyu / açık tema sol menüden": "Switch dark / light from the left menu",
     "renk": "colors",
     "logo": "logos",
     "Turnuva Renkleri": "Tournament Colors",
@@ -442,6 +463,9 @@ const TR_EN = {
     // --- LİG TARİHİ (LEAGUE HISTORY) ---
     "Lig Tarihi Paneli": "League History Panel",
     "TAKIMLAR": "TEAMS",
+    "DİĞER TURNUVALAR": "OTHER TOURNAMENTS",
+    "DİĞER TAKIMLAR": "OTHER TEAMS",
+    "Veritabanındaki diğer tüm logolar için arama yap.": "Search to find every other logo in the database.",
     "Sıralama Grafiği (1-18)": "Ranking Chart (1-18)",
     "Toplu Puan Gir": "Bulk Enter Points",
     "Toplu Puan Girişi": "Bulk Points Entry",
@@ -573,7 +597,7 @@ const TR_EN = {
     "Örn: 14. Hafta veya Çeyrek Final": "e.g. Week 14 or Quarter Final",
     "Örnek: 1, Süper Lig, Galatasaray, Fenerbahçe, TR, 1. Hafta": "Example: 1, Super League, Galatasaray, Fenerbahce, TR, Week 1",
     "Örnek: 2, UEFA Şampiyonlar Ligi, Juventus, Galatasaray, IT, Çeyrek Final": "Example: 2, UEFAChampions League, Juventus, Galatasaray, IT, Quarter Final",
-    "Her satıra bir takım gelecek şekilde, aşağıdaki sıraya göre virgülle ayırarak yapıştırın. Bir ligin ilk 4 satırı sırasıyla 1.-4. sıraya yerleşir.": "Paste with one team per line, separated by commas in the following order. The first 4 lines of a league will be placed in the 1st-4th places respectively.",
+    "Her satıra bir takım gelecek şekilde, aşağıdaki sıraya göre virgülle ayırarak yapıştırın. Bir ligin ilk 6 satırı sırasıyla 1.-6. sıraya yerleşir.": "Paste with one team per line, separated by commas in the following order. The first 6 lines of a league will be placed in the 1st-6th places respectively.",
     "Lig Adı, Takım Adı, Puan": "League Name, Team Name, Points",
     "Örnek: Premier League, Liverpool, 45 P": "Example: Premier League, Liverpool, 45 P",
     "Örnek: Premier League, Arsenal, 42 P": "Example: Premier League, Arsenal, 42 P",
@@ -1309,6 +1333,7 @@ function escapeHtml(str) {
         let euroLeaguesData = {};
         let euroSlotsData = {};
         let pyramidData = {};
+        let notebookData = [];          // Defter notları (sezonlardan bağımsız, kariyerle birlikte kaydedilir)
         let competitionLogos = {};
         let customTournamentsData = {};
 
@@ -1994,7 +2019,7 @@ function getFlagIcon(countryCode) {
             return {
                 seasonsList, trophyData, tournamentsList, managedTeams, opponentsConfig,
                 matchDataStore, playerRoles, squadData, leagueHistoryData, transferData, fixtureData, isSetupComplete,
-                euroLeaguesData, euroSlotsData, customTournamentsData, competitionLogos, formations, customCatalog, pyramidData
+                euroLeaguesData, euroSlotsData, customTournamentsData, competitionLogos, formations, customCatalog, pyramidData, notebookData
             };
         }
 
@@ -2042,6 +2067,8 @@ function getFlagIcon(countryCode) {
             if (data.euroLeaguesData) euroLeaguesData = data.euroLeaguesData;
             if (data.euroSlotsData) euroSlotsData = data.euroSlotsData;
             pyramidData = (data.pyramidData && typeof data.pyramidData === 'object') ? data.pyramidData : {};
+            notebookData = Array.isArray(data.notebookData) ? data.notebookData : [];
+            if (typeof nbRender === 'function') nbRender();
             if (data.customTournamentsData) customTournamentsData = data.customTournamentsData;
             if (data.isSetupComplete !== undefined) isSetupComplete = data.isSetupComplete;
             if (data.competitionLogos) competitionLogos = data.competitionLogos;
@@ -3147,6 +3174,96 @@ function handleFileUpload(event, type) {
             ref.insertAdjacentElement('afterend', b);
         });
 
+        // ===================== DEFTER (her sayfada açık kalabilen not paneli) =====================
+        function nbEsc(s) { return escapeHtml(String(s == null ? '' : s)); }
+        function nbNextMatchInfo() {
+            try {
+                const ctx = (typeof homeGlobalContext !== 'undefined' && homeGlobalContext === 'milli') ? 'milli' : 'kulup';
+                const has = (m) => m.homeScore !== '' && m.homeScore !== null && m.homeScore !== undefined && m.awayScore !== '' && m.awayScore !== null && m.awayScore !== undefined;
+                const m = homeGetFilteredMatches(ctx).find(x => x && !has(x));
+                if (m) return { season: m.season || '', no: m.matchNo || '', tour: m.tournament || '', home: m.home || '', away: m.away || '' };
+            } catch (e) {}
+            return { season: (seasonsList || [])[(seasonsList || []).length - 1] || '', no: '', tour: '', home: '', away: '' };
+        }
+        function nbMetaText(n) {
+            const en = homeIsEn(), c = n.ctx || {};
+            const d = new Date(n.ts || Date.now());
+            const date = d.toLocaleDateString(en ? 'en-GB' : 'tr-TR', { day: '2-digit', month: 'short', year: 'numeric' });
+            if (c.home && c.away) return `${c.season ? c.season + ' · ' : ''}${c.no ? c.no + '. ' + (en ? 'match' : 'maç') + ' · ' : ''}${c.tour ? c.tour + ' · ' : ''}${c.home} – ${c.away} ${en ? '(before)' : 'öncesi'} · ${date}`;
+            return `${c.season ? c.season + ' · ' : ''}${en ? 'no upcoming match' : 'sıradaki maç yok'} · ${date}`;
+        }
+        function nbRender() {
+            const pn = document.getElementById('nb-panel'); if (!pn) return;
+            const en = homeIsEn();
+            const list = (notebookData || []).slice().sort((a, b) => (b.ts || 0) - (a.ts || 0));
+            const nx = nbNextMatchInfo();
+            pn.querySelector('.nb-next').textContent = (nx.home && nx.away) ? `${en ? 'Next' : 'Sıradaki'}: ${nx.home} – ${nx.away}${nx.tour ? ' · ' + nx.tour : ''}` : '';
+            pn.querySelector('.nb-count').textContent = list.length;
+            pn.querySelector('.nb-list').innerHTML = list.length ? list.map(n => `
+                <div class="nb-note" data-id="${nbEsc(n.id)}">
+                    <div class="nb-meta"><i class="fa-regular fa-clock"></i><span>${nbEsc(nbMetaText(n))}</span><button type="button" class="nb-del" onclick="nbDelete('${nbEsc(n.id)}')" title="${en ? 'Delete' : 'Sil'}">✕</button></div>
+                    <div class="nb-text" contenteditable="true" spellcheck="false" onblur="nbEdit('${nbEsc(n.id)}', this)">${nbEsc(n.text)}</div>
+                </div>`).join('') : `<div class="nb-empty">${en ? 'No notes yet.' : 'Henüz not yok.'}</div>`;
+        }
+        function nbAdd() {
+            const ta = document.getElementById('nb-input'); if (!ta) return;
+            const text = ta.value.trim(); if (!text) return;
+            if (!Array.isArray(notebookData)) notebookData = [];
+            notebookData.push({ id: 'nb_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6), text, ts: Date.now(), ctx: nbNextMatchInfo() });
+            ta.value = '';
+            try { saveToLocalStorage(); } catch (e) {}
+            nbRender();
+        }
+        function nbEdit(id, el) {
+            const n = (notebookData || []).find(x => x.id === id); if (!n) return;
+            const t = el.innerText.trim();
+            if (t === n.text) return;
+            if (!t) { nbDelete(id, true); return; }
+            n.text = t; n.edited = Date.now();
+            try { saveToLocalStorage(); } catch (e) {}
+        }
+        function nbDelete(id, silent) {
+            if (!silent && !confirm(homeIsEn() ? 'Delete this note?' : 'Bu not silinsin mi?')) return;
+            notebookData = (notebookData || []).filter(x => x.id !== id);
+            try { saveToLocalStorage(); } catch (e) {}
+            nbRender();
+        }
+        function nbToggle(force) {
+            let pn = document.getElementById('nb-panel');
+            const open = force !== undefined ? force : !(pn && pn.classList.contains('open'));
+            if (!pn) {
+                const en = homeIsEn();
+                pn = document.createElement('aside');
+                pn.id = 'nb-panel'; pn.className = 'nb-panel';
+                pn.innerHTML = `
+                    <div class="nb-head"><i class="fa-solid fa-book-open"></i><b>${en ? 'Notebook' : 'Defter'}</b><span class="nb-count">0</span><button type="button" class="nb-x" onclick="nbToggle(false)" title="${en ? 'Close' : 'Kapat'}">✕</button></div>
+                    <div class="nb-write">
+                        <textarea id="nb-input" rows="3" placeholder="${en ? 'Write a note… (Ctrl+Enter to save)' : 'Not yaz… (kaydetmek için Ctrl+Enter)'}"></textarea>
+                        <div class="nb-wf"><span class="nb-next"></span><button type="button" class="nb-save" onclick="nbAdd()">${en ? 'Save' : 'Kaydet'}</button></div>
+                    </div>
+                    <div class="nb-list"></div>`;
+                document.body.appendChild(pn);
+                pn.querySelector('#nb-input').addEventListener('keydown', e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); nbAdd(); } });
+            }
+            pn.classList.toggle('open', open);
+            document.body.classList.toggle('nb-on', open);
+            if (open) { nbRender(); setTimeout(() => { const t = document.getElementById('nb-input'); if (t) t.focus(); }, 150); }
+        }
+        if (!window._nbInit) {
+            window._nbInit = 1;
+            document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.body.classList.contains('nb-on') && !document.querySelector('.fixed.flex:not(.hidden)')) nbToggle(false); });
+            // Ana sayfa dışındaki sayfalarda sağ altta küçük defter butonu
+            const nbFab = () => {
+                let b = document.getElementById('nb-fab');
+                if (!b) { b = document.createElement('button'); b.id = 'nb-fab'; b.type = 'button'; b.className = 'nb-fab'; b.innerHTML = '<i class="fa-solid fa-book"></i>'; b.onclick = () => nbToggle(); document.body.appendChild(b); }
+                b.title = homeIsEn() ? 'Notebook' : 'Defter';
+                b.style.display = (typeof activeMain !== 'undefined' && activeMain && activeMain !== 'anasayfa') ? '' : 'none';
+                if (document.getElementById('nb-panel') && document.body.classList.contains('nb-on')) nbRender();
+            };
+            const nbStart = () => { const r = document.getElementById('content-area'); if (!r) { setTimeout(nbStart, 300); return; } new MutationObserver(nbFab).observe(r, { childList: true }); nbFab(); };
+            nbStart();
+        }
+
         function selectMainMenu(menuId) {
             activeMain = menuId; activeSub = null; activeTertiary = null;
             document.querySelectorAll('.main-btn').forEach(btn => {
@@ -3460,16 +3577,39 @@ function handleFileUpload(event, type) {
             .observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['src'] });
         loQueue();
 
-        function loCollect() {
+        function loCollect(withDb) {
             const out = [], seen = new Set();
-            const add = (u, name, grp) => { if (!u || seen.has(u) || /ui-avatars\.com/.test(u)) return; seen.add(u); out.push({ u, name: name || '—', grp }); };
+            const ok = (u) => u && typeof u === 'string' && !/ui-avatars\.com/.test(u);
+            const add = (u, name, grp) => { if (!ok(u) || seen.has(u)) return; seen.add(u); out.push({ u, name: name || '—', grp }); };
+            const team = (n, logo) => { n = String(n || '').trim(); if (!n || n === 'Takım Adı' || n === '-') return; add(getTeamLogoByName(n) || logo, n, 'k'); };
+            const tour = (n) => { n = String(n || '').trim(); if (n) add(tourLogoOf(n), n, 't'); };
+            // --- Sitede kullanılan turnuvalar ---
             (tournamentsList || []).forEach(t => add(t.logoUrl, t.name, 't'));
             Object.entries(competitionLogos || {}).forEach(([n, u]) => add(u, n, 't'));
-            ['kulup', 'milli'].forEach(k => { const m = managedTeams && managedTeams[k]; if (m) add(m.logoUrl, m.name, 'k'); });
+            Object.values(customTournamentsData || {}).forEach(arr => (arr || []).forEach(t => t && tour(t.type)));
+            Object.values((typeof fixtureData !== 'undefined' && fixtureData) || {}).forEach(arr => (arr || []).forEach(f => f && tour(f.tournament)));
+            Object.values(euroLeaguesData || {}).forEach(o => Object.keys(o || {}).forEach(tour));
+            // --- Sitede kullanılan takımlar ---
+            ['kulup', 'milli'].forEach(k => { const m = managedTeams && managedTeams[k]; if (m) team(m.name, m.logoUrl); });
             ['kulup', 'milli'].forEach(ctx => { const o = opponentsConfig && opponentsConfig[ctx]; if (!o) return;
-                ((o.domestic && o.domestic.teams) || []).forEach(t => t.name && add(t.logoUrl || getTeamLogoByName(t.name), t.name, 'k'));
-                (o.foreign || []).forEach(g => (g.teams || []).forEach(t => t.name && add(t.logoUrl || getTeamLogoByName(t.name), t.name, 'k'))); });
-            (leagueHistoryData || []).forEach(t => t.name && add(getTeamLogoByName(t.name), t.name, 'k'));
+                ((o.domestic && o.domestic.teams) || []).forEach(t => t && team(t.name, t.logoUrl));
+                (o.foreign || []).forEach(g => ((g && g.teams) || []).forEach(t => t && team(t.name, t.logoUrl))); });
+            Object.values((typeof fixtureData !== 'undefined' && fixtureData) || {}).forEach(arr => (arr || []).forEach(f => { if (f) { team(f.home); team(f.away); } }));
+            Object.values(customTournamentsData || {}).forEach(arr => (arr || []).forEach(t => {
+                if (!t) return;
+                (Array.isArray(t.table) ? t.table : []).forEach(r => r && team(r.name, r.logo));
+                (Array.isArray(t.knockouts) ? t.knockouts : []).forEach(k => { if (k) { team(k.home, k.homeLogo); team(k.away, k.awayLogo); } });
+            }));
+            Object.values(euroLeaguesData || {}).forEach(o => Object.values(o || {}).forEach(rows => (rows || []).forEach(r => r && team(r.name))));
+            Object.values(pyramidData || {}).forEach(o => Object.values(o || {}).forEach(arr => (Array.isArray(arr) ? arr : []).forEach(n => team(n))));
+            (leagueHistoryData || []).forEach(t => t && team(t.name));
+            // Kontürü açık ama yukarıda bulunmayan logolar (kapatılabilsin diye)
+            loLoad().forEach(u => add(u, (typeof FC26_TEAM_DATABASE !== 'undefined' && (FC26_TEAM_DATABASE.find(t => t && t.logo === u) || {}).name) || '—', 'k'));
+            // --- Arama yapılırken: veritabanındaki diğer tüm logolar ---
+            if (withDb) {
+                tourAll().forEach(e => e && e.n && add(tourLogoOf(e.n), e.n, 'td'));
+                if (typeof FC26_TEAM_DATABASE !== 'undefined') FC26_TEAM_DATABASE.forEach(t => t && typeof t === 'object' && add(t.logo, t.name, 'kd'));
+            }
             return out;
         }
         function loToggle(u) { const S = loLoad(); S.has(u) ? S.delete(u) : S.add(u); loSave(); loScan(); loRender(); }
@@ -3489,17 +3629,19 @@ function handleFileUpload(event, type) {
         function loFilter(v) { loQ = v; loRender(true); }
         function loRender(keepFocus) {
             const ov = document.getElementById('lo-ov'); if (!ov) return;
-            const esc = escapeHtml, S = loLoad(), all = loCollect();
+            const _lb = ov.querySelector('.lo-body'), _lst = _lb ? _lb.scrollTop : 0;
+            const esc = escapeHtml, S = loLoad(), all = loCollect(loQ.trim().length >= 2);
             const q = loQ.trim().toLocaleLowerCase('tr');
             const list = q ? all.filter(x => x.name.toLocaleLowerCase('tr').includes(q)) : all;
             const tile = x => `<button class="lo-tile ${S.has(x.u) ? 'on' : ''}" onclick="loToggle(this.dataset.u)" data-u="${esc(x.u)}" title="${esc(x.name)}"><span class="lo-pv"><img src="${esc(x.u)}" alt="" loading="lazy"></span><b>${esc(x.name)}</b><i class="lo-chk">${S.has(x.u) ? '✓' : ''}</i></button>`;
-            const sec = (g, t) => { const l = list.filter(x => x.grp === g); return l.length ? `<h4>${t} <em>${l.length}</em></h4><div class="lo-grid">${l.map(tile).join('')}</div>` : ''; };
+            const sec = (g, t) => { const l = list.filter(x => x.grp === g).slice(0, g.length > 1 ? 150 : 9999); return l.length ? `<h4>${t} <em>${l.length}</em></h4><div class="lo-grid">${l.map(tile).join('')}</div>` : ''; };
             ov.innerHTML = `<div class="lo-modal" role="dialog" aria-modal="true">
                 <div class="lo-mh"><h3>Logo Kontürleri</h3><button class="lo-x" onclick="loClose()" title="Kapat" aria-label="Kapat">✕</button></div>
                 <p class="lo-hint">Kontür eklemek istediğin logoya tıkla. Seçtiğin logo sitenin her yerinde ince bir çizgiyle görünür.</p>
                 <input id="lo-q" class="lo-in" placeholder="Ara (örn. Liga Portugal)" value="${esc(loQ)}" oninput="loFilter(this.value)">
-                <div class="lo-body">${sec('t', 'TURNUVALAR')}${sec('k', 'TAKIMLAR')}${list.length ? '' : '<p class="lo-hint c">Sonuç yok.</p>'}</div>
+                <div class="lo-body">${sec('t', 'TURNUVALAR')}${sec('k', 'TAKIMLAR')}${sec('td', 'DİĞER TURNUVALAR')}${sec('kd', 'DİĞER TAKIMLAR')}${q.length < 2 ? '<p class="lo-hint c">Veritabanındaki diğer tüm logolar için arama yap.</p>' : ''}${list.length ? '' : '<p class="lo-hint c">Sonuç yok.</p>'}</div>
                 <div class="lo-mf"><span><b>${S.size}</b> <span>logoda kontür açık</span></span>${S.size ? '<button class="lo-btn" onclick="loClearAll()">Tümünü kaldır</button>' : ''}<button class="lo-btn pri bg-emerald-600 text-white" onclick="loClose()">Tamam</button></div></div>`;
+            if (!keepFocus && _lst) { const nb = ov.querySelector('.lo-body'); if (nb) nb.scrollTop = _lst; }
             if (keepFocus) { const i = document.getElementById('lo-q'); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } }
         }
 
@@ -3773,6 +3915,17 @@ function handleFileUpload(event, type) {
         let homeFixtureContext = 'both';
         let homeStatsSort = { field: 'goals', asc: false };
 
+        // Kulüp / Milli seçicisi: iki takım da seçiliyse yazı yerine logolar
+        function homeCtxBtnInner(ctx) {
+            const k = managedTeams.kulup || {}, m = managedTeams.milli || {};
+            const kl = k.name ? (k.logoUrl || getTeamLogoByName(k.name)) : '';
+            const ml = m.name ? (m.logoUrl || getTeamLogoByName(m.name)) : '';
+            if (kl && ml) {
+                const t = ctx === 'milli' ? m : k, u = ctx === 'milli' ? ml : kl;
+                return `<img src="${escapeHtml(u)}" alt="${escapeHtml(t.name)}" title="${escapeHtml(t.name)}" class="hctx-lg" onerror="this.replaceWith(document.createTextNode('${ctx === 'milli' ? 'Milli' : 'Kulüp'}'))">`;
+            }
+            return ctx === 'milli' ? 'Milli' : 'Kulüp';
+        }
         function setHomeGlobalContext(ctx) {
             homeGlobalContext = ctx;
             homeSquadContext = ctx === 'kulup' ? 'astakim' : 'milli';
@@ -5055,6 +5208,178 @@ function handleFileUpload(event, type) {
             return { name, logo };
         }
 
+        // ===================== ANA SAYFA: SEZON ÖZETİ (kulüp / milli ayrı, kaydırmasız) =====================
+        function homeSeasonStatsRight() {
+            const season = seasonsList[seasonsList.length - 1] || '';
+            const en = homeIsEn();
+            const lbl = homeGlobalContext === 'milli' ? (en ? 'National' : 'Milli') : (en ? 'Club' : 'Kulüp');
+            return season ? `<span class="hss-tag">${escapeHtml(season)} · ${lbl}</span>` : '';
+        }
+        function homeSeasonStatsData(ctx, season) {
+            const T = ctx === 'milli' ? managedTeams.milli : managedTeams.kulup;
+            const team = (T && T.name) || '';
+            const num = (v) => (v === '' || v === null || v === undefined || isNaN(parseInt(v))) ? null : parseInt(v);
+            const all = team ? qfbGetAllMatches().filter(m => m && (homeSameTeam(m.home, team) || homeSameTeam(m.away, team))) : [];
+            const played = all.map(m => {
+                const h = homeSameTeam(m.home, team);
+                const hs = num(m.homeScore), as = num(m.awayScore);
+                if (hs === null || as === null) return null;
+                const gf = h ? hs : as, ga = h ? as : hs;
+                return { m, h, gf, ga, opp: h ? m.away : m.home, r: gf > ga ? 'W' : gf < ga ? 'L' : 'D' };
+            }).filter(Boolean);
+            const rec = (arr) => {
+                const w = arr.filter(x => x.r === 'W').length, d = arr.filter(x => x.r === 'D').length, l = arr.filter(x => x.r === 'L').length, n = arr.length;
+                return { w, d, l, n, ppg: n ? (3 * w + d) / n : 0, wr: n ? Math.round(w / n * 100) : 0 };
+            };
+            const ss = played.filter(x => x.m.season === season);
+            const streak = (arr, ok) => { let best = 0, cur = 0; arr.forEach(x => { cur = ok(x) ? cur + 1 : 0; best = Math.max(best, cur); }); return best; };
+            const pick = (arr, score) => arr.length ? arr.slice().sort((a, b) => score(b) - score(a))[0] : null;
+            const wins = ss.filter(x => x.r === 'W'), losses = ss.filter(x => x.r === 'L');
+            // Favori oyuncu: sezonda en çok gol + asist
+            const ga = {};
+            ss.forEach(x => (x.m.events || []).forEach(ev => {
+                if (!ev || ev.type !== 'US') return;
+                const s = String(ev.scorer || '').trim(), a = String(ev.assist || '').trim();
+                if (s) { ga[s] = ga[s] || { g: 0, a: 0 }; ga[s].g++; }
+                if (a) { ga[a] = ga[a] || { g: 0, a: 0 }; ga[a].a++; }
+            }));
+            const sq = ctx === 'milli' ? (squadData.milli || []) : (squadData.astakim || []).concat(squadData.akademi || []);
+            const man = sq.find(p => p && p.favorite && p.name);
+            const manKey = man ? Object.keys(ga).find(k => homeSameTeam(k, man.name)) : null;
+            const fav = man ? [man.name, (manKey && ga[manKey]) || { g: 0, a: 0 }] : Object.entries(ga).sort((a, b) => (b[1].g + b[1].a) - (a[1].g + a[1].a) || b[1].g - a[1].g)[0];
+            const favP = man || (fav ? sq.find(p => p && homeSameTeam(p.name, fav[0])) : null);
+            return {
+                team, season, all: rec(played), s: rec(ss),
+                gf: ss.reduce((a, x) => a + x.gf, 0), gaT: ss.reduce((a, x) => a + x.ga, 0),
+                cs: ss.filter(x => x.ga === 0).length,
+                home: rec(ss.filter(x => x.h)), away: rec(ss.filter(x => !x.h)),
+                bigWin: pick(wins, x => (x.gf - x.ga) * 100 + x.gf),
+                bigLoss: pick(losses, x => (x.ga - x.gf) * 100 + x.ga),
+                maxGoals: pick(ss, x => (x.gf + x.ga) * 100 + (x.gf - x.ga)),
+                winStreak: streak(ss, x => x.r === 'W'), unbeaten: streak(ss, x => x.r !== 'L'),
+                form: ss.slice(-5),
+                sq, ga, fav: fav ? { name: fav[0], g: fav[1].g, a: fav[1].a, photo: favP && (favP.photoUrl || favP.photo) || '', pos: favP && favP.pos || '', manual: !!man } : null
+            };
+        }
+        function renderHomeSeasonStats() {
+            const ctx = homeGlobalContext === 'milli' ? 'milli' : 'kulup';
+            const season = seasonsList[seasonsList.length - 1];
+            const en = homeIsEn(), L = (tr, e) => en ? e : tr, esc = escapeHtml;
+            const D = homeSeasonStatsData(ctx, season);
+            if (!D.team) return `<div class="text-center text-slate-500 text-sm py-6">${L('Önce yönettiğin takımı seç.', 'Set your managed team first.')}</div>`;
+            const LT = en ? { W: 'W', D: 'D', L: 'L' } : { W: 'G', D: 'B', L: 'M' };
+            const ppg = (r) => r.n ? r.ppg.toFixed(2) : '–';
+            const ppgCls = (r) => !r.n ? '' : r.ppg >= 2 ? 'pos' : r.ppg >= 1.3 ? 'acc' : 'neg';
+            const bar = (r) => r.n ? `<div class="hss-bar"><i class="W" style="width:${r.w / r.n * 100}%"></i><i class="D" style="width:${r.d / r.n * 100}%"></i><i class="L" style="width:${r.l / r.n * 100}%"></i></div>` : '<div class="hss-bar"></div>';
+            const match = (lab, x, cls) => {
+                if (!x) return `<div class="hss-m"><div class="hss-lab">${lab}</div><div class="hss-none">—</div></div>`;
+                const lg = getTeamLogoByName(x.opp), tl = x.m.tournament ? tourLogoOf(x.m.tournament) : '';
+                return `<div class="hss-m"><div class="hss-lab">${lab}</div>
+                    <div class="hss-mr"><span class="hss-sc ${cls}">${x.gf}-${x.ga}</span>${lg ? `<img src="${esc(lg)}" alt="" class="hss-lg" onerror="this.style.display='none'">` : ''}<span class="hss-on" title="${esc(x.opp)}">${esc(x.opp)}</span></div>
+                    <div class="hss-ms">${tl ? `<img src="${esc(tl)}" alt="" onerror="this.style.display='none'">` : ''}<span>${esc(x.m.tournament || '')}</span><b>${x.h ? L('İç', 'H') : L('Dış', 'A')}</b></div></div>`;
+            };
+            const s = D.s, gd = D.gf - D.gaT;
+            const form = D.form.map(x => `<span class="hss-p ${x.r}">${LT[x.r]}</span>`).join('') || '<span class="hss-none">—</span>';
+            const f = D.fav;
+            const favHtml = f ? `<div class="hss-fav">${f.photo ? `<img src="${esc(f.photo)}" alt="" onerror="this.style.visibility='hidden'">` : '<span class="hss-ph"><i class="fa-solid fa-user"></i></span>'}
+                    <div class="hss-ft"><div class="hss-fn" title="${esc(f.name)}">${esc(f.name)}</div><div class="hss-fs">${f.pos ? `<span class="hss-pos">${esc(f.pos)}</span>` : ''}<b>${f.g}</b> ${L('gol', 'G')} · <b>${f.a}</b> ${L('asist', 'A')}</div></div></div>` : '<div class="hss-none">—</div>';
+            setTimeout(homeStatsFit, 0);
+            return `<div id="hss-root" class="hss">
+                <div class="hss-kpis">
+                    <div class="hss-box"><div class="hss-lab">${L('Sezon', 'Season')} ${LT.W}-${LT.D}-${LT.L}</div><div class="hss-v"><span class="W">${s.w}</span><i>-</i><span class="D">${s.d}</span><i>-</i><span class="L">${s.l}</span></div><div class="hss-sub">${L('İç', 'H')} ${D.home.w}-${D.home.d}-${D.home.l} · ${L('Dış', 'A')} ${D.away.w}-${D.away.d}-${D.away.l}</div>${bar(s)}</div>
+                    <div class="hss-box"><div class="hss-lab">${L('Ort. puan', 'Pts / game')}</div><div class="hss-v ${ppgCls(s)}">${ppg(s)}<small>/3</small></div><div class="hss-sub">${s.n} ${L('maç', 'games')} · %${s.wr}</div></div>
+                    <div class="hss-box"><div class="hss-lab">${L('Gol A:Y', 'Goals F:A')}</div><div class="hss-v">${D.gf}<i>:</i>${D.gaT}</div><div class="hss-sub ${gd > 0 ? 'pos' : gd < 0 ? 'neg' : ''}">${gd > 0 ? '+' : ''}${gd} · ${s.n ? (D.gf / s.n).toFixed(1) : '0'}/${L('maç', 'g')}</div></div>
+                    <div class="hss-box"><div class="hss-lab">${L('Gol yemeden', 'Clean sheets')}</div><div class="hss-v">${D.cs}</div><div class="hss-sub">${s.n ? '%' + Math.round(D.cs / s.n * 100) : '–'} ${L('maçta', 'of games')}</div></div>
+                </div>
+                <div class="hss-box hss-car">
+                    <div class="hss-lab">${L('Teknik direktör kariyeri', 'Managerial career')} <em>${L('tüm sezonlar', 'all seasons')}</em></div>
+                    <div class="hss-cr"><b>${D.all.n}</b> ${L('maç', 'games')}<span class="W">${D.all.w}${LT.W}</span><span class="D">${D.all.d}${LT.D}</span><span class="L">${D.all.l}${LT.L}</span><span class="${ppgCls(D.all)}">${ppg(D.all)} ${L('puan/maç', 'ppg')}</span><span>%${D.all.wr}</span></div>
+                    ${bar(D.all)}
+                </div>
+                <div class="hss-ms3">
+                    ${match(L('En farklı galibiyet', 'Biggest win'), D.bigWin, 'W')}
+                    ${match(L('En farklı mağlubiyet', 'Heaviest defeat'), D.bigLoss, 'L')}
+                    ${match(L('En gollü maç', 'Highest scoring'), D.maxGoals, D.maxGoals ? D.maxGoals.r : '')}
+                </div>
+                <div class="hss-bot">
+                    <div class="hss-box hss-str">
+                        <div><div class="hss-lab">${L('Galibiyet serisi', 'Win streak')}</div><div class="hss-v sm">${D.winStreak}</div></div>
+                        <div><div class="hss-lab">${L('Yenilmezlik', 'Unbeaten run')}</div><div class="hss-v sm">${D.unbeaten}</div></div>
+                        <div><div class="hss-lab">${L('Son 5', 'Last 5')}</div><div class="hss-form">${form}</div></div>
+                    </div>
+                    <div class="hss-box hss-fb" onclick="homeFavPick(event, '${ctx}')" title="${L('Favori oyuncuyu seç', 'Choose favourite player')}"><div class="hss-lab">${f && f.manual ? '<span class="hss-star">★</span>' : ''}${L('Favori oyuncu', 'Favourite player')} ${f && f.manual ? '' : `<em>${L('en çok G+A', 'most G+A')}</em>`}</div>${favHtml}<i class="fa-solid fa-pen hss-fe"></i></div>
+                </div>
+            </div>`;
+        }
+        // Favori oyuncu: kulüpte (A takım + akademi) ve milli takımda ayrı ayrı tek favori
+        function homeFavPick(ev, ctx) {
+            ev.stopPropagation();
+            let pop = document.getElementById('hss-pop');
+            if (pop) { pop.remove(); return; }
+            const box = ev.currentTarget;
+            const D = homeSeasonStatsData(ctx, seasonsList[seasonsList.length - 1]);
+            const en = homeIsEn(), esc = escapeHtml;
+            const gaOf = (n) => { const k = Object.keys(D.ga || {}).find(x => homeSameTeam(x, n)); return k ? D.ga[k] : { g: 0, a: 0 }; };
+            const list = (D.sq || []).filter(p => p && p.name).map(p => ({ p, s: gaOf(p.name) }))
+                .sort((a, b) => (b.s.g + b.s.a) - (a.s.g + a.s.a) || b.s.g - a.s.g || a.p.name.localeCompare(b.p.name));
+            const cur = (D.sq || []).find(p => p && p.favorite);
+            const ph = (p) => (p.photoUrl || p.photo) ? `<img class="hss-pph" src="${esc(p.photoUrl || p.photo)}" alt="" onerror="this.style.visibility='hidden'">` : '<span class="hss-pph"></span>';
+            const item = (id, img, name, sub, on) => `<button type="button" class="hss-pi${on ? ' on' : ''}" data-id="${esc(id)}">${img}<span class="hss-pn">${name}</span><span class="hss-pg">${sub}</span></button>`;
+            pop = document.createElement('div');
+            pop.id = 'hss-pop'; pop.className = 'hss-pop';
+            pop.innerHTML = item('', '<span class="hss-pph auto">★</span>', esc(en ? 'Automatic' : 'Otomatik'), esc(en ? 'most G+A' : 'en çok G+A'), !cur)
+                + list.map(({ p, s }) => item(String(p.id), ph(p), esc(p.name) + (p.pos ? ` <i>${esc(p.pos)}</i>` : ''), `<b>${s.g}</b>G · <b>${s.a}</b>A`, cur === p)).join('');
+            document.body.appendChild(pop);
+            const r = box.getBoundingClientRect(), vw = window.innerWidth, vh = window.innerHeight;
+            const w = Math.min(Math.max(r.width, 250), vw - 16);
+            const up = r.top > vh - r.bottom;
+            const maxH = Math.min(360, (up ? r.top : vh - r.bottom) - 12);
+            pop.style.width = w + 'px';
+            pop.style.maxHeight = maxH + 'px';
+            pop.style.left = Math.max(8, Math.min(r.left, vw - w - 8)) + 'px';
+            if (up) pop.style.bottom = (vh - r.top + 6) + 'px'; else pop.style.top = (r.bottom + 6) + 'px';
+            const sel = pop.querySelector('.hss-pi.on'); if (sel) sel.scrollIntoView({ block: 'nearest' });
+            const close = () => { pop.remove(); document.removeEventListener('mousedown', outside, true); document.removeEventListener('keydown', esc_); window.removeEventListener('resize', close); };
+            const outside = (e) => { if (!pop.contains(e.target)) close(); };
+            const esc_ = (e) => { if (e.key === 'Escape') close(); };
+            setTimeout(() => { document.addEventListener('mousedown', outside, true); document.addEventListener('keydown', esc_); window.addEventListener('resize', close); }, 0);
+            pop.addEventListener('click', (e) => { const b = e.target.closest('.hss-pi'); if (!b) return; close(); homeSetFav(ctx, b.dataset.id); });
+        }
+        function homeSetFav(ctx, id) {
+            const keys = ctx === 'milli' ? ['milli'] : ['astakim', 'akademi'];
+            keys.forEach(k => (squadData[k] || []).forEach(p => { if (p) p.favorite = !!id && String(p.id) === String(id); }));
+            try { saveToLocalStorage(); } catch (e) {}
+            renderHomePanel();
+        }
+        function piToggleFav(id) {
+            const keys = squadContext === 'milli' ? ['milli'] : ['astakim', 'akademi'];
+            let target = null;
+            keys.forEach(k => (squadData[k] || []).forEach(p => { if (p && String(p.id) === String(id)) target = p; }));
+            if (!target) return;
+            const on = !target.favorite;
+            keys.forEach(k => (squadData[k] || []).forEach(p => { if (p) p.favorite = false; }));
+            target.favorite = on;
+            try { saveToLocalStorage(); } catch (e) {}
+            const fb = document.getElementById('pih-fav');
+            if (fb) { fb.classList.toggle('on', on); fb.innerHTML = on ? '★' : '☆'; fb.title = on ? 'Favori oyuncu' : 'Favori yap'; }
+            if (typeof activeMain !== 'undefined' && activeMain === 'anasayfa') renderHomePanel();
+        }
+        // Panele sığdır: içerik taşarsa ölçeği düşür (kaydırma yok)
+        function homeStatsFit() {
+            const el = document.getElementById('hss-root');
+            if (!el) return;
+            const body = el.parentElement;
+            if (!body._hssRO && typeof ResizeObserver !== 'undefined') { body._hssRO = new ResizeObserver(() => homeStatsFit()); body._hssRO.observe(body); }
+            if (!body.clientHeight) return;
+            el.style.zoom = 1;
+            const cs = getComputedStyle(body);
+            const avail = body.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+            el.style.minHeight = avail + 'px';
+            const need = el.scrollHeight;
+            if (need > avail + 1) { const z = Math.max(0.55, avail / need); el.style.zoom = z; el.style.minHeight = (avail / z) + 'px'; }
+            body.style.overflow = 'hidden';
+        }
+
         function renderHomeTournaments() {
             const season = seasonsList[seasonsList.length - 1];
             const tours = season ? ((customTournamentsData && customTournamentsData[season]) || []) : [];
@@ -5113,6 +5438,88 @@ function handleFileUpload(event, type) {
         }
 
         // --- ANA SAYFA: 6 PANEL (masaüstü 3x2 grid, mobil 6 sekme) ---
+        // ===================== ANA SAYFA: İSİM → OYUNCU PROFİLİ, LOGO → RAKİP PROFİLİ =====================
+        function homeOpenTeam(name) {
+            const pref = homeGlobalContext === 'milli' ? 'milli' : 'kulup';
+            for (const ctx of [pref, pref === 'milli' ? 'kulup' : 'milli']) {
+                const cfg = opponentsConfig && opponentsConfig[ctx];
+                if (!cfg) continue;
+                const di = ((cfg.domestic && cfg.domestic.teams) || []).findIndex(t => t && t.name && homeIsUs(t.name, name));
+                if (di >= 0) { openOpponentStatsModal(ctx, 'domestic', null, di); return; }
+                for (let gi = 0; gi < (cfg.foreign || []).length; gi++) {
+                    const fi = ((cfg.foreign[gi] && cfg.foreign[gi].teams) || []).findIndex(t => t && t.name && homeIsUs(t.name, name));
+                    if (fi >= 0) { openOpponentStatsModal(ctx, 'foreign', gi, fi); return; }
+                }
+            }
+            oppH2HShow(pref, { id: null, name: name, country: '' });
+        }
+        function homeLinkify() {
+            if (typeof activeMain === 'undefined' || (activeMain !== 'anasayfa' && activeMain !== 'sezonlar')) return;
+            const onHome = activeMain === 'anasayfa';
+            const root = document.getElementById('content-area');
+            if (!root) return;
+            const norm = (s) => String(s || '').trim().toLocaleLowerCase('tr');
+            // Oyuncular: tam ad ve kısa ad (J. Eastwood) → oyuncu
+            const pl = new Map(), dup = new Set();
+            const addP = (k, v) => { if (!k) return; if (pl.has(k) && pl.get(k).name !== v.name) dup.add(k); else pl.set(k, v); };
+            if (onHome) Object.keys(squadData || {}).forEach(ctx => (squadData[ctx] || []).forEach(p => {
+                if (!p || !p.name) return;
+                addP(norm(p.name), { name: p.name, ctx });
+                addP(norm(homeShortName(p.name)), { name: p.name, ctx });
+            }));
+            dup.forEach(k => pl.delete(k));
+            // Takımlar: rakip sütunları, maçlar ve turnuva tabloları
+            const our = homeOurTeamName();
+            const tm = new Map(), logo = new Map();
+            const addT = (n) => {
+                n = String(n || '').trim();
+                if (!n || n === 'Takım Adı' || n === '-' || homeIsUs(n, our) || tm.has(norm(n))) return;
+                tm.set(norm(n), n);
+                const u = getTeamLogoByName(n);
+                if (u && !logo.has(u)) logo.set(u, n);
+            };
+            ['kulup', 'milli'].forEach(ctx => {
+                const c = opponentsConfig && opponentsConfig[ctx]; if (!c) return;
+                ((c.domestic && c.domestic.teams) || []).forEach(t => t && addT(t.name));
+                (c.foreign || []).forEach(g => ((g && g.teams) || []).forEach(t => t && addT(t.name)));
+            });
+            Object.values((typeof fixtureData !== 'undefined' && fixtureData) || {}).forEach(arr => (arr || []).forEach(f => { if (f) { addT(f.home); addT(f.away); } }));
+            Object.values(customTournamentsData || {}).forEach(arr => (arr || []).forEach(t => {
+                homeTourRows(t).forEach(r => addT(r.name));
+                homeTourKos(t).forEach(k => { addT(k.home); addT(k.away); });
+            }));
+            root.querySelectorAll('img').forEach(img => {
+                if (img.closest('.hl-tm,.hl-pl,[contenteditable],[onclick*="editKnockoutTeam"],.hctx-lg')) return;
+                const n = logo.get(img.getAttribute('src'));
+                if (n) { img.classList.add('hl-tm'); img.dataset.hlTm = n; }
+            });
+            root.querySelectorAll('span,div,td,b,p,a,strong').forEach(el => {
+                if (el.children.length || el.classList.contains('hl-pl') || el.classList.contains('hl-tm') || el.closest('input,select,textarea,button,.hl-pl,.hl-tm,[contenteditable],[onclick*="editKnockoutTeam"],.hss-fb')) return;
+                const txt = (el.textContent || '').trim();
+                if (!txt || txt.length > 40) return;
+                const k = norm(el.getAttribute('title') || txt);
+                const p = pl.get(k) || pl.get(norm(txt));
+                if (p) { el.classList.add('hl-pl'); el.dataset.hlPn = p.name; el.dataset.hlCtx = p.ctx; return; }
+                const t = tm.get(norm(txt));
+                if (t) { el.classList.add('hl-tm'); el.dataset.hlTm = t; }
+            });
+        }
+        if (!window._hlInit) {
+            window._hlInit = 1;
+            document.addEventListener('click', (e) => {
+                if (typeof activeMain === 'undefined' || (activeMain !== 'anasayfa' && activeMain !== 'sezonlar')) return;
+                const el = e.target.closest && e.target.closest('.hl-pl,.hl-tm');
+                if (!el || !el.closest('#content-area')) return;
+                e.preventDefault(); e.stopPropagation();
+                if (el.classList.contains('hl-pl')) homeOpenPlayer(el.dataset.hlPn, el.dataset.hlCtx);
+                else homeOpenTeam(el.dataset.hlTm);
+            }, true);
+            let hlRaf = 0;
+            const hlObs = new MutationObserver(() => { if (hlRaf) return; hlRaf = requestAnimationFrame(() => { hlRaf = 0; try { homeLinkify(); } catch (err) {} }); });
+            const hlStart = () => { const r = document.getElementById('content-area'); if (r) hlObs.observe(r, { childList: true, subtree: true }); else setTimeout(hlStart, 300); };
+            hlStart();
+        }
+
         function renderHomePanel() {
             const season = seasonsList[seasonsList.length - 1];
             const isClub = homeGlobalContext !== 'milli';
@@ -5147,12 +5554,13 @@ function handleFileUpload(event, type) {
                     <!-- Üst Başlık ve Seçici Paneli -->
                     <div class="w-full flex flex-col sm:flex-row sm:justify-between items-center mb-4 px-2 shrink-0 relative gap-3 sm:gap-0">
                         <button onclick="qsOpen()" class="qs-top" title="Ara (Ctrl+K)" aria-label="Ara (Ctrl+K)"><i class="fa-solid fa-magnifying-glass"></i></button>
+                        <button onclick="nbToggle()" class="qs-top nb-top" title="Defter" aria-label="Defter"><i class="fa-solid fa-book"></i></button>
                         <h3 class="hidden sm:block text-2xl font-bold text-white self-start sm:self-auto" title="Ana Sayfa"><i class="fa-solid fa-house text-emerald-500 mr-2"></i>${escapeHtml(season || '')}</h3>
 
                         <!-- Ortalanmış Kulüp / Milli Seçici -->
                         <div class="flex gap-1 bg-slate-900 rounded-full border border-slate-700 p-1 shadow-lg z-10 w-max mx-auto sm:absolute sm:left-1/2 sm:-translate-x-1/2">
-                            <button onclick="setHomeGlobalContext('kulup')" class="px-6 py-1.5 rounded-full text-xs font-bold transition-colors ${homeGlobalContext === 'kulup' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}">Kulüp</button>
-                            <button onclick="setHomeGlobalContext('milli')" class="px-6 py-1.5 rounded-full text-xs font-bold transition-colors ${homeGlobalContext === 'milli' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}">Milli</button>
+                            <button onclick="setHomeGlobalContext('kulup')" class="px-6 py-1.5 rounded-full text-xs font-bold transition-colors ${homeGlobalContext === 'kulup' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}">${homeCtxBtnInner('kulup')}</button>
+                            <button onclick="setHomeGlobalContext('milli')" class="px-6 py-1.5 rounded-full text-xs font-bold transition-colors ${homeGlobalContext === 'milli' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}">${homeCtxBtnInner('milli')}</button>
                         </div>
 
                         <div class="hidden sm:block"></div>
@@ -5166,7 +5574,7 @@ function handleFileUpload(event, type) {
                             ${tabBtn('maclar', 'fa-calendar-days')}
                             ${tabBtn('goller', 'fa-futbol')}
                             ${tabBtn('lig', 'fa-table-list')}
-                            ${tabBtn('turnuva', 'fa-trophy')}
+                            ${tabBtn('turnuva', 'fa-chart-simple')}
                         </div>
 
                         <!-- Panel İçerikleri (Masaüstü: 3x2 Grid, Mobil: Sekmeli) -->
@@ -5215,9 +5623,9 @@ function handleFileUpload(event, type) {
 
                             <!-- 6. Turnuvalar -->
                             <div id="hcontent-turnuva" class="${panelCls} xl:order-6">
-                                ${homeHeaderHtml('<i class="fa-solid fa-trophy text-emerald-400 mr-1.5"></i>', 'Turnuvalar', '')}
+                                ${homeHeaderHtml('<i class="fa-solid fa-chart-simple text-emerald-400 mr-1.5"></i>', 'Sezon Özeti', homeSeasonStatsRight())}
                                 <div class="${bodyCls}">
-                                    ${renderHomeTournaments()}
+                                    ${renderHomeSeasonStats()}
                                 </div>
                             </div>
 
@@ -5369,6 +5777,14 @@ function renderTrophyCabinet() {
         }
 
         // --- KUPALAR TABLOSU ---
+        // Kupalar: şampiyon / ikinci logosuna tıklayınca rakip paneli (kendi takımımızsa hücre düzenleme açılır)
+        function trOpenTeam(name) {
+            name = String(name || '').trim();
+            if (!name || homeIsUs(name, homeOurTeamName())) return false;
+            homeOpenTeam(name);
+            return true;
+        }
+
         function renderTrophiesGrid() {
             setTimeout(trophyFitCols, 0);
             tournamentsList.forEach(t => { if (!t.logoUrl) { const b = tourCatalogLogo(t.name); if (b) t.logoUrl = b; } });
@@ -5451,23 +5867,23 @@ function renderTrophyCabinet() {
                         if (cellData.runnerUp && cellData.runnerUp.logoUrl) {
                             logosHtml += `
                                 <div class="absolute bottom-1 right-1 w-[24%] h-[24%] flex items-center justify-center z-[1] group-hover:z-[10] transition-all">
-                                    <img src="${cellData.runnerUp.logoUrl}" title="İkinci: ${cellData.runnerUp.name}" alt="${cellData.runnerUp.name}" class="w-full h-full object-contain drop-shadow-md">
+                                    <img src="${cellData.runnerUp.logoUrl}" title="İkinci: ${cellData.runnerUp.name}" data-tm="${escapeHtml(cellData.runnerUp.name || '')}" onclick="if (trOpenTeam(this.dataset.tm)) event.stopPropagation()" alt="${cellData.runnerUp.name}" class="w-full h-full object-contain drop-shadow-md">
                                 </div>
                             `;
                         }
                         if (cellData.champion && cellData.champion.logoUrl) {
-                            logosHtml += `<img src="${cellData.champion.logoUrl}" title="Şampiyon: ${cellData.champion.name}" alt="${cellData.champion.name}" class="w-[85%] h-[85%] object-contain drop-shadow-lg transition-transform duration-300 hover:scale-105 z-[2] relative">`;
+                            logosHtml += `<img src="${cellData.champion.logoUrl}" title="Şampiyon: ${cellData.champion.name}" data-tm="${escapeHtml(cellData.champion.name || '')}" onclick="if (trOpenTeam(this.dataset.tm)) event.stopPropagation()" alt="${cellData.champion.name}" class="w-[85%] h-[85%] object-contain drop-shadow-lg transition-transform duration-300 hover:scale-105 z-[2] relative">`;
                         }
                         logosHtml += `</div>`;
                     }
 
                     html += `
                         <td class="p-0 dynamic-bg relative group h-28 w-28 sm:w-24 sm:min-w-[96px] sm:max-w-[96px] sm:h-24 align-middle" 
-                            style="background-color: ${t.colorHex}22; border-color: ${t.colorHex}66;">
+                            style="background-color: ${t.colorHex}22; border-color: ${t.colorHex}66; cursor: pointer;" onclick="openTrophyModal('${season}', '${t.id}', '${jsq(t.name)}')">
                             ${logosHtml}
                             <button onclick="openTrophyModal('${season}', '${t.id}', '${jsq(t.name)}')" 
                                     class="absolute bottom-1 right-1 opacity-0 group-hover:opacity-100 bg-slate-800 hover:bg-emerald-500 text-white border border-slate-600 hover:border-emerald-400 rounded-md w-7 h-7 flex items-center justify-center transition-all duration-200 z-[20]"
-                                    title="${t.name} Takım Ekle">
+                                    title="${t.name} Takım Ekle" style="display:none">
                                 <i class="fa-solid fa-plus text-xs"></i>
                             </button>
                         </td>
@@ -5548,23 +5964,23 @@ function renderTrophyCabinet() {
                         if (cellData.runnerUp && cellData.runnerUp.logoUrl) {
                             logosHtml += `
                                 <div class="absolute bottom-1 right-1 w-[24%] h-[24%] flex items-center justify-center z-[1] group-hover:z-[10] transition-all">
-                                    <img src="${cellData.runnerUp.logoUrl}" title="İkinci: ${cellData.runnerUp.name}" alt="${cellData.runnerUp.name}" class="w-full h-full object-contain drop-shadow-md">
+                                    <img src="${cellData.runnerUp.logoUrl}" title="İkinci: ${cellData.runnerUp.name}" data-tm="${escapeHtml(cellData.runnerUp.name || '')}" onclick="if (trOpenTeam(this.dataset.tm)) event.stopPropagation()" alt="${cellData.runnerUp.name}" class="w-full h-full object-contain drop-shadow-md">
                                 </div>
                             `;
                         }
                         if (cellData.champion && cellData.champion.logoUrl) {
-                            logosHtml += `<img src="${cellData.champion.logoUrl}" title="Şampiyon: ${cellData.champion.name}" alt="${cellData.champion.name}" class="w-[85%] h-[85%] object-contain drop-shadow-lg transition-transform duration-300 hover:scale-105 z-[2] relative">`;
+                            logosHtml += `<img src="${cellData.champion.logoUrl}" title="Şampiyon: ${cellData.champion.name}" data-tm="${escapeHtml(cellData.champion.name || '')}" onclick="if (trOpenTeam(this.dataset.tm)) event.stopPropagation()" alt="${cellData.champion.name}" class="w-[85%] h-[85%] object-contain drop-shadow-lg transition-transform duration-300 hover:scale-105 z-[2] relative">`;
                         }
                         logosHtml += `</div>`;
                     }
 
                     html += `
                         <td class="p-0 dynamic-bg relative group h-28 w-28 sm:w-24 sm:min-w-[96px] sm:max-w-[96px] sm:h-24 align-middle" 
-                            style="background-color: ${t.colorHex}22; border-color: ${t.colorHex}66;">
+                            style="background-color: ${t.colorHex}22; border-color: ${t.colorHex}66; cursor: pointer;" onclick="openTrophyModal('${season}', '${t.id}', '${jsq(t.name)}')">
                             ${logosHtml}
                             <button onclick="openTrophyModal('${season}', '${t.id}', '${jsq(t.name)}')" 
                                     class="absolute bottom-1 right-1 opacity-0 group-hover:opacity-100 bg-slate-800 hover:bg-emerald-500 text-white border border-slate-600 hover:border-emerald-400 rounded-md w-7 h-7 flex items-center justify-center transition-all duration-200 z-[20]"
-                                    title="${t.name} Takım Ekle">
+                                    title="${t.name} Takım Ekle" style="display:none">
                                 <i class="fa-solid fa-plus text-xs"></i>
                             </button>
                         </td>
@@ -5613,8 +6029,8 @@ function renderTrophyCabinet() {
                     seasonsList.forEach(se => {
                         const c = cellOf(se, t);
                         let inner = '';
-                        if (c && c.champion && c.champion.logoUrl) inner += `<img class="tm-champ" src="${c.champion.logoUrl}" title="${q(c.champion.name)}" alt="">`;
-                        if (c && c.runnerUp && c.runnerUp.logoUrl) inner += `<img class="tm-ru" src="${c.runnerUp.logoUrl}" title="${q(c.runnerUp.name)}" alt="">`;
+                        if (c && c.champion && c.champion.logoUrl) inner += `<img class="tm-champ" src="${c.champion.logoUrl}" title="${q(c.champion.name)}" alt="" data-tm="${q(c.champion.name)}" onclick="if (trOpenTeam(this.dataset.tm)) event.stopPropagation()">`;
+                        if (c && c.runnerUp && c.runnerUp.logoUrl) inner += `<img class="tm-ru" src="${c.runnerUp.logoUrl}" title="${q(c.runnerUp.name)}" alt="" data-tm="${q(c.runnerUp.name)}" onclick="if (trOpenTeam(this.dataset.tm)) event.stopPropagation()">`;
                         h += `<td class="tm-c" style="background:${t.colorHex}22;border-color:${t.colorHex}55" onclick="openTrophyModal('${se}','${t.id}','${q(t.name)}')"><div class="tm-cin">${inner}</div></td>`;
                     });
                     h += `<td class="tm-pad"></td></tr>`;
@@ -5630,7 +6046,7 @@ function renderTrophyCabinet() {
                     const has = c && c.champion && c.champion.logoUrl;
                     h += `<div class="tm-card" style="background:linear-gradient(160deg,${t.colorHex}aa,#0b1220);border-color:${t.colorHex}" onclick="openTrophyModal('${trophyMobSeason}','${t.id}','${q(t.name)}')">
                         <div class="tm-top"><span class="tm-mini">${t.logoUrl ? `<img src="${t.logoUrl}" alt="">` : ''}</span><span class="tm-nm">${escapeHtml(t.name)}</span></div>
-                        ${has ? `<img class="tm-big" src="${c.champion.logoUrl}" alt="">` : `<div class="tm-empty">+</div>`}
+                        ${has ? `<img class="tm-big" src="${c.champion.logoUrl}" alt="" data-tm="${q(c.champion.name || '')}" onclick="if (trOpenTeam(this.dataset.tm)) event.stopPropagation()">` : `<div class="tm-empty">+</div>`}
                         <div class="tm-who">${has ? escapeHtml(c.champion.name || '') : '—'}</div>
                         ${c && c.runnerUp && c.runnerUp.logoUrl ? `<img class="tm-ru2" src="${c.runnerUp.logoUrl}" title="${q(c.runnerUp.name)}" alt="">` : ''}
                     </div>`;
@@ -6363,8 +6779,45 @@ function renderTrophyCabinet() {
             
             renderThemeFamilySwatches();
 
+            ['managed', 'national'].forEach(k => { const w = document.getElementById(k + '-url-wrap'); if (w) w.classList.add('hidden'); });
+            mtSync();
+
             const modal = document.getElementById('managed-team-modal');
             modal.classList.remove('hidden'); modal.classList.add('flex');
+        }
+
+        // --- Yönetilen Takımlar paneli: canlı kimlik kartı önizlemesi ---
+        function mtToggleUrl(k) {
+            const w = document.getElementById(k + '-url-wrap');
+            if (!w) return;
+            w.classList.toggle('hidden');
+            if (!w.classList.contains('hidden')) { const i = w.querySelector('input'); if (i) i.focus(); }
+        }
+        function mtSync() {
+            const g = (id) => document.getElementById(id);
+            if (!g('mt-club-name')) return;
+            const v = (id) => ((g(id) && g(id).value) || '').trim();
+            const setLogo = (imgId, url) => {
+                const el = g(imgId); if (!el) return;
+                if (url) {
+                    if (el.getAttribute('src') !== url) { el.style.visibility = ''; el.src = url; }
+                    el.parentElement.classList.remove('empty');
+                } else { el.removeAttribute('src'); el.parentElement.classList.add('empty'); }
+            };
+            const cn = v('managed-name-input'), nn = v('national-name-input');
+            g('mt-club-name').textContent = cn || '—';
+            g('mt-nat-name').textContent = nn || '—';
+            setLogo('mt-club-logo', v('managed-url-input'));
+            setLogo('mt-nat-logo', v('national-url-input'));
+            const f = g('mt-club-flag'), cc = v('managed-country-input');
+            if (f) { const h = (cc && typeof getFlagIcon === 'function') ? getFlagIcon(cc) : ''; f.innerHTML = /^<img/.test(h) ? h : ''; }
+            let meta = 'Kulüp';
+            try {
+                const s = seasonsList[seasonsList.length - 1];
+                const t = cn ? ((customTournamentsData || {})[s] || []).find(t => homeTourRows(t).some(r => homeIsUs(r.name, cn))) : null;
+                if (t) meta = t.type;
+            } catch (e) {}
+            const m = g('mt-club-meta'); if (m) m.textContent = meta;
         }
 
         function closeManagedTeamModal() {
@@ -6596,6 +7049,7 @@ function renderTrophyCabinet() {
 
             activeOppInfo = { context, groupType, groupIndex, index, id: opp.id };
 
+            oppH2HShow(context, opp); return;
             document.getElementById('stat-opp-logo').src = getTeamLogoByName(opp.name);
             document.getElementById('stat-opp-name').innerText = opp.name;
             document.getElementById('stat-opp-country').innerText = opp.country || '-';
@@ -6624,6 +7078,143 @@ function renderTrophyCabinet() {
             document.getElementById('stat-l').innerText = l;
 
             const modal = document.getElementById('opponent-stats-modal');
+            modal.classList.remove('hidden'); modal.classList.add('flex');
+        }
+
+        // ===================== RAKİP PANELİ: REKABET RAPORU =====================
+        function oppH2HShow(context, opp) {
+            const esc = escapeHtml, en = typeof currentLang !== 'undefined' && currentLang === 'en';
+            const LT = en ? { W: 'W', D: 'D', L: 'L' } : { W: 'G', D: 'B', L: 'M' };
+            const num = (v) => (v === '' || v === undefined || v === null || isNaN(parseInt(v))) ? null : parseInt(v);
+            const store = (matchDataStore && matchDataStore[context]) || {};
+            const sl = Array.isArray(seasonsList) ? seasonsList : [];
+            // Rakip sütunu olmayan takımlar (ör. lig tablosundan): maçlar Maçlar panelinden (fixtureData) okunur
+            const fx = (typeof fixtureData !== 'undefined' && fixtureData) || {};
+            const T0 = context === 'milli' ? managedTeams.milli : managedTeams.kulup, our0 = (T0 && T0.name) || '';
+            const seasons = opp.id
+                ? sl.filter(s => store[s]).concat(Object.keys(store).filter(s => !sl.includes(s)))
+                : sl.filter(s => fx[s]).concat(Object.keys(fx).filter(s => !sl.includes(s)));
+            const srcOf = (s) => {
+                if (opp.id) return (store[s] && store[s][opp.id]) || [];
+                return (fx[s] || []).filter(f => f && ((homeIsUs(f.home, our0) && homeIsUs(f.away, opp.name)) || (homeIsUs(f.away, our0) && homeIsUs(f.home, opp.name)))).map(f => {
+                    const h = homeIsUs(f.home, our0);
+                    return { teamScore: h ? f.homeScore : f.awayScore, oppScore: h ? f.awayScore : f.homeScore, location: f.ground === 'neutral' ? 'N' : (h ? 'H' : 'A'), tournament: f.tournament, events: f.events };
+                });
+            };
+            const ms = [];
+            seasons.forEach(s => srcOf(s).forEach(m => {
+                if (!m) return;
+                const ts = num(m.teamScore), os = num(m.oppScore);
+                let r = m.result;
+                if (!r && ts !== null && os !== null) r = ts > os ? 'W' : ts < os ? 'L' : 'D';
+                if (r !== 'W' && r !== 'D' && r !== 'L') return;
+                ms.push({ s, m, r, ts, os });
+            }));
+            const n = ms.length, cnt = (r) => ms.filter(x => x.r === r).length;
+            const w = cnt('W'), d = cnt('D'), l = cnt('L');
+            const wr = n ? Math.round(w / n * 100) : 0;
+            const sc = ms.filter(x => x.ts !== null && x.os !== null);
+            const gf = sc.reduce((a, x) => a + x.ts, 0), ga = sc.reduce((a, x) => a + x.os, 0), gd = gf - ga;
+
+            const T = context === 'milli' ? managedTeams.milli : managedTeams.kulup;
+            const ourName = (T && T.name) || '';
+            const ourLogo = (T && (T.logoUrl || T.logo)) || (ourName ? getTeamLogoByName(ourName) : '');
+            const oppLogo = getTeamLogoByName(opp.name) || (opp.logoUrl && !/ui-avatars/.test(opp.logoUrl) ? opp.logoUrl : '');
+            const flag = (opp.country && typeof getFlagIcon === 'function') ? getFlagIcon(opp.country) : '';
+            // Rakibin ligi: en yeni sezondan geriye, tablosunda rakip olan (önce ulusal lig) turnuva
+            const leagueOf = (nm) => {
+                try {
+                    for (let i = sl.length - 1; i >= 0; i--) {
+                        const tours = ((customTournamentsData || {})[sl[i]] || []).filter(t => homeTourRows(t).some(r => homeIsUs(r.name, nm)));
+                        const lg = tours.find(t => { const e = tourFind(t.type); return e && e.g === 'Ulusal Ligler'; }) || tours[0];
+                        if (lg) return lg.type;
+                    }
+                } catch (e) {}
+                return '';
+            };
+            const league = leagueOf(opp.name), ourLeague = ourName ? leagueOf(ourName) : '';
+            const crest = (u) => u ? `<img src="${esc(u)}" alt="" onerror="this.style.visibility='hidden'">` : '';
+            const locTxt = (loc) => loc === 'A' ? 'Deplasman' : loc === 'N' ? 'Tarafsız' : 'İç Saha';
+            const pct = (x) => n ? (x / n * 100).toFixed(2) : 0;
+
+            // Karşılaşmalar (yeniden eskiye)
+            const recent = ms.slice().reverse();
+            const rows = recent.map(x => {
+                const lg = x.m.tournament ? tourLogoOf(x.m.tournament) : '';
+                const score = (x.ts !== null && x.os !== null) ? `${x.ts}-${x.os}` : LT[x.r];
+                return `<div class="h2h-mr"><span class="h2h-tl">${lg ? `<img src="${esc(lg)}" alt="" onerror="this.style.visibility='hidden'">` : ''}</span><span class="h2h-se">${esc(x.s)}</span><span class="h2h-tn"><span>${esc(x.m.tournament || '-')}</span> · <b>${locTxt(x.m.location)}</b></span><span class="h2h-sc ${x.r}">${esc(score)}</span></div>`;
+            }).join('');
+            const form = recent.slice(0, 5).map(x => `<span class="h2h-p ${x.r}">${LT[x.r]}</span>`).join('');
+
+            // İç saha / deplasman
+            const split = ['H', 'A', 'N'].map(loc => {
+                const g = ms.filter(x => (x.m.location || 'H') === loc);
+                if (!g.length) return loc === 'N' ? '' : `<div class="h2h-sp"><span>${locTxt(loc)}</span><div class="h2h-bar"></div><b>0-0-0</b></div>`;
+                const a = g.filter(x => x.r === 'W').length, b = g.filter(x => x.r === 'D').length, c = g.filter(x => x.r === 'L').length;
+                return `<div class="h2h-sp"><span>${locTxt(loc)}</span><div class="h2h-bar"><i class="W" style="width:${a / g.length * 100}%"></i><i class="D" style="width:${b / g.length * 100}%"></i><i class="L" style="width:${c / g.length * 100}%"></i></div><b>${a}-${b}-${c}</b></div>`;
+            }).join('');
+
+            // Golcüler
+            const goals = {};
+            ms.forEach(x => (x.m.events || []).forEach(ev => {
+                if (!ev || ev.type !== 'US') return;
+                const nm = String(ev.scorer || '').trim();
+                if (nm) goals[nm] = (goals[nm] || 0) + 1;
+            }));
+            const top = Object.entries(goals).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 3);
+            const topHtml = top.length ? top.map(([nm, g], i) => `<div class="h2h-ts"><span class="h2h-rk${i === 0 ? ' f' : ''}">${i + 1}</span><span class="h2h-pn" title="${esc(nm)}">${esc(nm)}</span><b>${g} ⚽</b></div>`).join('') : '<div class="h2h-none">Gol kaydı yok</div>';
+
+            // Rakibin bize en çok gol atan oyuncuları
+            const oGoals = {};
+            ms.forEach(x => (x.m.events || []).forEach(ev => {
+                if (!ev || ev.type !== 'OPP') return;
+                const nm = String(ev.scorer || '').trim();
+                if (nm) oGoals[nm] = (oGoals[nm] || 0) + 1;
+            }));
+            const oTop = Object.entries(oGoals).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 3);
+            const oTopHtml = oTop.length ? oTop.map(([nm, g], i) => `<div class="h2h-ts"><span class="h2h-rk${i === 0 ? ' o' : ''}">${i + 1}</span><span class="h2h-pn" title="${esc(nm)}">${esc(nm)}</span><b>${g} ⚽</b></div>`).join('') : '<div class="h2h-none">Gol kaydı yok</div>';
+
+            // En farklı galibiyet / en ağır yenilgi
+            const best = sc.filter(x => x.ts > x.os).sort((a, b) => (b.ts - b.os) - (a.ts - a.os) || b.ts - a.ts)[0];
+            const worst = sc.filter(x => x.ts < x.os).sort((a, b) => (b.os - b.ts) - (a.os - a.ts) || b.os - a.os)[0];
+            const ext = (x, cls) => x ? `<div class="h2h-ev ${cls}">${x.ts}-${x.os} <small>${esc(x.m.tournament ? (tourFind(x.m.tournament) || {}).s || x.m.tournament : '')} ${esc(x.s)}</small></div>` : '<div class="h2h-ev">—</div>';
+
+            const body = n ? `
+                <div class="h2h-col">
+                    <div class="h2h-kpis">
+                        <div class="h2h-box"><div class="h2h-lab">Oynanan</div><div class="h2h-kv">${n}</div></div>
+                        <div class="h2h-box"><div class="h2h-lab">Galibiyet</div><div class="h2h-kv ${wr >= 70 ? 'pos' : wr >= 50 ? 'acc' : 'neg'}">%${wr}</div></div>
+                        <div class="h2h-box"><div class="h2h-lab">${en ? 'G. F/A' : 'G. A/Y'}</div><div class="h2h-kv">${gf}<i>:</i>${ga}</div></div>
+                        <div class="h2h-box"><div class="h2h-lab">${en ? 'G. Diff.' : 'Averaj'}</div><div class="h2h-kv ${gd > 0 ? 'pos' : gd < 0 ? 'neg' : ''}">${gd > 0 ? '+' : ''}${gd}</div></div>
+                    </div>
+                    <div class="h2h-box h2h-meet">
+                        <div class="h2h-mh"><span class="h2h-lab">Son karşılaşmalar</span><span class="h2h-form">${form}</span></div>
+                        <div class="h2h-list">${rows}</div>
+                    </div>
+                </div>
+                <div class="h2h-col">
+                    <div class="h2h-box"><div class="h2h-lab mb">İç Saha / Deplasman</div>${split}</div>
+                    <div class="h2h-box"><div class="h2h-lab mb">Bu rakibe en çok gol atanlar</div>${topHtml}</div>
+                    <div class="h2h-box"><div class="h2h-lab mb">Bize en çok gol atanlar</div>${oTopHtml}</div>
+                    <div class="h2h-box h2h-ext"><div><div class="h2h-lab">En farklı galibiyet</div>${ext(best, 'pos')}</div><div><div class="h2h-lab">En ağır yenilgi</div>${ext(worst, 'neg')}</div></div>
+                </div>` : `<div class="h2h-empty">Henüz bu rakiple oynanmış maç yok.</div>`;
+
+            const modal = document.getElementById('opponent-stats-modal');
+            modal.innerHTML = `<div class="h2h-modal" role="dialog" aria-modal="true">
+                <button type="button" class="h2h-x" onclick="closeOpponentStatsModal()" title="Kapat" aria-label="Kapat"><i class="fa-solid fa-xmark"></i></button>
+                <div class="h2h-head">
+                    <div class="h2h-hg">
+                        <div class="h2h-team"><span class="h2h-crest">${crest(ourLogo)}</span><div class="h2h-tt"><div class="h2h-nm" title="${esc(ourName)}">${esc(ourName || '-')}</div><div class="h2h-sub">${ourLeague ? esc(ourLeague) : 'Senin takımın'}</div></div></div>
+                        <div class="h2h-rec"><div class="h2h-big"><span class="W">${w}</span><i>·</i><span class="D">${d}</span><i>·</i><span class="L">${l}</span></div><div class="h2h-lab">${LT.W} · ${LT.D} · ${LT.L}</div></div>
+                        <div class="h2h-team r"><div class="h2h-tt"><div class="h2h-nm" title="${esc(opp.name)}">${esc(opp.name)}</div><div class="h2h-sub">${flag}<span>${esc(opp.country || '')}</span>${league ? `<span class="h2h-dot">·</span><span>${esc(league)}</span>` : ''}</div></div><span class="h2h-crest">${crest(oppLogo)}</span></div>
+                    </div>
+                    <div class="h2h-bar big"><i class="W" style="width:${pct(w)}%"></i><i class="D" style="width:${pct(d)}%"></i><i class="L" style="width:${pct(l)}%"></i></div>
+                </div>
+                <div class="h2h-body">${body}
+                    ${opp.id ? `<div class="h2h-btns"><button type="button" onclick="editOpponentFromStats()" class="h2h-b1"><i class="fa-solid fa-pen"></i> Rakibi Düzenle</button><button type="button" onclick="deleteOpponentFromStats()" class="h2h-b2"><i class="fa-solid fa-trash"></i> Sütunu Sil</button></div>` : ''}
+                </div>
+            </div>`;
+            if (!modal._h2hBg) { modal._h2hBg = 1; modal.addEventListener('mousedown', e => { if (e.target === modal) closeOpponentStatsModal(); }); }
             modal.classList.remove('hidden'); modal.classList.add('flex');
         }
 
@@ -8109,6 +8700,12 @@ function piFillHero(p, cur, pts, seasonCount) {
     const col = typeof mbOvrColor === 'function' ? mbOvrColor(cur.ovr) : '#facc15';
     const dir = d > 0 ? 'up' : d < 0 ? 'down' : 'flat';
     const dTxt = d > 0 ? `+${d}` : d < 0 ? `−${Math.abs(d)}` : '';
+    let fb = document.getElementById('pih-fav');
+    if (!fb) { fb = document.createElement('button'); fb.id = 'pih-fav'; fb.type = 'button'; fb.className = 'pih-fav'; hero.appendChild(fb); }
+    fb.onclick = () => piToggleFav(p.id);
+    fb.classList.toggle('on', !!p.favorite);
+    fb.title = p.favorite ? 'Favori oyuncu' : 'Favori yap';
+    fb.innerHTML = p.favorite ? '★' : '☆';
     const sh = document.getElementById('pi-shield');
     if (sh) {
         sh.className = 'pih-sh ' + dir;
@@ -11586,7 +12183,8 @@ function formatShortPlayerName(name) {
 
         function updateEuroLeague(season, league, index, field, element) {
             if (!euroLeaguesData[season]) euroLeaguesData[season] = {};
-            if (!euroLeaguesData[season][league]) euroLeaguesData[season][league] = [{},{},{},{}];
+            if (!euroLeaguesData[season][league]) euroLeaguesData[season][league] = [{},{},{},{},{},{}];
+            while (euroLeaguesData[season][league].length < 6) euroLeaguesData[season][league].push({});
             euroLeaguesData[season][league][index][field] = element.innerText.trim();
             if (field === 'name') { // satırdaki takım logosunu anında güncelle
                 const slot = element.parentElement && element.parentElement.querySelector('.eu-tlogo');
@@ -11714,7 +12312,7 @@ function formatShortPlayerName(name) {
                 if (!matchedLeague) { unmatchedLeagues.add(rawLeague); return; }
 
                 if (!touchedLeagues.has(matchedLeague.name)) {
-                    seasonData[matchedLeague.name] = [{}, {}, {}, {}];
+                    seasonData[matchedLeague.name] = [{}, {}, {}, {}, {}, {}];
                     touchedLeagues.add(matchedLeague.name);
                 }
 
@@ -13101,11 +13699,11 @@ function renderFixturePanel() {
                                 
                             </div>
                         </div>
-                        <div class="p-2 sm:p-4 overflow-y-auto custom-scrollbar h-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2 gap-1.5 sm:gap-4 content-start">
+                        <div class="eu-grid p-2 sm:p-4 overflow-y-auto custom-scrollbar h-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2 gap-1.5 sm:gap-4 content-start">
                             
                             ${euroSlots(activeFixtureSeason).map((lgName, euroSlotIdx) => {
                                 const league = euroLeagueInfo(lgName);
-                                const lData = (euroLeaguesData[activeFixtureSeason] && euroLeaguesData[activeFixtureSeason][league.name]) ? euroLeaguesData[activeFixtureSeason][league.name] : [{},{},{},{}];
+                                const lData = (euroLeaguesData[activeFixtureSeason] && euroLeaguesData[activeFixtureSeason][league.name]) ? euroLeaguesData[activeFixtureSeason][league.name].concat([{},{},{},{},{},{}]).slice(0, 6) : [{},{},{},{},{},{}];
                                 const euChampName = (lData[0] && lData[0].name) ? String(lData[0].name) : '';
                                 const euChampLogo = euChampName && typeof getTeamLogoByName === 'function' ? getTeamLogoByName(euChampName) : '';
                                 
@@ -13115,11 +13713,11 @@ function renderFixturePanel() {
                                         ${euroLogoHtml(league)}<select class="el-sel" onclick="event.stopPropagation()" onchange="setEuroSlot('${activeFixtureSeason}', ${euroSlotIdx}, this.value)" title="Ligi değiştir">${euroLeagueOptions(league.name)}</select><span class="euro-badge ml-auto items-center gap-1.5 shrink-0 min-w-0">${euChampLogo ? `<i class="fa-solid fa-trophy text-yellow-500 text-[10px] drop-shadow-[0_0_4px_rgba(234,179,8,0.7)]"></i><img src="${euChampLogo}" alt="" title="${escapeHtml(euChampName)}" class="w-5 h-5 object-contain" onerror="this.style.display='none'">` : ''}</span><i class="euro-chev fa-solid fa-chevron-down text-[10px] text-slate-500 shrink-0 ${euChampLogo ? 'ml-1.5' : 'ml-auto'}"></i>
                                     </h4>
                                     <div class="euro-body space-y-1">
-                                        ${[0,1,2,3].map(i => {
+                                        ${[0,1,2,3,4,5].map(i => {
                                             const tName = lData[i].name || 'Takım Adı';
                                             const tPts = String(lData[i].pts || '0').replace(/\s*P$/i, '');
                                             const tLogo = lData[i].name && typeof getTeamLogoByName === 'function' ? getTeamLogoByName(lData[i].name) : '';
-                                            const colors = ['emerald', 'blue', 'blue', 'orange'];
+                                            const colors = ['emerald', 'blue', 'blue', 'orange', 'slate', 'slate'];
                                             return `
                                             <div class="flex justify-between items-center text-xs px-1.5 py-0.5 sm:p-1.5 hover:bg-slate-800 rounded transition-colors border-l-2 border-${colors[i]}-500">
                                                 <div class="flex gap-2 items-center w-full min-w-0 pr-2">

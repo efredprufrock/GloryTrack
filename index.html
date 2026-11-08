@@ -176,71 +176,71 @@
 
     <!-- Modal: Yönetilen Takım Düzenleme -->
     <div id="managed-team-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[100] fade-in backdrop-blur-sm">
-        <div class="bg-slate-800 p-6 rounded-xl border border-slate-600 w-[95%] max-w-lg shadow-2xl relative max-h-[90vh] overflow-y-auto hide-scrollbar">
-            <button onclick="closeManagedTeamModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
-            <h3 class="text-xl font-bold mb-4 text-white">Yönetilen Takımları Düzenle</h3>
-            
-            <!-- Kulüp Takımı Bölümü -->
-            <div class="bg-slate-900/50 p-4 rounded-lg border border-slate-700 mb-4">
-                <h4 class="text-sm font-bold text-emerald-400 mb-3"><i class="fa-solid fa-shield-halved mr-2"></i>Kulüp Takımı</h4>
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-left text-sm font-medium text-slate-300 mb-1">Takım Adı</label>
-                        <div class="flex gap-2 mb-2">
-                            <input type="text" id="managed-name-input" class="w-full bg-slate-950 border border-slate-600 rounded-lg px-4 py-2 text-white" list="global-team-datalist" onchange="autoFillTeamLogo(this, 'managed-url-input')">
-                            <button onclick="searchTeamLogos('managed')" class="bg-blue-600 hover:bg-blue-500 px-3 rounded text-white whitespace-nowrap" title="Logoları Ara"><i class="fa-solid fa-search"></i></button>
-                            <a href="https://football-logos.cc/" target="_blank" class="bg-indigo-600 hover:bg-indigo-500 flex items-center justify-center px-3 rounded text-white transition-colors" title="Football-Logos'ta Ara"><i class="fa-solid fa-globe"></i></a>
-                        </div>
-                        <div id="managed-logo-results" class="flex gap-2 overflow-x-auto hidden py-2 mb-2 hide-scrollbar bg-slate-950/50 rounded px-2 items-center border border-slate-700/50"></div>
+        <div class="mt-modal" onclick="setTimeout(mtSync, 0)">
+            <button type="button" onclick="closeManagedTeamModal()" class="mt-x" title="Kapat" aria-label="Kapat"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="mt-h">Yönetilen Takımlar</h3>
+            <p class="mt-sub">Kulübün ve milli takımın kimliği · tema rengi</p>
+
+            <div class="mt-grid">
+                <!-- Kulüp -->
+                <div class="mt-card club">
+                    <div class="mt-top">
+                        <span class="mt-lab"><i class="fa-solid fa-circle"></i> Kulüp</span>
+                        <label class="mt-cc" title="Bulunduğu Ülke Kodu (Örn: TUR, ENG)"><span id="mt-club-flag" class="mt-flag"></span><input type="text" id="managed-country-input" maxlength="12" placeholder="TUR" oninput="mtSync()"></label>
                     </div>
-                    <div>
-                        <label class="block text-left text-sm font-medium text-slate-300 mb-1">Logo URL / Dosya</label>
-                        <div class="flex gap-2">
-                            <input type="text" id="managed-url-input" class="flex-1 bg-slate-950 border border-slate-600 rounded-lg px-4 py-2 text-white text-sm">
-                            <input type="file" id="managed-file-input" class="hidden" accept="image/*" onchange="handleFileUpload(event, 'managed')">
-                            <button type="button" id="managed-upload-btn" onclick="document.getElementById('managed-file-input').click()" class="bg-slate-700 px-4 py-2 rounded-lg text-slate-300"><i class="fa-solid fa-upload"></i></button>
-                        </div>
+                    <div class="mt-id">
+                        <div class="mt-crest"><img id="mt-club-logo" alt="" onerror="this.style.visibility='hidden'"></div>
+                        <div class="mt-name" id="mt-club-name">—</div>
+                        <div class="mt-meta" id="mt-club-meta">Kulüp</div>
                     </div>
-                    <div>
-                        <label class="block text-left text-sm font-medium text-slate-300 mb-1">Bulunduğu Ülke Kodu (Örn: TUR, ENG)</label>
-                        <input type="text" id="managed-country-input" class="w-full bg-slate-950 border border-slate-600 rounded-lg px-4 py-2 text-white uppercase" placeholder="TUR">
+                    <div class="mt-in">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="managed-name-input" placeholder="Takım adı" list="global-team-datalist" oninput="mtSync()" onchange="autoFillTeamLogo(this, 'managed-url-input'); mtSync()">
+                        <button type="button" onclick="searchTeamLogos('managed')" class="mt-find" title="Logoları Ara">Logo ara</button>
                     </div>
+                    <div id="managed-logo-results" class="flex gap-2 overflow-x-auto hidden py-2 mt-2 hide-scrollbar bg-slate-950/50 rounded px-2 items-center border border-slate-700/50"></div>
+                    <div class="mt-links">
+                        <button type="button" class="mt-link" onclick="mtToggleUrl('managed')"><i class="fa-solid fa-link"></i> Logo bağlantısı</button>
+                        <a href="https://football-logos.cc/" target="_blank" rel="noopener" class="mt-link alt" title="Football-Logos'ta Ara">football-logos.cc <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+                    </div>
+                    <div class="mt-url hidden" id="managed-url-wrap"><input type="text" id="managed-url-input" placeholder="https://…" oninput="mtSync()"></div>
+                    <input type="file" id="managed-file-input" class="hidden" accept="image/*"><span id="managed-upload-btn" class="hidden text-slate-300"></span>
+                </div>
+
+                <!-- Milli takım -->
+                <div class="mt-card nat">
+                    <div class="mt-top">
+                        <span class="mt-lab"><i class="fa-solid fa-circle"></i> Milli Takım</span>
+                        <span class="mt-opt">Opsiyonel</span>
+                    </div>
+                    <div class="mt-id">
+                        <div class="mt-crest"><img id="mt-nat-logo" alt="" onerror="this.style.visibility='hidden'"></div>
+                        <div class="mt-name" id="mt-nat-name">—</div>
+                        <div class="mt-meta">Milli takım</div>
+                    </div>
+                    <div class="mt-in">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="national-name-input" placeholder="Örn: Türkiye" list="global-team-datalist" oninput="mtSync()" onchange="autoFillTeamLogo(this, 'national-url-input'); mtSync()">
+                        <button type="button" onclick="searchTeamLogos('national')" class="mt-find" title="Logoları Ara">Logo ara</button>
+                    </div>
+                    <div id="national-logo-results" class="flex gap-2 overflow-x-auto hidden py-2 mt-2 hide-scrollbar bg-slate-950/50 rounded px-2 items-center border border-slate-700/50"></div>
+                    <div class="mt-links">
+                        <button type="button" class="mt-link" onclick="mtToggleUrl('national')"><i class="fa-solid fa-link"></i> Logo bağlantısı</button>
+                    </div>
+                    <div class="mt-url hidden" id="national-url-wrap"><input type="text" id="national-url-input" placeholder="https://…" oninput="mtSync()"></div>
+                    <input type="file" id="national-file-input" class="hidden" accept="image/*"><span id="national-upload-btn" class="hidden text-slate-300"></span>
                 </div>
             </div>
 
-            <!-- Milli Takım Bölümü -->
-            <div class="bg-slate-900/50 p-4 rounded-lg border border-slate-700 mb-6">
-                <h4 class="text-sm font-bold text-red-400 mb-3"><i class="fa-solid fa-flag mr-2"></i>Milli Takım (Opsiyonel)</h4>
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-left text-sm font-medium text-slate-300 mb-1">Ülke / Milli Takım Adı</label>
-                        <div class="flex gap-2 mb-2">
-                            <input type="text" id="national-name-input" class="w-full bg-slate-950 border border-slate-600 rounded-lg px-4 py-2 text-white" placeholder="Örn: Türkiye" list="global-team-datalist" onchange="autoFillTeamLogo(this, 'national-url-input')">
-                            <button onclick="searchTeamLogos('national')" class="bg-blue-600 hover:bg-blue-500 px-3 rounded text-white whitespace-nowrap" title="Logoları Ara"><i class="fa-solid fa-search"></i></button>
-                        </div>
-                        <div id="national-logo-results" class="flex gap-2 overflow-x-auto hidden py-2 mb-2 hide-scrollbar bg-slate-950/50 rounded px-2 items-center border border-slate-700/50"></div>
-                    </div>
-                    <div>
-                        <label class="block text-left text-sm font-medium text-slate-300 mb-1">Logo URL / Dosya</label>
-                        <div class="flex gap-2">
-                            <input type="text" id="national-url-input" class="flex-1 bg-slate-950 border border-slate-600 rounded-lg px-4 py-2 text-white text-sm">
-                            <input type="file" id="national-file-input" class="hidden" accept="image/*" onchange="handleFileUpload(event, 'national')">
-                            <button type="button" id="national-upload-btn" onclick="document.getElementById('national-file-input').click()" class="bg-slate-700 px-4 py-2 rounded-lg text-slate-300"><i class="fa-solid fa-upload"></i></button>
-                        </div>
-                    </div>
-                </div>
+            <!-- Tema rengi -->
+            <div class="mt-theme">
+                <div class="mt-th"><div class="mt-lab plain">Tema Rengi</div><div class="mt-hint">Koyu / açık tema sol menüden</div></div>
+                <div id="theme-family-swatches" class="mt-sw"></div>
             </div>
 
-            <!-- Tema Rengi Seçimi -->
-            <div class="bg-slate-900/50 p-4 rounded-lg border border-slate-700 mb-6">
-                <h4 class="text-sm font-bold text-purple-400 mb-3"><i class="fa-solid fa-palette mr-2"></i>Tema Rengi</h4>
-                <p class="text-xs text-slate-500 mb-3">Her renk için hem koyu hem açık tema mevcuttur. Sol menüdeki gündüz/gece butonuyla ikisi arasında geçiş yapabilirsiniz.</p>
-                <div id="theme-family-swatches" class="grid grid-cols-4 sm:grid-cols-7 gap-2"></div>
-            </div>
-
-            <div class="flex justify-end gap-3">
-                <button onclick="closeManagedTeamModal()" class="px-5 py-2.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-medium transition-colors">İptal</button>
-                <button onclick="saveManagedTeam()" class="px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold transition-colors">Kaydet</button>
+            <div class="mt-foot">
+                <button type="button" onclick="closeManagedTeamModal()" class="mt-btn">İptal</button>
+                <button type="button" onclick="saveManagedTeam()" class="mt-btn pri bg-emerald-600">Kaydet</button>
             </div>
         </div>
     </div>
@@ -1253,7 +1253,7 @@
             <p class="text-xs text-blue-400 font-bold mb-4" id="el-bulk-subtitle"></p>
 
             <div class="mb-4 bg-slate-900 p-4 rounded-lg border border-slate-700">
-                <p class="text-sm text-slate-300 mb-2">Her satıra bir takım gelecek şekilde, aşağıdaki sıraya göre virgülle ayırarak yapıştırın. Bir ligin ilk 4 satırı sırasıyla 1.-4. sıraya yerleşir.</p>
+                <p class="text-sm text-slate-300 mb-2">Her satıra bir takım gelecek şekilde, aşağıdaki sıraya göre virgülle ayırarak yapıştırın. Bir ligin ilk 6 satırı sırasıyla 1.-6. sıraya yerleşir.</p>
                 <p class="text-[11px] text-slate-400 font-mono bg-slate-950 p-2 rounded border border-slate-800">
                     Lig Adı, Takım Adı, Puan<br>
                     Örnek: Premier League, Liverpool, 45 P<br>
