@@ -1336,6 +1336,7 @@ function escapeHtml(str) {
         let euroLeaguesData = {};
         let euroSlotsData = {};
         let pyramidData = {};
+        let autoMedia = { teams: {}, tours: {}, tried: {} }; // İnternetten otomatik bulunan logolar / fotoğraflar
         let notebookData = [];          // Defter notları (sezonlardan bağımsız, kariyerle birlikte kaydedilir)
         let competitionLogos = {};
         let customTournamentsData = {};
@@ -2022,7 +2023,7 @@ function getFlagIcon(countryCode) {
             return {
                 seasonsList, trophyData, tournamentsList, managedTeams, opponentsConfig,
                 matchDataStore, playerRoles, squadData, leagueHistoryData, transferData, fixtureData, isSetupComplete,
-                euroLeaguesData, euroSlotsData, customTournamentsData, competitionLogos, formations, customCatalog, pyramidData, notebookData
+                euroLeaguesData, euroSlotsData, customTournamentsData, competitionLogos, formations, customCatalog, pyramidData, notebookData, autoMedia
             };
         }
 
@@ -2049,6 +2050,7 @@ function getFlagIcon(countryCode) {
             }
             // Her kayıtta buluta da (debounce'lu) yaz - PIN bağlıysa
             queueCloudSave();
+            if (typeof amSchedule === 'function' && !amSaving) amSchedule(5000); // yeni eklenenlerin eksik görsellerini ara
         }
 
         function applyLoadedData(data) {
@@ -2071,6 +2073,7 @@ function getFlagIcon(countryCode) {
             if (data.euroSlotsData) euroSlotsData = data.euroSlotsData;
             pyramidData = (data.pyramidData && typeof data.pyramidData === 'object') ? data.pyramidData : {};
             notebookData = Array.isArray(data.notebookData) ? data.notebookData : [];
+            autoMedia = (data.autoMedia && typeof data.autoMedia === 'object') ? data.autoMedia : { teams: {}, tours: {}, tried: {} };
             if (typeof nbRender === 'function') nbRender();
             if (data.customTournamentsData) customTournamentsData = data.customTournamentsData;
             if (data.isSetupComplete !== undefined) isSetupComplete = data.isSetupComplete;
@@ -3029,7 +3032,7 @@ function handleFileUpload(event, type) {
             alert(n > 0 ? `${n} fotoğraf küçültüldü.\n${(before / 1024).toFixed(0)} KB → ${(after / 1024).toFixed(0)} KB (${((before - after) / 1024).toFixed(0)} KB kazanç)` : 'Küçültülecek fotoğraf bulunamadı.');
         }
 
-        async function searchPlayerPhotos() {
+        async function searchPlayerPhotosOld() {
             const nameInput = document.getElementById('pi-name').value.trim();
             const resultsContainer = document.getElementById('pi-photo-results');
             if (!nameInput) { alert('Lütfen arama yapmak için oyuncunun adını girin!'); return; }
@@ -8730,7 +8733,349 @@ function savePlayerBulkEdit() {
         }
 
         // Automatically fetch and assign a player photo by name if URL is empty
+// ===================== FUTBOLCU FOTOĞRAFI: NİTELİKLİ İNTERNET ARAMASI =====================
+// Kaynaklar: TheSportsDB (şeffaf kesik / render / fotoğraf) + Wikipedia (en, tr) + Wikimedia Commons.
+// Sonuçlar; ad benzerliği, oyuncunun takımı ve fotoğraf türüne göre puanlanır, en iyisi başa gelir.
+const psCache = {};
+function psNorm(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ı/g, 'i').replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim(); }
+function psNameScore(q, n) {
+    const a = psNorm(q).split(' ').filter(Boolean), b = psNorm(n);
+    if (!a.length || !b) return 0;
+    if (psNorm(q) === b) return 6;
+    const hit = a.filter(w => (' ' + b + ' ').includes(' ' + w + ' ')).length;
+    return hit === a.length ? 4 : hit ? 2 * hit / a.length : 0;
+}
+function psTeamHint() {
+    try {
+        const ctx = (typeof squadContext !== 'undefined' && squadContext === 'milli') ? 'milli' : 'kulup';
+        return { team: (managedTeams[ctx] && managedTeams[ctx].name) || '', ctx };
+    } catch (e) { return { team: '', ctx: 'kulup' }; }
+}
+// ===================== FUTBOLCU YÜZ PNG'LERİ (şeffaf arka planlı yüz kartları) =====================
+// Wikidata'dan oyuncunun ESPN, Sofascore ve Opta (Premier League) kimlikleri bulunur → bu sitelerin şeffaf yüz PNG'leri.
+// Ek olarak TheSportsDB "cutout" (şeffaf kesik) görselleri. Normal fotoğraflar artık sonuçlara girmez.
+async function psFetch(q, hintTeam) {
+    Object.assign(PS_SRC, { pl: ['Premier League', 'Premier League'], espn: ['ESPN', 'ESPN'], sofa: ['Sofascore', 'Sofascore'] });
+    const hint = hintTeam !== undefined ? { team: hintTeam } : psTeamHint();
+    const key = 'face|' + psNorm(q) + '|' + psNorm(hint.team);
+    if (psCache[key]) return psCache[key];
+    const getJ = async (u) => { try { const r = await fetch(u); return r.ok ? await r.json() : null; } catch (e) { return null; } };
+    const WD = 'https://www.wikidata.org/w/api.php?format=json&origin=*&';
+    const out = [], seen = new Set();
+    const add = (o) => { if (!o.url || seen.has(o.url)) return; seen.add(o.url); out.push(o); };
+    const yr = (d) => (d && /^\d{4}/.test(d)) ? d.slice(0, 4) : '';
+    const claim = (e, p) => (((e.claims || {})[p]) || []).map(c => c.mainsnak && c.mainsnak.datavalue && c.mainsnak.datavalue.value).filter(Boolean);
+    // 1) Wikidata: oyuncu adayları + kulüp (takım eşleşmesi için)
+    const [sr, tr, s1, s2] = await Promise.all([
+        getJ(WD + `action=wbsearchentities&type=item&limit=8&language=en&search=${encodeURIComponent(q)}`),
+        hint.team ? getJ(WD + `action=wbsearchentities&type=item&limit=3&language=en&search=${encodeURIComponent(hint.team)}`) : null,
+        getJ(`https://www.thesportsdb.com/api/v1/json/3/searchplayers.php?p=${encodeURIComponent(q)}`),
+        getJ(`https://www.thesportsdb.com/api/v1/json/123/searchplayers.php?p=${encodeURIComponent(q)}`)
+    ]);
+    const teamQ = new Set(((tr && tr.search) || []).map(x => x.id));
+    const ids = ((sr && sr.search) || []).map(x => x.id);
+    if (ids.length) {
+        const ent = await getJ(WD + `action=wbgetentities&props=claims|descriptions|labels&languages=en|tr&ids=${ids.join('|')}`);
+        const list = ids.map(id => ent && ent.entities && ent.entities[id]).filter(Boolean);
+        const jobs = list.map(async (e, i) => {
+            const occ = claim(e, 'P106').map(v => v.id), desc = ((e.descriptions || {}).en || (e.descriptions || {}).tr || {}).value || '';
+            const isFb = occ.includes('Q937857') || /football|soccer|futbol/i.test(desc);
+            if (!isFb) return;
+            const name = ((e.labels || {}).en || (e.labels || {}).tr || {}).value || q;
+            const born = claim(e, 'P569').map(v => String(v.time || '').replace(/^\+/, '').slice(0, 4))[0] || '';
+            const clubs = claim(e, 'P54').map(v => v.id);
+            const score = 10 + psNameScore(q, name) + (clubs.some(c => teamQ.has(c)) ? 4 : 0) - i * 0.4;
+            const label = [desc, born && !desc.includes(born) ? born : ''].filter(Boolean).join(' · ') || name;
+            // Premier League (Opta kimliği) şeffaf yüz PNG'si — yalnızca PL oyuncularında açılır
+            const opta = claim(e, 'P8736')[0];
+            if (opta && /^\d+$/.test(opta)) add({ url: `https://resources.premierleague.com/premierleague/photos/players/250x250/p${opta}.png`, src: 'pl', label, score: score + 3 });
+            const espn = claim(e, 'P3681')[0];
+            if (espn && /^\d+$/.test(espn)) add({ url: `https://a.espncdn.com/i/headshots/soccer/players/full/${espn}.png`, src: 'espn', label, score: score + 2 });
+            const sofa = claim(e, 'P12302')[0];
+            if (sofa && /^\d+$/.test(sofa)) add({ url: `https://img.sofascore.com/api/v1/player/${sofa}/image`, src: 'sofa', label, score: score + 1 });
+        });
+        await Promise.all(jobs);
+    }
+    // 2) TheSportsDB şeffaf kesik (cutout) görseller
+    const sdb = ((s1 && s1.player) || (s2 && s2.player) || []).filter(p => !p.strSport || p.strSport === 'Soccer');
+    sdb.forEach(p => {
+        if (!p.strCutout) return;
+        const ts = hint.team && psNorm(p.strTeam) && (psNorm(p.strTeam).includes(psNorm(hint.team)) || psNorm(hint.team).includes(psNorm(p.strTeam))) ? 4 : 0;
+        add({ url: p.strCutout, src: 'cut', label: [p.strTeam, yr(p.dateBorn)].filter(Boolean).join(' · '), score: 9 + psNameScore(q, p.strPlayer) + ts });
+    });
+    // Açılmayan görselleri ele (ESPN / Sofascore'da her oyuncunun yüzü yok)
+    const okAll = await Promise.all(out.map(o => amImgOk(o.url)));
+    const res = out.filter((o, i) => okAll[i]).sort((a, b) => b.score - a.score).slice(0, 12);
+    if (res.length) psCache[key] = res;
+    return res;
+}
+// ===================== EA FC YÜZÜ: SoFIFA LİNKİ / KİMLİĞİ YAPIŞTIR =====================
+// Fotoğraf alanına SoFIFA linki (sofifa.com/player/231747/...) ya da sadece kimlik (231747) yapıştırılınca
+// oyuncunun EA FC yüz PNG'si otomatik bulunup yerleştirilir. "SoFIFA" butonu oyuncuyu SoFIFA'da arar.
+const SF_FIELDS = { 'pi-photo-url': ['pi-name', 'pi-photo-results'], 'tst-photo-url-input': ['tst-name-input', 'tst-photo-results'] };
+function sfUrl(id, v, size) { const s = String(id).padStart(6, '0'); return `https://cdn.sofifa.net/players/${s.slice(0, 3)}/${s.slice(3)}/${v}_${size}.png`; }
+function sfParseId(v) {
+    v = String(v || '').trim();
+    let m = v.match(/sofifa\.com\/player\/(\d{3,7})/i) || v.match(/cdn\.sofifa\.net\/players\/(\d{3})\/(\d{3})\//i);
+    if (m) return m[2] ? String(parseInt(m[1] + m[2], 10)) : m[1];
+    m = v.match(/(?:futbin|futwiz|fut\.gg|ea\.com)[^\s]*?(\d{5,7})(?:\D*)$/i);
+    if (m) return m[1];
+    return /^\d{3,7}$/.test(v) ? v : '';
+}
+async function sfFace(id) {
+    for (const v of ['26', '25', '24', '23', '22', '21']) {
+        if (await amImgOk(sfUrl(id, v, 120))) return (await amImgOk(sfUrl(id, v, 240))) ? sfUrl(id, v, 240) : sfUrl(id, v, 120);
+    }
+    return '';
+}
+async function sfApply(urlId) {
+    const urlEl = document.getElementById(urlId), f = SF_FIELDS[urlId];
+    if (!urlEl || !f) return;
+    const raw = urlEl.value, id = sfParseId(raw);
+    if (!id || /cdn\.sofifa\.net/.test(raw) && urlEl.dataset.sfDone === raw) return;
+    const box = document.getElementById(f[1]);
+    const en = typeof currentLang !== 'undefined' && currentLang === 'en', T = (tr, e) => en ? e : tr;
+    if (box) { box.innerHTML = `<div class="text-xs text-slate-400 w-full text-center py-3"><i class="fa-solid fa-spinner fa-spin mr-2"></i>${T('EA FC yüzü getiriliyor…', 'Fetching EA FC face…')}</div>`; box.classList.remove('hidden'); }
+    const url = await sfFace(id);
+    if (urlEl.value !== raw) return;
+    if (!url) { if (box) box.innerHTML = `<div class="text-xs text-yellow-500 w-full text-center py-3">${T('Bu kimlikle EA FC yüzü bulunamadı (' + id + ').', 'No EA FC face for ID ' + id + '.')}</div>`; return; }
+    const nm = (document.getElementById(f[0]) || {}).value || '';
+    if (box) box.innerHTML = `<button type="button" class="ps-card ps-ea on" data-url="${escapeHtml(url)}" onclick="psPick('${urlId}','${f[1]}',this)"><span class="ps-img"><img src="${escapeHtml(url)}" alt="" referrerpolicy="no-referrer"></span><span class="ps-src">EA FC</span><span class="ps-lb">${escapeHtml(nm)} · #${id}</span></button>`;
+    urlEl.dataset.sfDone = url;
+    psPick(urlId, f[1], box ? box.querySelector('.ps-card') : { dataset: { url } });
+}
+function sfOpenSearch(nameId) {
+    const n = ((document.getElementById(nameId) || {}).value || '').trim();
+    window.open('https://sofifa.com/players?keyword=' + encodeURIComponent(n), '_blank', 'noopener');
+}
+function sfInit() {
+    Object.keys(SF_FIELDS).forEach(urlId => {
+        const urlEl = document.getElementById(urlId);
+        if (!urlEl || urlEl.dataset.sfInit) return;
+        urlEl.dataset.sfInit = 1;
+        urlEl.placeholder = (typeof currentLang !== 'undefined' && currentLang === 'en') ? 'Image URL, SoFIFA link or EA ID' : 'Görsel URL, SoFIFA linki veya EA kimliği';
+        let t = null;
+        urlEl.addEventListener('input', () => { clearTimeout(t); t = setTimeout(() => sfApply(urlId), 500); });
+        // "Facecard Ara" butonunun yanına SoFIFA butonu
+        const scope = urlEl.parentElement && urlEl.parentElement.parentElement;
+        const fb = scope && scope.querySelector('button[onclick^="searchPlayerPhotos"], button[onclick^="tstSearchPlayerPhotos"]');
+        if (fb && !fb.parentElement.querySelector('.sf-btn')) {
+            const b = document.createElement('button');
+            b.type = 'button'; b.className = 'sf-btn';
+            b.title = 'Oyuncuyu SoFIFA\'da ara, linkini aşağıdaki alana yapıştır';
+            b.innerHTML = '<i class="fa-solid fa-arrow-up-right-from-square"></i> SoFIFA';
+            b.onclick = () => sfOpenSearch(SF_FIELDS[urlId][0]);
+            fb.insertAdjacentElement('afterend', b);
+        }
+    });
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', sfInit); else sfInit();
+async function psFetchOld(q, hintTeam) {
+    const hint = hintTeam !== undefined ? { team: hintTeam } : psTeamHint();
+    const key = psNorm(q) + '|' + psNorm(hint.team);
+    if (psCache[key]) return psCache[key];
+    const getJ = async (u) => { try { const r = await fetch(u); return r.ok ? await r.json() : null; } catch (e) { return null; } };
+    const out = [], seen = new Set();
+    const add = (o) => { if (!o.url || !/^https?:/.test(o.url) || seen.has(o.url)) return; seen.add(o.url); out.push(o); };
+    const yr = (d) => (d && /^\d{4}/.test(d)) ? d.slice(0, 4) : '';
+    // 1) TheSportsDB
+    const sdbJobs = ['3', '123'].map(k => getJ(`https://www.thesportsdb.com/api/v1/json/${k}/searchplayers.php?p=${encodeURIComponent(q)}`));
+    // 2) Wikipedia (açıklamalı: "English footballer (born 2001)")
+    const wikiJob = (lang, word) => getJ(`https://${lang}.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(q + ' ' + word)}&gsrlimit=6&prop=pageimages|description&piprop=thumbnail&pithumbsize=400&pilicense=any&format=json&origin=*`);
+    // 3) Wikimedia Commons (dosya araması)
+    const comJob = getJ(`https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrnamespace=6&gsrsearch=${encodeURIComponent(q + ' filetype:bitmap')}&gsrlimit=8&prop=imageinfo&iiprop=url&iiurlwidth=320&format=json&origin=*`);
+    const [s1, s2, wEn, wTr, com] = await Promise.all([...sdbJobs, wikiJob('en', 'footballer'), wikiJob('tr', 'futbolcu'), comJob]);
+    const sdb = ((s1 && s1.player) || (s2 && s2.player) || []).filter(p => !p.strSport || p.strSport === 'Soccer');
+    sdb.forEach(p => {
+        const ns = psNameScore(q, p.strPlayer), ts = hint.team && psNorm(p.strTeam) && (psNorm(p.strTeam).includes(psNorm(hint.team)) || psNorm(hint.team).includes(psNorm(p.strTeam))) ? 3 : 0;
+        const sub = [p.strTeam, yr(p.dateBorn)].filter(Boolean).join(' · ');
+        if (p.strCutout) add({ url: p.strCutout, src: 'cut', label: sub, score: 10 + ns + ts });
+        if (p.strRender) add({ url: p.strRender, src: 'render', label: sub, score: 8 + ns + ts });
+        if (p.strThumb) add({ url: p.strThumb, src: 'photo', label: sub, score: 6 + ns + ts });
+    });
+    [wEn, wTr].forEach((w, wi) => {
+        Object.values((w && w.query && w.query.pages) || {}).sort((a, b) => (a.index || 0) - (b.index || 0)).forEach((p, i) => {
+            const t = p.thumbnail && p.thumbnail.source;
+            const d = p.description || '';
+            if (!t || /\.svg/i.test(t)) return;
+            if (d && !/football|soccer|futbol/i.test(d)) return; // futbolcu olmayan sayfaları ele
+            const foot = d ? 3 : 0;
+            add({ url: t, src: 'wiki', label: d || p.title, score: 5 + psNameScore(q, p.title) + foot - i * 0.3 - wi * 0.5 });
+        });
+    });
+    Object.values((com && com.query && com.query.pages) || {}).sort((a, b) => (a.index || 0) - (b.index || 0)).forEach((p, i) => {
+        const ii = p.imageinfo && p.imageinfo[0];
+        const u = ii && (ii.thumburl || ii.url);
+        if (!u) return;
+        const title = String(p.title || '').replace(/^File:/, '').replace(/\.[a-z]+$/i, '').replace(/_/g, ' ');
+        const ns = psNameScore(q, title);
+        if (!ns) return;
+        add({ url: u, src: 'commons', label: title, score: 2 + ns - i * 0.2 });
+    });
+    out.sort((a, b) => b.score - a.score);
+    const res = out.slice(0, 18);
+    if (res.length) psCache[key] = res;
+    return res;
+}
+const PS_SRC = { cut: ['Kesik', 'Cutout'], render: ['Render', 'Render'], photo: ['Foto', 'Photo'], wiki: ['Wikipedia', 'Wikipedia'], commons: ['Commons', 'Commons'] };
+function psPick(urlId, boxId, card) {
+    const urlEl = document.getElementById(urlId);
+    if (!urlEl) return;
+    urlEl.value = card.dataset.url;
+    urlEl.dataset.psAuto = card.dataset.url;
+    urlEl.dispatchEvent(new Event('input', { bubbles: true }));
+    const type = urlId.replace(/-url(-input)?$/, '');
+    if (typeof fileUploads !== 'undefined') fileUploads[type] = null;
+    const btn = document.getElementById(`${type}-upload-btn`);
+    if (btn) btn.classList.replace('text-emerald-400', 'text-slate-300');
+    const box = document.getElementById(boxId);
+    if (box) box.querySelectorAll('.ps-card').forEach(c => c.classList.toggle('on', c === card));
+}
+async function psSearch(nameId, urlId, boxId, auto) {
+    const nameEl = document.getElementById(nameId), urlEl = document.getElementById(urlId);
+    let box = document.getElementById(boxId);
+    const en = typeof currentLang !== 'undefined' && currentLang === 'en', T = (tr, e) => en ? e : tr;
+    const q = nameEl ? nameEl.value.trim() : '';
+    if (!q) { if (!auto && nameEl) nameEl.focus(); return; }
+    if (!box && urlEl) { // kutusu olmayan pencerelere sonuç şeridini ekle
+        box = document.createElement('div');
+        box.id = boxId;
+        box.className = 'flex gap-2 overflow-x-auto hidden py-2 mb-2 hide-scrollbar bg-slate-950/50 rounded px-2 items-start border border-slate-700/50';
+        urlEl.parentElement.parentElement.insertBefore(box, urlEl.parentElement);
+    }
+    if (box) { box.innerHTML = `<div class="text-xs text-slate-400 w-full text-center py-3"><i class="fa-solid fa-spinner fa-spin mr-2"></i>${T('Fotoğraflar aranıyor…', 'Searching photos…')}</div>`; box.classList.remove('hidden'); }
+    const res = await psFetch(q);
+    if (nameEl && nameEl.value.trim() !== q) return;
+    if (box) {
+        box.innerHTML = res.length ? res.map(r => `<button type="button" class="ps-card ps-${r.src}" data-url="${escapeHtml(r.url)}" onclick="psPick('${urlId}','${boxId}',this)" title="${escapeHtml(r.label || '')}">
+                <span class="ps-img"><img src="${escapeHtml(r.url)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.closest('.ps-card').remove()"></span>
+                <span class="ps-src">${PS_SRC[r.src][en ? 1 : 0]}</span>
+                <span class="ps-lb">${escapeHtml(r.label || '')}</span></button>`).join('')
+            : `<div class="text-xs text-yellow-500 w-full text-center py-3">${T('Fotoğraf bulunamadı. Tam adı (ör. "Kylian Kouassi") yazmayı dene.', 'No photo found. Try the full name.')}</div>`;
+    }
+    const cur = urlEl ? urlEl.value.trim() : '';
+    if (res[0] && urlEl && (!cur || /ui-avatars\.com/.test(cur) || urlEl.dataset.psAuto === cur)) psPick(urlId, boxId, box ? box.querySelector('.ps-card') : { dataset: { url: res[0].url } });
+}
+function searchPlayerPhotos() { return psSearch('pi-name', 'pi-photo-url', 'pi-photo-results'); }
 async function autoFetchPlayerPhoto(playerName, urlInputId) {
+    const urlEl = document.getElementById(urlInputId);
+    if (!playerName || !urlEl) return;
+    const cur = urlEl.value.trim();
+    if (cur && !/ui-avatars\.com/.test(cur) && urlEl.dataset.psAuto !== cur) return; // elle girilmiş fotoğrafa dokunma
+    const nameId = urlInputId === 'pi-photo-url' ? 'pi-name' : urlInputId.replace(/-photo-url-input$/, '-name-input');
+    const boxId = urlInputId === 'pi-photo-url' ? 'pi-photo-results' : urlInputId.replace(/-url-input$/, '-results');
+    return psSearch(nameId, urlInputId, boxId, true);
+}
+function tstSearchPlayerPhotos() { return psSearch('tst-name-input', 'tst-photo-url-input', 'tst-photo-results'); }
+// ===================== EKSİK GÖRSELLERİ OTOMATİK TAMAMLA (takım logosu, futbolcu fotoğrafı, turnuva logosu) =====================
+// Logosu / fotoğrafı olmayan her kayıt için arka planda internet araması yapılır, ilk açılan sonuç kaydedilir.
+// Bulunamayanlar 3 gün boyunca tekrar aranmaz. Elle girilmiş görsellere dokunulmaz.
+function amIsPh(u) { return !u || /ui-avatars\.com/.test(String(u)); }
+function amBad(n) { n = String(n || '').trim(); return n.length < 2 || /^(takım adı|team name|tbd|-|\?|bye)$/i.test(n); }
+function amStore() { if (!autoMedia || typeof autoMedia !== 'object') autoMedia = {}; ['teams', 'tours', 'tried'].forEach(k => { if (!autoMedia[k] || typeof autoMedia[k] !== 'object') autoMedia[k] = {}; }); return autoMedia; }
+function amTeamLogo(name) { const s = amStore(); return s.teams[teamNorm(name)] || ''; }
+function amTourLogo(name) { const s = amStore(); return s.tours[teamNorm(name)] || ''; }
+function amImgOk(url) {
+    return new Promise(res => {
+        const im = new Image(); let done = false;
+        const fin = (v) => { if (!done) { done = true; res(v); } };
+        im.onload = () => fin(im.naturalWidth > 8);
+        im.onerror = () => fin(false);
+        setTimeout(() => fin(false), 7000);
+        im.referrerPolicy = 'no-referrer';
+        im.src = url;
+    });
+}
+async function amFirstOk(urls) { for (const u of urls.slice(0, 4)) { if (u && await amImgOk(u)) return u; } return ''; }
+function amCollect() {
+    const s = amStore(), jobs = [], seen = new Set();
+    const recent = (k) => s.tried[k] && (Date.now() - s.tried[k] < 3 * 864e5);
+    const push = (kind, name, extra) => {
+        name = String(name || '').trim();
+        if (amBad(name)) return;
+        const k = kind + ':' + teamNorm(name) + (extra && extra.id ? ':' + extra.id : '');
+        if (seen.has(k) || recent(k)) return;
+        seen.add(k); jobs.push(Object.assign({ kind, name, key: k }, extra || {}));
+    };
+    const teamNeeds = (n) => { try { return amIsPh(getTeamLogoByName(n)); } catch (e) { return false; } };
+    const tryTeam = (n) => { if (n && !amBad(n) && teamNeeds(n)) push('team', n); };
+    // Takımlar
+    ['kulup', 'milli'].forEach(c => { const t = managedTeams && managedTeams[c]; if (t && t.name && amIsPh(t.logoUrl)) push('team', t.name); });
+    ['kulup', 'milli'].forEach(c => {
+        const cfg = opponentsConfig && opponentsConfig[c]; if (!cfg) return;
+        ((cfg.domestic && cfg.domestic.teams) || []).forEach(t => t && tryTeam(t.name));
+        (cfg.foreign || []).forEach(g => ((g && g.teams) || []).forEach(t => t && tryTeam(t.name)));
+    });
+    Object.values(customTournamentsData || {}).forEach(arr => (arr || []).forEach(t => {
+        if (!t) return;
+        (Array.isArray(t.table) ? t.table : []).forEach(r => r && amIsPh(r.logo) && tryTeam(r.name));
+        (t.groups || []).forEach(g => ((g && g.teams) || []).forEach(x => x && amIsPh(x.logo) && tryTeam(x.name)));
+        (t.knockouts || []).forEach(k => { if (k) { if (amIsPh(k.homeLogo)) tryTeam(k.home); if (amIsPh(k.awayLogo)) tryTeam(k.away); } });
+    }));
+    Object.values((typeof fixtureData !== 'undefined' && fixtureData) || {}).forEach(arr => (arr || []).forEach(f => { if (f) { tryTeam(f.home); tryTeam(f.away); } }));
+    // Turnuvalar
+    const tourNeeds = (n) => { try { return !getCompetitionLogo(n); } catch (e) { return false; } };
+    const tryTour = (n) => { if (n && !amBad(n) && tourNeeds(n)) push('tour', n); };
+    (tournamentsList || []).forEach(t => t && tryTour(t.name));
+    Object.values(customTournamentsData || {}).forEach(arr => (arr || []).forEach(t => t && tryTour(t.type)));
+    Object.values((typeof fixtureData !== 'undefined' && fixtureData) || {}).forEach(arr => (arr || []).forEach(f => f && tryTour(f.tournament)));
+    // Futbolcular
+    Object.keys(squadData || {}).forEach(c => (squadData[c] || []).forEach(p => {
+        if (!p || !p.name || p.isArchived) return;
+        const wasAuto = s.tried['player:' + teamNorm(p.name) + ':' + (p.id || p.name)];
+        const notFace = wasAuto && p.photoUrl && !/\/cutout\/|espncdn|sofascore|premierleague/.test(p.photoUrl); // önceden otomatik gelmiş normal fotoğraf
+        if (amIsPh(p.photoUrl) || notFace) push('face', p.name, { id: p.id || p.name, ctx: c, replace: !!notFace });
+    }));
+    return jobs;
+}
+function amPatchTeam(name, url) {
+    const same = (n) => n && teamNorm(n) === teamNorm(name);
+    ['kulup', 'milli'].forEach(c => { const t = managedTeams && managedTeams[c]; if (t && same(t.name) && amIsPh(t.logoUrl)) t.logoUrl = url; });
+    ['kulup', 'milli'].forEach(c => {
+        const cfg = opponentsConfig && opponentsConfig[c]; if (!cfg) return;
+        const fix = (t) => { if (t && same(t.name) && amIsPh(t.logoUrl)) t.logoUrl = url; };
+        ((cfg.domestic && cfg.domestic.teams) || []).forEach(fix);
+        (cfg.foreign || []).forEach(g => ((g && g.teams) || []).forEach(fix));
+    });
+    Object.values(customTournamentsData || {}).forEach(arr => (arr || []).forEach(t => {
+        if (!t) return;
+        (Array.isArray(t.table) ? t.table : []).forEach(r => { if (r && same(r.name) && amIsPh(r.logo)) r.logo = url; });
+        (t.groups || []).forEach(g => ((g && g.teams) || []).forEach(x => { if (x && same(x.name) && amIsPh(x.logo)) x.logo = url; }));
+        (t.knockouts || []).forEach(k => { if (!k) return; if (same(k.home) && amIsPh(k.homeLogo)) k.homeLogo = url; if (same(k.away) && amIsPh(k.awayLogo)) k.awayLogo = url; });
+    }));
+}
+var amBusy = false, amTimer = null;
+function amSchedule(ms) { clearTimeout(amTimer); amTimer = setTimeout(amRun, ms || 4000); }
+async function amRun() {
+    if (amBusy || !navigator.onLine) return;
+    amBusy = true;
+    let found = 0;
+    try {
+        const s = amStore(), jobs = amCollect().slice(0, 25);
+        for (const j of jobs) {
+            let url = '';
+            if (j.kind === 'team' || j.kind === 'tour') url = await amFirstOk(await tlFetchLogos(j.name));
+            else if (j.kind === 'face') {
+                const T = j.ctx === 'milli' ? managedTeams.milli : managedTeams.kulup;
+                url = await amFirstOk((await psFetch(j.name, (T && T.name) || '')).map(r => r.url));
+            }
+            s.tried[j.key] = Date.now();
+            if (!url) continue;
+            found++;
+            if (j.kind === 'team') { s.teams[teamNorm(j.name)] = url; amPatchTeam(j.name, url); }
+            else if (j.kind === 'tour') s.tours[teamNorm(j.name)] = url;
+            else (squadData[j.ctx] || []).forEach(p => { if (p && (p.id || p.name) === j.id && (amIsPh(p.photoUrl) || j.replace)) p.photoUrl = url; });
+            await new Promise(r => setTimeout(r, 250));
+        }
+        if (jobs.length) { amSaving = true; saveToLocalStorage(); amSaving = false; }
+        if (found && typeof rerenderCurrentPanel === 'function') { try { rerenderCurrentPanel(); } catch (e) {} }
+        if (jobs.length === 25) amSchedule(1500); // kalanlar için devam et
+    } catch (e) { console.warn('Otomatik görsel tamamlama hatası:', e); }
+    amBusy = false;
+}
+var amSaving = false;
+setTimeout(() => amSchedule(1000), 3000);
+async function autoFetchPlayerPhotoOld(playerName, urlInputId) {
     if (!playerName) return;
     const urlInput = document.getElementById(urlInputId);
     if (urlInput && urlInput.value.trim() !== '') return; // Don't overwrite if already filled
@@ -11700,7 +12045,7 @@ function applyQfbCollapsedState() {
             // 2. Yoksa: Kupalar panelindeki turnuva listesiyle isim eşleşmesi (büyük/küçük harf duyarsız)
             const match = tournamentsList.find(t => t.name.toLowerCase() === name.toLowerCase());
             if (match && match.logoUrl) return match.logoUrl;
-            return tourCatalogLogo(name);
+            return tourCatalogLogo(name) || amTourLogo(name) || null;
         }
 
 let activeCompetitionLogoName = null;
@@ -11782,7 +12127,7 @@ function saveTopStatModal() {
     renderFixturePanel();
 }
 
-async function tstSearchPlayerPhotos() {
+async function tstSearchPlayerPhotosOld() {
     const nameInput = document.getElementById('tst-name-input').value.trim();
     const resultsContainer = document.getElementById('tst-photo-results');
     if (!nameInput) { alert('Lütfen arama yapmak için oyuncunun adını girin!'); return; }
@@ -12055,6 +12400,7 @@ function autoFillTeamLogo(nameInput, urlInputId) {
             
             // Eğer hiçbir yerde yoksa, ismin baş harflerinden otomatik bir logo üret
             { const xl = xcFindLogo(name); if (xl) return xl; }
+            { const al = amTeamLogo(name); if (al) return al; }
             return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff`;
         }
 
