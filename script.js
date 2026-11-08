@@ -55,6 +55,9 @@ const TR_EN = {
     "Bu sezon için lig tablosu yok.": "No league table for this season.",
     "Bu sezon için turnuva yok.": "No tournaments for this season.",
     "Lig Tarihi": "League History",
+    "Tüm kadro sığsın": "Fit whole squad",
+    "Büyük": "Large",
+    "Daha büyük": "Larger",
     "Defter": "Notebook",
     "Favori yap": "Make favourite",
     "Favori oyuncu": "Favourite player",
@@ -2783,7 +2786,82 @@ function handleFileUpload(event, type) {
     reader.readAsDataURL(file);
 }
 
-        async function searchTeamLogos(type) {
+        // ===================== TAKIM LOGOSU: İNTERNETTEN OTOMATİK BUL =====================
+        // Kaynaklar: TheSportsDB (şeffaf arma) → Wikipedia bilgi kutusu logosu (en, tr)
+        function tlEl(ids) { for (const id of ids) { const e = id && document.getElementById(id); if (e) return e; } return null; }
+        function tlNameEl(type) { return tlEl([`${type}-name-input`, `${type}-name`]); }
+        function tlUrlEl(type) { return tlEl([`${type}-url-input`, `${type}-url`]); }
+        const tlCache = {};
+        async function tlFetchLogos(q) {
+            const key = q.toLowerCase();
+            if (tlCache[key]) return tlCache[key];
+            const out = [];
+            const add = (u) => { if (u && /^https?:/.test(u) && !out.includes(u)) out.push(u); };
+            const getJ = async (u) => { try { const r = await fetch(u); return r.ok ? await r.json() : null; } catch (e) { return null; } };
+            for (const k of ['3', '123']) {
+                const d = await getJ(`https://www.thesportsdb.com/api/v1/json/${k}/searchteams.php?t=${encodeURIComponent(q)}`);
+                const teams = (d && d.teams) || [];
+                if (!d) continue;
+                teams.filter(t => !t.strSport || t.strSport === 'Soccer').forEach(t => add(t.strBadge || t.strTeamBadge));
+                break;
+            }
+            for (const [lang, word] of [['en', 'football'], ['tr', 'futbol']]) {
+                const d = await getJ(`https://${lang}.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(q + ' ' + word)}&gsrlimit=5&prop=pageimages&piprop=original&pilicense=any&format=json&origin=*`);
+                const pages = Object.values((d && d.query && d.query.pages) || {}).sort((a, b) => (a.index || 0) - (b.index || 0));
+                pages.forEach(p => { const s = p.original && p.original.source; if (s && !/\.jpe?g$/i.test(s)) add(s); });
+                if (out.length >= 4) break;
+            }
+            if (out.length) tlCache[key] = out;
+            return out;
+        }
+        function tlApply(type, url, img) {
+            const urlEl = tlUrlEl(type);
+            if (!urlEl) return;
+            urlEl.value = url;
+            urlEl.dataset.tlAuto = url;
+            urlEl.dispatchEvent(new Event('input', { bubbles: true }));
+            if (typeof fileUploads !== 'undefined') fileUploads[type] = null;
+            const btn = document.getElementById(`${type}-upload-btn`);
+            if (btn) btn.classList.replace('text-emerald-400', 'text-slate-300');
+            document.querySelectorAll(`#${type}-logo-results img`).forEach(el => el.classList.toggle('tl-on', el === img));
+        }
+        async function searchTeamLogos(type, auto) {
+            const nameEl = tlNameEl(type);
+            const q = nameEl ? nameEl.value.trim() : '';
+            const box = document.getElementById(`${type}-logo-results`);
+            const T = (tr, en) => (typeof currentLang !== 'undefined' && currentLang === 'en') ? en : tr;
+            if (!q) { if (!auto && nameEl) nameEl.focus(); return; }
+            if (box) { box.innerHTML = `<div class="text-xs text-slate-400 w-full text-center py-2"><i class="fa-solid fa-spinner fa-spin mr-2"></i>${T('Logo aranıyor…', 'Searching logos…')}</div>`; box.classList.remove('hidden'); }
+            const urls = await tlFetchLogos(q);
+            if (nameEl && nameEl.value.trim() !== q) return; // bu arada ad değiştiyse eski sonucu basma
+            if (box) {
+                box.innerHTML = urls.length
+                    ? urls.map(u => `<div class="flex-shrink-0"><img src="${escapeHtml(u)}" data-url="${escapeHtml(u)}" alt="" class="tl-img" onclick="tlApply('${type}', this.dataset.url, this)" onerror="this.parentElement.remove()" title="${T('Seçmek için tıkla', 'Click to select')}"></div>`).join('')
+                    : `<div class="text-xs text-yellow-500 w-full text-center py-2">${T('Logo bulunamadı. Adı farklı yazmayı dene.', 'No logo found. Try another spelling.')}</div>`;
+            }
+            const cur = (tlUrlEl(type) || {}).value || '';
+            if (urls[0] && (auto || !cur.trim() || /ui-avatars\.com/.test(cur))) tlApply(type, urls[0], box && box.querySelector('img'));
+        }
+        // Ad yazılınca (yazma bitince) logo alanı boşsa / yer tutucuysa otomatik doldur
+        if (!window._tlInit) {
+            window._tlInit = 1;
+            const timers = {};
+            document.addEventListener('input', (e) => {
+                const el = e.target;
+                if (!el || el.tagName !== 'INPUT' || !el.id) return;
+                const type = el.id.replace(/-name(-input)?$/, '');
+                if (type === el.id || tlNameEl(type) !== el || !document.getElementById(`${type}-logo-results`)) return;
+                clearTimeout(timers[type]);
+                timers[type] = setTimeout(() => {
+                    const urlEl = tlUrlEl(type);
+                    if (!urlEl) return;
+                    const v = urlEl.value.trim();
+                    if (v && !/ui-avatars\.com/.test(v) && urlEl.dataset.tlAuto !== v) return; // veritabanı / elle girilmiş logoya dokunma
+                    searchTeamLogos(type, true);
+                }, 800);
+            }, true);
+        }
+        async function searchTeamLogosOld(type) {
             const nameInput = document.getElementById(`${type}-name${type==='setup'? '':'-input'}`).value.trim();
             const resultsContainer = document.getElementById(`${type}-logo-results`);
             
@@ -3257,11 +3335,12 @@ function handleFileUpload(event, type) {
                 let b = document.getElementById('nb-fab');
                 if (!b) { b = document.createElement('button'); b.id = 'nb-fab'; b.type = 'button'; b.className = 'nb-fab'; b.innerHTML = '<i class="fa-solid fa-book"></i>'; b.onclick = () => nbToggle(); document.body.appendChild(b); }
                 b.title = homeIsEn() ? 'Notebook' : 'Defter';
-                b.style.display = (typeof activeMain !== 'undefined' && activeMain && activeMain !== 'anasayfa') ? '' : 'none';
+                b.style.display = (typeof activeMain !== 'undefined' && activeMain && activeMain !== 'anasayfa' && !window.matchMedia('(max-width: 767px)').matches) ? '' : 'none';
                 if (document.getElementById('nb-panel') && document.body.classList.contains('nb-on')) nbRender();
             };
             const nbStart = () => { const r = document.getElementById('content-area'); if (!r) { setTimeout(nbStart, 300); return; } new MutationObserver(nbFab).observe(r, { childList: true }); nbFab(); };
             nbStart();
+            window.addEventListener('resize', nbFab);
         }
 
         function selectMainMenu(menuId) {
@@ -5248,6 +5327,16 @@ function handleFileUpload(event, type) {
             const manKey = man ? Object.keys(ga).find(k => homeSameTeam(k, man.name)) : null;
             const fav = man ? [man.name, (manKey && ga[manKey]) || { g: 0, a: 0 }] : Object.entries(ga).sort((a, b) => (b[1].g + b[1].a) - (a[1].g + a[1].a) || b[1].g - a[1].g)[0];
             const favP = man || (fav ? sq.find(p => p && homeSameTeam(p.name, fav[0])) : null);
+            // Mevki mevki ortalama kadro gücü (aktif kadro: kulüpte A takım, milli takımda milli kadro)
+            const SG = [['GK', ['GK']], ['DEF', ['CB', 'LB', 'RB', 'LWB', 'RWB', 'SW']], ['MID', ['DM', 'CDM', 'CM', 'AM', 'CAM', 'LM', 'RM']], ['ATT', ['LW', 'RW', 'ST', 'CF', 'LF', 'RF']]];
+            const act = (ctx === 'milli' ? (squadData.milli || []) : (squadData.astakim || [])).filter(p => p && !p.isArchived && !p.isPromoted);
+            const ovrOf = (p) => { const o = parseInt(getPlayerCurrentStatsByName(p.name, ctx).ovr); return isNaN(o) ? null : o; };
+            const str = SG.map(([k, ps]) => {
+                const v = act.filter(p => ps.includes(String(p.pos || '').toUpperCase().trim())).map(ovrOf).filter(o => o !== null);
+                return { k, n: v.length, avg: v.length ? Math.round(v.reduce((a, b) => a + b, 0) / v.length) : null };
+            });
+            const allO = act.map(ovrOf).filter(o => o !== null);
+            str.all = allO.length ? Math.round(allO.reduce((a, b) => a + b, 0) / allO.length) : null;
             return {
                 team, season, all: rec(played), s: rec(ss),
                 gf: ss.reduce((a, x) => a + x.gf, 0), gaT: ss.reduce((a, x) => a + x.ga, 0),
@@ -5258,7 +5347,7 @@ function handleFileUpload(event, type) {
                 maxGoals: pick(ss, x => (x.gf + x.ga) * 100 + (x.gf - x.ga)),
                 winStreak: streak(ss, x => x.r === 'W'), unbeaten: streak(ss, x => x.r !== 'L'),
                 form: ss.slice(-5),
-                sq, ga, fav: fav ? { name: fav[0], g: fav[1].g, a: fav[1].a, photo: favP && (favP.photoUrl || favP.photo) || '', pos: favP && favP.pos || '', manual: !!man } : null
+                sq, ga, str, fav: fav ? { name: fav[0], g: fav[1].g, a: fav[1].a, photo: favP && (favP.photoUrl || favP.photo) || '', pos: favP && favP.pos || '', manual: !!man } : null
             };
         }
         function renderHomeSeasonStats() {
@@ -5283,6 +5372,10 @@ function handleFileUpload(event, type) {
             const f = D.fav;
             const favHtml = f ? `<div class="hss-fav">${f.photo ? `<img src="${esc(f.photo)}" alt="" onerror="this.style.visibility='hidden'">` : '<span class="hss-ph"><i class="fa-solid fa-user"></i></span>'}
                     <div class="hss-ft"><div class="hss-fn" title="${esc(f.name)}">${esc(f.name)}</div><div class="hss-fs">${f.pos ? `<span class="hss-pos">${esc(f.pos)}</span>` : ''}<b>${f.g}</b> ${L('gol', 'G')} · <b>${f.a}</b> ${L('asist', 'A')}</div></div></div>` : '<div class="hss-none">—</div>';
+            const SL = en ? { GK: 'GK', DEF: 'DEF', MID: 'MID', ATT: 'ATT' } : { GK: 'KL', DEF: 'DEF', MID: 'OS', ATT: 'HÜC' };
+            const oc = (o) => (o !== null && typeof mbOvrColor === 'function') ? mbOvrColor(o) : '#64748b';
+            const strHtml = `<div class="hss-box hss-sq"><div class="hss-lab">${L('Kadro gücü', 'Squad strength')} <em>${L('ort. OVR', 'avg OVR')}${D.str.all !== null ? ` · <b style="color:${oc(D.str.all)}">${D.str.all}</b>` : ''}</em></div>
+                <div class="hss-sqg">${D.str.map(g => `<div class="hss-sqc" title="${g.n} ${L('oyuncu', 'players')}"><span>${SL[g.k]}</span><b style="color:${oc(g.avg)}">${g.avg !== null ? g.avg : '–'}</b><i><u style="width:${g.avg !== null ? Math.max(4, Math.min(100, (g.avg - 40) / 59 * 100)) : 0}%;background:${oc(g.avg)}"></u></i></div>`).join('')}</div></div>`;
             setTimeout(homeStatsFit, 0);
             return `<div id="hss-root" class="hss">
                 <div class="hss-kpis">
@@ -5303,11 +5396,11 @@ function handleFileUpload(event, type) {
                 </div>
                 <div class="hss-bot">
                     <div class="hss-box hss-str">
-                        <div><div class="hss-lab">${L('Galibiyet serisi', 'Win streak')}</div><div class="hss-v sm">${D.winStreak}</div></div>
-                        <div><div class="hss-lab">${L('Yenilmezlik', 'Unbeaten run')}</div><div class="hss-v sm">${D.unbeaten}</div></div>
+                        <div><div class="hss-lab">${L('G. serisi', 'Win run')}</div><div class="hss-v sm">${D.winStreak}</div></div>
+                        <div><div class="hss-lab">${L('Yenilmezlik', 'Unbeaten')}</div><div class="hss-v sm">${D.unbeaten}</div></div>
                         <div><div class="hss-lab">${L('Son 5', 'Last 5')}</div><div class="hss-form">${form}</div></div>
                     </div>
-                    <div class="hss-box hss-fb" onclick="homeFavPick(event, '${ctx}')" title="${L('Favori oyuncuyu seç', 'Choose favourite player')}"><div class="hss-lab">${f && f.manual ? '<span class="hss-star">★</span>' : ''}${L('Favori oyuncu', 'Favourite player')} ${f && f.manual ? '' : `<em>${L('en çok G+A', 'most G+A')}</em>`}</div>${favHtml}<i class="fa-solid fa-pen hss-fe"></i></div>
+                    ${strHtml}<div class="hss-box hss-fb" onclick="homeFavPick(event, '${ctx}')" title="${L('Favori oyuncuyu seç', 'Choose favourite player')}"><div class="hss-lab">${f && f.manual ? '<span class="hss-star">★</span>' : ''}${L('Favori oyuncu', 'Favourite player')} ${f && f.manual ? '' : `<em>${L('en çok G+A', 'most G+A')}</em>`}</div>${favHtml}<i class="fa-solid fa-pen hss-fe"></i></div>
                 </div>
             </div>`;
         }
@@ -5520,7 +5613,28 @@ function handleFileUpload(event, type) {
             hlStart();
         }
 
+        // Sıradaki maç milli takımınsa ana sayfa otomatik Milli'ye, kulübünse Kulüp'e geçer.
+        // Elle seçim, sıradaki maç değişene kadar korunur.
+        let homeAutoCtxFor = null;
+        function homeAutoCtx() {
+            try {
+                const has = (m) => m.homeScore !== '' && m.homeScore !== null && m.homeScore !== undefined && m.awayScore !== '' && m.awayScore !== null && m.awayScore !== undefined;
+                const m = homeGetFilteredMatches('both').find(x => x && !has(x));
+                const key = m ? [m.id, m.tournament, m.date, m.home, m.away].join('|') : '';
+                if (key === homeAutoCtxFor) return;
+                homeAutoCtxFor = key;
+                if (!m) return;
+                const mil = (managedTeams.milli && managedTeams.milli.name) || '';
+                const ctx = mil && (homeSameTeam(m.home, mil) || homeSameTeam(m.away, mil)) ? 'milli' : 'kulup';
+                if (ctx === homeGlobalContext) return;
+                homeGlobalContext = ctx;
+                homeSquadContext = ctx === 'kulup' ? 'astakim' : 'milli';
+                homeStatsContext = ctx;
+                if (homeFixtureContext !== 'both') homeFixtureContext = ctx;
+            } catch (e) {}
+        }
         function renderHomePanel() {
+            homeAutoCtx();
             const season = seasonsList[seasonsList.length - 1];
             const isClub = homeGlobalContext !== 'milli';
             const squadCtx = isClub ? homeSquadSub : 'milli';
@@ -8276,6 +8390,28 @@ function renderTrophyCabinet() {
 
         // Kadro tablosu ölçeği: güncel kadro (arşiv/promoted ayracına kadar) tek ekrana sığacak en büyük ölçek (en fazla %100).
         // Ayrılanlar (arşiv) bölümü ekranın altında kalır, kaydırınca görünür. Hem mobil hem web için geçerlidir.
+        // Kadro ölçeği: 0 = tüm kadro sığar (varsayılan), 1 ve 2 = kademeli olarak daha büyük
+        const SQ_ZOOM_MULT = [1, 1.25, 1.5];
+        let sqZoomLevel = 0;
+        try { sqZoomLevel = Math.min(2, Math.max(0, parseInt(localStorage.getItem('gt_sq_zoom')) || 0)); } catch (e) {}
+        function setSqZoom(lvl) {
+            sqZoomLevel = lvl;
+            try { localStorage.setItem('gt_sq_zoom', String(lvl)); } catch (e) {}
+            sqFitScale();
+        }
+        function sqZoomControl(wrap) {
+            const head = wrap && wrap.previousElementSibling;
+            const slot = head && head.lastElementChild;
+            if (!slot) return;
+            let c = slot.querySelector('.sqz');
+            if (!c) {
+                c = document.createElement('div');
+                c.className = 'sqz';
+                c.innerHTML = [0, 1, 2].map(i => `<button type="button" data-z="${i}" onclick="setSqZoom(${i})" title="${['Tüm kadro sığsın', 'Büyük', 'Daha büyük'][i]}" aria-label="${['Tüm kadro sığsın', 'Büyük', 'Daha büyük'][i]}"><span style="font-size:${[10, 13, 16][i]}px">A</span></button>`).join('');
+                slot.appendChild(c);
+            }
+            c.querySelectorAll('button').forEach(b => b.classList.toggle('on', +b.dataset.z === sqZoomLevel));
+        }
         function sqFitScale() {
             const tbl = document.querySelector('table[data-sq]');
             if (!tbl || !tbl.parentElement) return;
@@ -8292,8 +8428,10 @@ function renderTrophyCabinet() {
             const row = sep ? sep.parentElement : null;
             const H = row ? (row.getBoundingClientRect().top - tbl.getBoundingClientRect().top) : tbl.getBoundingClientRect().height;
             if (!H) return;
-            const z = Math.max(0.35, Math.min(1, C / H));
+            const fit = Math.max(0.35, Math.min(1, C / H));
+            const z = Math.min(1.6, fit * SQ_ZOOM_MULT[sqZoomLevel] || fit);
             apply(z.toFixed(3));
+            sqZoomControl(wrap);
         }
         if (!window.__sqFitBound) {
             window.__sqFitBound = true;
@@ -9359,7 +9497,7 @@ function piRenderProfile(p) {
             };
 
             let activePlayers = allPlayers.filter(p => !p.isArchived && !p.isPromoted);
-            let archivedPlayers = allPlayers.filter(p => p.isArchived && !p.isPromoted);
+            let archivedPlayers = [];   // Takımdan ayrılan oyuncular toplu yaş/OVR girişinde gösterilmez
             let promotedPlayers = allPlayers.filter(p => p.isPromoted);
 
             let html = renderList(activePlayers);

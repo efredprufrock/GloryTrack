@@ -1906,3 +1906,41 @@ div:has(>div>button>.hctx-lg){min-height:48px}
 
 /* ===== Defter: mobilde yüzen buton yok (sadece ana sayfadaki buton) ===== */
 @media (max-width:767px){.nb-fab{display:none!important}}
+
+/* ===== Sezon Özeti: alt satır 3 kutu (seriler · kadro gücü · favori) ===== */
+.hss-bot{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr) minmax(0,1fr)!important}
+.hss-str{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;column-gap:10px!important;row-gap:4px!important}
+.hss-str>div{min-width:0}
+.hss-str>div:nth-child(3){grid-column:1/-1;display:flex;align-items:center;gap:6px}
+.hss-str>div:nth-child(3) .hss-form{margin-top:0}
+.hss-sq em b{font-weight:900}
+.hss-sqg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin-top:5px}
+.hss-sqc{display:flex;flex-direction:column;align-items:center;gap:2px;background:rgba(2,6,23,.45);border-radius:7px;padding:4px 2px 5px}
+.hss-sqc span{font-size:8.5px;font-weight:900;letter-spacing:.08em;color:#94a3b8}
+.hss-sqc b{font-size:15px;font-weight:900;line-height:1}
+.hss-sqc i{display:block;width:80%;height:3px;border-radius:99px;background:#1e293b;overflow:hidden}
+.hss-sqc u{display:block;height:100%;border-radius:99px}
+body.theme-light .hss-sqc{background:#f5f0e6}
+body.theme-light .hss-sqc span{color:#7a6d63}
+body.theme-light .hss-sqc i{background:#e8e2d5}
+.hss-str .hss-lab{letter-spacing:.06em}
+.hss-str>div:nth-child(3) .hss-lab{flex-shrink:0;overflow:visible}
+body.theme-light .hss-sqc b,body.theme-light .hss-sq em b{filter:brightness(.72) saturate(1.4)}
+@media (max-width:640px){.hss-bot{grid-template-columns:1fr!important}}
+
+/* ===== Kadro ölçek seçici (3 kademe) ===== */
+.sqz{display:flex;align-items:center;gap:2px;padding:3px;border-radius:999px;background:#0f172a;border:1px solid #334155}
+.sqz button{width:30px;height:28px;border-radius:999px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:5px;color:#94a3b8;font-weight:900;line-height:1;transition:background .15s,color .15s}
+.sqz button:hover{color:#fff;background:#1e293b}
+.sqz button.on{background:#334155;color:#fff;box-shadow:inset 0 0 0 1px #475569}
+body.theme-light .sqz{background:#fdfbf7;border-color:#d6cfc2}
+body.theme-light .sqz button{color:#7a6d63}
+body.theme-light .sqz button:hover{background:#f0ebe1;color:#2c2420}
+body.theme-light .sqz button.on{background:#e8e2d5;color:#2c2420;box-shadow:inset 0 0 0 1px #d6cfc2}
+
+/* ===== Logo arama sonuçları ===== */
+.tl-img{width:48px;height:48px;object-fit:contain;padding:4px;border-radius:10px;background:#0f172a;border:2px solid #334155;cursor:pointer;transition:transform .15s,border-color .15s}
+.tl-img:hover{transform:scale(1.08);border-color:#64748b}
+.tl-img.tl-on{border-color:#10b981;box-shadow:0 0 0 2px rgba(16,185,129,.25)}
+body.theme-light .tl-img{background:#fff;border-color:#d6cfc2}
+body.theme-light .tl-img.tl-on{border-color:#059669}
