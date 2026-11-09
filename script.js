@@ -2224,6 +2224,80 @@ function getFlagIcon(countryCode) {
             }
         }
 
+        // ===================== BULUT GİRİŞİ: UYGULAMA (PWA) MODU + E-POSTA/ŞİFRE =====================
+        // Ana ekrandan açılan uygulamada Google açılır penceresi çalışmaz (özellikle iPhone).
+        // Çözüm: masaüstünde Google ile girip "Telefon için şifre belirle" → telefonda e-posta + şifre ile aynı hesaba giriş.
+        function gtIsStandalone() { return (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true; }
+        function cloudHasPassword() { try { return !!(fbAuth && fbAuth.currentUser && fbAuth.currentUser.providerData.some(p => p.providerId === 'password')); } catch (e) { return false; } }
+        function cloudPwBtnHtml() {
+            if (!currentUser) return `<button type="button" onclick="openCloudPwModal('login')" class="cpw-link"><i class="fa-solid fa-envelope"></i> E-posta ile giriş</button>`;
+            if (cloudHasPassword()) return `<span class="cpw-link ok"><i class="fa-solid fa-check"></i> E-posta girişi açık</span>`;
+            return `<button type="button" onclick="openCloudPwModal('set')" class="cpw-link"><i class="fa-solid fa-key"></i> Telefon için şifre belirle</button>`;
+        }
+        function cloudPwErr(e) {
+            const m = {
+                'auth/operation-not-allowed': 'Firebase\'de E-posta/Şifre girişi kapalı. Firebase Console → Authentication → Sign-in method → Email/Password\'u etkinleştir.',
+                'auth/wrong-password': 'Şifre yanlış.', 'auth/invalid-credential': 'E-posta veya şifre yanlış.', 'auth/invalid-login-credentials': 'E-posta veya şifre yanlış.',
+                'auth/user-not-found': 'Bu e-postayla kayıtlı şifre yok. Önce bilgisayarda Google ile girip "Telefon için şifre belirle"yi kullan.',
+                'auth/weak-password': 'Şifre en az 6 karakter olmalı.', 'auth/invalid-email': 'E-posta adresi geçersiz.',
+                'auth/requires-recent-login': 'Güvenlik için hesaptan çıkıp Google ile tekrar gir, sonra yeniden dene.',
+                'auth/provider-already-linked': 'Bu hesapta zaten şifre var.', 'auth/too-many-requests': 'Çok fazla deneme yapıldı, biraz sonra tekrar dene.',
+                'auth/network-request-failed': 'İnternet bağlantısı yok.'
+            };
+            return m[e && e.code] || ('Hata: ' + ((e && e.message) || e));
+        }
+        function openCloudPwModal(mode) {
+            if (!firebaseReady && !initFirebase()) { setSyncStatus('error', 'Bulut bağlantısı kurulamadı.'); return; }
+            let m = document.getElementById('cpw-modal');
+            if (!m) {
+                m = document.createElement('div');
+                m.id = 'cpw-modal';
+                m.className = 'cpw-modal';
+                document.body.appendChild(m);
+            }
+            const set = mode === 'set';
+            const email = set ? ((fbAuth.currentUser && fbAuth.currentUser.email) || '') : '';
+            m.innerHTML = `<div class="cpw-box">
+                <button type="button" class="cpw-x" onclick="closeCloudPwModal()"><i class="fa-solid fa-xmark"></i></button>
+                <h3>${set ? 'Telefon için şifre belirle' : 'E-posta ile giriş'}</h3>
+                <p>${set ? 'Bu şifreyle telefondaki uygulamada aynı hesaba (aynı kariyer verisine) giriş yapabilirsin.' : 'Bilgisayarda Google hesabına bağlı olarak belirlediğin şifreyle giriş yap.'}</p>
+                <label>E-posta</label><input id="cpw-email" type="email" autocomplete="username" value="${escapeHtml(email)}" ${set ? 'readonly' : ''}>
+                <label>Şifre</label><input id="cpw-pass" type="password" autocomplete="${set ? 'new-password' : 'current-password'}" placeholder="En az 6 karakter">
+                ${set ? '<label>Şifre (tekrar)</label><input id="cpw-pass2" type="password" autocomplete="new-password">' : ''}
+                <div id="cpw-msg" class="cpw-msg"></div>
+                <button type="button" class="cpw-go" onclick="submitCloudPw('${set ? 'set' : 'login'}')">${set ? 'Şifreyi kaydet' : 'Giriş yap'}</button>
+                ${set ? '' : '<button type="button" class="cpw-forgot" onclick="cloudPwReset()">Şifremi unuttum</button>'}
+            </div>`;
+            m.classList.add('open');
+            setTimeout(() => { const f = document.getElementById(set ? 'cpw-pass' : 'cpw-email'); if (f) f.focus(); }, 50);
+        }
+        function closeCloudPwModal() { const m = document.getElementById('cpw-modal'); if (m) m.classList.remove('open'); }
+        function cloudPwMsg(t, ok) { const el = document.getElementById('cpw-msg'); if (el) { el.textContent = t; el.className = 'cpw-msg ' + (ok ? 'ok' : 'err'); } }
+        async function submitCloudPw(mode) {
+            const email = (document.getElementById('cpw-email').value || '').trim();
+            const pw = document.getElementById('cpw-pass').value || '';
+            try {
+                if (mode === 'set') {
+                    if (pw.length < 6) return cloudPwMsg('Şifre en az 6 karakter olmalı.');
+                    if (pw !== document.getElementById('cpw-pass2').value) return cloudPwMsg('Şifreler aynı değil.');
+                    await fbAuth.currentUser.linkWithCredential(firebase.auth.EmailAuthProvider.credential(email, pw));
+                    cloudPwMsg('Şifre kaydedildi. Telefonda "E-posta ile giriş" ile bu e-posta ve şifreyi kullan.', true);
+                    if (typeof activeMain !== 'undefined' && activeMain === 'ayarlar') renderSettingsPanel();
+                } else {
+                    if (!email || !pw) return cloudPwMsg('E-posta ve şifreyi gir.');
+                    cloudPwMsg('Giriş yapılıyor…', true);
+                    await fbAuth.signInWithEmailAndPassword(email, pw);
+                    closeCloudPwModal(); // gerisini onAuthStateChanged devralır
+                }
+            } catch (e) { console.error(e); cloudPwMsg(cloudPwErr(e)); }
+        }
+        async function cloudPwReset() {
+            const email = (document.getElementById('cpw-email').value || '').trim();
+            if (!email) return cloudPwMsg('Önce e-posta adresini yaz.');
+            try { await fbAuth.sendPasswordResetEmail(email); cloudPwMsg('Şifre sıfırlama bağlantısı e-postana gönderildi.', true); }
+            catch (e) { cloudPwMsg(cloudPwErr(e)); }
+        }
+
         async function signInWithGoogle() {
             if (!firebaseReady && !initFirebase()) {
                 setSyncStatus('error', 'Bulut bağlantısı kurulamadı. firebase-config.js dosyasını kontrol edin.');
@@ -2231,6 +2305,7 @@ function getFlagIcon(countryCode) {
             }
             setSyncStatus('saving', 'Google ile bağlanılıyor...');
             try {
+                if (gtIsStandalone()) { await fbAuth.signInWithRedirect(googleProvider); return; } // uygulama modunda açılır pencere çalışmaz
                 await fbAuth.signInWithPopup(googleProvider);
                 // Gerisini onAuthStateChanged devralır
             } catch (e) {
@@ -2643,6 +2718,7 @@ function getFlagIcon(countryCode) {
             xcAugmentDatalist();
             
             if (initFirebase()) {
+                fbAuth.getRedirectResult().catch(e => { console.error('Yönlendirmeli giriş hatası:', e); setSyncStatus('error', 'Giriş hatası: ' + e.message); });
                 fbAuth.onAuthStateChanged(function(user) {
                     if (user) {
                         currentUser = { uid: user.uid, displayName: user.displayName, email: user.email, photoURL: user.photoURL };
@@ -3835,6 +3911,7 @@ function handleFileUpload(event, type) {
                             <button onclick="${currentUser ? 'signOutOfCloud()' : 'signInWithGoogle()'}" class="${currentUser ? 'bg-slate-700 hover:bg-slate-600' : 'bg-blue-600 hover:bg-blue-500'} text-white text-[10px] sm:text-sm font-bold py-2 px-3 sm:py-2 sm:px-4 rounded-md sm:rounded-lg transition-colors w-full sm:w-auto mt-1 sm:mt-0">
                                 <i class="fa-solid ${currentUser ? 'fa-right-from-bracket' : 'fa-cloud-arrow-up'} mr-1"></i> ${currentUser ? 'Hesaptan Çık' : 'Buluta Bağlan'}
                             </button>
+                            ${cloudPwBtnHtml()}
                         </div>
                         
                         <!-- Storage Usage Bar -->
