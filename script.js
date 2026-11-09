@@ -3404,7 +3404,7 @@ function handleFileUpload(event, type) {
             }
             pn.classList.toggle('open', open);
             document.body.classList.toggle('nb-on', open);
-            if (open) { nbRender(); setTimeout(() => { const t = document.getElementById('nb-input'); if (t) t.focus(); }, 150); }
+            if (open) { nbRender(); if (window.matchMedia('(pointer: fine)').matches) setTimeout(() => { const t = document.getElementById('nb-input'); if (t) t.focus(); }, 150); }
         }
         if (!window._nbInit) {
             window._nbInit = 1;
@@ -5562,6 +5562,8 @@ function handleFileUpload(event, type) {
             const body = el.parentElement;
             if (!body._hssRO && typeof ResizeObserver !== 'undefined') { body._hssRO = new ResizeObserver(() => homeStatsFit()); body._hssRO.observe(body); }
             if (!body.clientHeight) return;
+            // Telefonda küçültmek yerine panel içinde kaydır (yazılar okunur boyda kalsın)
+            if (window.matchMedia('(max-width: 640px)').matches) { el.style.zoom = 1; el.style.minHeight = ''; body.style.overflow = 'auto'; body.style.webkitOverflowScrolling = 'touch'; return; }
             el.style.zoom = 1;
             const cs = getComputedStyle(body);
             const avail = body.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
@@ -11975,9 +11977,16 @@ function renderQuickFixtureBar() {
     }
 
     setTimeout(() => {
-        const targetIdx = lastPlayedIdx !== -1 ? lastPlayedIdx : allMatches.length - 1;
+        // Oynanacak ilk maç (son oynanan maçtan sonraki) ortada; hepsi oynandıysa son maç
+        const targetIdx = lastPlayedIdx + 1 < allMatches.length ? lastPlayedIdx + 1 : allMatches.length - 1;
         const targetEl = document.getElementById(`qfb-item-${targetIdx}`);
-        if (targetEl) targetEl.scrollIntoView({ behavior: 'auto', block: 'center' });
+        if (targetEl) {
+            container.querySelectorAll('.qfb-next').forEach(x => x.classList.remove('qfb-next'));
+            if (targetIdx > lastPlayedIdx) targetEl.classList.add('qfb-next');
+            // Yalnızca şeridi kaydır (sayfanın kendisi kaymasın)
+            const cr = container.getBoundingClientRect(), tr = targetEl.getBoundingClientRect();
+            container.scrollTop += (tr.top - cr.top) - (container.clientHeight - tr.height) / 2;
+        }
         updateQfbFadeMask();
     }, 50);
 }
