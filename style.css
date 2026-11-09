@@ -2084,3 +2084,11 @@ body.theme-light .cpw-link{color:#2563eb}
 .cpw-modal.open{display:flex}
 .st-c>div:has(>.cpw-link)>button:not(.cpw-link){grid-row:1!important}
 .st-c>div:has(>button)>.cpw-link{grid-column:2;grid-row:2;justify-self:center;align-self:start;background:none!important;padding:2px 0!important;margin:4px 0 0!important;font-size:11px!important}
+
+/* ===== Uygulama modu (telefon): alt boşluğu sayfadan alıp alt menünün içine ver ===== */
+@media (display-mode: standalone){
+  body{padding-bottom:0!important}
+}
+@media (display-mode: standalone) and (max-width:639px){
+  body>aside{height:calc(60px + env(safe-area-inset-bottom))!important;padding-bottom:env(safe-area-inset-bottom)!important}
+}
