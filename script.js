@@ -2260,7 +2260,7 @@ function getFlagIcon(countryCode) {
             m.innerHTML = `<div class="cpw-box">
                 <button type="button" class="cpw-x" onclick="closeCloudPwModal()"><i class="fa-solid fa-xmark"></i></button>
                 <h3>${set ? 'Telefon için şifre belirle' : 'E-posta ile giriş'}</h3>
-                <p>${set ? 'Bu şifreyle telefondaki uygulamada aynı hesaba (aynı kariyer verisine) giriş yapabilirsin.' : 'Bilgisayarda Google hesabına bağlı olarak belirlediğin şifreyle giriş yap.'}</p>
+                <p>${set ? 'Bu şifreyle telefondaki uygulamada aynı hesaba (aynı kariyer verisine) giriş yapabilirsin.' : 'Uygulamada Google ile giriş, tarayıcı güvenliği nedeniyle tamamlanamıyor. Bilgisayarda Google ile girip Ayarlar → "Telefon için şifre belirle" ile oluşturduğun şifreyle buradan giriş yap.'}</p>
                 <label>E-posta</label><input id="cpw-email" type="email" autocomplete="username" value="${escapeHtml(email)}" ${set ? 'readonly' : ''}>
                 <label>Şifre</label><input id="cpw-pass" type="password" autocomplete="${set ? 'new-password' : 'current-password'}" placeholder="En az 6 karakter">
                 ${set ? '<label>Şifre (tekrar)</label><input id="cpw-pass2" type="password" autocomplete="new-password">' : ''}
@@ -2305,7 +2305,7 @@ function getFlagIcon(countryCode) {
             }
             setSyncStatus('saving', 'Google ile bağlanılıyor...');
             try {
-                if (gtIsStandalone()) { await fbAuth.signInWithRedirect(googleProvider); return; } // uygulama modunda açılır pencere çalışmaz
+                if (gtIsStandalone()) { setSyncStatus('offline'); openCloudPwModal('login'); return; } // uygulama modunda Google girişi tamamlanamıyor → e-posta/şifre
                 await fbAuth.signInWithPopup(googleProvider);
                 // Gerisini onAuthStateChanged devralır
             } catch (e) {
