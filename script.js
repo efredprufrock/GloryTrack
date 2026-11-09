@@ -5168,8 +5168,8 @@ function handleFileUpload(event, type) {
             const score = (t) => (homeTourRows(t).some(r => homeIsUs(r.name, our)) ? 2 : 0) + (homeTourRows(t).length && !homeTourKos(t).length ? 1 : 0);
             return tours.slice().sort((a, b) => score(b) - score(a))[0];
         }
-        const HOME_KO_ORDER = ['R1', 'R2', 'R3', 'R4', 'R5', 'Son 32', 'Son 16', 'Çeyrek Final', 'Yarı Final', 'Üçüncülük', 'Final'];
-        const HOME_KO_SHORT = { 'Son 32': '32', 'Son 16': '16', 'Çeyrek Final': 'QF', 'Yarı Final': 'SF', 'Üçüncülük': '3rd', 'Final': 'F' };
+        const HOME_KO_ORDER = ['R1', 'R2', 'R3', 'R4', 'R5', 'Play-Off', 'Play-Off Final', 'Son 32', 'Son 16', 'Çeyrek Final', 'Yarı Final', 'Üçüncülük', 'Final'];
+        const HOME_KO_SHORT = { 'Play-Off': 'PO', 'Play-Off Final': 'PF', 'Son 32': '32', 'Son 16': '16', 'Çeyrek Final': 'QF', 'Yarı Final': 'SF', 'Üçüncülük': '3rd', 'Final': 'F' };
         function homeKoHtml(t) {
             const kos = homeTourKos(t).slice().sort((a, b) => {
                 const ia = HOME_KO_ORDER.indexOf(a.stage), ib = HOME_KO_ORDER.indexOf(b.stage);
@@ -5184,14 +5184,14 @@ function handleFileUpload(event, type) {
                 const l1 = hs !== '' && as !== '', l2 = hs2 !== '' && as2 !== '';
                 let hw = false, aw = false, res = '';
                 if (l1) {
-                    const H = parseInt(hs) + (l2 ? parseInt(as2) : 0), A = parseInt(as) + (l2 ? parseInt(hs2) : 0);
+                    const H = parseInt(hs) + (l2 ? parseInt(as2) : 0) + koPenAdj(k, 'h'), A = parseInt(as) + (l2 ? parseInt(hs2) : 0) + koPenAdj(k, 'a');
                     if (!isNaN(H) && !isNaN(A)) {
                         hw = H > A; aw = A > H;
                         if (homeIsUs(h, our)) res = H > A ? 'w' : H < A ? 'l' : 'd';
                         else if (homeIsUs(a, our)) res = A > H ? 'w' : A < H ? 'l' : 'd';
                     }
                 }
-                const score = l1 ? (l2 ? `<b>${esc(hs)}-${esc(as)}</b><b>${esc(as2)}-${esc(hs2)}</b>` : `<b>${esc(hs)} - ${esc(as)}</b>`) : '<b>- : -</b>';
+                const score = (l1 ? (l2 ? `<b>${esc(hs)}-${esc(as)}</b><b>${esc(as2)}-${esc(hs2)}</b>` : `<b>${esc(hs)} - ${esc(as)}</b>`) : '<b>- : -</b>') + koPenBadge(k);
                 const side = (n, logo, win, right) => {
                     if (!n) return `<span class="hlt-tm${right ? ' r' : ''}"><i class="hlt-q">?</i></span>`;
                     const lg = logo || getTeamLogoByName(n);
@@ -5220,24 +5220,25 @@ function handleFileUpload(event, type) {
             const season = seasonsList[seasonsList.length - 1];
             const tour = season ? homePickLeagueTour(season) : null;
             if (!tour) return '<div class="text-center text-slate-500 text-sm py-6">Bu sezon için lig tablosu yok.</div>';
-            const koHtml = homeKoHtml(tour);
+            const uz = uclZoneInfo(tour);
+            const koHtml = (uz ? uclLegendHtml() : '') + homeKoHtml(tour);
             if (!homeTourRows(tour).length) return koHtml;
 
             const our = homeOurTeamName();
             const H = homeIsEn() ? ['P', 'W', 'D', 'L', 'GF', 'GA', 'GD', 'Pts'] : ['O', 'G', 'B', 'M', 'A', 'Y', 'AV', 'P'];
             const num = (v) => (v === undefined || v === null || v === '') ? '0' : escapeHtml(String(v));
 
-            const rows = tour.table.filter(r => r && r.name).map(row => {
+            const rows = tour.table.filter(r => r && r.name).map((row, ri) => {
                 const isUs = our && homeSameTeam(row.name, our);
                 const isFirst = String(row.rank) === '1';
                 const logo = row.logo || getTeamLogoByName(row.name);
                 const rowBg = isUs ? 'bg-emerald-900/30' : '';
                 const rankCls = isFirst ? 'text-emerald-400 font-black' : 'text-slate-400 font-bold';
                 const nameCls = isUs ? 'text-emerald-300 font-black' : (isFirst ? 'text-white font-black' : 'text-white font-bold');
-                const c = `py-1 border-b border-slate-800 ${rowBg}`;
+                const c = `py-1 border-b border-slate-800 ${rowBg}${uz ? ' ' + uz(row, ri) : ''}`;
                 const n = (v, extra) => `<td class="${c} px-0 sm:px-1 text-center tabular-nums min-w-[1.25rem] sm:min-w-[1.75rem] ${extra || ''}">${num(v)}</td>`;
                 return `<tr>
-                    <td class="${c} w-7 text-center ${rankCls} first:rounded-l">${num(row.rank)}</td>
+                    <td class="${c} ucl-rk w-7 text-center ${rankCls} first:rounded-l">${num(row.rank)}</td>
                     <td class="${c} w-[1%] pl-1 pr-2 sm:pr-3 whitespace-nowrap">
                         <div class="flex items-center gap-1.5 max-w-[8.25rem] sm:max-w-[10rem]">
                             <img src="${logo}" alt="" class="w-5 h-5 object-contain shrink-0">
@@ -5267,6 +5268,23 @@ function handleFileUpload(event, type) {
                 </div>`;
         }
 
+        // ===================== AVRUPA KUPALARI LİG AŞAMASI: 1–8 direkt / 9–24 play-off / 25–36 elenir =====================
+        function uclZoneInfo(tour) {
+            const n = String((tour && (tour.type || tour.name)) || '');
+            if (!/champions league|şampiyonlar ligi|europa league|avrupa ligi|conference league|konferans ligi|\b(ucl|uel|uecl)\b/i.test(n)) return null;
+            if (/\b(afc|caf|concacaf|ofc|conmebol)\b/i.test(n)) return null;
+            if (((tour.table || []).filter(r => r && r.name && r.name !== 'Takım Adı')).length < 30) return null; // eski grup formatı değil, 36'lık lig aşaması
+            return (row, idx) => {
+                const rk = parseInt(row && row.rank) || (idx + 1);
+                return 'ucl-' + (rk <= 8 ? 'q' : rk <= 24 ? 'po' : 'out') + (rk === 9 || rk === 25 ? ' ucl-sep' : '');
+            };
+        }
+        function uclLegendHtml(asRow) {
+            const en = typeof currentLang !== 'undefined' && currentLang === 'en';
+            const html = `<div class="ucl-leg"><span><i class="q"></i>${en ? 'Round of 16' : 'Son 16 (direkt)'}</span><span><i class="po"></i>${en ? 'Play-off' : 'Play-off'}</span><span><i class="out"></i>${en ? 'Eliminated' : 'Elendi'}</span></div>`;
+            return asRow ? `<tr class="ucl-leg-row"><td colspan="10">${html}</td></tr>` : html;
+        }
+
         // --- 4) TURNUVALAR ---
         function homeTourChampion(tour) {
             let name = '', logo = '';
@@ -5277,8 +5295,8 @@ function handleFileUpload(event, type) {
                 const hs2 = parseInt(fin.homeScore2), as2 = parseInt(fin.awayScore2);
                 if (!isNaN(hs1) && !isNaN(as1)) {
                     const hasL2 = !isNaN(hs2) && !isNaN(as2);
-                    const hTotal = hs1 + (hasL2 ? as2 : 0);
-                    const aTotal = as1 + (hasL2 ? hs2 : 0);
+                    const hTotal = hs1 + (hasL2 ? as2 : 0) + koPenAdj(fin, 'h');
+                    const aTotal = as1 + (hasL2 ? hs2 : 0) + koPenAdj(fin, 'a');
                     if (hTotal > aTotal) { name = fin.home; logo = fin.homeLogo || getTeamLogoByName(fin.home); }
                     else if (aTotal > hTotal) { name = fin.away; logo = fin.awayLogo || getTeamLogoByName(fin.away); }
                 }
@@ -12025,7 +12043,9 @@ function applyQfbCollapsedState() {
             'çeyrek final': 'QF',
             'yarı final': 'SF',
             'final': 'F',
-            'üçüncülük': '3rd'
+            'üçüncülük': '3rd',
+            'play-off': 'PO',
+            'play-off final': 'PF'
         };
 
         function getRoundAbbr(round) {
@@ -12908,14 +12928,14 @@ function formatShortPlayerName(name) {
             const n = table.length, all = new Set();
             if (mode === 'closed') return all;
             for (let i = 0; i < n; i++) all.add(i);
-            if (mode === 'full' || n <= 7) return all;
+            if (mode === 'full' || n <= 8) return all;
             const mine = [ (managedTeams.kulup && managedTeams.kulup.name) || '', (managedTeams.milli && managedTeams.milli.name) || '' ]
                 .map(x => String(x).trim().toLowerCase()).filter(Boolean);
             let own = table.findIndex(r => mine.includes(String(r.name || '').trim().toLowerCase()));
             if (own === -1) own = 0;
-            const start = Math.min(Math.max(own - 2, 2), n - 5);
+            const start = Math.min(Math.max(own - 2, 2), n - 6);
             const vis = new Set([0, 1]);
-            for (let i = start; i < start + 5; i++) vis.add(i);
+            for (let i = start; i < start + 6; i++) vis.add(i);
             return vis;
         }
 
@@ -13388,12 +13408,81 @@ function formatShortPlayerName(name) {
                     document.getElementById('ko-score-a1-logo').src = aLogo;
                     document.getElementById('ko-score-h2-logo').src = aLogo; // Rövanş: Deplasman takımı evinde
                     document.getElementById('ko-score-a2-logo').src = hLogo; // Rövanş: Ev sahibi deplasmanda
+                    koModalEnhance(ko, hLogo, aLogo);
 
                     const modal = document.getElementById('ko-score-modal');
                     modal.classList.remove('hidden');
                     modal.classList.add('flex');
                 }
             }
+        }
+
+        // ===================== ELEME SKORU: OPSİYONEL RÖVANŞ + PENALTILAR =====================
+        // Penaltı yalnızca toplam skor berabereyse kazananı belirler. koPenAdj: karşılaştırmaya +0.5 ekler.
+        function koPenWinner(ko) {
+            if (!ko) return '';
+            const n = (v) => (v === '' || v === null || v === undefined || isNaN(parseInt(v))) ? null : parseInt(v);
+            const h1 = n(ko.homeScore), a1 = n(ko.awayScore), h2 = n(ko.homeScore2), a2 = n(ko.awayScore2), ph = n(ko.penHome), pa = n(ko.penAway);
+            if (h1 === null || a1 === null || ph === null || pa === null || ph === pa) return '';
+            const l2 = h2 !== null && a2 !== null;
+            const H = h1 + (l2 ? a2 : 0), A = a1 + (l2 ? h2 : 0);
+            if (H !== A) return '';
+            return ph > pa ? 'h' : 'a';
+        }
+        function koPenAdj(ko, side) { return koPenWinner(ko) === side ? 0.5 : 0; }
+        function koPenText(ko) { return koPenWinner(ko) ? `${ko.penHome}-${ko.penAway}` : ''; }
+        function koPenBadge(ko) { const t = koPenText(ko); return t ? `<span class="ko-pen" title="${currentLang === 'en' ? 'Penalties' : 'Penaltılar'}">P ${t}</span>` : ''; }
+        function koModalSync() {
+            const l2on = document.getElementById('ko-l2-on'), pon = document.getElementById('ko-pen-on');
+            const l2box = document.getElementById('ko-score-h2') && document.getElementById('ko-score-h2').closest('.bg-slate-900');
+            if (l2box && l2on) l2box.classList.toggle('ko-off', !l2on.checked);
+            const pbox = document.getElementById('ko-pen-box');
+            if (pbox && pon) pbox.classList.toggle('ko-off', !pon.checked);
+        }
+        function koModalEnhance(ko, hLogo, aLogo) {
+            const en = typeof currentLang !== 'undefined' && currentLang === 'en';
+            const h2 = document.getElementById('ko-score-h2');
+            const l2box = h2 && h2.closest('.bg-slate-900');
+            if (!l2box) return;
+            // Rövanş anahtarı
+            if (!document.getElementById('ko-l2-on')) {
+                const lab = l2box.querySelector('label');
+                lab.classList.add('ko-tg');
+                lab.innerHTML = `<input type="checkbox" id="ko-l2-on" onchange="koModalSync()"><span class="ko-sw"></span><span>${en ? '2nd leg (return)' : '2. Maç (Rövanş)'}</span><em>${en ? 'optional' : 'opsiyonel'}</em>`;
+            }
+            // Penaltı kutusu
+            if (!document.getElementById('ko-pen-box')) {
+                const box = document.createElement('div');
+                box.id = 'ko-pen-box';
+                box.className = 'bg-slate-900 p-3 rounded-lg border border-slate-700';
+                box.innerHTML = `<label class="ko-tg block text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-widest border-b border-slate-800 pb-1"><input type="checkbox" id="ko-pen-on" onchange="koModalSync()"><span class="ko-sw"></span><span>${en ? 'Penalties' : 'Penaltılar'}</span><em>${en ? 'if level' : 'beraberlikte'}</em></label>
+                    <div class="flex items-center justify-center gap-3">
+                        <img id="ko-pen-h-logo" src="" class="w-6 h-6 object-contain shrink-0 drop-shadow-md">
+                        <div class="flex items-center justify-center gap-2">
+                            <input type="number" min="0" id="ko-pen-h" class="w-12 bg-slate-950 text-white font-black text-center outline-none border border-slate-600 focus:border-emerald-500 rounded p-1.5 appearance-none" placeholder="-">
+                            <span class="text-slate-500 font-bold">:</span>
+                            <input type="number" min="0" id="ko-pen-a" class="w-12 bg-slate-950 text-white font-black text-center outline-none border border-slate-600 focus:border-emerald-500 rounded p-1.5 appearance-none" placeholder="-">
+                        </div>
+                        <img id="ko-pen-a-logo" src="" class="w-6 h-6 object-contain shrink-0 drop-shadow-md">
+                    </div>`;
+                l2box.insertAdjacentElement('afterend', box);
+            }
+            const has = (v) => v !== undefined && v !== null && v !== '';
+            document.getElementById('ko-l2-on').checked = has(ko.homeScore2) || has(ko.awayScore2);
+            document.getElementById('ko-pen-on').checked = has(ko.penHome) || has(ko.penAway);
+            document.getElementById('ko-pen-h').value = has(ko.penHome) ? ko.penHome : '';
+            document.getElementById('ko-pen-a').value = has(ko.penAway) ? ko.penAway : '';
+            document.getElementById('ko-pen-h-logo').src = hLogo;
+            document.getElementById('ko-pen-a-logo').src = aLogo;
+            koModalSync();
+        }
+        function koModalSave(ko) {
+            const l2on = document.getElementById('ko-l2-on'), pon = document.getElementById('ko-pen-on');
+            if (l2on && !l2on.checked) { ko.homeScore2 = ''; ko.awayScore2 = ''; }
+            if (pon && pon.checked) {
+                ko.penHome = document.getElementById('ko-pen-h').value;
+                ko.penAway = document.getElementById('ko-pen-a').value;
+            } else { ko.penHome = ''; ko.penAway = ''; }
         }
 
         function closeKoScoreModal() {
@@ -13415,6 +13504,7 @@ function formatShortPlayerName(name) {
                     ko.awayScore = document.getElementById('ko-score-a1').value;
                     ko.homeScore2 = document.getElementById('ko-score-h2').value;
                     ko.awayScore2 = document.getElementById('ko-score-a2').value;
+                    koModalSave(ko);
                     saveToLocalStorage();
                     closeKoScoreModal();
                     renderFixturePanel();
@@ -13837,7 +13927,7 @@ function renderFixturePanel() {
                                     // --- GRUP / LİG TABLOSU BÖLÜMÜ ---
                                     let tableSectionHtml = '';
                                     if (tableOn) {
-                                        const ltMode = ltGetMode(tour.id); const ltVis = ltVisibleSet(tour.table || [], ltMode); let ltPrev = -1;
+                                        const ltMode = ltGetMode(tour.id); const ltVis = ltVisibleSet(tour.table || [], ltMode); let ltPrev = -1; const uz = uclZoneInfo(tour);
                                         let tableRows = (tour.table || []).map((row, idx) => {
                                             if (!ltVis.has(idx)) return '';
                                             const ltGapHtml = (ltPrev !== -1 && idx - ltPrev > 1) ? `<tr class="lt-gap"><td colspan="10" class="text-center text-[9px] leading-none text-slate-500 py-0.5 select-none">⋯ ${idx - ltPrev - 1}</td></tr>` : '';
@@ -13849,8 +13939,8 @@ function renderFixturePanel() {
                                             const rankGlow = isWinner ? 'text-emerald-400 drop-shadow-[0_0_3px_rgba(52,211,153,0.6)] font-black' : 'text-slate-400 font-bold';
 
                                             return `
-                                            ${ltGapHtml}<tr class="border-b border-slate-800 bg-slate-800/20 hover:bg-slate-800/50 transition-colors">
-                                                <td class="py-1 px-1.5 w-8 text-center outline-none focus:bg-slate-700 cursor-text rounded ${rankGlow}" contenteditable="true" onblur="updateCustomTournament('${tour.id}', ${idx}, 'rank', this)">${row.rank}</td>
+                                            ${ltGapHtml}<tr class="border-b border-slate-800 bg-slate-800/20 hover:bg-slate-800/50 transition-colors${uz ? ' ' + uz(row, idx) : ''}">
+                                                <td class="ucl-rk py-1 px-1.5 w-8 text-center outline-none focus:bg-slate-700 cursor-text rounded ${rankGlow}" contenteditable="true" onblur="updateCustomTournament('${tour.id}', ${idx}, 'rank', this)">${row.rank}</td>
                                                 <td class="py-1 px-1.5 font-bold rounded cursor-pointer hover:bg-slate-700/80 transition-colors group/edit ${nameGlow}" onclick="openCustomTourTeamModal('${tour.id}', ${idx})" title="Takım ve Logoyu Düzenle">
                                                     <div class="flex items-center gap-2">
                                                         <img src="${row.logo || `https://ui-avatars.com/api/?name=\${encodeURIComponent(row.name || '?')}&background=random&color=fff&size=32`}" alt="${row.name}" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(row.name || '?')}&background=random&color=fff&size=32'" class="w-4 h-4 rounded-full object-cover shrink-0">
@@ -13898,7 +13988,7 @@ function renderFixturePanel() {
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        ${ltMode === 'closed' ? `<tr class="lt-closed"><td colspan="10" class="text-center text-[10px] text-slate-500 py-1">${(tour.table || []).length}</td></tr>` : tableRows}
+                                                        ${ltMode === 'closed' ? `<tr class="lt-closed"><td colspan="10" class="text-center text-[10px] text-slate-500 py-1">${(tour.table || []).length}</td></tr>` : tableRows + (uz ? uclLegendHtml(true) : '')}
                                                     </tbody>
                                                 </table>
                                             </div>
@@ -13969,8 +14059,8 @@ function renderFixturePanel() {
                                             // İki ayaklı maçları destekleyen Toplam (Aggregate) Skor Hesaplaması
                                             if (hasL1) {
                                                 // Rövanşta takımlar yer değiştirdiği için aScore2 sol tarafın (1. takımın), hScore2 ise sağ tarafın skorudur.
-                                                const hsAgg = parseInt(hScore) + (hasL2 ? parseInt(aScore2) : 0);
-                                                const asAgg = parseInt(aScore) + (hasL2 ? parseInt(hScore2) : 0);
+                                                const hsAgg = parseInt(hScore) + (hasL2 ? parseInt(aScore2) : 0) + koPenAdj(ko, 'h');
+                                                const asAgg = parseInt(aScore) + (hasL2 ? parseInt(hScore2) : 0) + koPenAdj(ko, 'a');
                                                 if (!isNaN(hsAgg) && !isNaN(asAgg)) {
                                                     if (hsAgg > asAgg) {
                                                         hLogoStyle += " drop-shadow-[0_0_12px_rgba(52,211,153,0.9)] scale-110 z-10 relative"; 
@@ -14021,6 +14111,8 @@ function renderFixturePanel() {
                                                     <option value="R3" ${stage === 'R3' ? 'selected' : ''}>R3</option>
                                                     <option value="R4" ${stage === 'R4' ? 'selected' : ''}>R4</option>
                                                     <option value="R5" ${stage === 'R5' ? 'selected' : ''}>R5</option>
+                                                    <option value="Play-Off" ${stage === 'Play-Off' ? 'selected' : ''}>PO</option>
+                                                    <option value="Play-Off Final" ${stage === 'Play-Off Final' ? 'selected' : ''}>PF</option>
                                                     <option value="Son 32" ${stage === 'Son 32' ? 'selected' : ''}>32</option>
                                                     <option value="Son 16" ${stage === 'Son 16' ? 'selected' : ''}>16</option>
                                                     <option value="Çeyrek Final" ${stage === 'Çeyrek Final' ? 'selected' : ''}>QF</option>
@@ -14041,7 +14133,7 @@ function renderFixturePanel() {
 
                                                     <!-- Skorlar (Tıklanabilir Sabit Yükseklikli Panel) -->
                                                     <div class="flex flex-col items-center justify-center shrink-0 px-2 sm:px-3 min-w-[54px] sm:min-w-[64px] h-[28px] sm:h-[34px] rounded-lg border z-10 cursor-pointer transition-colors ${scoreBoxClass}" onclick="openKoScoreModal('${tour.id}', '${ko.id}')" title="Skorları Düzenle">
-                                                        ${scoreDisplayHtml}
+                                                        ${scoreDisplayHtml}${koPenBadge(ko)}
                                                     </div>
 
                                                     <!-- Deplasman Logo / Ekle Butonu -->
@@ -14126,8 +14218,8 @@ function renderFixturePanel() {
                                             const hasL1 = !isNaN(hs1) && !isNaN(as1);
                                             const hasL2 = !isNaN(hs2) && !isNaN(as2);
                                             if (hasL1) {
-                                                const hTotal = hs1 + (hasL2 ? as2 : 0);
-                                                const aTotal = as1 + (hasL2 ? hs2 : 0);
+                                                const hTotal = hs1 + (hasL2 ? as2 : 0) + koPenAdj(finalMatch, 'h');
+                                                const aTotal = as1 + (hasL2 ? hs2 : 0) + koPenAdj(finalMatch, 'a');
                                                 if (hTotal > aTotal) { champName = finalMatch.home; champLogo = finalMatch.homeLogo || getTeamLogoByName(finalMatch.home); }
                                                 else if (aTotal > hTotal) { champName = finalMatch.away; champLogo = finalMatch.awayLogo || getTeamLogoByName(finalMatch.away); }
                                             }
@@ -15695,3 +15787,7 @@ if (typeof syncTrophiesData === 'function') {
     syncTrophiesData();
 }
 
+// ===================== UYGULAMA (PWA): service worker kaydı =====================
+if ('serviceWorker' in navigator && location.protocol === 'https:') {
+    window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(e => console.warn('SW kaydı başarısız:', e)); });
+}

@@ -1971,3 +1971,90 @@ body.theme-light .ps-lb{color:#5c5048}
 .ps-ea .ps-img img{object-fit:contain;object-position:bottom}
 .ps-ea .ps-src{color:#f59e0b}
 body.theme-light .sf-btn{background:#fff;color:#2c2420;border-color:#d6cfc2}
+
+/* ===== Avrupa kupaları lig aşaması: bölge rozetleri + ayraç ===== */
+tr.ucl-q>td.ucl-rk,td.ucl-q.ucl-rk,tr.ucl-po>td.ucl-rk,td.ucl-po.ucl-rk,tr.ucl-out>td.ucl-rk,td.ucl-out.ucl-rk{background-repeat:no-repeat;background-position:center;background-size:22px 16px;color:#fff!important;filter:none!important;font-weight:800}
+tr.ucl-q>td.ucl-rk,td.ucl-q.ucl-rk{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='16'%3E%3Crect width='22' height='16' rx='5' fill='%23059669'/%3E%3C/svg%3E")}
+tr.ucl-po>td.ucl-rk,td.ucl-po.ucl-rk{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='16'%3E%3Crect width='22' height='16' rx='5' fill='%23b45309'/%3E%3C/svg%3E")}
+tr.ucl-out>td.ucl-rk,td.ucl-out.ucl-rk{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='16'%3E%3Crect width='22' height='16' rx='5' fill='%23334155'/%3E%3C/svg%3E");color:#94a3b8!important}
+tr.ucl-sep>td,td.ucl-sep{box-shadow:inset 0 1.5px 0 #475569}
+.ucl-leg{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;padding:6px 0 2px;font-size:9.5px;font-weight:700;color:#94a3b8}
+.ucl-leg i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+.ucl-leg i.q{background:#059669}.ucl-leg i.po{background:#b45309}.ucl-leg i.out{background:#334155}
+tr.ucl-leg-row td{border:0!important;background:transparent!important}
+body.theme-light tr.ucl-out>td.ucl-rk,body.theme-light td.ucl-out.ucl-rk{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='16'%3E%3Crect width='22' height='16' rx='5' fill='%23d6cfc2'/%3E%3C/svg%3E");color:#5c5048!important}
+body.theme-light tr.ucl-sep>td,body.theme-light td.ucl-sep{box-shadow:inset 0 1.5px 0 #b8ad9c}
+body.theme-light .ucl-leg{color:#7a6d63}
+body.theme-light .ucl-leg i.out{background:#d6cfc2}
+
+/* ===== Avrupa kupaları rozetleri: renkli çerçeve + renkli sayı, saydam iç ===== */
+tr.ucl-q>td.ucl-rk,td.ucl-q.ucl-rk{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='16'%3E%3Crect x='.75' y='.75' width='20.5' height='14.5' rx='4.5' fill='%2310b981' fill-opacity='0.16' stroke='%2310b981' stroke-width='1.5'/%3E%3C/svg%3E");color:#34d399!important}
+tr.ucl-po>td.ucl-rk,td.ucl-po.ucl-rk{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='16'%3E%3Crect x='.75' y='.75' width='20.5' height='14.5' rx='4.5' fill='%23f59e0b' fill-opacity='0.16' stroke='%23f59e0b' stroke-width='1.5'/%3E%3C/svg%3E");color:#fbbf24!important}
+tr.ucl-out>td.ucl-rk,td.ucl-out.ucl-rk{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='16'%3E%3Crect x='.75' y='.75' width='20.5' height='14.5' rx='4.5' fill='%2364748b' fill-opacity='0.12' stroke='%2364748b' stroke-width='1.5'/%3E%3C/svg%3E");color:#94a3b8!important}
+.ucl-leg i{border:1.5px solid;background:transparent!important}
+.ucl-leg i.q{border-color:#10b981;background:rgba(16,185,129,.16)!important}.ucl-leg i.po{border-color:#f59e0b;background:rgba(245,158,11,.16)!important}.ucl-leg i.out{border-color:#64748b;background:rgba(100,116,139,.12)!important}
+body.theme-light tr.ucl-q>td.ucl-rk,body.theme-light td.ucl-q.ucl-rk{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='16'%3E%3Crect x='.75' y='.75' width='20.5' height='14.5' rx='4.5' fill='%23059669' fill-opacity='0.12' stroke='%23059669' stroke-width='1.5'/%3E%3C/svg%3E");color:#047857!important}
+body.theme-light tr.ucl-po>td.ucl-rk,body.theme-light td.ucl-po.ucl-rk{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='16'%3E%3Crect x='.75' y='.75' width='20.5' height='14.5' rx='4.5' fill='%23d97706' fill-opacity='0.12' stroke='%23d97706' stroke-width='1.5'/%3E%3C/svg%3E");color:#b45309!important}
+body.theme-light tr.ucl-out>td.ucl-rk,body.theme-light td.ucl-out.ucl-rk{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='16'%3E%3Crect x='.75' y='.75' width='20.5' height='14.5' rx='4.5' fill='%23a89a88' fill-opacity='0.12' stroke='%23a89a88' stroke-width='1.5'/%3E%3C/svg%3E");color:#7a6d63!important}
+
+/* ===== Avrupa kupaları rozetleri: daha soluk tonlar ===== */
+tr.ucl-q>td.ucl-rk,td.ucl-q.ucl-rk{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='16'%3E%3Crect x='.75' y='.75' width='20.5' height='14.5' rx='4.5' fill='%2310b981' fill-opacity='0.09' stroke='%2310b981' stroke-opacity='0.5' stroke-width='1.5'/%3E%3C/svg%3E");color:#5fae92!important}
+tr.ucl-po>td.ucl-rk,td.ucl-po.ucl-rk{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='16'%3E%3Crect x='.75' y='.75' width='20.5' height='14.5' rx='4.5' fill='%23f59e0b' fill-opacity='0.09' stroke='%23f59e0b' stroke-opacity='0.5' stroke-width='1.5'/%3E%3C/svg%3E");color:#c99a52!important}
+tr.ucl-out>td.ucl-rk,td.ucl-out.ucl-rk{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='16'%3E%3Crect x='.75' y='.75' width='20.5' height='14.5' rx='4.5' fill='%2364748b' fill-opacity='0.08' stroke='%2364748b' stroke-opacity='0.5' stroke-width='1.5'/%3E%3C/svg%3E");color:#7d8899!important}
+.ucl-leg i.q{border-color:rgba(16,185,129,.5);background:rgba(16,185,129,.09)!important}.ucl-leg i.po{border-color:rgba(245,158,11,.5);background:rgba(245,158,11,.09)!important}.ucl-leg i.out{border-color:rgba(100,116,139,.5);background:rgba(100,116,139,.08)!important}
+body.theme-light tr.ucl-q>td.ucl-rk,body.theme-light td.ucl-q.ucl-rk{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='16'%3E%3Crect x='.75' y='.75' width='20.5' height='14.5' rx='4.5' fill='%23059669' fill-opacity='0.07' stroke='%23059669' stroke-opacity='0.45' stroke-width='1.5'/%3E%3C/svg%3E");color:#3f8f72!important}
+body.theme-light tr.ucl-po>td.ucl-rk,body.theme-light td.ucl-po.ucl-rk{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='16'%3E%3Crect x='.75' y='.75' width='20.5' height='14.5' rx='4.5' fill='%23d97706' fill-opacity='0.07' stroke='%23d97706' stroke-opacity='0.45' stroke-width='1.5'/%3E%3C/svg%3E");color:#a8773a!important}
+body.theme-light tr.ucl-out>td.ucl-rk,body.theme-light td.ucl-out.ucl-rk{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='16'%3E%3Crect x='.75' y='.75' width='20.5' height='14.5' rx='4.5' fill='%23a89a88' fill-opacity='0.07' stroke='%23a89a88' stroke-opacity='0.5' stroke-width='1.5'/%3E%3C/svg%3E");color:#8a7d72!important}
+
+/* ===== Diğer Ligler: sıra rozetleri (1 yeşil, 2 mavi, 3 turuncu, diğerleri gri) ===== */
+.eu-grid .euro-body>div>div>span:first-child{--rk:100,116,139;--rt:#7d8899;width:18px!important;height:15px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;border-radius:4.5px;border:1.5px solid rgba(var(--rk),.5);background:rgba(var(--rk),.08);color:var(--rt)!important;font-size:9.5px;font-weight:900;line-height:1}
+.eu-grid .euro-body>div:nth-child(1)>div>span:first-child{--rk:16,185,129;--rt:#5fae92;background:rgba(var(--rk),.09)}
+.eu-grid .euro-body>div:nth-child(2)>div>span:first-child{--rk:59,130,246;--rt:#7199d4;background:rgba(var(--rk),.09)}
+.eu-grid .euro-body>div:nth-child(3)>div>span:first-child{--rk:245,158,11;--rt:#c99a52;background:rgba(var(--rk),.09)}
+body.theme-light .eu-grid .euro-body>div>div>span:first-child{--rk:168,154,136;--rt:#8a7d72;background:rgba(var(--rk),.07)}
+body.theme-light .eu-grid .euro-body>div:nth-child(1)>div>span:first-child{--rk:5,150,105;--rt:#3f8f72}
+body.theme-light .eu-grid .euro-body>div:nth-child(2)>div>span:first-child{--rk:37,99,235;--rt:#4a6fae}
+body.theme-light .eu-grid .euro-body>div:nth-child(3)>div>span:first-child{--rk:217,119,6;--rt:#a8773a}
+
+/* ===== Eleme skoru: opsiyonel rövanş + penaltılar ===== */
+.ko-tg{display:flex!important;align-items:center;gap:7px;cursor:pointer;user-select:none;text-align:left}
+.ko-tg input{display:none}
+.ko-tg .ko-sw{position:relative;width:26px;height:15px;border-radius:99px;background:#334155;flex-shrink:0;transition:background .15s}
+.ko-tg .ko-sw:after{content:"";position:absolute;top:2px;left:2px;width:11px;height:11px;border-radius:50%;background:#94a3b8;transition:transform .15s,background .15s}
+.ko-tg input:checked+.ko-sw{background:#059669}
+.ko-tg input:checked+.ko-sw:after{transform:translateX(11px);background:#fff}
+.ko-tg em{margin-left:auto;font-style:normal;font-size:8.5px;letter-spacing:.06em;color:#475569;text-transform:none;font-weight:700}
+.ko-off{padding-bottom:6px!important}
+.ko-off>label{margin-bottom:0!important;border-bottom-color:transparent!important;padding-bottom:0!important}
+.ko-off>div{display:none!important}
+.ko-pen{position:absolute;left:50%;bottom:-8px;transform:translateX(-50%);font-size:8px;font-weight:900;letter-spacing:.04em;line-height:1;padding:2px 5px;border-radius:99px;background:#0f172a;border:1px solid #475569;color:#cbd5e1;white-space:nowrap;z-index:2}
+div:has(>.ko-pen),.hlt-sc:has(>.ko-pen){position:relative}
+.hlt-sc:has(>.ko-pen){margin-bottom:6px}
+body.theme-light .ko-pen{background:#fff;border-color:#d6cfc2;color:#5c5048}
+body.theme-light .ko-tg .ko-sw{background:#d6cfc2}
+body.theme-light .ko-tg input:checked+.ko-sw{background:#059669}
+
+/* ===== Penaltı bilgisi: skor kutusunun içinde, skorun altında ikinci satır ===== */
+.ko-pen{position:static!important;transform:none!important;display:block;font-size:7px!important;font-weight:800;letter-spacing:.05em;line-height:1!important;padding:0!important;margin-top:2px;border:0!important;background:none!important;color:rgba(255,255,255,.55)!important;white-space:nowrap}
+div:has(>.ko-pen){height:auto!important;min-height:28px;padding-top:3px!important;padding-bottom:3px!important}
+div:has(>.ko-pen)>span:not(.ko-pen){line-height:1.05!important}
+.hlt-sc:has(>.ko-pen){height:auto!important;min-height:26px;margin-bottom:0!important;padding-top:2px;padding-bottom:2px}
+.hlt-sc .ko-pen{font-size:8px;margin-top:1px}
+body.theme-light .ko-pen{color:inherit!important;opacity:.75}
+div.group\/ko [onclick^="openKoScoreModal"] span.ko-pen:not(#_){font-size:7.5px!important;line-height:1!important;letter-spacing:.05em!important}
+
+/* ===== Diğer Ligler: puan renkleri sıra rozetleriyle aynı (1 yeşil, 2 mavi, 3 turuncu, diğerleri gri) ===== */
+.eu-grid .euro-body>div>span[data-euro-pts]{color:#7d8899!important}
+.eu-grid .euro-body>div:nth-child(1)>span[data-euro-pts]{color:#5fae92!important}
+.eu-grid .euro-body>div:nth-child(2)>span[data-euro-pts]{color:#7199d4!important}
+.eu-grid .euro-body>div:nth-child(3)>span[data-euro-pts]{color:#c99a52!important}
+body.theme-light .eu-grid .euro-body>div>span[data-euro-pts]{color:#8a7d72!important}
+body.theme-light .eu-grid .euro-body>div:nth-child(1)>span[data-euro-pts]{color:#3f8f72!important}
+body.theme-light .eu-grid .euro-body>div:nth-child(2)>span[data-euro-pts]{color:#4a6fae!important}
+body.theme-light .eu-grid .euro-body>div:nth-child(3)>span[data-euro-pts]{color:#a8773a!important}
+
+/* ===== Uygulama modu (ana ekrandan açılınca): çentik / alt çubuk güvenli alanları ===== */
+@media (display-mode: standalone){
+  body{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);background:#0f172a}
+  html,body{overscroll-behavior-y:none}
+}
