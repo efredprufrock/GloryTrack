@@ -11983,12 +11983,22 @@ function renderQuickFixtureBar() {
         if (targetEl) {
             container.querySelectorAll('.qfb-next').forEach(x => x.classList.remove('qfb-next'));
             if (targetIdx > lastPlayedIdx) targetEl.classList.add('qfb-next');
-            // Yalnızca şeridi kaydır (sayfanın kendisi kaymasın)
-            const cr = container.getBoundingClientRect(), tr = targetEl.getBoundingClientRect();
-            container.scrollTop += (tr.top - cr.top) - (container.clientHeight - tr.height) / 2;
+            container.dataset.target = targetIdx;
+            qfbCenter();
         }
         updateQfbFadeMask();
     }, 50);
+}
+
+// Şeridi sıradaki maça ortala (şerit kapalıyken yüksekliği 0 olduğundan açılınca tekrar çağrılır)
+function qfbCenter() {
+    const c = document.getElementById('qfb-list');
+    if (!c || !c.clientHeight) return;
+    const el = document.getElementById('qfb-item-' + c.dataset.target);
+    if (!el) return;
+    const cr = c.getBoundingClientRect(), tr = el.getBoundingClientRect();
+    c.scrollTop += (tr.top - cr.top) - (c.clientHeight - tr.height) / 2; // yalnızca şerit kayar, sayfa kaymaz
+    updateQfbFadeMask();
 }
 
 function updateQfbFadeMask() {
@@ -12026,6 +12036,7 @@ function toggleQuickFixtureBar() {
     const handle = document.getElementById('qfb-handle');
     
     bar.classList.toggle('qfb-collapsed');
+    if (!bar.classList.contains('qfb-collapsed')) setTimeout(qfbCenter, 60);
     
     // Mobil için absolute positioning aç/kapa
     if (window.innerWidth < 640) {
