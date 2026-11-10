@@ -55,6 +55,13 @@ const TR_EN = {
     "Bu sezon için lig tablosu yok.": "No league table for this season.",
     "Bu sezon için turnuva yok.": "No tournaments for this season.",
     "Lig Tarihi": "League History",
+    "Geri Al ve Yedekler": "Undo & Backups",
+    "Değişiklik geçmişi": "Change history",
+    "Bulut yedekleri": "Cloud backups",
+    "Yanlışlıkla silinenleri geri getir: bu cihazdaki son 30 değişiklik ve buluttaki günlük yedekler.": "Bring back anything deleted by mistake: the last 30 changes on this device and daily cloud backups.",
+    "E-posta ile giriş": "Sign in with email",
+    "Telefon için şifre belirle": "Set a password for phone",
+    "E-posta girişi açık": "Email sign-in enabled",
     "Tüm kadro sığsın": "Fit whole squad",
     "Büyük": "Large",
     "Daha büyük": "Larger",
@@ -2030,12 +2037,14 @@ function getFlagIcon(countryCode) {
         let activeSlot = localStorage.getItem('fc26_active_slot') || '1';
 
         function saveToLocalStorage() {
+            try { if (typeof ctSyncTrophies === 'function') ctSyncTrophies(); } catch (e) { console.warn('Kupa senkronu:', e); }
             try {
                 const dataStr = JSON.stringify(getAllData());
                 // Warn if approaching the 5MB limit (warn at 4MB)
                 if (dataStr.length > 4 * 1024 * 1024) {
                     console.warn('FC26: LocalStorage verisi 4MB sınırına yaklaşıyor. Yedek almanız önerilir.');
                 }
+                histOnSave(localStorage.getItem('fc26_career_data_' + activeSlot), dataStr); // geri al geçmişi
                 localStorage.setItem('fc26_career_data_' + activeSlot, dataStr);
                 if (activeSlot === '1') {
                     localStorage.removeItem('fc26_career_data'); // Eski çift kopya artık tutulmuyor (kota tasarrufu)
@@ -2328,7 +2337,7 @@ function getFlagIcon(countryCode) {
             rerenderCurrentPanel();
         }
 
-        async function connectToCloud(uid) {
+        async function connectToCloudOld(uid) {
             // Geriye dönük uyumluluk: Slot 1 ana 'uid' dokümanını kullanır, diğerleri slot numarasını ekler
             const docId = activeSlot === '1' ? uid : `${uid}_slot_${activeSlot}`;
             cloudDocRef = fbDb.collection('careers').doc(docId);
@@ -2361,7 +2370,7 @@ function getFlagIcon(countryCode) {
             startAppAfterAuth();
         }
 
-        function attachCloudListener() {
+        function attachCloudListenerOld() {
             if (cloudUnsubscribe) cloudUnsubscribe();
             cloudUnsubscribe = cloudDocRef.onSnapshot((snap) => {
                 if (!snap.exists || snap.metadata.hasPendingWrites) return; // kendi yazdığımız veri geri yansıyor, atla
@@ -2394,14 +2403,14 @@ function getFlagIcon(countryCode) {
             renderQuickFixtureBar();
         }
 
-        function queueCloudSave() {
+        function queueCloudSaveOld() {
             if (!cloudDocRef || isApplyingRemoteData) return;
             setSyncStatus('saving');
             clearTimeout(saveDebounceTimer);
             saveDebounceTimer = setTimeout(doCloudSave, 900);
         }
 
-        async function doCloudSave() {
+        async function doCloudSaveOld() {
             if (!cloudDocRef) return;
             try {
                 const data = getAllData();
@@ -2417,6 +2426,406 @@ function getFlagIcon(countryCode) {
                 console.error('Bulut kayıt hatası:', e);
                 setSyncStatus('error');
             }
+        }
+
+        // ===================== BULUT SENKRONİZASYONU v2: SÜRÜM KORUMALI KAYIT =====================
+        // Her kayıtta buluttaki sürüm numarası (_rev) kontrol edilir. Bu cihaz eski bir sürüm üzerinde çalışıyorsa
+        // (ör. telefon çevrimdışıyken düzenlendi, bu arada bilgisayardan kayıt yapıldı) üzerine yazmak yerine sorulur.
+        const GT_SID = Math.random().toString(36).slice(2, 10); // bu sekmenin kimliği (kendi yazdığımızı tanımak için)
+        let cloudBaseRev = 0, cloudDirty = false, cloudSaving = false, cloudConflictOpen = false, cloudSizeWarned = false;
+        function gtDeviceName() {
+            const u = navigator.userAgent || '';
+            const d = /iPhone/.test(u) ? 'iPhone' : /iPad/.test(u) ? 'iPad' : /Android/.test(u) ? 'Android' : /Mac/.test(u) ? 'Mac' : /Windows/.test(u) ? 'Windows' : 'Cihaz';
+            return d + (typeof gtIsStandalone === 'function' && gtIsStandalone() ? ' (uygulama)' : '');
+        }
+        function cloudStampStr(d) {
+            if (!d || !d._savedAt) return 'bilinmeyen zaman';
+            const t = new Date(d._savedAt);
+            return t.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' }) + ' ' + t.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) + (d._device ? ' · ' + d._device : '');
+        }
+        function cloudClean() { cloudDirty = false; try { localStorage.removeItem('gt_dirty_' + activeSlot); } catch (e) {} }
+        function cloudKeepLocal(key, data) { try { localStorage.setItem(key, JSON.stringify(data)); } catch (e) { console.warn('Güvenlik kopyası tutulamadı:', e); } }
+
+        async function connectToCloud(uid) {
+            const docId = activeSlot === '1' ? uid : `${uid}_slot_${activeSlot}`;
+            cloudDocRef = fbDb.collection('careers').doc(docId);
+            setSyncStatus('saving', 'Veriler alınıyor...');
+            try {
+                const snap = await cloudDocRef.get();
+                let pending = null;
+                if (snap.exists) {
+                    const d = snap.data();
+                    // Bu cihazda buluta gidememiş değişiklik var mı? (ör. çevrimdışı düzenleme)
+                    const flag = localStorage.getItem('gt_dirty_' + activeSlot), localStr = localStorage.getItem('fc26_career_data_' + activeSlot);
+                    if (flag !== null && localStr) {
+                        applyLoadedData(JSON.parse(localStr));
+                        cloudBaseRev = parseInt(flag) || 0;
+                        pending = d;
+                    } else {
+                        applyLoadedData(d);
+                        cloudBaseRev = d._rev || 0;
+                        localStorage.setItem('fc26_career_data_' + activeSlot, JSON.stringify(d));
+                        if (activeSlot === '1') localStorage.setItem('fc26_career_data', JSON.stringify(d));
+                    }
+                } else {
+                    cloudBaseRev = 0;
+                    let localStr = localStorage.getItem('fc26_career_data_' + activeSlot);
+                    if (!localStr && activeSlot === '1') localStr = localStorage.getItem('fc26_career_data');
+                    if (localStr && confirm('Google hesabınızla ilişkili bulut verisi bulunamadı.\n\nBu cihazdaki mevcut kariyer verinizi hesabınıza yüklemek ister misiniz?')) {
+                        applyLoadedData(JSON.parse(localStr));
+                        await cloudForceWrite(getAllData());
+                    }
+                }
+                cloudDirty = false;
+                attachCloudListener();
+                setSyncStatus('saved', 'Bağlandı');
+                bkDaily(); // günün ilk bağlantısında otomatik yedek
+                if (pending) { // bekleyen yerel değişiklikleri gönder; bulutta daha yenisi varsa sor
+                    cloudDirty = true;
+                    if ((pending._rev || 0) > cloudBaseRev) cloudShowConflict(pending); else doCloudSave();
+                }
+            } catch (e) {
+                console.error('Buluttan veri alma hatası:', e);
+                setSyncStatus('error', 'Buluttan veri alınamadı');
+            }
+            startAppAfterAuth();
+        }
+
+        function attachCloudListener() {
+            if (cloudUnsubscribe) cloudUnsubscribe();
+            cloudUnsubscribe = cloudDocRef.onSnapshot((snap) => {
+                if (!snap.exists || snap.metadata.hasPendingWrites) return;
+                const d = snap.data(), rr = d._rev || 0;
+                if (d._sid === GT_SID || rr <= cloudBaseRev) { cloudBaseRev = Math.max(cloudBaseRev, rr); return; } // kendi kaydımız ya da eski sürüm
+                if (cloudDirty || cloudSaving) { cloudShowConflict(d); return; } // bu cihazda kaydedilmemiş değişiklik var → sor
+                isApplyingRemoteData = true;
+                applyLoadedData(d);
+                cloudBaseRev = rr;
+                localStorage.setItem('fc26_career_data_' + activeSlot, JSON.stringify(d));
+                if (activeSlot === '1') localStorage.setItem('fc26_career_data', JSON.stringify(d));
+                rerenderCurrentPanel();
+                isApplyingRemoteData = false;
+                setSyncStatus('saved', 'Başka cihazdan güncellendi');
+            }, (err) => {
+                console.error('Bulut dinleme hatası:', err);
+                setSyncStatus('error');
+            });
+        }
+
+        function queueCloudSave() {
+            if (!cloudDocRef || isApplyingRemoteData) return;
+            cloudDirty = true;
+            try { if (localStorage.getItem('gt_dirty_' + activeSlot) === null) localStorage.setItem('gt_dirty_' + activeSlot, String(cloudBaseRev)); } catch (e) {}
+            if (cloudConflictOpen) return; // çakışma çözülene kadar yazma
+            setSyncStatus('saving');
+            clearTimeout(saveDebounceTimer);
+            saveDebounceTimer = setTimeout(doCloudSave, 900);
+        }
+
+        function cloudSizeCheck(data) {
+            const json = JSON.stringify(data), size = new Blob([json]).size;
+            if (size <= 900 * 1024) return true;
+            setSyncStatus('error', 'Veri buluta sığmıyor (' + Math.round(size / 1024) + ' KB / 900 KB)');
+            if (!cloudSizeWarned) {
+                cloudSizeWarned = true;
+                const parts = Object.keys(data).map(k => [k, new Blob([JSON.stringify(data[k]) || '']).size]).sort((a, b) => b[1] - a[1]).slice(0, 5);
+                alert('⚠️ BULUTA KAYDEDİLEMİYOR\n\nKariyer verisi ' + Math.round(size / 1024) + ' KB oldu; bulut sınırı 900 KB.\nDeğişiklikler şu an sadece bu cihazda duruyor.\n\nEn çok yer kaplayanlar:\n' + parts.map(p => '• ' + p[0] + ': ' + Math.round(p[1] / 1024) + ' KB').join('\n') + '\n\nAyarlar > Verileri Dışa Aktar ile hemen yedek al.');
+            }
+            return false;
+        }
+
+        async function doCloudSave() {
+            if (!cloudDocRef || cloudSaving || cloudConflictOpen) return;
+            const data = getAllData();
+            if (!cloudSizeCheck(data)) return;
+            cloudSaving = true;
+            try {
+                const res = await fbDb.runTransaction(async (t) => {
+                    const s = await t.get(cloudDocRef);
+                    const remote = s.exists ? s.data() : null, rr = remote ? (remote._rev || 0) : 0;
+                    if (rr > cloudBaseRev || (!remote && cloudBaseRev > 0)) return { conflict: true, remote };
+                    t.set(cloudDocRef, Object.assign({}, data, { _rev: rr + 1, _savedAt: Date.now(), _device: gtDeviceName(), _sid: GT_SID }));
+                    return { rev: rr + 1 };
+                });
+                if (res.conflict) { cloudSaving = false; cloudShowConflict(res.remote); return; }
+                cloudBaseRev = res.rev;
+                cloudClean();
+                setSyncStatus('saved');
+            } catch (e) {
+                console.error('Bulut kayıt hatası:', e);
+                setSyncStatus(navigator.onLine ? 'error' : 'offline', navigator.onLine ? 'Kaydedilemedi, tekrar denenecek' : 'Çevrimdışı · internet gelince kaydedilecek');
+            }
+            cloudSaving = false;
+            if (cloudDirty && !cloudConflictOpen && JSON.stringify(getAllData()) !== JSON.stringify(data)) queueCloudSave(); // kayıt sırasında yeni değişiklik olduysa
+        }
+
+        // Sürüm kontrolü olmadan yaz (yedek yükleme, çakışmada "bu cihazdakini kaydet")
+        async function cloudForceWrite(data) {
+            if (!cloudDocRef) return;
+            if (!cloudSizeCheck(data)) return;
+            const res = await fbDb.runTransaction(async (t) => {
+                const s = await t.get(cloudDocRef);
+                const rr = s.exists ? (s.data()._rev || 0) : 0;
+                t.set(cloudDocRef, Object.assign({}, data, { _rev: rr + 1, _savedAt: Date.now(), _device: gtDeviceName(), _sid: GT_SID }));
+                return rr + 1;
+            });
+            cloudBaseRev = res;
+            cloudClean();
+            setSyncStatus('saved');
+        }
+
+        // İnternet gelince / periyodik olarak bekleyen kaydı tekrar dene
+        window.addEventListener('online', () => { if (cloudDirty) queueCloudSave(); });
+        setInterval(() => { if (cloudDirty && !cloudSaving && !cloudConflictOpen && navigator.onLine && cloudDocRef) doCloudSave(); }, 30000);
+
+        function cloudShowConflict(remote) {
+            if (cloudConflictOpen) return;
+            cloudConflictOpen = true;
+            clearTimeout(saveDebounceTimer);
+            let m = document.getElementById('cc-modal');
+            if (!m) { m = document.createElement('div'); m.id = 'cc-modal'; m.className = 'cpw-modal'; document.body.appendChild(m); }
+            const local = getAllData();
+            m.innerHTML = `<div class="cpw-box cc-box">
+                <h3><i class="fa-solid fa-triangle-exclamation"></i> Senkronizasyon çakışması</h3>
+                <p>${remote ? 'Bu cihazdaki değişiklikler kaydedilirken buluta <b>başka bir cihazdan daha yeni bir sürüm</b> kaydedilmiş. Hangisi kalsın?' : 'Buluttaki kariyer kaydı <b>silinmiş</b>. Bu cihazdaki veri tekrar buluta yüklensin mi?'}</p>
+                ${remote ? `<div class="cc-opt"><b>Buluttaki sürüm</b><span>${escapeHtml(cloudStampStr(remote))}</span></div>` : ''}
+                <div class="cc-opt"><b>Bu cihazdaki sürüm</b><span>${escapeHtml(gtDeviceName())} · kaydedilmemiş değişiklikler</span></div>
+                ${remote ? `<button type="button" class="cpw-go" onclick="cloudResolve('remote')"><i class="fa-solid fa-cloud-arrow-down"></i> Buluttakini kullan</button>` : ''}
+                <button type="button" class="cpw-go cc-alt" onclick="cloudResolve('local')"><i class="fa-solid fa-mobile-screen"></i> Bu cihazdakini kaydet</button>
+                <p class="cc-note">Seçmediğin sürüm silinmez: bu cihazda güvenlik kopyası olarak saklanır.</p>
+            </div>`;
+            m.classList.add('open');
+            m._remote = remote; m._local = local;
+            setSyncStatus('error', 'Çakışma: hangi sürümün kalacağını seç');
+        }
+        async function cloudResolve(which) {
+            const m = document.getElementById('cc-modal'); if (!m) return;
+            const remote = m._remote, local = m._local;
+            m.classList.remove('open');
+            cloudConflictOpen = false;
+            if (which === 'remote' && remote) {
+                cloudKeepLocal('gt_conflict_backup', { savedAt: Date.now(), kept: 'remote', discarded: local });
+                isApplyingRemoteData = true;
+                applyLoadedData(remote);
+                cloudBaseRev = remote._rev || 0;
+                cloudClean();
+                localStorage.setItem('fc26_career_data_' + activeSlot, JSON.stringify(remote));
+                if (activeSlot === '1') localStorage.setItem('fc26_career_data', JSON.stringify(remote));
+                rerenderCurrentPanel();
+                isApplyingRemoteData = false;
+                setSyncStatus('saved', 'Buluttaki sürüm yüklendi');
+            } else {
+                if (remote) cloudKeepLocal('gt_conflict_backup', { savedAt: Date.now(), kept: 'local', discarded: remote });
+                if (remote) { try { await bkWrite(remote, 'pre'); } catch (e) { console.warn(e); } }
+                try { await cloudForceWrite(getAllData()); setSyncStatus('saved', 'Bu cihazdaki sürüm kaydedildi'); }
+                catch (e) { console.error(e); cloudDirty = true; setSyncStatus('error', 'Kaydedilemedi, tekrar denenecek'); }
+            }
+        }
+
+        // ===================== OTOMATİK BULUT YEDEKLERİ =====================
+        // careers/{kariyer}/backups/{tarih}: her gün ilk bağlantıda o günün başındaki veri yedeklenir.
+        // Üzerine yazan işlemlerden (çakışmada "bu cihazdakini kaydet", yedek yükleme, geri yükleme) önce de ayrıca yedek alınır.
+        // En yeni 20 yedek saklanır; liste "_index" belgesinde tutulur (listelemek için tüm yedekleri indirmeye gerek kalmaz).
+        const BK_KEEP = 20;
+        const BK_TAGS = { daily: 'Günlük', pre: 'Üzerine yazmadan önce', manual: 'Elle alınan' };
+        function bkToday(d) { d = d || new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+        function bkMeta(data) {
+            let matches = 0;
+            try { Object.values(data.fixtureData || {}).forEach(a => (a || []).forEach(m => { if (m && m.homeScore !== '' && m.homeScore !== null && m.homeScore !== undefined) matches++; })); } catch (e) {}
+            const sq = data.squadData || {};
+            return { seasons: (data.seasonsList || []).length, lastSeason: (data.seasonsList || []).slice(-1)[0] || '', matches, players: (sq.astakim || []).length + (sq.akademi || []).length };
+        }
+        async function bkWrite(data, tag) {
+            if (!cloudDocRef) return false;
+            tag = tag || 'daily';
+            const col = cloudDocRef.collection('backups'), now = new Date();
+            const id = bkToday(now) + (tag === 'daily' ? '' : '_' + [now.getHours(), now.getMinutes(), now.getSeconds()].map(x => String(x).padStart(2, '0')).join('') + '_' + tag);
+            const clean = JSON.parse(JSON.stringify(data)); delete clean._sid; delete clean._bkMeta;
+            const size = new Blob([JSON.stringify(clean)]).size;
+            if (size > 900 * 1024) return false;
+            const meta = Object.assign(bkMeta(clean), { id, tag, at: Date.now(), device: clean._device || gtDeviceName(), size });
+            await col.doc(id).set(Object.assign(clean, { _bkMeta: meta }));
+            const idxRef = col.doc('_index'), idx = await idxRef.get();
+            let list = (idx.exists && idx.data().list) || [];
+            list = list.filter(x => x.id !== id); list.push(meta);
+            list.sort((a, b) => (a.id < b.id ? 1 : -1));
+            await idxRef.set({ list: list.slice(0, BK_KEEP) });
+            for (const x of list.slice(BK_KEEP)) { try { await col.doc(x.id).delete(); } catch (e) {} }
+            return true;
+        }
+        async function bkDaily() {
+            if (!cloudDocRef) return;
+            const key = 'gt_bk_day_' + cloudDocRef.id, today = bkToday();
+            if (localStorage.getItem(key) === today) return;
+            try {
+                const idx = await cloudDocRef.collection('backups').doc('_index').get();
+                const has = idx.exists && (idx.data().list || []).some(x => x.id === today);
+                if (!has) await bkWrite(getAllData(), 'daily');
+                localStorage.setItem(key, today);
+            } catch (e) { console.warn('Günlük yedek alınamadı:', e); }
+        }
+        function cloudLinksHtml() {
+            return cloudPwBtnHtml(); // geçmiş ve yedekler artık ayrı kartta
+        }
+        function bkDateStr(x) {
+            const t = new Date(x.at || Date.now());
+            return t.toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric' }) + ' · ' + t.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+        }
+        async function openBackupsModal() {
+            let m = document.getElementById('bk-modal');
+            if (!m) { m = document.createElement('div'); m.id = 'bk-modal'; m.className = 'cpw-modal'; document.body.appendChild(m); }
+            m.innerHTML = `<div class="cpw-box bk-box"><button type="button" class="cpw-x" onclick="closeBackupsModal()"><i class="fa-solid fa-xmark"></i></button>
+                <h3><i class="fa-solid fa-clock-rotate-left"></i> Bulut yedekleri</h3>
+                <p>Her gün otomatik yedek alınır; üzerine yazan işlemlerden önce de ayrıca yedeklenir. En yeni ${BK_KEEP} yedek saklanır.</p>
+                <div id="bk-list" class="bk-list"><div class="bk-empty"><i class="fa-solid fa-spinner fa-spin"></i> Yükleniyor…</div></div>
+                <div id="bk-msg" class="cpw-msg"></div>
+                <button type="button" class="cpw-go" onclick="bkManual()"><i class="fa-solid fa-floppy-disk"></i> Şimdi yedek al</button>
+            </div>`;
+            m.classList.add('open');
+            try {
+                const idx = await cloudDocRef.collection('backups').doc('_index').get();
+                const list = (idx.exists && idx.data().list) || [];
+                document.getElementById('bk-list').innerHTML = list.length ? list.map(x => `<div class="bk-row">
+                        <div class="bk-info"><b>${escapeHtml(bkDateStr(x))}</b><span><em class="bk-tag bk-${escapeHtml(x.tag)}">${escapeHtml(BK_TAGS[x.tag] || x.tag)}</em>${escapeHtml(x.lastSeason || '')} · ${x.matches} maç · ${x.players} oyuncu · ${Math.round((x.size || 0) / 1024)} KB · ${escapeHtml(x.device || '')}</span></div>
+                        <button type="button" title="JSON olarak indir" onclick="bkDownload('${escapeHtml(x.id)}')"><i class="fa-solid fa-download"></i></button>
+                        <button type="button" class="bk-restore" onclick="bkRestore('${escapeHtml(x.id)}')">Geri yükle</button>
+                    </div>`).join('') : '<div class="bk-empty">Henüz yedek yok. İlk yedek bugün otomatik alınacak.</div>';
+            } catch (e) { console.error(e); document.getElementById('bk-list').innerHTML = `<div class="bk-empty err">Yedekler okunamadı. Firestore kurallarını güncellediğinden emin ol.</div>`; }
+        }
+        function closeBackupsModal() { const m = document.getElementById('bk-modal'); if (m) m.classList.remove('open'); }
+        async function bkGet(id) {
+            const s = await cloudDocRef.collection('backups').doc(id).get();
+            if (!s.exists) throw new Error('Yedek bulunamadı');
+            const d = s.data(); delete d._bkMeta; return d;
+        }
+        async function bkManual() {
+            const msg = (t, ok) => { const el = document.getElementById('bk-msg'); if (el) { el.textContent = t; el.className = 'cpw-msg ' + (ok ? 'ok' : 'err'); } };
+            try { msg('Yedek alınıyor…', true); await bkWrite(getAllData(), 'manual'); openBackupsModal(); }
+            catch (e) { console.error(e); msg('Yedek alınamadı: ' + e.message); }
+        }
+        async function bkDownload(id) {
+            try {
+                const d = await bkGet(id);
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(new Blob([JSON.stringify(d)], { type: 'application/json' }));
+                a.download = 'glorytrack-yedek-' + id + '.json';
+                document.body.appendChild(a); a.click(); a.remove();
+            } catch (e) { alert('İndirilemedi: ' + e.message); }
+        }
+        async function bkRestore(id) {
+            if (!confirm('Bu yedeğe geri dönülsün mü?\n\nŞu anki veri silinmez: geri yüklemeden önce o da yedeklenir.')) return;
+            try {
+                const d = await bkGet(id);
+                await bkWrite(getAllData(), 'pre');
+                isApplyingRemoteData = true;
+                applyLoadedData(d);
+                isApplyingRemoteData = false;
+                localStorage.setItem('fc26_career_data_' + activeSlot, JSON.stringify(d));
+                if (activeSlot === '1') localStorage.setItem('fc26_career_data', JSON.stringify(d));
+                await cloudForceWrite(getAllData());
+                closeBackupsModal();
+                rerenderCurrentPanel();
+                setSyncStatus('saved', 'Yedek geri yüklendi');
+            } catch (e) { isApplyingRemoteData = false; console.error(e); alert('Geri yüklenemedi: ' + e.message); }
+        }
+
+        // ===================== GERİ AL GEÇMİŞİ (bu cihazda, IndexedDB) =====================
+        // Her kayıtta, değişiklikten ÖNCEKİ hal saklanır (son 30). Peş peşe hızlı düzenlemeler tek adım sayılır.
+        // Bir şey silindiğinde altta "Geri al" bildirimi çıkar. Ayarlar → "Geçmiş" ile istenen ana dönülür.
+        const HIST_KEEP = 30, HIST_GAP = 15000;
+        const HIST_LABELS = { fixtureData: 'Maçlar', matchDataStore: 'Maç detayları', squadData: 'Kadro', customTournamentsData: 'Turnuvalar', trophyData: 'Kupalar', transferData: 'Transferler', notebookData: 'Not defteri', leagueHistoryData: 'Lig tarihi', seasonsList: 'Sezonlar', managedTeams: 'Yönetilen takımlar', opponentsConfig: 'Rakipler', tournamentsList: 'Kupa listesi', euroLeaguesData: 'Diğer ligler', formations: 'Dizilişler', playerRoles: 'Oyuncu rolleri', competitionLogos: 'Turnuva logoları', customCatalog: 'Katalog', pyramidData: 'Lig piramidi' };
+        let histLastPush = 0, histDbP = null;
+        function histDb() {
+            if (histDbP) return histDbP;
+            histDbP = new Promise((res, rej) => {
+                if (!window.indexedDB) return rej(new Error('IndexedDB yok'));
+                const r = indexedDB.open('gt_history', 1);
+                r.onupgradeneeded = () => { const s = r.result.createObjectStore('snaps', { keyPath: 'id', autoIncrement: true }); s.createIndex('slot', 'slot'); };
+                r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+            });
+            return histDbP;
+        }
+        async function histTx(mode, fn) { const db = await histDb(); return new Promise((res, rej) => { const t = db.transaction('snaps', mode); const out = fn(t.objectStore('snaps')); t.oncomplete = () => res(out && out.result !== undefined ? out.result : out); t.onerror = () => rej(t.error); }); }
+        async function histList() {
+            const all = await histTx('readonly', s => s.index('slot').getAll(activeSlot));
+            return (all || []).sort((a, b) => b.at - a.at);
+        }
+        function histCounts(d) {
+            const n = (a) => Array.isArray(a) ? a.length : 0;
+            let matches = 0, players = 0, tours = 0;
+            Object.values(d.fixtureData || {}).forEach(a => matches += n(a));
+            Object.values(d.squadData || {}).forEach(a => players += n(a));
+            Object.values(d.customTournamentsData || {}).forEach(a => tours += n(a));
+            const tr = d.transferData || {};
+            return { 'maç': matches, 'oyuncu': players, 'turnuva': tours, 'transfer': n(tr.in) + n(tr.out) + n(tr.shortlist), 'not': n(d.notebookData), 'sezon': n(d.seasonsList) };
+        }
+        function histOnSave(oldStr, newStr) {
+            try {
+                if (!oldStr || oldStr === newStr) return;
+                const now = Date.now();
+                const oldD = JSON.parse(oldStr), newD = JSON.parse(newStr);
+                const changed = Object.keys(HIST_LABELS).filter(k => JSON.stringify(oldD[k]) !== JSON.stringify(newD[k]));
+                if (!changed.length) return; // yalnızca otomatik logo / teknik alanlar değiştiyse geçmişe ekleme
+                const a = histCounts(oldD), b = histCounts(newD);
+                const removed = Object.keys(a).filter(k => b[k] < a[k]).map(k => (a[k] - b[k]) + ' ' + k);
+                if (!removed.length && now - histLastPush < HIST_GAP) { histLastPush = now; return; } // hızlı ardışık düzenleme: tek adım
+                histLastPush = now;
+                const label = removed.length ? removed.join(', ') + ' silindi' : changed.slice(0, 3).map(k => HIST_LABELS[k]).join(', ') + ' değişti';
+                histTx('readwrite', s => s.add({ slot: activeSlot, at: now, label, data: oldStr })).then(async () => {
+                    const list = await histList();
+                    if (list.length > HIST_KEEP) await histTx('readwrite', s => list.slice(HIST_KEEP).forEach(x => s.delete(x.id)));
+                    if (removed.length) histToast(label);
+                }).catch(e => console.warn('Geçmiş kaydedilemedi:', e));
+            } catch (e) { console.warn('Geçmiş hatası:', e); }
+        }
+        function histToast(label) {
+            let t = document.getElementById('hist-toast');
+            if (!t) { t = document.createElement('div'); t.id = 'hist-toast'; document.body.appendChild(t); }
+            t.innerHTML = `<i class="fa-solid fa-trash-can"></i><span>${escapeHtml(label)}</span><button type="button" onclick="histUndoLast()">Geri al</button><button type="button" class="hx" onclick="this.parentElement.classList.remove('show')"><i class="fa-solid fa-xmark"></i></button>`;
+            t.classList.add('show');
+            clearTimeout(t._tm); t._tm = setTimeout(() => t.classList.remove('show'), 9000);
+        }
+        async function histRestore(id, silent) {
+            const list = await histList(), snap = list.find(x => x.id === id);
+            if (!snap) return;
+            if (!silent && !confirm('Veriler bu ana döndürülsün mü?\n\n' + histTime(snap.at) + ' · ' + snap.label + ' (öncesi)\n\nŞu anki hal de geçmişe kaydedilir; istersen ona da geri dönebilirsin.')) return;
+            const cur = localStorage.getItem('fc26_career_data_' + activeSlot);
+            if (cur) await histTx('readwrite', s => s.add({ slot: activeSlot, at: Date.now(), label: 'Geri almadan önceki hal', data: cur }));
+            applyLoadedData(JSON.parse(snap.data));
+            histLastPush = Date.now(); // geri alma işlemini ayrı adım olarak ekleme
+            localStorage.setItem('fc26_career_data_' + activeSlot, snap.data); // histOnSave tekrar kayıt etmesin
+            saveToLocalStorage(); // buluta da gönder
+            rerenderCurrentPanel();
+            const t = document.getElementById('hist-toast'); if (t) t.classList.remove('show');
+            closeHistoryModal();
+        }
+        async function histUndoLast() { const list = await histList(); if (list[0]) histRestore(list[0].id, true); }
+        function histTime(at) {
+            const t = new Date(at), today = new Date().toDateString() === t.toDateString();
+            return (today ? (typeof currentLang !== 'undefined' && currentLang === 'en' ? 'Today' : 'Bugün') : t.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' })) + ' ' + t.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+        }
+        async function openHistoryModal() {
+            let m = document.getElementById('hist-modal');
+            if (!m) { m = document.createElement('div'); m.id = 'hist-modal'; m.className = 'cpw-modal'; document.body.appendChild(m); }
+            m.innerHTML = `<div class="cpw-box bk-box"><button type="button" class="cpw-x" onclick="closeHistoryModal()"><i class="fa-solid fa-xmark"></i></button>
+                <h3><i class="fa-solid fa-rotate-left" style="color:#a78bfa;margin-right:6px"></i> Değişiklik geçmişi</h3>
+                <p>Bu cihazda yapılan son ${HIST_KEEP} değişiklikten <b>önceki</b> haller. Birine tıklayınca veriler o ana döner.</p>
+                <div id="hist-list" class="bk-list"><div class="bk-empty"><i class="fa-solid fa-spinner fa-spin"></i> Yükleniyor…</div></div></div>`;
+            m.classList.add('open');
+            try {
+                const list = await histList();
+                document.getElementById('hist-list').innerHTML = list.length ? list.map(x => `<div class="bk-row">
+                        <div class="bk-info"><b>${escapeHtml(histTime(x.at))}</b><span><em class="bk-tag ${/silindi/.test(x.label) ? 'bk-pre' : 'bk-manual'}">${escapeHtml(x.label)}</em>${x.label === 'Geri almadan önceki hal' ? '' : 'öncesi'}</span></div>
+                        <button type="button" class="bk-restore" onclick="histRestore(${x.id})">Bu ana dön</button></div>`).join('')
+                    : '<div class="bk-empty">Henüz geçmiş yok. Değişiklik yaptıkça burada birikir.</div>';
+            } catch (e) { document.getElementById('hist-list').innerHTML = `<div class="bk-empty err">Geçmiş okunamadı: ${escapeHtml(e.message)}</div>`; }
+        }
+        function closeHistoryModal() { const m = document.getElementById('hist-modal'); if (m) m.classList.remove('open'); }
+        async function stHistFill() {
+            const el = document.getElementById('st-hist-last'); if (!el) return;
+            const en = typeof currentLang !== 'undefined' && currentLang === 'en';
+            try { const l = await histList(); el.textContent = l.length ? (en ? 'Last: ' : 'Son: ') + histTime(l[0].at) + ' · ' + l[0].label : (en ? 'No changes recorded yet' : 'Henüz kayıtlı değişiklik yok'); }
+            catch (e) { el.textContent = ''; }
         }
 
         function getSquadDatalistOptions(context) {
@@ -3911,7 +4320,7 @@ function handleFileUpload(event, type) {
                             <button onclick="${currentUser ? 'signOutOfCloud()' : 'signInWithGoogle()'}" class="${currentUser ? 'bg-slate-700 hover:bg-slate-600' : 'bg-blue-600 hover:bg-blue-500'} text-white text-[10px] sm:text-sm font-bold py-2 px-3 sm:py-2 sm:px-4 rounded-md sm:rounded-lg transition-colors w-full sm:w-auto mt-1 sm:mt-0">
                                 <i class="fa-solid ${currentUser ? 'fa-right-from-bracket' : 'fa-cloud-arrow-up'} mr-1"></i> ${currentUser ? 'Hesaptan Çık' : 'Buluta Bağlan'}
                             </button>
-                            ${cloudPwBtnHtml()}
+                            ${cloudLinksHtml()}
                         </div>
                         
                         <!-- Storage Usage Bar -->
@@ -3956,6 +4365,20 @@ function handleFileUpload(event, type) {
                                     ${has3 ? `<button onclick="deleteCareerSlot(3)" class="absolute -top-1 -right-1 sm:top-1 sm:right-1 opacity-100 sm:opacity-0 group-hover:opacity-100 bg-red-900/80 hover:bg-red-500 text-red-200 hover:text-white rounded w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center text-[8px] sm:text-[10px] transition-all z-10 shadow-lg" title="Slotu Temizle"><i class="fa-solid fa-trash"></i></button>` : ''}
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- Geri Al ve Yedekler -->
+                        <div class="st-undo bg-slate-800 border border-slate-600 rounded-lg sm:rounded-xl p-2 sm:p-4">
+                            <div class="st-undo-hd">
+                                <span class="text-[10px] sm:text-sm font-bold text-slate-300"><i class="fa-solid fa-rotate-left mr-2" style="color:#a78bfa"></i>Geri Al ve Yedekler</span>
+                                <span id="st-hist-last" class="st-undo-last"></span>
+                            </div>
+                            <p class="st-undo-desc">Yanlışlıkla silinenleri geri getir: bu cihazdaki son 30 değişiklik ve buluttaki günlük yedekler.</p>
+                            <div class="st-undo-btns">
+                                <button type="button" onclick="openHistoryModal()" class="st-ub st-ub-h"><i class="fa-solid fa-clock-rotate-left"></i> <span>Değişiklik geçmişi</span></button>
+                                ${currentUser ? `<button type="button" onclick="openBackupsModal()" class="st-ub st-ub-b"><i class="fa-solid fa-cloud"></i> <span>Bulut yedekleri</span></button>` : `<button type="button" class="st-ub st-ub-off" disabled title="${currentLang === 'en' ? 'Available when connected to cloud' : 'Buluta bağlanınca açılır'}"><i class="fa-solid fa-cloud"></i> <span>Bulut yedekleri</span></button>`}
+                            </div>
+                            ${(setTimeout(stHistFill, 0), '')}
                         </div>
 
                         <!-- Dış katalog (Wikidata) -->
@@ -4039,7 +4462,8 @@ function handleFileUpload(event, type) {
                         if (activeSlot === '1') localStorage.removeItem('fc26_career_data');
                         // Buluta bağlıysa yedeği buluta da yaz, aksi halde eski bulut verisi geri gelir
                         if (cloudDocRef) {
-                            try { await cloudDocRef.set(parsed); } catch(err) { console.error('Yedek buluta yazılamadı:', err); }
+                            try { await bkWrite(getAllData(), 'pre'); } catch(err) { console.warn(err); }
+                            try { await cloudForceWrite(parsed); } catch(err) { console.error('Yedek buluta yazılamadı:', err); }
                         }
                         alert("Yedek başarıyla yüklendi! Sistem yenileniyor...");
                         location.reload();
@@ -6000,6 +6424,7 @@ function renderTrophyCabinet() {
         }
 
         function renderTrophiesGrid() {
+            try { if (ctSyncTrophies()) { saveToLocalStorage(); } } catch (e) { console.warn('Kupa senkronu:', e); }
             setTimeout(trophyFitCols, 0);
             tournamentsList.forEach(t => { if (!t.logoUrl) { const b = tourCatalogLogo(t.name); if (b) t.logoUrl = b; } });
             let html = `
@@ -7952,7 +8377,243 @@ function renderTrophyCabinet() {
         }
         if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if (typeof activeMain !== 'undefined' && activeMain === 'kadro') sqFixNameOverflow(); });
 
+        // ===================== OYUNCU ÖZELLİKLERİ (FC26 Development Plans) =====================
+        // p.attrs = { 'SEZON|start|mid|end': { season, phase, at, ovr, age, pos, role, sm, wf, m:{ana özellikler}, a:{alt özellikler} } }
+        const ATTR_PHASES = ['start', 'mid', 'end'];
+        const ATTR_PHASE_LBL = { start: ['Başı', 'Start'], mid: ['Ortası', 'Mid'], end: ['Sonu', 'End'] };
+        const ATTR_OUT = [
+            { k: 'pac', l: ['Hız', 'Pace'], a: [['acc', 'Hızlanma', 'Acceleration'], ['spr', 'Sprint Hızı', 'Sprint Speed']] },
+            { k: 'sho', l: ['Şut', 'Shooting'], a: [['pos', 'Pozisyon Alma', 'Att. Position'], ['fin', 'Bitiricilik', 'Finishing'], ['sp', 'Şut Gücü', 'Shot Power'], ['ls', 'Uzaktan Şut', 'Long Shots'], ['vol', 'Vole', 'Volleys'], ['pen', 'Penaltı', 'Penalties']] },
+            { k: 'pas', l: ['Pas', 'Passing'], a: [['vis', 'Vizyon', 'Vision'], ['cro', 'Orta', 'Crossing'], ['fk', 'Serbest Vuruş', 'FK Accuracy'], ['sps', 'Kısa Pas', 'Short Pass'], ['lps', 'Uzun Pas', 'Long Pass'], ['cur', 'Falso', 'Curve']] },
+            { k: 'dri', l: ['Dripling', 'Dribbling'], a: [['agi', 'Çeviklik', 'Agility'], ['bal', 'Denge', 'Balance'], ['rea', 'Reaksiyon', 'Reactions'], ['bc', 'Top Kontrolü', 'Ball Control'], ['drb', 'Top Sürme', 'Dribbling'], ['com', 'Soğukkanlılık', 'Composure']] },
+            { k: 'def', l: ['Defans', 'Defending'], a: [['int', 'Top Kesme', 'Interceptions'], ['hea', 'Kafa İsabeti', 'Heading Acc.'], ['dfa', 'Defans Farkındalığı', 'Def. Awareness'], ['stt', 'Ayakta Müdahale', 'Stand Tackle'], ['slt', 'Kayarak Müdahale', 'Slide Tackle']] },
+            { k: 'phy', l: ['Fizik', 'Physical'], a: [['jum', 'Sıçrama', 'Jumping'], ['sta', 'Dayanıklılık', 'Stamina'], ['str', 'Güç', 'Strength'], ['agg', 'Agresiflik', 'Aggression']] }
+        ];
+        const ATTR_GK = [
+            { k: 'div', l: ['Uçma', 'Diving'], a: [['gkdiv', 'Kaleci Uçma', 'GK Diving']] },
+            { k: 'han', l: ['Top Tutma', 'Handling'], a: [['gkhan', 'Kaleci Top Tutma', 'GK Handling']] },
+            { k: 'kic', l: ['Vuruş', 'Kicking'], a: [['gkkic', 'Kaleci Vuruş', 'GK Kicking']] },
+            { k: 'ref', l: ['Refleks', 'Reflexes'], a: [['gkref', 'Kaleci Refleks', 'GK Reflexes']] },
+            { k: 'spd', l: ['Hız', 'Speed'], a: [['acc', 'Hızlanma', 'Acceleration'], ['spr', 'Sprint Hızı', 'Sprint Speed']] },
+            { k: 'gpo', l: ['Pozisyon', 'Positioning'], a: [['gkpos', 'Kaleci Pozisyon', 'GK Positioning']] }
+        ];
+        const ATTR_SHORT = { pac: ['HIZ', 'PAC'], sho: ['ŞUT', 'SHO'], pas: ['PAS', 'PAS'], dri: ['DRP', 'DRI'], def: ['DEF', 'DEF'], phy: ['FİZ', 'PHY'],
+            acc: ['HZL', 'ACC'], spr: ['SPR', 'SPR'], pos: ['POZ', 'POS'], fin: ['BİT', 'FIN'], sp: ['ŞGÇ', 'SPW'], ls: ['UZŞ', 'LNG'], vol: ['VOL', 'VOL'], pen: ['PEN', 'PEN'],
+            vis: ['VİZ', 'VIS'], cro: ['ORT', 'CRO'], fk: ['SVR', 'FKA'], sps: ['KPS', 'SHP'], lps: ['UPS', 'LGP'], cur: ['FAL', 'CRV'],
+            agi: ['ÇEV', 'AGI'], bal: ['DNG', 'BAL'], rea: ['REA', 'REA'], bc: ['TKN', 'BCL'], drb: ['SÜR', 'DRB'], com: ['SĞK', 'COM'],
+            int: ['TKS', 'INT'], hea: ['KAF', 'HEA'], dfa: ['DFK', 'DAW'], stt: ['AYM', 'STT'], slt: ['KYM', 'SLT'],
+            jum: ['SIÇ', 'JUM'], sta: ['DAY', 'STA'], str: ['GÜÇ', 'STR'], agg: ['AGR', 'AGG'],
+            div: ['UÇM', 'DIV'], han: ['TUT', 'HAN'], kic: ['VUR', 'KIC'], ref: ['REF', 'REF'], spd: ['HIZ', 'SPD'], gpo: ['POZ', 'POS'] };
+        // FC26 özellik renkleri: <50 silik kırmızı, 50-59 turuncu, 60-69 sarı, 70-79 açık yeşil, 80-89 yeşil, 90-94 mavi, 95+ koyu mavi
+        function attrColor(v) {
+            const n = parseInt(v);
+            if (isNaN(n)) return '#475569';
+            return n >= 95 ? '#2563eb' : n >= 90 ? '#3b9eff' : n >= 80 ? '#2fbf5b' : n >= 70 ? '#8fcf4a' : n >= 60 ? '#e6c229' : n >= 50 ? '#f08a2c' : '#d8615a';
+        }
+        function attrEn() { return typeof currentLang !== 'undefined' && currentLang === 'en'; }
+        function attrIsGk(p) { return String((p && p.pos) || '').toUpperCase() === 'GK'; }
+        function attrGroups(gk) { return gk ? ATTR_GK : ATTR_OUT; }
+        function attrKeyLabel(key) {
+            const [s, ph] = String(key).split('|');
+            return s + ' ' + (ATTR_PHASE_LBL[ph] ? ATTR_PHASE_LBL[ph][attrEn() ? 1 : 0] : ph);
+        }
+        function attrKeyOrder(key) {
+            const [s, ph] = String(key).split('|');
+            const si = seasonsList.indexOf(s);
+            return (si < 0 ? 9999 : si) * 10 + Math.max(0, ATTR_PHASES.indexOf(ph));
+        }
+        function attrSnaps(p) { return Object.keys((p && p.attrs) || {}).sort((a, b) => attrKeyOrder(a) - attrKeyOrder(b)); }
+        function attrPair(p, fromKey, toKey) {
+            const ks = attrSnaps(p);
+            if (!ks.length) return null;
+            const to = (toKey && p.attrs[toKey]) ? toKey : ks[ks.length - 1];
+            const toO = attrKeyOrder(to);
+            const before = ks.filter(k => attrKeyOrder(k) <= toO);
+            const from = (fromKey && p.attrs[fromKey] && attrKeyOrder(fromKey) <= toO) ? fromKey : before[0];
+            return { from: p.attrs[from], to: p.attrs[to], fromKey: from, toKey: to };
+        }
+        function attrVal(snap, code, isMain) { if (!snap) return null; const v = isMain ? (snap.m || {})[code] : (snap.a || {})[code]; return (v === undefined || v === null || v === '') ? null : parseInt(v); }
+
+        // ---------- Toplu ekleme (C) ----------
+        let attrImportRows = [];
+        function attrNameScore(vid, site) {
+            const a = psNorm(vid), b = psNorm(site);
+            if (!a || !b) return 0;
+            if (a === b) return 100;
+            const aw = a.split(' '), bw = b.split(' ');
+            const aLast = aw[aw.length - 1], bLast = bw[bw.length - 1];
+            if (aLast === bLast) {
+                const ai = aw[0][0], bi = bw[0][0];
+                if (aw.length === 1 || bw.length === 1) return 70;
+                return ai === bi ? 85 : 40;
+            }
+            if (b.includes(a) || a.includes(b)) return 60;
+            return 0;
+        }
+        function openAttrImport() {
+            let m = document.getElementById('ai-modal');
+            if (!m) { m = document.createElement('div'); m.id = 'ai-modal'; m.className = 'cpw-modal'; document.body.appendChild(m); }
+            const en = attrEn();
+            const seasonOpts = seasonsList.slice().reverse().map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
+            m.innerHTML = `<div class="cpw-box ai-box">
+                <button type="button" class="cpw-x" onclick="closeAttrImport()"><i class="fa-solid fa-xmark"></i></button>
+                <h3><i class="fa-solid fa-file-import" style="color:#a78bfa;margin-right:6px"></i>${en ? 'Bulk import · player attributes' : 'Toplu ekleme · oyuncu özellikleri'}</h3>
+                <div class="ai-grid">
+                    <div>
+                        <div class="ai-sels">
+                            <select id="ai-season">${seasonOpts}</select>
+                            <select id="ai-phase">${ATTR_PHASES.map(p => `<option value="${p}">${en ? 'Season ' : 'Sezon '}${ATTR_PHASE_LBL[p][en ? 1 : 0].toLowerCase()}</option>`).join('')}</select>
+                            <select id="ai-ctx"><option value="astakim">${en ? 'First Team' : 'As Takım'}</option><option value="akademi">${en ? 'Academy' : 'Akademi'}</option><option value="milli">${en ? 'National' : 'Milli'}</option></select>
+                        </div>
+                        <textarea id="ai-text" placeholder='{"gt":"attrs","v":1,"season":"25/26","phase":"end","players":[ ... ]}'></textarea>
+                        <div class="ai-btns"><button type="button" class="cpw-go cc-alt" onclick="attrImportPreview()">${en ? 'Preview' : 'Önizle'}</button><button type="button" class="cpw-go" id="ai-save" onclick="attrImportSave()" disabled>${en ? 'Save' : 'Kaydet'}</button></div>
+                    </div>
+                    <div><div id="ai-prev" class="ai-prev"><div class="bk-empty">${en ? 'Paste the data I prepared and press Preview.' : 'Hazırladığım veriyi yapıştırıp Önizle\'ye bas.'}</div></div><div id="ai-msg" class="cpw-msg"></div></div>
+                </div></div>`;
+            document.getElementById('ai-ctx').value = squadContext;
+            m.classList.add('open');
+        }
+        function closeAttrImport() { const m = document.getElementById('ai-modal'); if (m) m.classList.remove('open'); }
+        function attrImportPreview() {
+            const en = attrEn(), msg = document.getElementById('ai-msg'), prev = document.getElementById('ai-prev');
+            let d;
+            try { d = JSON.parse(document.getElementById('ai-text').value.trim()); } catch (e) { msg.className = 'cpw-msg err'; msg.textContent = (en ? 'Could not read data: ' : 'Veri okunamadı: ') + e.message; return; }
+            if (!d || !Array.isArray(d.players)) { msg.className = 'cpw-msg err'; msg.textContent = en ? 'No "players" list found.' : '"players" listesi bulunamadı.'; return; }
+            if (d.season && seasonsList.includes(d.season)) document.getElementById('ai-season').value = d.season;
+            if (d.phase && ATTR_PHASES.includes(d.phase)) document.getElementById('ai-phase').value = d.phase;
+            if (d.ctx && ['astakim', 'akademi', 'milli'].includes(d.ctx)) document.getElementById('ai-ctx').value = d.ctx;
+            const ctx = document.getElementById('ai-ctx').value, squad = (squadData[ctx] || []).filter(p => p && p.name);
+            const used = new Set();
+            attrImportRows = d.players.map(v => {
+                const scored = squad.map(p => ({ p, s: attrNameScore(v.name, p.name) })).filter(x => x.s > 0).sort((a, b) => b.s - a.s);
+                let pick = '', st = 'new';
+                if (scored[0] && !used.has(scored[0].p.id) && (scored[0].s >= 85 || (scored[0].s >= 60 && (!scored[1] || scored[1].s < scored[0].s)))) { pick = scored[0].p.id; st = scored[0].s >= 85 ? 'ok' : 'warn'; used.add(pick); }
+                else if (scored[0]) st = 'warn';
+                return { v, pick, st };
+            });
+            const opts = (sel) => `<option value="__new"${sel === '__new' ? ' selected' : ''}>${en ? '— Add as new player' : '— Yeni oyuncu olarak ekle'}</option><option value="__skip"${sel === '__skip' ? ' selected' : ''}>${en ? '— Skip' : '— Atla'}</option>` + squad.map(p => `<option value="${escapeHtml(p.id)}"${p.id === sel ? ' selected' : ''}>${escapeHtml(p.name)}</option>`).join('');
+            const stl = { ok: [en ? 'Matched' : 'Eşleşti', 'ok'], warn: [en ? 'Check' : 'Kontrol et', 'wr'], new: [en ? 'Not in squad' : 'Kadroda yok', 'nw'] };
+            prev.innerHTML = `<table class="ai-tb"><tr><th>${en ? 'Name in video' : 'Videodaki isim'}</th><th>${en ? 'Player on site' : 'Sitedeki oyuncu'}</th><th>OVR</th><th>${en ? 'Status' : 'Durum'}</th></tr>` + attrImportRows.map((r, i) => {
+                const p = squad.find(x => x.id === r.pick), last = p && attrPair(p);
+                const oldO = last ? last.to.ovr : (p && (p.currentOvr || p.joinOvr));
+                const dlt = (oldO && r.v.ovr) ? parseInt(r.v.ovr) - parseInt(oldO) : null;
+                return `<tr><td class="n"><i>${escapeHtml(r.v.pos || '')}</i>${escapeHtml(r.v.name || '?')}</td>
+                    <td><select onchange="attrImportRows[${i}].pick=this.value;attrImportRows[${i}].st=this.value.startsWith('__')?'new':'ok';this.closest('tr').querySelector('.st').className='st '+(this.value.startsWith('__')?'nw':'ok')">${opts(r.pick || (r.st === 'new' ? '__new' : '__skip'))}</select></td>
+                    <td>${oldO ? escapeHtml(String(oldO)) + ' → ' : ''}<b class="${dlt > 0 ? 'up' : dlt < 0 ? 'dn' : ''}">${escapeHtml(String(r.v.ovr || '–'))}</b></td>
+                    <td><span class="st ${stl[r.st][1]}">${stl[r.st][0]}</span></td></tr>`;
+            }).join('') + '</table>';
+            attrImportRows.forEach(r => { if (!r.pick) r.pick = r.st === 'new' ? '__new' : '__skip'; });
+            msg.className = 'cpw-msg ok';
+            msg.textContent = en ? `${attrImportRows.length} players read. Check yellow rows, then Save.` : `${attrImportRows.length} oyuncu okundu. Sarı satırları kontrol edip Kaydet'e bas.`;
+            document.getElementById('ai-save').disabled = false;
+        }
+        function attrImportSave() {
+            const en = attrEn(), season = document.getElementById('ai-season').value, phase = document.getElementById('ai-phase').value, ctx = document.getElementById('ai-ctx').value;
+            const key = season + '|' + phase;
+            if (!squadData[ctx]) squadData[ctx] = [];
+            let n = 0, added = 0;
+            attrImportRows.forEach((r, i) => {
+                if (r.pick === '__skip') return;
+                const v = r.v;
+                let p = squadData[ctx].find(x => x.id === r.pick);
+                if (r.pick === '__new') {
+                    p = { id: 'p_' + Date.now() + '_' + i, pos: v.pos || 'CM', role: '', name: v.name, photoUrl: '', countryCode: '', joinAge: v.age || '', joinOvr: v.ovr || '', history: {} };
+                    squadData[ctx].push(p); added++;
+                }
+                if (!p) return;
+                if (!p.attrs) p.attrs = {};
+                if (/^[lr]/i.test(v.foot || '')) p.foot = String(v.foot).toUpperCase()[0];
+                const num = o => { const out = {}; Object.keys(o || {}).forEach(k => { const x = parseInt(o[k]); if (!isNaN(x)) out[k] = x; }); return out; };
+                p.attrs[key] = { season, phase, at: Date.now(), ovr: parseInt(v.ovr) || null, age: parseInt(v.age) || null, pos: v.pos || p.pos, role: v.role || '', sm: parseInt(v.sm) || null, wf: parseInt(v.wf) || null, foot: /^l/i.test(v.foot || '') ? 'L' : /^r/i.test(v.foot || '') ? 'R' : '', m: num(v.m), a: num(v.a) };
+                // OVR / yaş geçmişine de işle (ortası → Eylül-Aralık, sonu → Şubat-Haziran)
+                const cell = phase === 'mid' ? 's1' : phase === 'end' ? 's2' : '';
+                if (cell) {
+                    if (!p.history) p.history = {};
+                    if (!p.history[season]) p.history[season] = {};
+                    if (v.ovr) p.history[season][cell + 'o'] = String(v.ovr);
+                    if (v.age) p.history[season][cell + 'a'] = String(v.age);
+                }
+                n++;
+            });
+            saveToLocalStorage();
+            closeAttrImport();
+            sqView = 'attrs';
+            squadContext = ctx;
+            renderSquadGrid();
+            if (typeof setSyncStatus === 'function') setSyncStatus('saving', (en ? `${n} players saved` : `${n} oyuncu kaydedildi`) + (added ? (en ? `, ${added} new` : `, ${added} yeni`) : ''));
+        }
+
+        // ---------- Kadro paneli: Özellikler görünümü (A) ----------
+        let sqView = 'list';
+        try { sqView = localStorage.getItem('gt_sq_view') === 'attrs' ? 'attrs' : 'list'; } catch (e) {}
+        let attrShow = (window.innerWidth >= 1024 ? 'all' : 'main'), attrMode = 'val', attrFrom = '', attrTo = '', attrSort = { col: 'ovr', dir: -1 };
+        function setSqView(v) { sqView = v; try { localStorage.setItem('gt_sq_view', v); } catch (e) {} renderSquadGrid(); }
+        function sqViewToggleHtml() {
+            const en = attrEn();
+            return `<div class="sqv"><button type="button" class="${sqView === 'list' ? 'on' : ''}" onclick="setSqView('list')"><i class="fa-solid fa-table-list"></i> ${en ? 'Squad' : 'Kadro'}</button><button type="button" class="${sqView === 'attrs' ? 'on' : ''}" onclick="setSqView('attrs')"><i class="fa-solid fa-chart-simple"></i> ${en ? 'Attributes' : 'Özellikler'}</button></div>`;
+        }
+        function attrSetSort(col) { attrSort = { col, dir: attrSort.col === col ? -attrSort.dir : -1 }; renderSquadAttrs(); }
+        function renderSquadAttrs() {
+            const en = attrEn(), L = (tr, e) => en ? e : tr;
+            const all = (squadData[squadContext] || []).filter(p => p && p.name && !p.isArchived);
+            const keys = [...new Set(all.flatMap(p => attrSnaps(p)))].sort((a, b) => attrKeyOrder(a) - attrKeyOrder(b));
+            const keyOpts = (sel, auto) => `<option value=""${!sel ? ' selected' : ''}>${auto}</option>` + keys.map(k => `<option value="${escapeHtml(k)}"${k === sel ? ' selected' : ''}>${escapeHtml(attrKeyLabel(k))}</option>`).join('');
+            const showOpts = [['all', L('Tümü (detaylı)', 'All (detailed)')], ['main', L('Ana özellikler', 'Main attributes')]].concat(ATTR_OUT.map(g => [g.k, L('Alt: ', 'Sub: ') + g.l[en ? 1 : 0]]));
+            const head = `<div class="sqa-bar">
+                    <div class="sqa-l">${sqViewToggleHtml()}<button type="button" class="sqa-imp" onclick="openAttrImport()"><i class="fa-solid fa-file-import"></i> ${L('Toplu ekle', 'Bulk import')}</button></div>
+                    <div class="sqa-ctx">${['astakim', 'akademi', 'milli'].map(c => `<button type="button" class="${squadContext === c ? 'on' : ''}" onclick="squadContext='${c}';renderSquadGrid()">${{ astakim: L('As Takım', 'First Team'), akademi: L('Akademi', 'Academy'), milli: L('Milli', 'National') }[c]}</button>`).join('')}</div>
+                    <div class="sqa-r">
+                        <select onchange="attrShow=this.value;attrSort={col:'ovr',dir:-1};renderSquadAttrs()">${showOpts.map(o => `<option value="${o[0]}"${o[0] === attrShow ? ' selected' : ''}>${o[1]}</option>`).join('')}</select>
+                        <div class="sqa-mode"><button type="button" class="${attrMode === 'val' ? 'on' : ''}" onclick="attrMode='val';renderSquadAttrs()">${L('Değer', 'Value')}</button><button type="button" class="${attrMode === 'delta' ? 'on' : ''}" onclick="attrMode='delta';renderSquadAttrs()">${L('Gelişim', 'Growth')}</button></div>
+                        <select title="${L('Karşılaştırmanın başı', 'Compare from')}" onchange="attrFrom=this.value;renderSquadAttrs()">${keyOpts(attrFrom, L('İlk kayıt', 'First record'))}</select>
+                        <span class="sqa-arrow">→</span>
+                        <select title="${L('Karşılaştırmanın sonu', 'Compare to')}" onchange="attrTo=this.value;renderSquadAttrs()">${keyOpts(attrTo, L('Son kayıt', 'Latest record'))}</select>
+                    </div></div>`;
+            const withData = all.filter(p => attrSnaps(p).length), noData = all.length - withData.length;
+            const table = (gk) => {
+                const rows = withData.filter(p => attrIsGk(p) === gk);
+                if (!rows.length) return '';
+                const groups = attrGroups(gk);
+                let cols, grpRow = '';
+                const sqMob = window.innerWidth < 768; // telefonda sütun başlıkları kısaltılır (ACC, SPR…)
+                if (attrShow === 'all' && !gk) { // tüm alt özellikler, gruplu iki satırlı başlık
+                    cols = [];
+                    ATTR_OUT.forEach(g => { cols.push({ code: g.k, main: true, gs: true, l: ATTR_SHORT[g.k][en ? 1 : 0], t: g.l[en ? 1 : 0] }); g.a.forEach(a => cols.push({ code: a[0], main: false, l: ATTR_SHORT[a[0]][en ? 1 : 0], t: en ? a[2] : a[1] })); });
+                    grpRow = `<tr class="sqa-grp"><th colspan="2"></th>${ATTR_OUT.map(g => `<th colspan="${g.a.length + 1}" class="gs">${g.l[en ? 1 : 0]}</th>`).join('')}<th></th></tr>`;
+                } else if (attrShow === 'main' || gk) cols = groups.map(g => ({ code: g.k, main: true, l: sqMob ? ATTR_SHORT[g.k][en ? 1 : 0] : g.l[en ? 1 : 0], t: g.l[en ? 1 : 0] }));
+                else { const g = ATTR_OUT.find(x => x.k === attrShow) || ATTR_OUT[0]; cols = [{ code: g.k, main: true, l: sqMob ? ATTR_SHORT[g.k][en ? 1 : 0] : g.l[en ? 1 : 0], t: g.l[en ? 1 : 0] }].concat(g.a.map(a => ({ code: a[0], main: false, l: sqMob ? ATTR_SHORT[a[0]][en ? 1 : 0] : (en ? a[2] : a[1]), t: en ? a[2] : a[1] }))); }
+                const data = rows.map(p => {
+                    const pr = attrPair(p, attrFrom, attrTo);
+                    const ov = { v: pr.to.ovr, d: (pr.from !== pr.to && pr.from.ovr && pr.to.ovr) ? pr.to.ovr - pr.from.ovr : null };
+                    const cells = cols.map(c => { const v = attrVal(pr.to, c.code, c.main), f = pr.from !== pr.to ? attrVal(pr.from, c.code, c.main) : null; return { v, d: (v !== null && f !== null) ? v - f : null }; });
+                    const hasSub = cols.some(c => !c.main);
+                    const tot = cells.reduce((s, c, i) => s + ((!hasSub || !cols[i].main) ? (c.d || 0) : 0), 0); // alt özellik görünümünde: alt özelliklerin toplam artışı
+                    return { p, pr, ov, cells, tot };
+                });
+                const sv = (r) => {
+                    const pick = attrSort.col === 'ovr' ? r.ov : attrSort.col === 'tot' ? { v: r.tot, d: r.tot } : attrSort.col === 'name' ? null : r.cells[parseInt(attrSort.col)];
+                    if (attrSort.col === 'name') return r.p.name;
+                    if (!pick) return -999;
+                    const x = attrMode === 'delta' ? pick.d : pick.v;
+                    return x === null || x === undefined ? -999 : x;
+                };
+                data.sort((a, b) => { const x = sv(a), y = sv(b); return typeof x === 'string' ? x.localeCompare(y) * (attrSort.dir < 0 ? 1 : -1) : (x - y) * (attrSort.dir < 0 ? -1 : 1); });
+                const th = (id, label, cls, title) => `<th class="${attrSort.col === String(id) ? 's' : ''} ${cls || ''}"${title ? ` title="${escapeHtml(title)}"` : ''} onclick="attrSetSort('${id}')">${label}${attrSort.col === String(id) ? (attrSort.dir < 0 ? ' ▼' : ' ▲') : ''}</th>`;
+                const dHtml = d => d === null || d === undefined ? '<span class="d eq">·</span>' : `<span class="d ${d > 0 ? 'up' : d < 0 ? 'dn' : 'eq'}">${d > 0 ? '+' + d : d < 0 ? d : '·'}</span>`;
+                return `<div class="sqa-sec">${gk ? L('KALECİLER', 'GOALKEEPERS') : L('SAHA OYUNCULARI', 'OUTFIELD PLAYERS')}</div><table class="sqa-tb${grpRow ? ' sqa-all' : ''}"><thead>${grpRow}<tr>${th('name', L('Oyuncu', 'Player'), 'n')}${th('ovr', 'OVR')}${cols.map((c, i) => th(i, c.l, (c.main && cols.length > 6 ? 'mg' : '') + (c.gs ? ' gs' : ''), c.t)).join('')}${th('tot', L('Toplam Δ', 'Total Δ'))}</tr></thead><tbody>` +
+                    data.map(r => `<tr class="bg-row-${(p => p === 'GK' ? 'GK' : /^(CB|LB|RB|LWB|RWB)$/.test(p) ? 'DEF' : /^(ST|CF|LW|RW)$/.test(p) ? 'FWD' : 'MID')(String(r.p.pos || '').toUpperCase())}" onclick="openPlayerInfoModal('${r.p.id}')"><td class="n"><div class="sqa-pl"><i class="pos-${escapeHtml(String(r.p.pos || '').toUpperCase())}">${escapeHtml(r.p.pos || '')}</i>${r.p.photoUrl && !/ui-avatars\.com/.test(r.p.photoUrl) ? `<img src="${escapeHtml(r.p.photoUrl)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">` : '<span class="sqa-noph"></span>'}<span class="sqa-nm">${escapeHtml(window.innerWidth < 768 && typeof formatShortPlayerName === 'function' ? formatShortPlayerName(r.p.name) : r.p.name)}</span></div></td>
+                        <td><span class="sqa-ovr" style="background:${mbOvrColor(r.ov.v)}">${r.ov.v || '–'}</span>${dHtml(r.ov.d)}</td>
+                        ${r.cells.map((c, i) => `<td class="${cols[i].main && cols.length > 6 ? 'mg' : ''}${cols[i].gs ? ' gs' : ''}${attrMode === 'delta' ? ' dm' : ''}">${cols[i].main ? `<b class="mv" style="--c:${attrColor(c.v)}">${c.v !== null ? c.v : '–'}</b>` : `<b style="color:${attrColor(c.v)}">${c.v !== null ? c.v : '–'}</b>`}${dHtml(c.d)}</td>`).join('')}
+                        <td class="tot ${r.tot > 0 ? 'up' : r.tot < 0 ? 'dn' : 'eq'}">${r.tot > 0 ? '+' + r.tot : r.tot}</td></tr>`).join('') + '</tbody></table>';
+            };
+            const body = withData.length
+                ? table(false) + table(true) + (noData ? `<div class="sqa-note">${noData} ${L('oyuncunun henüz özellik kaydı yok.', noData === 1 ? 'player has no attribute records yet.' : 'players have no attribute records yet.')}</div>` : '')
+                : `<div class="sqa-empty"><i class="fa-solid fa-chart-simple"></i><b>${L('Henüz özellik verisi yok', 'No attribute data yet')}</b><span>${L('FC26 Development Plans videonu bana gönder; hazırladığım veriyi "Toplu ekle" ile buraya yapıştır.', 'Send me your FC26 Development Plans video, then paste the data I prepare via "Bulk import".')}</span><button type="button" class="sqa-imp" onclick="openAttrImport()"><i class="fa-solid fa-file-import"></i> ${L('Toplu ekle', 'Bulk import')}</button></div>`;
+            updateContentArea(`<div class="sqa w-full flex flex-col h-full min-h-0">${head}<div class="sqa-wrap">${body}</div></div>`);
+        }
+
         function renderSquadGrid() {
+            if (sqView === 'attrs' && !(typeof activeMain !== 'undefined' && activeMain === 'anasayfa')) { renderSquadAttrs(); return; }
             if (typeof activeMain !== 'undefined' && activeMain === 'anasayfa') { renderHomePanel(); return; }
             setTimeout(sqFixNameOverflow, 0);
             updateMockPlayers();
@@ -8136,6 +8797,7 @@ function renderTrophyCabinet() {
             let html = `
                 <div class="w-full flex flex-wrap justify-between items-center mb-3 px-2 shrink-0 relative gap-y-3">
                     <div class="flex flex-nowrap items-center gap-2 w-max shrink-0 overflow-x-auto hide-scrollbar">
+                        ${sqViewToggleHtml()}
                         ${(squadContext === 'astakim' || squadContext === 'akademi' || squadContext === 'milli') ? `<button onclick="openFormationModal('ilk11')" class="text-sm bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-600 rounded px-2 py-1.5 transition-colors shadow-sm flex items-center justify-center shrink-0 w-8 h-8" title="Kadrolar"><i class="fa-solid fa-people-group"></i></button>` : ''}
                         <button onclick="openPlayerInfoModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-lg flex items-center justify-center shrink-0" title="Oyuncu Ekle"><i class="fa-solid fa-user-plus"></i></button>
                         <button onclick="openPlayerBulkEdit()" class="text-white px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-lg flex items-center justify-center shrink-0 hover:brightness-110" style="background:${squadContext === 'milli' ? '#f43f5e' : squadContext === 'akademi' ? '#f59e0b' : '#0ea5e9'}" title="Toplu Düzenle"><i class="fa-solid fa-table-list"></i></button>
@@ -9268,6 +9930,7 @@ function piFillHero(p, cur, pts, seasonCount) {
     if (dot) dot.style.display = cc ? '' : 'none';
     const sea = document.getElementById('pih-sea');
     if (sea) sea.textContent = seasonCount;
+    piFootFill(p);
     const jo = document.getElementById('pih-join');
     if (jo) jo.textContent = pts[0].ovr || '-';
     // Form: bu sezonki OVR değişimi (önceki sezon sonuna, ilk sezonsa geliş OVR'sine göre)
@@ -9294,6 +9957,85 @@ function piFillHero(p, cur, pts, seasonCount) {
         const dl = d ? `<span class="pih-d ${dir}">${dTxt}</span>` : '';
         sh.innerHTML = `<div class="pih-shape">${dir === 'up' ? dl : ''}<b>${cur.ovr || '-'}</b><i>OVR</i>${dir === 'down' ? dl : ''}</div>`;
     }
+}
+
+// ===================== OYUNCU KARTI: ÖZELLİKLER SEKMESİ (FC26 Development Plans verisi) =====================
+let piAttrSel = { pid: null, from: '', to: '' };
+function piAttrPrepare(p) {
+    const tabs = document.getElementById('pi-tabs');
+    if (tabs && !tabs.querySelector('[data-t="ozellik"]')) {
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'pi-tab'; b.dataset.t = 'ozellik';
+        b.onclick = () => piSetTab('ozellik');
+        tabs.appendChild(b);
+    }
+    const tb = tabs && tabs.querySelector('[data-t="ozellik"]');
+    if (tb) tb.textContent = attrEn() ? 'Attributes' : 'Özellikler';
+    if (piAttrSel.pid !== p.id) piAttrSel = { pid: p.id, from: '', to: '' };
+    piTabHtml.ozellik = piAttrHtml(p);
+}
+function piAttrPick(key) {
+    const p = (squadData[squadContext] || []).find(x => x.id === piAttrSel.pid);
+    if (!p) return;
+    const pr = attrPair(p, piAttrSel.from, piAttrSel.to);
+    if (attrKeyOrder(key) > attrKeyOrder(pr.fromKey)) piAttrSel.to = key; else { piAttrSel.from = key; if (attrKeyOrder(key) >= attrKeyOrder(pr.toKey)) piAttrSel.to = ''; }
+    piTabHtml.ozellik = piAttrHtml(p);
+    piSetTab('ozellik');
+}
+function piAttrHtml(p) {
+    const en = attrEn(), L = (tr, e) => en ? e : tr, esc = s => escapeHtml(String(s));
+    const keys = attrSnaps(p);
+    if (!keys.length) return `<div class="pa-empty"><i class="fa-solid fa-chart-simple"></i><b>${L('Bu oyuncunun özellik kaydı yok', 'No attribute records for this player')}</b><span>${L('Kadro → Özellikler → Toplu ekle ile FC26 Development Plans verisi eklenince burada görünür.', 'Appears here after adding FC26 Development Plans data via Squad → Attributes → Bulk import.')}</span></div>`;
+    const pr = attrPair(p, piAttrSel.from, piAttrSel.to), A = pr.from, B = pr.to, same = pr.fromKey === pr.toKey;
+    const gk = attrIsGk(p) || String(B.pos || '').toUpperCase() === 'GK';
+    const col = v => attrColor(v);
+    const dTxt = d => d > 0 ? '+' + d : d < 0 ? String(d) : '·';
+    const dCls = d => d > 0 ? 'up' : d < 0 ? 'dn' : 'eq';
+    const chips = keys.map(k => `<button type="button" class="pa-chip${k === pr.fromKey && !same ? ' a' : ''}${k === pr.toKey ? ' b' : ''}" onclick="piAttrPick('${esc(k)}')">${esc(attrKeyLabel(k))}</button>`).join('');
+    const ovrD = !same && A.ovr && B.ovr ? B.ovr - A.ovr : null;
+    const stars = n => n ? '★'.repeat(Math.max(0, Math.min(5, n))) + '<span>' + '★'.repeat(5 - Math.max(0, Math.min(5, n))) + '</span>' : '–';
+    const meta = `<div class="pa-meta">
+            <div><small>OVR</small><b style="color:${mbOvrColor(B.ovr)}">${B.ovr || '–'}</b>${ovrD !== null ? `<em class="${dCls(ovrD)}">${dTxt(ovrD)}</em>` : ''}</div>
+            <div><small>${L('Rol', 'Role')}</small><b class="pa-role">${esc(B.role || '–')}</b></div>
+            <div><small>${L('Beceri', 'Skill')}</small><b class="pa-st">${stars(B.sm)}</b></div>
+            <div><small>${L('Zayıf ayak', 'Weak foot')}</small><b class="pa-st">${stars(B.wf)}</b></div></div>`;
+    const groups = attrGroups(gk).map(g => {
+        const mv = attrVal(B, g.k, true), mf = same ? null : attrVal(A, g.k, true), md = mv !== null && mf !== null ? mv - mf : null;
+        const subs = g.a.map(a => {
+            const v = attrVal(B, a[0], false); if (v === null) return '';
+            const f = same ? null : attrVal(A, a[0], false), d = f !== null ? v - f : null;
+            const base = d !== null && d > 0 ? f : v;
+            return `<div class="pa-at"><span>${esc(en ? a[2] : a[1])}</span><b style="color:${col(v)}">${v}</b><em class="${d === null ? 'eq' : dCls(d)}">${d === null ? '' : dTxt(d)}</em>
+                <div class="pa-bar"><i style="width:${Math.min(99, base)}%"></i>${d > 0 ? `<u style="left:${f}%;width:${d}%"></u>` : ''}${d < 0 ? `<s style="left:${v}%;width:${-d}%"></s>` : ''}</div></div>`;
+        }).join('');
+        return `<div class="pa-g"><div class="pa-gt"><b>${esc(g.l[en ? 1 : 0]).toUpperCase()}</b><span><strong style="color:${mv !== null ? col(mv) : '#475569'}">${mv !== null ? mv : '–'}</strong>${md !== null ? `<em class="${dCls(md)}">${dTxt(md)}</em>` : ''}</span></div>${subs}</div>`;
+    }).join('');
+    return `<div class="pa">
+        <div class="pa-tl"><span>${L('ANLAR', 'SNAPSHOTS')}</span><div>${chips}</div></div>
+        ${same ? `<div class="pa-hint">${L('Karşılaştırma için en az iki kayıt gerekiyor.', 'At least two records are needed to compare.')}</div>` : `<div class="pa-hint"><i class="a"></i>${esc(attrKeyLabel(pr.fromKey))} <b>→</b> <i class="b"></i>${esc(attrKeyLabel(pr.toKey))} · ${L('anlara tıklayarak değiştir', 'click snapshots to change')}</div>`}
+        ${meta}
+        <div class="pa-grid">${groups}</div></div>`;
+}
+
+// Tercih edilen ayak: p.foot ('R' / 'L'), yoksa son özellik kaydındaki 'foot'. İkona tıklayınca Sağ → Sol → boş döner.
+const PI_FOOT_SVG = '<path d="M8.2 10.2c-1.6 2.6-1.5 6.6-.4 9.3.9 2.3 3.6 3.2 5.5 2 1.7-1.1 2.3-3.2 2.4-5.2.1-2.4.9-3.6 1.4-5.2.5-1.7-.6-3-2.3-3.1-2.6-.2-5.2.2-6.6 2.2z"/><ellipse cx="8.6" cy="5.4" rx="2" ry="2.3"/><circle cx="11.9" cy="4.3" r="1.35"/><circle cx="14.4" cy="5" r="1.15"/><circle cx="16.4" cy="6.5" r="1"/><circle cx="17.7" cy="8.5" r=".85"/>';
+function piFootOf(p) {
+    if (p.foot === 'R' || p.foot === 'L') return p.foot;
+    if (p.foot === '-') return ''; // elle boş bırakıldı
+    const ks = typeof attrSnaps === 'function' ? attrSnaps(p) : [];
+    for (let i = ks.length - 1; i >= 0; i--) { const f = p.attrs[ks[i]].foot; if (f === 'R' || f === 'L') return f; }
+    return '';
+}
+function piFootFill(p) {
+    const foot = document.querySelector('#pi-hero .pih-foot');
+    if (!foot) return;
+    let el = foot.querySelector('.pih-ft');
+    if (!el) { el = document.createElement('button'); el.type = 'button'; el.className = 'pih-ft'; foot.insertBefore(el, foot.firstChild); }
+    const f = piFootOf(p), en = typeof currentLang !== 'undefined' && currentLang === 'en';
+    el.onclick = () => { p.foot = f === 'R' ? 'L' : f === 'L' ? '-' : 'R'; saveToLocalStorage(); piFootFill(p); };
+    el.title = en ? 'Preferred foot (click to change)' : 'Tercih ettiği ayak (değiştirmek için tıkla)';
+    el.className = 'pih-ft' + (f ? '' : ' none');
+    el.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${f === 'L' ? `<g transform="translate(24 0) scale(-1 1)">${PI_FOOT_SVG}</g>` : PI_FOOT_SVG}</svg><b>${f === 'R' ? (en ? 'Right' : 'Sağ') : f === 'L' ? (en ? 'Left' : 'Sol') : (en ? 'Foot' : 'Ayak')}</b>`;
 }
 
 function piRenderProfile(p) {
@@ -9435,6 +10177,7 @@ function piRenderProfile(p) {
             <div class="grid grid-cols-2 gap-2 mt-2 overflow-y-auto" style="max-height:150px">${sCards}</div>`
         : `<div class="${box} p-6 text-center text-[13px] text-slate-500">Bu oyuncu için henüz gol/asist verisi yok.</div>`;
 
+    piAttrPrepare(p);
     piSetTab('genel');
 }
 
@@ -12841,6 +13584,69 @@ function formatShortPlayerName(name) {
             saveToLocalStorage();
             renderFixturePanel();
         }
+        // ===================== TURNUVA ŞAMPİYONU / İKİNCİSİ → KUPALAR (otomatik) =====================
+        // Eleme turnuvası: Final kazananı şampiyon, kaybeden ikinci (rövanş ve penaltılar dahil).
+        // Lig: yalnızca sezon tamamlanınca (her takım en az 2×(takım sayısı−1) maç oynadıysa) 1. ve 2. sıra.
+        // Elle girilmiş kupa kutularına dokunulmaz; sadece boş ya da otomatik doldurulmuş kutular güncellenir.
+        function ctTourResult(tour) {
+            const valid = n => (n && String(n).trim() && n !== 'Takım Adı' && n !== 'Team Name') ? String(n).trim() : '';
+            const kos = Array.isArray(tour.knockouts) ? tour.knockouts : [];
+            const fin = kos.find(k => k && (k.stage === 'Final' || k.stage === 'F'));
+            const knockoutOn = tour.knockoutEnabled !== undefined ? tour.knockoutEnabled : kos.length > 0;
+            if (fin) {
+                const hs1 = parseInt(fin.homeScore), as1 = parseInt(fin.awayScore), hs2 = parseInt(fin.homeScore2), as2 = parseInt(fin.awayScore2);
+                if (isNaN(hs1) || isNaN(as1)) return null;
+                const l2 = !isNaN(hs2) && !isNaN(as2);
+                const H = hs1 + (l2 ? as2 : 0) + koPenAdj(fin, 'h'), A = as1 + (l2 ? hs2 : 0) + koPenAdj(fin, 'a');
+                if (H === A || !valid(fin.home) || !valid(fin.away)) return null;
+                const w = H > A ? 'home' : 'away', l = H > A ? 'away' : 'home';
+                return { champion: { name: valid(fin[w]), logo: fin[w + 'Logo'] }, runnerUp: { name: valid(fin[l]), logo: fin[l + 'Logo'] } };
+            }
+            if (knockoutOn) return null; // finali henüz oynanmamış eleme turnuvası
+            const rows = (Array.isArray(tour.table) ? tour.table : []).filter(r => r && valid(r.name));
+            if (rows.length < 2) return null;
+            const need = 2 * (rows.length - 1);
+            if (!rows.every(r => (parseInt(r.pld) || 0) >= need)) return null; // lig bitmedi
+            const sorted = rows.slice().sort((a, b) => (parseInt(a.rank) || 999) - (parseInt(b.rank) || 999));
+            return { champion: { name: valid(sorted[0].name), logo: sorted[0].logo }, runnerUp: { name: valid(sorted[1].name), logo: sorted[1].logo } };
+        }
+        function ctSyncTrophies() {
+            let changed = false;
+            Object.keys(customTournamentsData || {}).forEach(season => (customTournamentsData[season] || []).forEach(tour => {
+                if (!tour || !tour.type) return;
+                const res = ctTourResult(tour);
+                const canon = tourCanon(tour.type);
+                const nm = x => String(x || '').toLowerCase().replace(/[^a-z0-9ğüşöçı ]/g, ' ').replace(/\s+/g, ' ').trim();
+                const lg = tourLogoOf(tour.type) || '';
+                let t = tournamentsList.find(x => tourCanon(x.name) === canon)
+                    || (lg && tournamentsList.find(x => x.logoUrl && x.logoUrl === lg)) // aynı logo = aynı turnuva (ör. FA Cup / Emirates FA Cup)
+                    || tournamentsList.find(x => { const a = nm(x.name), c = nm(tour.type); return a.length > 5 && c.length > 5 && (a.endsWith(' ' + c) || c.endsWith(' ' + a)); });
+                if (!t) {
+                    if (!res) return;
+                    const ce = tourFind(tour.type);
+                    t = { id: 'ct_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6), name: canon, logoUrl: tourLogoOf(tour.type) || '', colorHex: ce ? ce.c : '#475569' };
+                    tournamentsList.push(t); changed = true;
+                }
+                const cell = (trophyData[season] && trophyData[season][t.id]) || { champion: null, runnerUp: null };
+                ['champion', 'runnerUp'].forEach(role => {
+                    const cur = cell[role], n = res && res[role] && res[role].name;
+                    if (cur && !cur.auto) return; // elle girilmiş: dokunma
+                    if (n) {
+                        if (!cur || cur.name !== n) {
+                            const lg = (res[role].logo && !/ui-avatars\.com/.test(res[role].logo) ? res[role].logo : '') || getTeamLogoByName(n) || `https://ui-avatars.com/api/?name=${encodeURIComponent(n)}&background=random&color=fff&bold=true&size=300`;
+                            cell[role] = { name: n, logoUrl: lg, auto: true, src: 'ct' }; changed = true;
+                        }
+                    } else if (cur && cur.auto && cur.src === 'ct') {
+                        cell[role] = null; changed = true;
+                    }
+                });
+                if (!trophyData[season]) trophyData[season] = {};
+                if (cell.champion || cell.runnerUp) trophyData[season][t.id] = cell;
+                else if (trophyData[season][t.id]) { delete trophyData[season][t.id]; changed = true; }
+            }));
+            return changed;
+        }
+
         // Ligin 1. ve 2. sırasındaki takımı Kupalar sekmesindeki ilgili turnuva kutusuna yazar
         function euroSyncTrophies(season, league) {
             const d = euroLeaguesData[season] && euroLeaguesData[season][league];
