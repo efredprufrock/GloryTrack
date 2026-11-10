@@ -10018,7 +10018,8 @@ function piAttrHtml(p) {
 }
 
 // Tercih edilen ayak: p.foot ('R' / 'L'), yoksa son özellik kaydındaki 'foot'. İkona tıklayınca Sağ → Sol → boş döner.
-const PI_FOOT_SVG = '<path d="M8.2 10.2c-1.6 2.6-1.5 6.6-.4 9.3.9 2.3 3.6 3.2 5.5 2 1.7-1.1 2.3-3.2 2.4-5.2.1-2.4.9-3.6 1.4-5.2.5-1.7-.6-3-2.3-3.1-2.6-.2-5.2.2-6.6 2.2z"/><ellipse cx="8.6" cy="5.4" rx="2" ry="2.3"/><circle cx="11.9" cy="4.3" r="1.35"/><circle cx="14.4" cy="5" r="1.15"/><circle cx="16.4" cy="6.5" r="1"/><circle cx="17.7" cy="8.5" r=".85"/>';
+const PI_FOOT_R = '<path d="M16.1 4.5 15.8 4.7 15.6 5.4 15.8 5.9 16.3 6.0 16.8 5.6 16.9 5.1 16.6 4.6ZM9.7 4.4 8.4 4.7 8.1 5.0 7.5 5.7 7.1 6.8 7.1 8.5 7.4 9.8 7.8 10.5 8.2 10.9 8.9 11.0 10.3 10.5 11.4 10.4 12.1 10.7 12.7 11.3 13.0 12.0 13.0 12.8 12.7 13.9 12.2 14.6 11.3 15.4 10.3 16.2 9.6 17.0 9.1 17.9 8.8 19.2 8.8 21.2 9.0 22.2 9.3 22.8 9.8 23.4 10.3 23.7 11.0 24.0 11.9 24.0 12.9 23.7 13.5 23.2 13.9 22.6 14.3 21.5 14.5 20.4 14.6 17.3 14.9 15.4 15.2 14.2 16.2 11.1 16.5 9.8 16.6 8.7 16.4 8.0 15.8 7.1 14.9 6.1 14.2 5.6 13.0 4.9 11.8 4.5 10.8 4.4ZM14.8 3.2 14.3 3.6 14.2 4.1 14.3 4.3 14.5 4.6 15.0 4.7 15.5 4.4 15.6 4.2 15.6 3.7 15.4 3.4 15.2 3.2ZM13.2 2.1 12.9 2.2 12.7 2.5 12.6 2.8 12.6 3.3 12.9 3.8 13.4 3.9 13.7 3.8 14.0 3.5 14.1 3.2 14.1 2.7 14.0 2.4 13.6 2.1ZM11.5 0.6 11.1 0.7 10.8 1.0 10.6 1.4 10.4 1.9 10.4 2.4 10.6 2.8 10.9 3.2 11.2 3.3 11.6 3.3 12.0 3.0 12.4 2.1 12.4 1.7 12.2 1.1 11.8 0.7ZM8.8 0.0 8.5 0.0 8.2 0.1 7.8 0.6 7.5 1.2 7.3 2.0 7.3 2.8 7.5 3.2 7.9 3.6 8.4 3.8 8.9 3.7 9.4 3.2 9.8 2.4 9.8 1.8 9.8 1.1 9.6 0.5 9.3 0.2Z"/>';
+const PI_FOOT_L = '<path d="M7.6 4.5 7.4 4.6 7.1 4.9 7.1 5.5 7.4 5.9 7.6 6.0 7.9 6.0 8.3 5.7 8.4 5.1 8.2 4.8 8.1 4.6ZM14.3 4.4 13.2 4.4 11.8 4.6 10.9 5.0 9.8 5.5 9.0 6.1 8.2 7.0 7.6 7.9 7.4 8.7 7.4 9.7 7.7 11.1 8.7 14.0 9.1 15.6 9.4 17.9 9.4 20.2 9.7 21.6 9.8 22.2 10.3 23.0 11.2 23.7 12.0 24.0 12.7 24.0 13.6 23.8 14.2 23.4 14.6 22.9 14.9 22.5 15.1 21.6 15.2 19.6 15.0 18.2 14.4 17.0 13.5 16.1 12.6 15.3 11.8 14.6 11.4 14.0 11.0 13.0 11.0 12.0 11.4 11.1 11.9 10.6 12.6 10.4 13.4 10.5 15.1 11.0 15.5 11.0 15.8 10.8 16.2 10.5 16.5 10.0 16.8 8.6 16.8 6.7 16.4 5.7 16.2 5.4 15.5 4.7 15.0 4.5ZM8.8 3.2 8.5 3.5 8.4 4.1 8.5 4.5 8.9 4.7 9.3 4.7 9.6 4.5 9.7 4.2 9.7 3.7 9.3 3.3ZM10.4 2.1 9.9 2.5 9.8 3.1 10.0 3.5 10.3 3.8 10.9 3.9 11.3 3.5 11.4 3.1 11.4 2.7 11.0 2.2 10.8 2.1ZM12.4 0.6 12.2 0.7 11.8 1.1 11.6 1.5 11.6 2.1 11.7 2.6 12.0 3.0 12.4 3.3 12.8 3.3 13.0 3.2 13.3 2.9 13.5 2.4 13.5 1.9 13.2 1.0 12.9 0.7ZM15.1 0.0 14.7 0.2 14.2 0.8 14.1 1.5 14.2 2.1 14.4 3.0 14.7 3.5 15.2 3.8 15.6 3.8 16.0 3.6 16.4 3.2 16.7 2.6 16.7 1.9 16.5 1.3 16.1 0.4 15.6 0.0Z"/>';
 function piFootOf(p) {
     if (p.foot === 'R' || p.foot === 'L') return p.foot;
     if (p.foot === '-') return ''; // elle boş bırakıldı
@@ -10035,7 +10036,9 @@ function piFootFill(p) {
     el.onclick = () => { p.foot = f === 'R' ? 'L' : f === 'L' ? '-' : 'R'; saveToLocalStorage(); piFootFill(p); };
     el.title = en ? 'Preferred foot (click to change)' : 'Tercih ettiği ayak (değiştirmek için tıkla)';
     el.className = 'pih-ft' + (f ? '' : ' none');
-    el.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${f === 'L' ? `<g transform="translate(24 0) scale(-1 1)">${PI_FOOT_SVG}</g>` : PI_FOOT_SVG}</svg><b>${f === 'R' ? (en ? 'Right' : 'Sağ') : f === 'L' ? (en ? 'Left' : 'Sol') : (en ? 'Foot' : 'Ayak')}</b>`;
+    const full = f === 'R' ? (en ? 'Right' : 'Sağ') : f === 'L' ? (en ? 'Left' : 'Sol') : (en ? 'Foot' : 'Ayak');
+    const short = f === 'R' ? (en ? 'R' : 'Sağ') : f === 'L' ? (en ? 'L' : 'Sol') : '–';
+    el.innerHTML = `<b class="ft-l">${full}</b><b class="ft-s">${short}</b><svg viewBox="0 0 24 24" aria-hidden="true">${f === 'L' ? PI_FOOT_L : PI_FOOT_R}</svg>`;
 }
 
 function piRenderProfile(p) {
@@ -11639,7 +11642,7 @@ function piRenderProfile(p) {
                 } else {
                     tData.forEach(t => {
                         let photoHtml = t.photoUrl ? `<img src="${t.photoUrl}" class="w-7 h-7 rounded-full object-cover shadow-sm bg-slate-800 shrink-0">` : `<div class="w-7 h-7 rounded-full flex items-center justify-center bg-slate-700 font-bold text-xs shadow-sm shrink-0">${t.name.charAt(0)}</div>`;
-                        let feeText = t.fee > 0 ? `€${t.fee.toLocaleString('tr-TR')}` : 'Bedelsiz';
+                        let feeText = (t.kind === 'loan' ? `<span class="trx-pill">${trxEn() ? 'Loan' : 'Kiralık'}</span>` : '') + (t.fee > 0 ? `€${t.fee.toLocaleString('tr-TR')}` : (t.kind === 'loan' ? '' : 'Bedelsiz'));
                         let feeColor = type === 'in' ? (t.fee > 0 ? 'text-red-400' : 'text-emerald-400') : (t.fee > 0 ? 'text-emerald-400' : 'text-slate-400');
                         
                         listHTML += `
@@ -11828,7 +11831,7 @@ function piRenderProfile(p) {
     const deleteBtn = document.getElementById('btn-delete-transfer');
 
     modalTitle.innerText = id ? "Transferi Düzenle" : (type === 'in' ? "Gelen Transfer Ekle" : "Giden Transfer Ekle");
-    teamLabel.innerText = type === 'in' ? "Geldiği Takım" : "Gittiği Takım";
+    teamLabel.innerText = type === 'in' ? "Geldiği Takım" : "Gittiği Takım"; setTimeout(() => trxSetup(type, id), 0);
 
     if (id) {
         const t = transferData[type].find(x => x.id === id);
@@ -11864,6 +11867,119 @@ function closeTransferModal() {
     modal.classList.remove('flex');
 }
 
+        // ===================== TRANSFER GİRİŞİ v2: kadrodan oyuncu arama, transfer türü (satış / kiralık / bedelsiz), kadroya otomatik işleme =====================
+        let trxKind = 'sale', trxPick = null, trxHl = -1;
+        function trxEn() { return typeof currentLang !== 'undefined' && currentLang === 'en'; }
+        function trxPool() {
+            return ['astakim', 'akademi'].flatMap(ctx => (squadData[ctx] || []).filter(p => p && p.name && !p.isArchived && !p.isPromoted).map(p => ({ p, ctx })));
+        }
+        function trxSetup(type, id) {
+            const en = trxEn(), box = document.querySelector('#transfer-editor-modal > div'); if (!box) return;
+            const list = box.querySelector('.space-y-4'); if (!list) return;
+            let w = document.getElementById('trx-wrap');
+            if (!w) { w = document.createElement('div'); w.id = 'trx-wrap'; list.insertBefore(w, list.firstChild); }
+            const t = id ? (transferData[type] || []).find(x => x.id === id) : null;
+            trxKind = t ? (t.kind || (t.fee > 0 ? 'sale' : 'free')) : 'sale';
+            trxPick = null; trxHl = -1;
+            const K = type === 'out'
+                ? [['sale', en ? 'Sale' : 'Satış', 'fa-money-bill-wave'], ['loan', en ? 'Loan' : 'Kiralık', 'fa-arrows-rotate'], ['free', en ? 'Free / Released' : 'Bedelsiz', 'fa-door-open']]
+                : [['sale', en ? 'Transfer' : 'Transfer', 'fa-money-bill-wave'], ['loan', en ? 'Loan' : 'Kiralık', 'fa-arrows-rotate'], ['free', en ? 'Free' : 'Bedelsiz', 'fa-hand-holding']];
+            const search = type === 'out' ? `
+                <div class="trx-s">
+                    <label>${en ? 'Pick from your squad' : 'Kadrodan oyuncu seç'}</label>
+                    <div class="trx-q"><i class="fa-solid fa-magnifying-glass"></i><input id="trx-q" type="text" autocomplete="off" placeholder="${en ? 'Search name or position (e.g. ST)…' : 'İsim ya da mevki ara (örn. ST)…'}" oninput="trxHl=-1;trxList()" onfocus="trxList()" onkeydown="trxKey(event)"></div>
+                    <div id="trx-dd" class="trx-dd custom-scrollbar"></div>
+                    <div id="trx-card" class="trx-card"></div>
+                </div>` : '';
+            const chk = type === 'out'
+                ? `<label class="trx-chk"><input type="checkbox" id="trx-arch" ${t ? '' : 'checked'}><span><b>${en ? 'Remove from squad' : 'Kadrodan çıkar'}</b><em id="trx-arch-sub">${en ? 'Player moves to the archive' : 'Oyuncu arşive taşınır'}</em></span></label>`
+                : `<label class="trx-chk"><input type="checkbox" id="trx-add" ${t ? '' : 'checked'}><span><b>${en ? 'Add to first-team squad' : 'A Takım kadrosuna ekle'}</b><em>${en ? 'Skipped if the player is already in the squad' : 'Oyuncu zaten kadrodaysa eklenmez'}</em></span></label>`;
+            w.innerHTML = `<div class="trx-k">${K.map(([k, l, ic]) => `<button type="button" data-k="${k}" class="${trxKind === k ? 'on' : ''}" onclick="trxSetKind('${k}')"><i class="fa-solid ${ic}"></i>${l}</button>`).join('')}</div>${search}`;
+            let c = document.getElementById('trx-chk-row');
+            if (!c) { c = document.createElement('div'); c.id = 'trx-chk-row'; list.appendChild(c); }
+            c.innerHTML = chk;
+            trxSetKind(trxKind, true);
+            trxCard();
+            if (type === 'out' && !t) setTimeout(() => { const q = document.getElementById('trx-q'); if (q) q.focus(); }, 60);
+        }
+        function trxSetKind(k, init) {
+            const en = trxEn(); trxKind = k;
+            document.querySelectorAll('#trx-wrap .trx-k button').forEach(b => b.classList.toggle('on', b.dataset.k === k));
+            const fee = document.getElementById('tr-fee');
+            const lab = fee && fee.closest('div.relative') && fee.closest('div.relative').previousElementSibling;
+            if (lab) lab.textContent = k === 'loan' ? (en ? 'Loan Fee (€)' : 'Kiralama Bedeli (€)') : (en ? 'Transfer Fee (€)' : 'Bonservis Ücreti (€)');
+            if (fee) {
+                fee.disabled = k === 'free';
+                fee.closest('div.relative').classList.toggle('trx-off', k === 'free');
+                if (k === 'free' && !init) fee.value = '';
+                fee.placeholder = k === 'loan' ? (en ? 'e.g. 500,000 (empty = free loan)' : 'Örn: 500.000 (Boşsa ücretsiz kiralık)') : (en ? 'e.g. 15,000,000 (Empty for Free Transfer)' : 'Örn: 15.000.000 (Boşsa Bedelsiz)');
+            }
+            const sub = document.getElementById('trx-arch-sub');
+            if (sub) sub.textContent = k === 'loan' ? (en ? 'Archived while on loan, restore it when he returns' : 'Kiralıkken arşivde durur, dönünce geri alabilirsin') : (en ? 'Player moves to the archive' : 'Oyuncu arşive taşınır');
+        }
+        function trxList() {
+            const dd = document.getElementById('trx-dd'), q = document.getElementById('trx-q'); if (!dd || !q) return;
+            const s = psNorm(q.value);
+            const all = trxPool().filter(({ p }) => !s || psNorm(p.name).includes(s) || String(p.pos || '').toLowerCase() === s);
+            const order = ['GK', 'CB', 'LB', 'RB', 'LWB', 'RWB', 'DM', 'CDM', 'CM', 'LM', 'RM', 'AM', 'CAM', 'LW', 'RW', 'CF', 'ST'];
+            all.sort((a, b) => (order.indexOf(a.p.pos) - order.indexOf(b.p.pos)) || String(a.p.name).localeCompare(b.p.name));
+            if (!all.length) { dd.innerHTML = `<div class="trx-none">${trxEn() ? 'No player found' : 'Oyuncu bulunamadı'}</div>`; dd.classList.add('on'); return; }
+            dd.innerHTML = all.slice(0, 60).map(({ p, ctx }, i) => {
+                const cur = getPlayerCurrentStatsByName(p.name, ctx) || {};
+                const ph = p.photoUrl ? `<img src="${escapeHtml(p.photoUrl)}" alt="" onerror="this.style.visibility='hidden'">` : `<span>${escapeHtml(p.name.charAt(0))}</span>`;
+                return `<button type="button" class="trx-it${i === trxHl ? ' hl' : ''}" data-i="${i}" data-id="${escapeHtml(p.id)}" data-ctx="${ctx}" onmousedown="event.preventDefault();trxChoose('${ctx}','${jsq(p.id)}')"><i class="trx-ph">${ph}</i><b class="pos-${escapeHtml(p.pos || '')}">${escapeHtml(p.pos || '')}</b><span class="n">${escapeHtml(p.name)}${ctx === 'akademi' ? `<em>${trxEn() ? 'Academy' : 'Akademi'}</em>` : ''}</span><span class="a">${cur.age ? escapeHtml(String(cur.age)) : '–'}</span><span class="o" style="color:${cur.ovr ? mbOvrColor(cur.ovr) : '#64748b'}">${cur.ovr ? escapeHtml(String(cur.ovr)) : '–'}</span></button>`;
+            }).join('');
+            dd.classList.add('on');
+        }
+        function trxKey(e) {
+            const dd = document.getElementById('trx-dd'); if (!dd) return;
+            const its = [...dd.querySelectorAll('.trx-it')];
+            if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); if (!dd.classList.contains('on')) trxList(); trxHl = Math.max(0, Math.min(its.length - 1, trxHl + (e.key === 'ArrowDown' ? 1 : -1))); its.forEach((b, i) => b.classList.toggle('hl', i === trxHl)); if (its[trxHl]) its[trxHl].scrollIntoView({ block: 'nearest' }); }
+            else if (e.key === 'Enter') { e.preventDefault(); const b = its[trxHl >= 0 ? trxHl : 0]; if (b) trxChoose(b.dataset.ctx, b.dataset.id); }
+            else if (e.key === 'Escape') { e.stopPropagation(); dd.classList.remove('on'); }
+        }
+        function trxChoose(ctx, id) {
+            const p = (squadData[ctx] || []).find(x => x.id === id); if (!p) return;
+            trxPick = { ctx, id };
+            const cur = getPlayerCurrentStatsByName(p.name, ctx) || {};
+            const POS = { CAM: 'AM', CDM: 'DM', CF: 'ST', LWB: 'LB', RWB: 'RB' };
+            const pos = POS[p.pos] || p.pos;
+            document.getElementById('tr-name').value = p.name;
+            const ps = document.getElementById('tr-pos'); if ([...ps.options].some(o => o.value === pos)) ps.value = pos;
+            document.getElementById('tr-age').value = cur.age || p.joinAge || '';
+            document.getElementById('tr-ovr').value = cur.ovr || p.joinOvr || '';
+            const dd = document.getElementById('trx-dd'); if (dd) dd.classList.remove('on');
+            trxCard();
+            const tm = document.getElementById('tr-team'); if (tm) setTimeout(() => tm.focus(), 30);
+        }
+        function trxClear() { trxPick = null; const q = document.getElementById('trx-q'); if (q) { q.value = ''; q.focus(); } trxCard(); }
+        function trxCard() {
+            const c = document.getElementById('trx-card'), q = document.querySelector('#trx-wrap .trx-q'); if (!c) return;
+            const p = trxPick && (squadData[trxPick.ctx] || []).find(x => x.id === trxPick.id);
+            if (!p) { c.innerHTML = ''; c.classList.remove('on'); if (q) q.style.display = ''; return; }
+            const cur = getPlayerCurrentStatsByName(p.name, trxPick.ctx) || {}, en = trxEn();
+            const ph = p.photoUrl ? `<img src="${escapeHtml(p.photoUrl)}" alt="" onerror="this.style.visibility='hidden'">` : `<span>${escapeHtml(p.name.charAt(0))}</span>`;
+            c.innerHTML = `<i class="trx-ph lg">${ph}</i><div><b>${escapeHtml(p.name)}</b><span><em class="pos-${escapeHtml(p.pos || '')}">${escapeHtml(p.pos || '')}</em> · ${en ? 'Age' : 'Yaş'} ${escapeHtml(String(cur.age || p.joinAge || '–'))} · ${trxPick.ctx === 'akademi' ? (en ? 'Academy' : 'Akademi') : (en ? 'First team' : 'A Takım')}</span></div><strong style="color:${cur.ovr ? mbOvrColor(cur.ovr) : '#64748b'}">${escapeHtml(String(cur.ovr || '–'))}</strong><button type="button" onclick="trxClear()" title="${en ? 'Change' : 'Değiştir'}"><i class="fa-solid fa-xmark"></i></button>`;
+            c.classList.add('on'); if (q) q.style.display = 'none';
+        }
+        document.addEventListener('mousedown', e => { const dd = document.getElementById('trx-dd'); if (dd && dd.classList.contains('on') && !e.target.closest('.trx-s')) dd.classList.remove('on'); });
+        // Kaydetme sırasında kadroya işleme: giden → arşivle, gelen → A takıma ekle
+        function trxApplySquad(name, pos, age, ovr, team, season) {
+            const low = name.trim().toLowerCase();
+            if (activeTransferType === 'out') {
+                const cb = document.getElementById('trx-arch'); if (!cb || !cb.checked) return;
+                let p = trxPick ? (squadData[trxPick.ctx] || []).find(x => x.id === trxPick.id) : null;
+                if (!p) p = ['astakim', 'akademi'].flatMap(c => squadData[c] || []).find(x => x && x.name && x.name.trim().toLowerCase() === low && !x.isArchived && !x.isPromoted);
+                if (p) { p.isArchived = true; p.leftClub = { season, team, kind: trxKind }; }
+            } else {
+                const cb = document.getElementById('trx-add'); if (!cb || !cb.checked) return;
+                const ex = ['astakim', 'akademi'].flatMap(c => squadData[c] || []).find(x => x && x.name && x.name.trim().toLowerCase() === low);
+                if (ex) { if (ex.isArchived) ex.isArchived = false; return; }
+                if (!squadData.astakim) squadData.astakim = [];
+                squadData.astakim.push({ id: 'p_' + Date.now(), pos, role: '', name: name.trim(), photoUrl: '', countryCode: '', joinAge: age, joinOvr: ovr, history: {}, joined: { season, team, kind: trxKind } });
+            }
+        }
+
         function saveTransfer() {
             const season = document.getElementById('tr-season').value;
             const name = document.getElementById('tr-name').value.trim();
@@ -11874,7 +11990,7 @@ function closeTransferModal() {
             const feeStr = document.getElementById('tr-fee').value.replace(/[^0-9]/g, '');
             const fee = feeStr ? parseInt(feeStr, 10) : 0;
 
-            if(!name) { alert("Oyuncu adı zorunludur!"); return; }
+            if(!name) { alert("Oyuncu adı zorunludur!"); return; } trxApplySquad(name, pos, age, ovr, team, season);
 
             let photoUrl = '';
             let allSquadPlayers = [...squadData.astakim, ...squadData.akademi];
@@ -11890,11 +12006,11 @@ function closeTransferModal() {
                 tr.ovr = ovr;
                 tr.team = team;
                 tr.fee = fee;
-                tr.photoUrl = photoUrl || tr.photoUrl; 
+                tr.photoUrl = photoUrl || tr.photoUrl; tr.kind = trxKind; 
             } else {
                 transferData[activeTransferType].push({
                     id: 'tr_' + Date.now(),
-                    season, name, pos, age, ovr, team, fee, photoUrl
+                    season, name, pos, age, ovr, team, fee, photoUrl, kind: trxKind
                 });
             }
             
@@ -14417,6 +14533,442 @@ function formatShortPlayerName(name) {
 
         let fixtureActiveTab = 0;
 
+        // ===================== SEZON İSTATİSTİKLERİ (Sezonlar sayfası sağ panel · Diğer Ligler ile geçişli) =====================
+        let ssView = (() => { try { return localStorage.getItem('gt_ssView2') || 'stats'; } catch (e) { return 'stats'; } })();
+        let ssTab = 'gen';
+        let ssCtx = 'kulup';
+        function ssL(tr, en) { return homeIsEn() ? en : tr; }
+        function ssEsc(s) { return escapeHtml(String(s == null ? '' : s)); }
+        function ssNum(v) { if (v === '' || v === null || v === undefined) return null; const n = parseFloat(v); return isNaN(n) ? null : n; }
+        function ssShort(n) { const p = String(n || '').trim().split(/\s+/); return p.length > 1 ? p[0].charAt(0) + '. ' + p.slice(1).join(' ') : (p[0] || ''); }
+        function ssMin(v) { const m = String(v == null ? '' : v).match(/(\d+)\s*(?:\+\s*(\d+))?/); return m ? { b: parseInt(m[1]), x: m[2] ? parseInt(m[2]) : 0 } : null; }
+        function ssTitleInner() {
+            return ssView === 'stats'
+                ? `<i class="fa-solid fa-chart-pie mr-2 text-violet-400"></i>${ssL('Sezon İstatistikleri', 'Season Stats')}`
+                : `<i class="fa-solid fa-globe mr-2 text-blue-400"></i>${ssL('Diğer Ligler', 'Other Leagues')}`;
+        }
+        function ssHeadTitle() { return `<h3 id="ss-ttl" class="text-sm sm:text-lg font-bold text-white truncate">${ssTitleInner()}</h3>`; }
+        function ssToggle() {
+            const b = (v, ic, tr, en) => `<button type="button" data-v="${v}" class="${ssView === v ? 'on' : ''}" onclick="ssSetView('${v}')" title="${ssL(tr, en)}"><i class="fa-solid ${ic}"></i><span>${ssL(tr, en)}</span></button>`;
+            return `<div class="ss-tg">${b('stats', 'fa-chart-pie', 'İstatistik', 'Stats')}${b('euro', 'fa-globe', 'Ligler', 'Leagues')}</div>`;
+        }
+        function ssSetView(v) { ssView = v; try { localStorage.setItem('gt_ssView2', v); } catch (e) {} ssMount(); }
+        function ssSetTab(t) { ssTab = t; ssMount(); }
+        function ssSetCtx(c) { ssCtx = c; ssMount(); }
+        function ssMount() {
+            const grid = document.querySelector('#content-area .eu-grid');
+            const pn = grid && grid.closest('.fx-panel'); if (!pn) return;
+            const on = ssView === 'stats';
+            pn.classList.toggle('ss-on', on);
+            const t = document.getElementById('ss-ttl'); if (t) t.innerHTML = ssTitleInner();
+            pn.querySelectorAll('.ss-tg button').forEach(b => b.classList.toggle('on', b.dataset.v === ssView));
+            let body = pn.querySelector('.ss-body');
+            if (!on) { if (body) body.remove(); return; }
+            if (!body) { body = document.createElement('div'); body.className = 'ss-body custom-scrollbar'; pn.appendChild(body); }
+            const st = body.scrollTop;
+            try { body.innerHTML = ssRender(activeFixtureSeason); } catch (e) { console.error(e); body.innerHTML = `<div class="ss-empty">${ssL('İstatistikler hesaplanamadı.', 'Stats could not be calculated.')}</div>`; }
+            body.scrollTop = st;
+        }
+
+        function ssData(season, ctx) {
+            const T = ctx === 'milli' ? managedTeams.milli : managedTeams.kulup;
+            const team = ((T && T.name) || '').trim();
+            const us = (n) => team && homeIsUs(n, team.toLowerCase());
+            const ms = team ? (fixtureData[season] || []).slice()
+                .sort((a, b) => (parseInt(a.matchNo) || 999) - (parseInt(b.matchNo) || 999))
+                .filter(m => m && (us(m.home) || us(m.away))) : [];
+            const P = ms.map(m => {
+                const h = us(m.home), hs = ssNum(m.homeScore), as = ssNum(m.awayScore);
+                if (hs === null || as === null) return null;
+                const gf = h ? hs : as, ga = h ? as : hs;
+                return { m, h, gf, ga, opp: h ? m.away : m.home, r: gf > ga ? 'W' : gf < ga ? 'L' : 'D', t: tourCanon(m.tournament || '') || ssL('Diğer', 'Other') };
+            }).filter(Boolean);
+            const rec = (a) => { const w = a.filter(x => x.r === 'W').length, d = a.filter(x => x.r === 'D').length, l = a.filter(x => x.r === 'L').length, n = a.length; return { w, d, l, n, ppg: n ? (3 * w + d) / n : 0, gf: a.reduce((s, x) => s + x.gf, 0), ga: a.reduce((s, x) => s + x.ga, 0), cs: a.filter(x => x.ga === 0).length }; };
+            const streak = (ok) => { let b = 0, c = 0; P.forEach(x => { c = ok(x) ? c + 1 : 0; b = Math.max(b, c); }); return b; };
+            const pick = (a, sc) => a.length ? a.slice().sort((x, y) => sc(y) - sc(x))[0] : null;
+
+            // Turnuvalar
+            const tOrder = [], tMap = {};
+            P.forEach(x => { if (!tMap[x.t]) { tMap[x.t] = []; tOrder.push(x.t); } tMap[x.t].push(x); });
+            const tours = tOrder.map(t => ({ t, ...rec(tMap[t]), res: ssTourResult(season, t, team) }));
+
+            // Gol / asist, hat-trick, oyuncunun bir maçta en çok golü
+            const G = {}, A = {}, hat = [], best1 = [];
+            P.forEach(x => {
+                const per = {};
+                (x.m.events || []).forEach(ev => {
+                    if (!ev || ev.type !== 'US') return;
+                    const s = String(ev.scorer || '').trim(), a = String(ev.assist || '').trim();
+                    if (s) { G[s] = (G[s] || 0) + 1; per[s] = (per[s] || 0) + 1; }
+                    if (a) A[a] = (A[a] || 0) + 1;
+                });
+                Object.entries(per).forEach(([n, c]) => { if (c >= 3) hat.push({ n, c, x }); best1.push({ n, c, x }); });
+            });
+            const top = (o) => Object.entries(o).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([n, v]) => ({ n, v }));
+
+            // Gol dakikaları, geri dönüşler, en geç galibiyet golü
+            const BK = [0, 0, 0, 0, 0, 0].map(() => ({ f: 0, a: 0 })); let noMin = 0;
+            const bIdx = (mm) => mm.b <= 15 ? 0 : mm.b <= 30 ? 1 : mm.b <= 45 ? 2 : mm.b <= 60 ? 3 : mm.b <= 75 ? 4 : 5;
+            let comebacks = [], late = null;
+            P.forEach(x => {
+                const evs = (x.m.events || []).filter(ev => ev && (ev.type === 'US' ? ev.scorer || ev.min : ev.type === 'OPP' || ev.type === 'OG'));
+                evs.forEach(ev => { const mm = ssMin(ev.min); if (!mm) { noMin++; return; } BK[bIdx(mm)][ev.type === 'US' ? 'f' : 'a']++; });
+                const timed = evs.map(ev => ({ ev, mm: ssMin(ev.min) })).filter(e => e.mm).sort((a, b) => (a.mm.b * 100 + a.mm.x) - (b.mm.b * 100 + b.mm.x));
+                if (!timed.length || timed.length !== evs.length) return;
+                let d = 0, trailed = false, win = null;
+                timed.forEach(e => { const pd = d; d += e.ev.type === 'US' ? 1 : -1; if (d < 0) trailed = true; if (e.ev.type === 'US' && pd === 0 && d === 1) win = e; });
+                if (x.r === 'W' && trailed) comebacks.push(x);
+                if (x.r === 'W' && win && (!late || win.mm.b * 100 + win.mm.x > late.mm.b * 100 + late.mm.x)) late = { ...win, x };
+            });
+
+            // Rakipler
+            const O = {};
+            P.forEach(x => { const k = String(x.opp || '').trim().toLowerCase(); if (!k) return; const o = O[k] = O[k] || { n: x.opp, a: [] }; o.a.push(x); });
+            const opps = Object.values(O).map(o => ({ nm: o.n, ...rec(o.a) }));
+            const most = opps.slice().sort((a, b) => b.n - a.n || b.ppg - a.ppg).filter(o => o.n > 1).slice(0, 3);
+            const night = pick(opps.filter(o => o.l > 0), o => o.l * 1000 - o.ppg * 100 + (o.ga - o.gf));
+            const fav = pick(opps.filter(o => o.w > 0), o => o.w * 1000 + o.ppg * 100 + (o.gf - o.ga));
+
+            // Kadro: OVR gelişimi, yaş, ortalama
+            const sq = ctx === 'milli' ? (squadData.milli || []) : (squadData.astakim || []).concat(squadData.akademi || []);
+            const si = seasonsList.indexOf(season), prevS = si > 0 ? seasonsList[si - 1] : null;
+            const inS = sq.filter(p => p && p.name && !(ctx !== 'milli' && p.isPromoted) && ((p.history && p.history[season]) || Object.keys(p.attrs || {}).some(k => k.startsWith(season + '|'))));
+            const pool = inS.length ? inS : sq.filter(p => p && p.name && !p.isArchived && !p.isPromoted);
+            const dev = [], ages = [], ovrs = [];
+            pool.forEach(p => {
+                const h = (p.history || {})[season] || {}, ph = prevS ? ((p.history || {})[prevS] || {}) : {}, at = p.attrs || {};
+                const aS = at[season + '|start'], aE = at[season + '|end'] || at[season + '|mid'];
+                const end = ssNum(aE && aE.ovr) ?? ssNum(h.s2o) ?? ssNum(h.s1o);
+                let start = ssNum(aS && aS.ovr) ?? ssNum(ph.s2o) ?? ssNum(ph.s1o);
+                if (start === null && ssNum(h.s2o) !== null) start = ssNum(h.s1o);
+                if (start === null) start = ssNum(p.joinOvr);
+                if (end !== null) ovrs.push(end);
+                if (end !== null && start !== null && end !== start) dev.push({ n: p.name, pos: p.pos, d: end - start, end });
+                let age = ssNum(h.s2a) ?? ssNum(h.s1a) ?? ssNum(aE && aE.age);
+                if (age === null) { const c = getPlayerCurrentStatsByName(p.name, ctx); age = ssNum(c && c.age); }
+                if (age !== null) ages.push(age);
+            });
+            dev.sort((a, b) => b.d - a.d);
+            const devShow = dev.filter(x => x.d > 0).slice(0, 3);
+            const worst = dev.length && dev[dev.length - 1].d < 0 ? dev[dev.length - 1] : null;
+            if (worst) devShow.push(worst);
+            const ageB = [0, 0, 0, 0, 0];
+            ages.forEach(a => ageB[a <= 20 ? 0 : a <= 24 ? 1 : a <= 28 ? 2 : a <= 32 ? 3 : 4]++);
+            const avg = (a) => a.length ? a.reduce((s, v) => s + v, 0) / a.length : null;
+
+            // Transferler (sezon alanına göre)
+            const tr = (typeof transferData !== 'undefined' && transferData) || {};
+            const tin = ctx === 'milli' ? [] : (tr.in || []).filter(t => t && t.season === season);
+            const tout = ctx === 'milli' ? [] : (tr.out || []).filter(t => t && t.season === season);
+            const fee = (a) => a.reduce((s, t) => s + (Number(t.fee) || 0), 0);
+
+            const all = rec(P);
+            return {
+                team, season, prevS, P, all, tours,
+                home: rec(P.filter(x => x.h)), away: rec(P.filter(x => !x.h)),
+                winStreak: streak(x => x.r === 'W'), unbeaten: streak(x => x.r !== 'L'), scoring: streak(x => x.gf > 0),
+                bigWin: pick(P.filter(x => x.r === 'W'), x => (x.gf - x.ga) * 100 + x.gf),
+                bigLoss: pick(P.filter(x => x.r === 'L'), x => (x.ga - x.gf) * 100 + x.ga),
+                topG: top(G), topA: top(A), scorers: Object.keys(G).length, hat,
+                best1: pick(best1, b => b.c * 100 + (b.x.gf - b.x.ga)),
+                BK, noMin, comebacks, late, most, night, fav,
+                dev: devShow, ages, ageB, ageAvg: avg(ages), ageMin: ages.length ? Math.min(...ages) : null, ageMax: ages.length ? Math.max(...ages) : null,
+                ovrAvg: avg(ovrs), tin, tout, net: fee(tout) - fee(tin)
+            };
+        }
+
+        // Takımın turnuvadaki derecesi: şampiyon / finalist / lig sırası / elendiği tur
+        // ---- Sezon İstatistikleri: ek kartlar (form dalgası, skorlar, ikililer, ilk gol, devreler, fark dağılımı, sezonlar boyunca) ----
+        function ssExtra(D) {
+            const E = ssEsc, en = homeIsEn(), P = D.P || [];
+            if (!P.length && ssTab !== 'kys') return '';
+            const box = (lab, inner, cls, side) => `<div class="ss-box ${cls || ''}"><div class="ss-lab">${lab}${side ? `<em>${side}</em>` : ''}</div>${inner}</div>`;
+            const tlogo = (n) => { const u = n && getTeamLogoByName(n); return u ? `<img class="ss-tl" src="${E(u)}" alt="" onerror="this.style.visibility='hidden'">` : `<span class="ss-tl i">${E(String(n || '?').charAt(0))}</span>`; };
+            const photo = (n) => { const u = getPlayerPhotoByName(n); return u ? `<img class="ss-ph" src="${E(u)}" alt="" onerror="this.style.visibility='hidden'">` : `<span class="ss-ph i">${E(String(n || '?').charAt(0))}</span>`; };
+            const pts = (x) => x.r === 'W' ? 3 : x.r === 'D' ? 1 : 0;
+            const RL = { W: en ? 'W' : 'G', D: en ? 'D' : 'B', L: en ? 'L' : 'M' };
+            const f2 = (v) => (Math.round(v * 100) / 100).toFixed(2);
+            const pc = (a, b) => b ? Math.round(a / b * 100) : 0;
+            const sq = ssCtx === 'milli' ? (squadData.milli || []) : (squadData.astakim || []).concat(squadData.akademi || []);
+            const posOf = (n) => { const p = sq.find(pl => pl && pl.name && pl.name.trim().toLowerCase() === String(n).trim().toLowerCase()); return p ? String(p.pos || '').toUpperCase() : ''; };
+            // Zamanlı olaylar (tüm gollerin dakikası girilmiş maçlar)
+            const timedOf = (x) => {
+                const evs = (x.m.events || []).filter(ev => ev && (ev.type === 'US' ? ev.scorer || ev.min : ev.type === 'OPP' || ev.type === 'OG'));
+                const t = evs.map(ev => ({ ev, mm: ssMin(ev.min) })).filter(e => e.mm).sort((a, b) => (a.mm.b * 100 + a.mm.x) - (b.mm.b * 100 + b.mm.x));
+                return t.length && t.length === evs.length ? t : null;
+            };
+            let h = '';
+
+            if (ssTab === 'gen') {
+                // Form dalgası: son 5 maçın puan ortalaması, maç maç
+                if (P.length >= 3) {
+                    const roll = P.map((x, i) => { const s = P.slice(Math.max(0, i - 4), i + 1); return s.reduce((a, y) => a + pts(y), 0) / s.length; });
+                    const W = 300, H = 70, n = P.length, X = (i) => n > 1 ? i / (n - 1) * W : W / 2, Y = (v) => H - 3 - v / 3 * (H - 8);
+                    const ptsS = roll.map((v, i) => `${X(i).toFixed(1)},${Y(v).toFixed(1)}`);
+                    const st0 = Math.min(4, n - 1), win = roll.slice(st0), hi = st0 + win.indexOf(Math.max(...win)), lo = st0 + win.indexOf(Math.min(...win));
+                    const ay = Y(D.all.ppg).toFixed(1);
+                    h += box(ssL('Form dalgası · son 5 maç puan ort.', 'Form wave · rolling 5-game ppg'), `
+                        <div class="ss-wave"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+                            <defs><linearGradient id="ssWg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a78bfa" stop-opacity=".55"/><stop offset="1" stop-color="#a78bfa" stop-opacity="0"/></linearGradient></defs>
+                            <line x1="0" x2="${W}" y1="${Y(2).toFixed(1)}" y2="${Y(2).toFixed(1)}" class="g"/><line x1="0" x2="${W}" y1="${Y(1).toFixed(1)}" y2="${Y(1).toFixed(1)}" class="g"/>
+                            <path d="M0,${H} L${ptsS.join(' L')} L${W},${H} Z" fill="url(#ssWg)"/>
+                            <line x1="0" x2="${W}" y1="${ay}" y2="${ay}" class="avg"/>
+                            <polyline points="${ptsS.join(' ')}" class="ln"/>
+                        </svg>
+                        <i class="ss-wdot hi" style="left:${(X(hi) / W * 100).toFixed(2)}%;top:${(Y(roll[hi]) / H * 100).toFixed(2)}%"></i>
+                        <i class="ss-wdot lo" style="left:${(X(lo) / W * 100).toFixed(2)}%;top:${(Y(roll[lo]) / H * 100).toFixed(2)}%"></i>
+                        <span class="ss-wy" style="top:${(Y(3) / H * 100).toFixed(1)}%">3</span><span class="ss-wy" style="top:${(Y(2) / H * 100).toFixed(1)}%">2</span><span class="ss-wy" style="top:${(Y(1) / H * 100).toFixed(1)}%">1</span></div>
+                        <div class="ss-wstrip">${P.map(x => `<i class="${x.r}" title="${E(x.opp)} ${x.gf}-${x.ga}"></i>`).join('')}</div>
+                        <div class="ss-wleg"><span><b class="hi"></b>${ssL('Zirve', 'Peak')} <em>${f2(roll[hi])}</em> · ${ssL('maç', 'game')} ${hi + 1}</span><span><b class="lo"></b>${ssL('Dip', 'Low')} <em>${f2(roll[lo])}</em> · ${ssL('maç', 'game')} ${lo + 1}</span><span><b class="av"></b>${ssL('Sezon ort.', 'Season avg')} <em>${f2(D.all.ppg)}</em></span></div>`);
+                }
+                // Son 5 maç + en sık skorlar
+                const last = P.slice(-5).reverse();
+                const tS = (x) => { const e = tourFind(x.m.tournament); return E((e && e.s) || ''); };
+                const lastHtml = last.map(x => `<div class="ss-l5"><b class="ss-rb ${x.r}">${RL[x.r]}</b>${tlogo(x.opp)}<span>${E(x.opp)}</span><em>${x.h ? '' : '@ '}${x.gf}-${x.ga}</em><i>${tS(x)}</i></div>`).join('');
+                const SC = {};
+                P.forEach(x => { const k = `${x.gf}-${x.ga}`; SC[k] = SC[k] || { k, n: 0, r: x.r }; SC[k].n++; });
+                const scs = Object.values(SC).sort((a, b) => b.n - a.n || (b.r === 'W') - (a.r === 'W')).slice(0, 8);
+                const scored = P.filter(x => x.gf > 0).length, big = P.filter(x => x.gf >= 3).length;
+                h += `<div class="ss-k2 ss-st">
+                    ${box(ssL('Son 5 maç', 'Last 5'), lastHtml)}
+                    ${box(ssL('En sık skorlar', 'Most common scores'), `<div class="ss-scs">${scs.map(s => `<span class="${s.r}"><b>${s.k}</b><em>×${s.n}</em></span>`).join('')}</div>
+                        <div class="ss-mini"><div><em>%${pc(scored, P.length)}</em><span>${ssL('gol attığı maç', 'games scored in')}</span></div><div><em>${big}</em><span>${ssL('3+ gol attığı maç', '3+ goal games')}</span></div></div>`)}
+                </div>`;
+            }
+
+            if (ssTab === 'ply') {
+                const G = {}, PR = {}, WG = {}, LG = {}, PG = { GK: 0, DEF: 0, MID: 0, FWD: 0, '?': 0 };
+                let tot = 0;
+                P.forEach(x => {
+                    (x.m.events || []).forEach(ev => {
+                        if (!ev || ev.type !== 'US') return;
+                        const s = String(ev.scorer || '').trim(), a = String(ev.assist || '').trim();
+                        if (!s) return;
+                        tot++; G[s] = (G[s] || 0) + 1;
+                        if (a && a.toLowerCase() !== s.toLowerCase()) { const k = a + '\u0001' + s; PR[k] = (PR[k] || 0) + 1; }
+                        const p = posOf(s);
+                        PG[p === 'GK' ? 'GK' : /^(CB|LB|RB|LWB|RWB|SW)$/.test(p) ? 'DEF' : /^(DM|CDM|CM|AM|CAM|LM|RM)$/.test(p) ? 'MID' : /^(LW|RW|ST|CF|LF|RF)$/.test(p) ? 'FWD' : '?']++;
+                        const mm = ssMin(ev.min); if (mm && mm.b >= 76) LG[s] = (LG[s] || 0) + 1;
+                    });
+                    if (x.r === 'W') {
+                        const t = timedOf(x); if (!t) return;
+                        let d = 0, win = null;
+                        t.forEach(e => { const pd = d; d += e.ev.type === 'US' ? 1 : -1; if (e.ev.type === 'US' && pd === 0 && d === 1) win = e; });
+                        if (win && win.ev.scorer) { const s = String(win.ev.scorer).trim(); WG[s] = (WG[s] || 0) + 1; }
+                    }
+                });
+                // Gol dağılımı
+                if (tot) {
+                    const CL = ['#a78bfa', '#38bdf8', '#34d399', '#fbbf24', '#f472b6'];
+                    const arr = Object.entries(G).sort((a, b) => b[1] - a[1]);
+                    const top = arr.slice(0, 5), rest = arr.slice(5).reduce((s, x) => s + x[1], 0);
+                    const seg = top.map(([n, v], i) => ({ n: ssShort(n), v, c: CL[i] })).concat(rest ? [{ n: ssL('Diğer', 'Others') + ` (${arr.length - 5})`, v: rest, c: '#475569' }] : []);
+                    h += box(ssL('Gollerin dağılımı', 'Goal share'), `<div class="ss-share">${seg.map(s => `<i style="flex:${s.v};background:${s.c}" title="${E(s.n)} ${s.v}"></i>`).join('')}</div>
+                        <div class="ss-shleg">${seg.map(s => `<span><b style="background:${s.c}"></b>${E(s.n)} <em>%${pc(s.v, tot)}</em></span>`).join('')}</div>`, '', `${tot} ${ssL('gol', 'goals')}`);
+                }
+                // İkililer + mevkiye göre gol
+                const duos = Object.entries(PR).sort((a, b) => b[1] - a[1]).slice(0, 3);
+                const PGc = { GK: homeXiPosColor('GK'), DEF: homeXiPosColor('CB'), MID: homeXiPosColor('CM'), FWD: homeXiPosColor('ST'), '?': '#475569' };
+                const PGl = { GK: ssL('Kaleci', 'GK'), DEF: ssL('Defans', 'DEF'), MID: ssL('Orta saha', 'MID'), FWD: ssL('Forvet', 'FWD'), '?': ssL('Bilinmiyor', 'Unknown') };
+                const pmx = Math.max(1, ...Object.values(PG));
+                h += `<div class="ss-k2 ss-st">
+                    ${box(ssL('En golcü ikililer', 'Best duos'), duos.length ? duos.map(([k, v]) => { const [a, s] = k.split('\u0001'); return `<div class="ss-duo">${photo(a)}<i class="fa-solid fa-arrow-right"></i>${photo(s)}<div><b>${E(ssShort(a).split(' ').pop())} → ${E(ssShort(s).split(' ').pop())}</b><span>${ssL('asist → gol', 'assist → goal')}</span></div><em>×${v}</em></div>`; }).join('') : `<div class="ss-none">${ssL('Asist verisi yok', 'No assist data')}</div>`)}
+                    ${box(ssL('Mevkiye göre gol', 'Goals by position'), Object.keys(PG).filter(k => k !== '?' || PG[k]).map(k => `<div class="ss-pg"><span>${PGl[k]}</span><div><i style="width:${Math.round(PG[k] / pmx * 100)}%;background:${PGc[k]}"></i></div><em style="color:${PGc[k]}">${PG[k]}</em></div>`).join(''))}
+                </div>`;
+                // Maç kazandıran goller + geç goller
+                const lst = (o, cls) => { const a = Object.entries(o).sort((x, y) => y[1] - x[1]).slice(0, 3); return a.length ? a.map(([n, v]) => `<div class="ss-ldr">${photo(n)}<b title="${E(n)}">${E(ssShort(n))}</b><em class="${cls}">${v}</em></div>`).join('') : `<div class="ss-none">${ssL('Dakika verisi yok', 'No minute data')}</div>`; };
+                h += `<div class="ss-k2">${box(ssL('Maç kazandıran gol', 'Match winners'), lst(WG, 'mw'), '', '<i class="fa-solid fa-crown"></i>')}${box(ssL("Geç goller · 76'+", "Late goals · 76'+"), lst(LG, 'lt'), '', '<i class="fa-solid fa-stopwatch"></i>')}</div>`;
+            }
+
+            if (ssTab === 'mac') {
+                // İlk gol + devreler
+                const fs = { s: [], c: [] }; const HV = { f1: 0, a1: 0, f2: 0, a2: 0 };
+                P.forEach(x => {
+                    (x.m.events || []).forEach(ev => { if (!ev) return; const mm = ssMin(ev.min); if (!mm) return; const us = ev.type === 'US'; if (!us && ev.type !== 'OPP' && ev.type !== 'OG') return; if (us && !ev.scorer && !ev.min) return; HV[(us ? 'f' : 'a') + (mm.b <= 45 ? 1 : 2)]++; });
+                    if (x.gf + x.ga === 0) return;
+                    const t = timedOf(x); if (!t) return;
+                    fs[t[0].ev.type === 'US' ? 's' : 'c'].push(x);
+                });
+                const wdlRow = (lab, a, cls) => { const w = a.filter(x => x.r === 'W').length, d = a.filter(x => x.r === 'D').length, l = a.filter(x => x.r === 'L').length, n = a.length || 1;
+                    return `<div class="ss-fg"><div class="ss-fgh"><b class="${cls}">${lab}</b><span>${a.length} ${ssL('maç', 'g')}</span></div><div class="ss-fgb"><i class="W" style="flex:${w}"></i><i class="D" style="flex:${d}"></i><i class="L" style="flex:${l}"></i>${a.length ? '' : '<i class="z" style="flex:1"></i>'}</div><div class="ss-fgn"><span class="W">${w}${RL.W}</span><span class="D">${d}${RL.D}</span><span class="L">${l}${RL.L}</span><em>%${pc(w, a.length)} ${ssL('galibiyet', 'wins')}</em></div></div>`; };
+                const hm = Math.max(1, HV.f1, HV.a1, HV.f2, HV.a2);
+                const half = (lab, f, a) => `<div class="ss-hf"><span>${lab}</span><div class="ss-hfb"><div class="l"><i style="width:${f / hm * 100}%"></i></div><div class="r"><i style="width:${a / hm * 100}%"></i></div></div><div class="ss-hfn"><b class="W">${f}</b><em>:</em><b class="L">${a}</b></div></div>`;
+                const fd = HV.f2 - HV.f1;
+                h += `<div class="ss-k2 ss-st">
+                    ${box(ssL('İlk golün etkisi', 'First goal effect'), wdlRow(ssL('Önce atınca', 'Scored first'), fs.s, 'W') + wdlRow(ssL('Önce yiyince', 'Conceded first'), fs.c, 'L'))}
+                    ${box(ssL('Devreler · atılan : yenen', 'Halves · for : against'), half(ssL('1. yarı', '1st half'), HV.f1, HV.a1) + half(ssL('2. yarı', '2nd half'), HV.f2, HV.a2) + `<div class="ss-s ss-hft">${fd > 0 ? ssL('Takım ikinci yarılarda açılıyor', 'Stronger after the break') : fd < 0 ? ssL('Takım ilk yarılarda daha etkili', 'Stronger before the break') : ssL('İki yarı dengeli', 'Evenly balanced halves')}</div>`)}
+                </div>`;
+                // Skor farkı dağılımı
+                const B = [['≤-3', x => x.gf - x.ga <= -3], ['-2', x => x.gf - x.ga === -2], ['-1', x => x.gf - x.ga === -1], ['0', x => x.gf === x.ga], ['+1', x => x.gf - x.ga === 1], ['+2', x => x.gf - x.ga === 2], ['+3', x => x.gf - x.ga === 3], ['≥+4', x => x.gf - x.ga >= 4]];
+                const cnt = B.map(([l, f]) => ({ l, n: P.filter(f).length }));
+                const cm = Math.max(1, ...cnt.map(c => c.n));
+                const one = P.filter(x => Math.abs(x.gf - x.ga) === 1).length;
+                h += box(ssL('Skor farkı dağılımı', 'Margin distribution'), `<div class="ss-mg">${cnt.map((c, i) => `<div class="${i < 3 ? 'L' : i === 3 ? 'D' : 'W'}"><em>${c.n || ''}</em><u style="height:${Math.max(c.n ? 6 : 2, Math.round(c.n / cm * 100))}%"></u><span>${c.l}</span></div>`).join('')}</div>`, '', `${ssL('1 farklı maç', 'one-goal games')}: ${one} · %${pc(one, P.length)}`);
+            }
+
+            if ('kys' === ssTab) {
+                // Sezonlar boyunca puan/maç
+                const rows = seasonsList.map(s => { const d = s === D.season ? D : ssData(s, ssCtx); return { s, a: d.all, cur: s === D.season, tr: (d.tours || []).filter(t => t.res && t.res.c === 'gold').length }; }).filter(r => r.a.n);
+                const show = rows.slice(-8);
+                if (show.length) {
+                    const best = rows.slice().sort((a, b) => b.a.ppg - a.a.ppg)[0];
+                    h += box(ssL('Sezonlar boyunca · puan/maç', 'Across seasons · pts/game'), `<div class="ss-ac">${show.map(r => `<div class="${r.cur ? 'cur' : ''}${r === best ? ' best' : ''}"><em>${f2(r.a.ppg)}</em><u style="height:${Math.max(4, Math.round(r.a.ppg / 3 * 100))}%">${r.tr ? `<b>${'🏆'.repeat(Math.min(r.tr, 3))}</b>` : ''}</u><span>${E(r.s)}</span><i>${r.a.gf}:${r.a.ga}</i></div>`).join('')}</div>`, '', best ? `${ssL('En iyi', 'Best')}: ${E(best.s)}` : '');
+                    // Rekor tablosu: kariyer içinde bu sezonun sırası
+                    if (rows.length > 1) {
+                        const rank = (key, desc) => { const srt = rows.slice().sort((a, b) => desc ? key(b) - key(a) : key(a) - key(b)); return srt.findIndex(r => r.cur) + 1; };
+                        const it = [[ssL('Puan/maç', 'Pts/game'), rank(r => r.a.ppg, 1)], [ssL('Atılan gol', 'Goals for'), rank(r => r.a.gf, 1)], [ssL('Yenen gol', 'Goals against'), rank(r => r.a.ga / (r.a.n || 1), 0)], [ssL('Galibiyet %', 'Win %'), rank(r => r.a.w / (r.a.n || 1), 1)]];
+                        h += box(ssL('Bu sezon kariyerde kaçıncı?', 'Where this season ranks'), `<div class="ss-rk">${it.map(([l, r]) => `<div class="${r === 1 ? 'g' : r === 2 ? 's' : r === 3 ? 'b' : ''}"><b>${r}<small>/${rows.length}</small></b><span>${l}</span></div>`).join('')}</div>`);
+                    }
+                }
+            }
+            return h;
+        }
+
+        function ssTourResult(season, t, team) {
+            const tour = (customTournamentsData[season] || []).find(x => x && tourCanon(x.type || '') === t);
+            if (!tour || !team) return null;
+            const our = team.toLowerCase();
+            const kos = homeTourKos(tour).filter(k => homeIsUs(k.home, our) || homeIsUs(k.away, our));
+            if (kos.length) {
+                const k = kos.slice().sort((a, b) => HOME_KO_ORDER.indexOf(b.stage) - HOME_KO_ORDER.indexOf(a.stage))[0];
+                const st = k.stage || '';
+                if (st === 'Final') {
+                    const h1 = ssNum(k.homeScore), a1 = ssNum(k.awayScore), h2 = ssNum(k.homeScore2), a2 = ssNum(k.awayScore2);
+                    if (h1 !== null && a1 !== null) {
+                        const H = h1 + (h2 !== null && a2 !== null ? a2 : 0) + koPenAdj(k, 'h'), A = a1 + (h2 !== null && a2 !== null ? h2 : 0) + koPenAdj(k, 'a');
+                        const won = homeIsUs(k.home, our) ? H > A : A > H;
+                        return won ? { s: '🏆', c: 'gold', tip: ssL('Şampiyon', 'Champion') } : { s: 'F', c: 'silver', tip: ssL('Finalist', 'Runner-up') };
+                    }
+                }
+                return { s: HOME_KO_SHORT[st] || st || '-', c: '', tip: st };
+            }
+            const row = homeTourRows(tour).find(r => homeIsUs(r.name, our));
+            if (row && row.rank) return { s: row.rank + '.', c: String(row.rank) === '1' ? 'gold' : '', tip: ssL('Lig sırası', 'League position') };
+            return null;
+        }
+
+        function ssRender(season) {
+            if (!season) return `<div class="ss-empty">${ssL('Sezon seçilmedi.', 'No season selected.')}</div>`;
+            const hasMilli = !!(managedTeams.milli && managedTeams.milli.name);
+            if (!hasMilli) ssCtx = 'kulup';
+            const D = ssData(season, ssCtx);
+            const E = ssEsc, en = homeIsEn();
+            const tabs = [['gen', ssL('Genel', 'Overview')], ['ply', ssL('Oyuncular', 'Players')], ['mac', ssL('Maçlar', 'Matches')], ['kys', ssL('Kıyas', 'Compare')]];
+            if (!tabs.some(t => t[0] === ssTab)) ssTab = 'gen';
+            const ctxSw = hasMilli ? `<div class="ss-ctx">${[['kulup', ssL('Kulüp', 'Club')], ['milli', ssL('Milli', 'National')]].map(([k, l]) => `<button type="button" class="${ssCtx === k ? 'on' : ''}" onclick="ssSetCtx('${k}')">${l}</button>`).join('')}</div>` : '';
+            const head = `<div class="ss-top">${ctxSw}<div class="ss-tabs">${tabs.map(([k, l]) => `<button type="button" class="${ssTab === k ? 'on' : ''}" onclick="ssSetTab('${k}')">${l}</button>`).join('')}</div></div>`;
+            if (!D.team) return head + `<div class="ss-empty">${ssL('Önce yönettiğin takımı ayarla.', 'Set your managed team first.')}</div>`;
+            if (!D.P.length && ssTab !== 'kys') return head + `<div class="ss-empty"><i class="fa-regular fa-futbol"></i>${ssL(season + ' sezonunda oynanmış maç yok.', 'No played matches in ' + season + '.')}</div>`;
+
+            const box = (lab, inner, cls) => `<div class="ss-box ${cls || ''}"><div class="ss-lab">${lab}</div>${inner}</div>`;
+            const photo = (n) => { const u = getPlayerPhotoByName(n); return u ? `<img class="ss-ph" src="${E(u)}" alt="" onerror="this.style.visibility='hidden'">` : `<span class="ss-ph i">${E(String(n || '?').charAt(0))}</span>`; };
+            const tlogo = (n) => { const u = n && getTeamLogoByName(n); return u ? `<img class="ss-tl" src="${E(u)}" alt="" onerror="this.style.visibility='hidden'">` : `<span class="ss-tl i">${E(String(n || '?').charAt(0))}</span>`; };
+            const sc = (x) => x.h ? `${x.gf}-${x.ga}` : `${x.ga}-${x.gf}`;
+            const scU = (x) => `${x.gf}-${x.ga}`;
+            const vs = (x) => `<span class="ss-vs">${tlogo(x.opp)}<span>${E(x.opp)}</span></span>`;
+            const f2 = (v) => v === null || v === undefined ? '–' : (Math.round(v * 100) / 100).toFixed(2);
+            const f1 = (v) => v === null || v === undefined ? '–' : (Math.round(v * 10) / 10).toFixed(1);
+            let html = head;
+
+            if (ssTab === 'gen') {
+                const a = D.all, gd = a.gf - a.ga;
+                html += `<div class="ss-k4">
+                    ${box('O-G-B-M', `<div class="ss-v"><span class="W">${a.w}</span>-<span class="D">${a.d}</span>-<span class="L">${a.l}</span></div><div class="ss-rib">${D.P.map(x => `<i class="${x.r}" title="${E(x.opp)} ${sc(x)}"></i>`).join('')}</div>`)}
+                    ${box(ssL('Puan/maç', 'Pts/game'), `<div class="ss-v W">${f2(a.ppg)}</div><div class="ss-s">${a.n} ${ssL('maç', 'games')} · %${a.n ? Math.round(a.w / a.n * 100) : 0}</div>`)}
+                    ${box(ssL('Gol A:Y', 'Goals F:A'), `<div class="ss-v">${a.gf}<small>:</small>${a.ga}</div><div class="ss-s ${gd > 0 ? 'W' : gd < 0 ? 'L' : ''}">${gd > 0 ? '+' : ''}${gd} · ${f1(a.n ? a.gf / a.n : 0)}/${ssL('maç', 'g')}</div>`)}
+                    ${box(ssL('Gol yemeden', 'Clean sheets'), `<div class="ss-v">${a.cs}</div><div class="ss-s">%${a.n ? Math.round(a.cs / a.n * 100) : 0}</div>`)}
+                </div>`;
+                const H = en ? ['P', 'W', 'D', 'L', 'F:A', ''] : ['O', 'G', 'B', 'M', 'A:Y', ''];
+                html += box(ssL('Turnuvalara göre', 'By competition'), `<table class="ss-tb"><thead><tr><th class="t">${ssL('Turnuva', 'Competition')}</th>${H.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${D.tours.map(t => {
+                    const e = tourFind(t.t), lg = tourLogoOf(t.t);
+                    const ic = lg ? `<img class="ss-cl" src="${E(lg)}" alt="" onerror="this.style.display='none'">` : `<i class="ss-cd" style="background:${E((e && e.c) || '#64748b')}"></i>`;
+                    return `<tr><td class="t">${ic}<span>${E(t.t)}</span></td><td>${t.n}</td><td>${t.w}</td><td>${t.d}</td><td>${t.l}</td><td>${t.gf}:${t.ga}</td><td>${t.res ? `<span class="ss-pill ${t.res.c}" title="${E(t.res.tip)}">${E(t.res.s)}</span>` : ''}</td></tr>`;
+                }).join('')}</tbody></table>`);
+                html += `<div class="ss-k3">
+                    ${box(ssL('Seri', 'Win streak'), `<div class="ss-v sm">${D.winStreak}</div><div class="ss-s">${ssL('art arda galibiyet', 'wins in a row')}</div>`)}
+                    ${box(ssL('Yenilmezlik', 'Unbeaten'), `<div class="ss-v sm">${D.unbeaten}</div><div class="ss-s">${ssL('maç', 'games')}</div>`)}
+                    ${box(ssL('İç / Dış', 'Home / Away'), `<div class="ss-v sm">${f2(D.home.ppg)}<small> / </small>${f2(D.away.ppg)}</div><div class="ss-s">${ssL('puan/maç', 'pts/game')}</div>`)}
+                </div>`;
+            }
+
+            if (ssTab === 'ply') {
+                const ldr = (arr, cls) => arr.length ? arr.map(p => `<div class="ss-ldr">${photo(p.n)}<b title="${E(p.n)}">${E(ssShort(p.n))}</b><em class="${cls}">${p.v}</em></div>`).join('') : `<div class="ss-none">–</div>`;
+                html += `<div class="ss-k2">${box(ssL('Gol krallığı', 'Top scorers'), ldr(D.topG, 'g'))}${box(ssL('Asist krallığı', 'Top assists'), ldr(D.topA, 'a'))}</div>`;
+                const hatTxt = D.hat.length ? Object.entries(D.hat.reduce((o, h) => (o[h.n] = (o[h.n] || 0) + 1, o), {})).map(([n, c]) => E(ssShort(n).split(' ').pop()) + (c > 1 ? ' ×' + c : '')).join(', ') : '–';
+                html += `<div class="ss-k2">
+                    ${box('Hat-trick', `<div class="ss-v sm">${D.hat.length}</div><div class="ss-s" title="${hatTxt}">${hatTxt}</div>`)}
+                    ${box(ssL('Farklı golcü', 'Different scorers'), `<div class="ss-v sm">${D.scorers}</div><div class="ss-s">${ssL('oyuncu gol attı', 'players scored')}</div>`)}
+                </div>`;
+                const mx = Math.max(1, ...D.ageB);
+                html += `<div class="ss-k2">
+                    ${box(ssL('Kadro yaşı', 'Squad age'), D.ages.length ? `<div class="ss-v">${f1(D.ageAvg)} <small>${ssL('yaş ort.', 'avg')}</small></div><div class="ss-s">${ssL('En genç', 'Youngest')}: ${D.ageMin} · ${ssL('en yaşlı', 'oldest')}: ${D.ageMax}</div>
+                        <div class="ss-age">${D.ageB.map((v, i) => `<div><em>${v || ''}</em><u style="height:${Math.round(v / mx * 100)}%"></u><span>${['≤20', '21-24', '25-28', '29-32', '33+'][i]}</span></div>`).join('')}</div>` : `<div class="ss-none">${ssL('Yaş verisi yok', 'No age data')}</div>`)}
+                    ${box(ssL('En çok gelişenler · OVR', 'Most improved · OVR'), D.dev.length ? D.dev.map(p => `<div class="ss-ldr">${photo(p.n)}<b title="${E(p.n)}">${E(ssShort(p.n))}</b><span class="ss-ovr" style="color:${mbOvrColor(p.end)}">${p.end}</span><em class="${p.d > 0 ? 'W' : 'L'}">${p.d > 0 ? '+' : '−'}${Math.abs(p.d)}</em></div>`).join('') : `<div class="ss-none">${ssL('Sezon başı/sonu OVR verisi yok', 'No start/end OVR data')}</div>`)}
+                </div>`;
+                if (ssCtx !== 'milli') {
+                    const net = D.net, fm = (v) => '€' + Math.abs(v).toLocaleString(en ? 'en-GB' : 'tr-TR');
+                    html += box(ssL('Transfer dönemi', 'Transfer window'), `<div class="ss-tr">
+                        <div><span class="ss-s">${ssL('Gelen', 'In')}</span><b class="W">${D.tin.length}</b></div>
+                        <div><span class="ss-s">${ssL('Giden', 'Out')}</span><b class="L">${D.tout.length}</b></div>
+                        <div><span class="ss-s">${ssL('Net', 'Net')}</span><b class="${net > 0 ? 'W' : net < 0 ? 'L' : ''}">${net === 0 ? '€0' : (net > 0 ? '+' : '−') + fm(net)}</b></div></div>`);
+                }
+            }
+
+            if (ssTab === 'mac') {
+                const mx = Math.max(1, ...D.BK.map(b => Math.max(b.f, b.a)));
+                html += box(ssL('Gollerin dakikası · atılan / yenen', 'Goal timing · scored / conceded'), `<div class="ss-bars">${D.BK.map((b, i) => `<div><em class="W">${b.f || ''}</em><u style="height:${b.f / mx * 50}%"></u><s style="height:${b.a / mx * 50}%"></s><em class="L">${b.a || ''}</em><span>${['0-15', '16-30', '31-45', '46-60', '61-75', '76-90+'][i]}</span></div>`).join('')}</div>${D.noMin ? `<div class="ss-s ss-note">${D.noMin} ${ssL('golün dakikası girilmemiş', 'goals without a minute')}</div>` : ''}`);
+                const orow = (o, extra) => `<div class="ss-opp">${tlogo(o.nm)}<div><b title="${E(o.nm)}">${E(o.nm)}</b><span class="ss-s">${extra}</span></div></div>`;
+                const wdl = (o) => `${o.w ? `<span class="W">${o.w}${en ? 'W' : 'G'}</span> ` : ''}${o.d ? `<span class="D">${o.d}${en ? 'D' : 'B'}</span> ` : ''}${o.l ? `<span class="L">${o.l}${en ? 'L' : 'M'}</span>` : ''}`;
+                html += `<div class="ss-k2">
+                    ${box(ssL('En çok karşılaşılan', 'Most faced'), D.most.length ? D.most.map(o => orow(o, `${o.n} ${ssL('maç', 'g')} · ${wdl(o)}`)).join('') : `<div class="ss-none">${ssL('Aynı rakiple 2. maç yok', 'No repeat opponents')}</div>`)}
+                    ${box(ssL('Kabus rakip', 'Nightmare opponent'), (D.night ? orow(D.night, `${wdl(D.night)} · ${D.night.gf}:${D.night.ga}`) : `<div class="ss-none">–</div>`) + `<div class="ss-lab" style="margin-top:6px">${ssL('Favori rakip', 'Favourite opponent')}</div>` + (D.fav ? orow(D.fav, `${wdl(D.fav)} · ${D.fav.gf}:${D.fav.ga}`) : `<div class="ss-none">–</div>`))}
+                </div>`;
+                const rr = (lab, pill, cls, txt) => `<div class="ss-rr"><span class="ss-pill ${cls}">${pill}</span><div><b>${lab}</b><span>${txt}</span></div></div>`;
+                const tShort = (x) => { const e = tourFind(x.m.tournament); return E((e && e.s) || x.m.tournament || ''); };
+                let rows = '';
+                if (D.bigWin) rows += rr(ssL('En farklı galibiyet', 'Biggest win'), scU(D.bigWin), 'win', `${vs(D.bigWin)}<i>${tShort(D.bigWin)}</i>`);
+                if (D.bigLoss) rows += rr(ssL('En farklı yenilgi', 'Heaviest defeat'), scU(D.bigLoss), 'loss', `${vs(D.bigLoss)}<i>${tShort(D.bigLoss)}</i>`);
+                if (D.best1) rows += rr(ssL('Bir maçta en çok gol', 'Most goals in a game'), D.best1.c, '', `<b>${E(ssShort(D.best1.n))}</b> <i>vs</i> ${vs(D.best1.x)}`);
+                if (D.late) rows += rr(ssL('En geç galibiyet golü', 'Latest winner'), `${D.late.mm.b}${D.late.mm.x ? '+' + D.late.mm.x : ''}'`, '', `<b>${E(ssShort(D.late.ev.scorer || ''))}</b> <i>vs</i> ${vs(D.late.x)}`);
+                rows += rr(ssL('Geriden gelip kazanılan', 'Comeback wins'), D.comebacks.length, '', D.comebacks.length ? D.comebacks.slice(0, 2).map(x => vs(x)).join('') + (D.comebacks.length > 2 ? `<i>+${D.comebacks.length - 2}</i>` : '') : `<i>${ssL('maç', 'games')}</i>`);
+                html += box(ssL('Sezonun rekorları', 'Season records'), `<div class="ss-recs">${rows}</div>`);
+            }
+
+            if (ssTab !== 'kys') html += ssExtra(D);
+            if (ssTab === 'kys') {
+                if (!D.prevS) return html + `<div class="ss-empty"><i class="fa-solid fa-code-compare"></i>${ssL('Kıyaslanacak önceki sezon yok.', 'No previous season to compare.')}</div>`;
+                const Pv = ssData(D.prevS, ssCtx);
+                const a = Pv.all, b = D.all;
+                const rows = [
+                    [ssL('Maç', 'Played'), a.n, b.n, 0],
+                    [ssL('Galibiyet', 'Wins'), a.w, b.w, 1],
+                    [ssL('Beraberlik', 'Draws'), a.d, b.d, 0],
+                    [ssL('Mağlubiyet', 'Losses'), a.l, b.l, -1],
+                    [ssL('Puan/maç', 'Pts/game'), a.n ? a.ppg : null, b.n ? b.ppg : null, 1, 2],
+                    [ssL('Atılan gol', 'Goals for'), a.gf, b.gf, 1],
+                    [ssL('Yenen gol', 'Goals against'), a.ga, b.ga, -1],
+                    [ssL('Gol yemeden', 'Clean sheets'), a.cs, b.cs, 1],
+                    [ssL('En uzun galibiyet', 'Longest win run'), Pv.winStreak, D.winStreak, 1],
+                    [ssL('Gol kralının golü', 'Top scorer goals'), Pv.topG[0] ? Pv.topG[0].v : null, D.topG[0] ? D.topG[0].v : null, 1],
+                    [ssL('Kadro OVR ort.', 'Squad OVR avg'), Pv.ovrAvg, D.ovrAvg, 1, 1],
+                    [ssL('Kadro yaş ort.', 'Squad age avg'), Pv.ageAvg, D.ageAvg, 0, 1]
+                ];
+                const fm = (v, dp) => v === null || v === undefined ? '–' : dp ? (Math.round(v * Math.pow(10, dp)) / Math.pow(10, dp)).toFixed(dp) : String(v);
+                html += box(ssL('Önceki sezonla kıyas', 'Compared with last season'), `<table class="ss-tb ss-cmp"><thead><tr><th class="t"></th><th>${E(D.prevS)}</th><th>${E(season)}</th><th>${ssL('Fark', 'Diff')}</th></tr></thead><tbody>${rows.map(([l, x, y, good, dp]) => {
+                    let df = '', cls = '';
+                    if (x !== null && x !== undefined && y !== null && y !== undefined) {
+                        const d = y - x; const r = dp ? Math.round(d * Math.pow(10, dp)) / Math.pow(10, dp) : d;
+                        df = r === 0 ? '0' : (r > 0 ? '+' : '−') + (dp ? Math.abs(r).toFixed(dp) : Math.abs(r));
+                        cls = r === 0 || !good ? '' : (r > 0) === (good > 0) ? 'W' : 'L';
+                    }
+                    return `<tr><td class="t">${l}</td><td>${fm(x, dp)}</td><td class="cur">${fm(y, dp)}</td><td class="${cls}">${df || '–'}</td></tr>`;
+                }).join('')}</tbody></table>`);
+                html += ssExtra(D);
+                if (!Pv.P.length) html += `<div class="ss-s ss-note">${ssL(D.prevS + ' sezonunda oynanmış maç bulunamadı.', 'No played matches found in ' + D.prevS + '.')}</div>`;
+            }
+            return html;
+        }
+
 function switchFixtureTab(idx) {
     fixtureActiveTab = idx;
     const activeCls = 'flex-1 px-4 py-3 text-lg bg-slate-900 text-emerald-400 border border-slate-700 border-b-slate-900 rounded-t-xl transition-colors shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] relative z-10 -mb-[1px] flex items-center justify-center';
@@ -15170,9 +15722,9 @@ function renderFixturePanel() {
                     <!-- 3. SAĞ PANEL: DİĞER LİGLER (İlk 4) -->
                     <div class="fx-panel hidden xl:flex flex-col bg-slate-900 border border-slate-700 rounded-b-xl rounded-tr-xl xl:rounded-xl overflow-hidden shadow-lg flex-1 min-h-0 xl:h-full relative z-0">
                         <div class="bg-slate-800 border-b border-slate-700 p-1.5 sm:p-3 shrink-0 flex justify-between items-center flex-wrap gap-2">
-                            <h3 class="text-sm sm:text-lg font-bold text-white"><i class="fa-solid fa-globe mr-2 text-blue-400"></i>Diğer Ligler</h3>
+                            ${ssHeadTitle()}
                             <div class="flex items-center gap-2">
-                                <button onclick="openEuroLeaguesBulkModal()" title="Toplu Ekle" class="bg-indigo-600 hover:bg-indigo-500 text-white px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-[9px] sm:text-[10px] font-bold transition-colors shadow flex items-center gap-1">
+                                ${ssToggle()}<button onclick="openEuroLeaguesBulkModal()" title="Toplu Ekle" class="bg-indigo-600 hover:bg-indigo-500 text-white px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-[9px] sm:text-[10px] font-bold transition-colors shadow flex items-center gap-1">
                                     <i class="fa-solid fa-list-ol"></i>
                                 </button>
                                 
@@ -15220,7 +15772,7 @@ function renderFixturePanel() {
             updateContentArea(html);
 
             // Sekme durumunu en son bırakıldığı gibi ayarla
-            switchFixtureTab(fixtureActiveTab);
+            switchFixtureTab(fixtureActiveTab); ssMount();
 
             // En son oynanan maçı bul ve otomatik olarak ekranda ortala
             setTimeout(() => {
