@@ -2030,13 +2030,13 @@ function getFlagIcon(countryCode) {
             return {
                 seasonsList, trophyData, tournamentsList, managedTeams, opponentsConfig,
                 matchDataStore, playerRoles, squadData, leagueHistoryData, transferData, fixtureData, isSetupComplete,
-                euroLeaguesData, euroSlotsData, customTournamentsData, competitionLogos, formations, customCatalog, pyramidData, notebookData, autoMedia
+                euroLeaguesData, euroSlotsData, customTournamentsData, competitionLogos, formations, customCatalog, pyramidData, notebookData, autoMedia, teamBook
             };
         }
 
         let activeSlot = localStorage.getItem('fc26_active_slot') || '1';
 
-        function saveToLocalStorage() {
+        function saveToLocalStorage() { urDirty = true;
             try { if (typeof ctSyncTrophies === 'function') ctSyncTrophies(); } catch (e) { console.warn('Kupa senkronu:', e); }
             try {
                 const dataStr = JSON.stringify(getAllData());
@@ -2087,7 +2087,7 @@ function getFlagIcon(countryCode) {
             if (data.customTournamentsData) customTournamentsData = data.customTournamentsData;
             if (data.isSetupComplete !== undefined) isSetupComplete = data.isSetupComplete;
             if (data.competitionLogos) competitionLogos = data.competitionLogos;
-            if (Array.isArray(data.customCatalog)) customCatalog = data.customCatalog;
+            if (Array.isArray(data.customCatalog)) customCatalog = data.customCatalog; if (data.teamBook && typeof data.teamBook === 'object') teamBook = data.teamBook; urDirty = true;
             if (data.formations) {
                 formations = data.formations;
                 ['astakim', 'milli'].forEach(ctx => {
@@ -3320,7 +3320,7 @@ function handleFileUpload(event, type) {
             const T = (tr, en) => (typeof currentLang !== 'undefined' && currentLang === 'en') ? en : tr;
             if (!q) { if (!auto && nameEl) nameEl.focus(); return; }
             if (box) { box.innerHTML = `<div class="text-xs text-slate-400 w-full text-center py-2"><i class="fa-solid fa-spinner fa-spin mr-2"></i>${T('Logo aranıyor…', 'Searching logos…')}</div>`; box.classList.remove('hidden'); }
-            const urls = await tlFetchLogos(q);
+            const urk = urLogo(q), urls = (await tlFetchLogos(q)).slice(); if (urk && !urls.includes(urk)) urls.unshift(urk);
             if (nameEl && nameEl.value.trim() !== q) return; // bu arada ad değiştiyse eski sonucu basma
             if (box) {
                 box.innerHTML = urls.length
@@ -8553,7 +8553,92 @@ function renderTrophyCabinet() {
             return `<div class="sqv"><button type="button" class="${sqView === 'list' ? 'on' : ''}" onclick="setSqView('list')"><i class="fa-solid fa-table-list"></i> ${en ? 'Squad' : 'Kadro'}</button><button type="button" class="${sqView === 'attrs' ? 'on' : ''}" onclick="setSqView('attrs')"><i class="fa-solid fa-chart-simple"></i> ${en ? 'Attributes' : 'Özellikler'}</button></div>`;
         }
         function attrSetSort(col) { attrSort = { col, dir: attrSort.col === col ? -attrSort.dir : -1 }; renderSquadAttrs(); }
+        // ---------- Özellikler görünümü v2: mevki sıralaması/gruplama, mevki filtresi, kaleciler üstte ve aynı hizada ----------
+        let attrPosF = [], attrByPos = 0; let attrPfOpen = false; function attrPfToggle() { attrPfOpen = !attrPfOpen; document.querySelectorAll('.sqa-pfd').forEach(d => d.classList.toggle('open', attrPfOpen)); } document.addEventListener('click', () => { if (attrPfOpen) { attrPfOpen = false; document.querySelectorAll('.sqa-pfd.open').forEach(d => d.classList.remove('open')); } }); // attrByPos: 0 kapalı, 1 GK→ST, -1 ST→GK
+        const ATTR_POS_ORDER = ['GK', 'CB', 'LB', 'RB', 'LWB', 'RWB', 'DM', 'CDM', 'CM', 'AM', 'CAM', 'LM', 'RM', 'LW', 'RW', 'CF', 'ST'];
+        function attrPosIdx(p) { const i = ATTR_POS_ORDER.indexOf(String((p && p.pos) || '').toUpperCase()); return i < 0 ? 99 : i; }
+        function attrTogglePos() { attrByPos = attrByPos === 0 ? 1 : attrByPos === 1 ? -1 : 0; renderSquadAttrs(); }
+        function attrTogglePosF(pos) { if (pos === '*') attrPosF = []; else attrPosF = attrPosF.includes(pos) ? attrPosF.filter(x => x !== pos) : attrPosF.concat(pos); renderSquadAttrs(); }
         function renderSquadAttrs() {
+            const en = attrEn(), L = (tr, e) => en ? e : tr;
+            const all = (squadData[squadContext] || []).filter(p => p && p.name && !p.isArchived);
+            const keys = [...new Set(all.flatMap(p => attrSnaps(p)))].sort((a, b) => attrKeyOrder(a) - attrKeyOrder(b));
+            const keyOpts = (sel, auto) => `<option value=""${!sel ? ' selected' : ''}>${auto}</option>` + keys.map(k => `<option value="${escapeHtml(k)}"${k === sel ? ' selected' : ''}>${escapeHtml(attrKeyLabel(k))}</option>`).join('');
+            const showOpts = [['all', L('Tümü (detaylı)', 'All (detailed)')], ['main', L('Ana özellikler', 'Main attributes')]].concat(ATTR_OUT.map(g => [g.k, L('Alt: ', 'Sub: ') + g.l[en ? 1 : 0]]));
+            const withAll = all.filter(p => attrSnaps(p).length), noData = all.length - withAll.length;
+            const posList = [...new Set(withAll.map(p => String(p.pos || '').toUpperCase()).filter(Boolean))].sort((a, b) => (ATTR_POS_ORDER.indexOf(a) + 1 || 99) - (ATTR_POS_ORDER.indexOf(b) + 1 || 99));
+            attrPosF = attrPosF.filter(x => posList.includes(x));
+            const posBar = posList.length > 1 ? `<div class="sqa-pfd${attrPfOpen ? ' open' : ''}"><button type="button" class="sqa-pfb${attrPosF.length ? ' act' : ''}" onclick="event.stopPropagation();attrPfToggle()"><i class="fa-solid fa-filter"></i><span>${attrPosF.length ? (attrPosF.length > 3 ? attrPosF.length + ' ' + L('mevki', 'positions') : attrPosF.join(', ')) : L('Mevki', 'Position')}</span><i class="fa-solid fa-chevron-down"></i></button><div class="sqa-pfm sqa-pf" onclick="event.stopPropagation()"><button type="button" class="sqa-pfall${attrPosF.length ? '' : ' on'}" onclick="attrTogglePosF('*')">${L('Tümü', 'All')}</button>${posList.map(ps => `<button type="button" class="pos-${escapeHtml(ps)}${attrPosF.includes(ps) ? ' on' : ''}" onclick="attrTogglePosF('${escapeHtml(ps)}')">${escapeHtml(ps)}</button>`).join('')}</div></div>` : '';
+            const head = `<div class="sqa-bar">
+                    <div class="sqa-l">${sqViewToggleHtml()}<button type="button" class="sqa-imp" onclick="openAttrImport()"><i class="fa-solid fa-file-import"></i> ${L('Toplu ekle', 'Bulk import')}</button></div>
+                    <div class="sqa-ctx">${['astakim', 'akademi', 'milli'].map(c => `<button type="button" class="${squadContext === c ? 'on' : ''}" onclick="squadContext='${c}';renderSquadGrid()">${{ astakim: L('As Takım', 'First Team'), akademi: L('Akademi', 'Academy'), milli: L('Milli', 'National') }[c]}</button>`).join('')}</div>
+                    <div class="sqa-r">
+                        <select onchange="attrShow=this.value;attrSort={col:'ovr',dir:-1};renderSquadAttrs()">${showOpts.map(o => `<option value="${o[0]}"${o[0] === attrShow ? ' selected' : ''}>${o[1]}</option>`).join('')}</select>
+                        <div class="sqa-mode"><button type="button" class="${attrMode === 'val' ? 'on' : ''}" onclick="attrMode='val';renderSquadAttrs()">${L('Değer', 'Value')}</button><button type="button" class="${attrMode === 'delta' ? 'on' : ''}" onclick="attrMode='delta';renderSquadAttrs()">${L('Gelişim', 'Growth')}</button></div>
+                        <select title="${L('Karşılaştırmanın başı', 'Compare from')}" onchange="attrFrom=this.value;renderSquadAttrs()">${keyOpts(attrFrom, L('İlk kayıt', 'First record'))}</select>
+                        <span class="sqa-arrow">→</span>
+                        <select title="${L('Karşılaştırmanın sonu', 'Compare to')}" onchange="attrTo=this.value;renderSquadAttrs()">${keyOpts(attrTo, L('Son kayıt', 'Latest record'))}</select>
+                    ${posBar}</div></div>`;
+            const withData = attrPosF.length ? withAll.filter(p => attrPosF.includes(String(p.pos || '').toUpperCase())) : withAll;
+            const sqMob = window.innerWidth < 768;
+            // Sütun tanımları (saha oyuncuları ve kaleciler ayrı), ortak sütun sayısına göre hizalanır
+            const colsOf = (gk) => {
+                if (attrShow === 'all' && !gk) { const c = []; ATTR_OUT.forEach(g => { c.push({ code: g.k, main: true, gs: true, l: ATTR_SHORT[g.k][en ? 1 : 0], t: g.l[en ? 1 : 0] }); g.a.forEach(a => c.push({ code: a[0], main: false, l: ATTR_SHORT[a[0]][en ? 1 : 0], t: en ? a[2] : a[1] })); }); return c; }
+                if (attrShow === 'main' || gk) return attrGroups(gk).map(g => ({ code: g.k, main: true, l: (sqMob || (gk && isAll)) ? ATTR_SHORT[g.k][en ? 1 : 0] : g.l[en ? 1 : 0], t: g.l[en ? 1 : 0] }));
+                const g = ATTR_OUT.find(x => x.k === attrShow) || ATTR_OUT[0];
+                return [{ code: g.k, main: true, l: sqMob ? ATTR_SHORT[g.k][en ? 1 : 0] : g.l[en ? 1 : 0], t: g.l[en ? 1 : 0] }].concat(g.a.map(a => ({ code: a[0], main: false, l: sqMob ? ATTR_SHORT[a[0]][en ? 1 : 0] : (en ? a[2] : a[1]), t: en ? a[2] : a[1] })));
+            };
+            const hasOut = withData.some(p => !attrIsGk(p)), hasGk = withData.some(p => attrIsGk(p));
+            const isAll = attrShow === 'all' && hasOut;
+            const N = Math.max(hasOut ? colsOf(false).length : 0, hasGk ? colsOf(true).length : 0);
+            const dHtml = d => d === null || d === undefined ? '<span class="d eq">·</span>' : `<span class="d ${d > 0 ? 'up' : d < 0 ? 'dn' : 'eq'}">${d > 0 ? '+' + d : d < 0 ? d : '·'}</span>`;
+            const arrow = (id) => attrSort.col === String(id) ? (attrSort.dir < 0 ? ' ▼' : ' ▲') : '';
+            const th = (id, label, cls, title) => `<th class="${attrSort.col === String(id) ? 's' : ''} ${cls || ''}"${title ? ` title="${escapeHtml(title)}"` : ''} onclick="attrSetSort('${id}')">${label}${arrow(id)}</th>`;
+            const pad = (n, tag, cls) => n > 0 ? Array.from({ length: n }, () => `<${tag} class="sqa-pad ${cls || ''}"></${tag}>`).join('') : '';
+            const section = (gk) => {
+                const rows = withData.filter(p => attrIsGk(p) === gk);
+                if (!rows.length) return '';
+                const cols = colsOf(gk), extra = N - cols.length;
+                const data = rows.map(p => {
+                    const pr = attrPair(p, attrFrom, attrTo);
+                    const ov = { v: pr.to.ovr, d: (pr.from !== pr.to && pr.from.ovr && pr.to.ovr) ? pr.to.ovr - pr.from.ovr : null };
+                    const cells = cols.map(c => { const v = attrVal(pr.to, c.code, c.main), f = pr.from !== pr.to ? attrVal(pr.from, c.code, c.main) : null; return { v, d: (v !== null && f !== null) ? v - f : null }; });
+                    const hasSub = cols.some(c => !c.main);
+                    const tot = cells.reduce((s, c, i) => s + ((!hasSub || !cols[i].main) ? (c.d || 0) : 0), 0);
+                    return { p, pr, ov, cells, tot };
+                });
+                const sv = (r) => {
+                    if (attrSort.col === 'name') return r.p.name;
+                    const sc = String(attrSort.col), own = gk ? /^g\d+$/.test(sc) : /^\d+$/.test(sc), fb = !own && sc !== 'ovr' && sc !== 'tot'; const pick = sc === 'ovr' || fb ? r.ov : sc === 'tot' ? { v: r.tot, d: r.tot } : r.cells[parseInt(sc.replace('g', ''))]; if (fb) { const xv = attrMode === 'delta' ? pick.d : pick.v; return xv === null || xv === undefined ? -999 : (attrSort.dir > 0 ? -xv : xv); }
+                    if (!pick) return -999;
+                    const x = attrMode === 'delta' ? pick.d : pick.v;
+                    return x === null || x === undefined ? -999 : x;
+                };
+                data.sort((a, b) => {
+                    if (attrByPos) { const pd = (attrPosIdx(a.p) - attrPosIdx(b.p)) * attrByPos; if (pd) return pd; }
+                    const x = sv(a), y = sv(b);
+                    return typeof x === 'string' ? x.localeCompare(y) * (attrSort.dir < 0 ? 1 : -1) : (x - y) * (attrSort.dir < 0 ? -1 : 1);
+                });
+                const nameTh = `<th class="n ${attrSort.col === 'name' ? 's' : ''}"><span class="sqa-hpos${attrByPos ? ' on' : ''}" title="${L('Mevkiye göre grupla (GK → ST / ST → GK / kapalı)', 'Group by position (GK → ST / ST → GK / off)')}" onclick="attrTogglePos()">${L('MEV', 'POS')}${attrByPos ? (attrByPos > 0 ? ' ▲' : ' ▼') : ' ⇅'}</span><span class="sqa-hname" onclick="attrSetSort('name')">${L('Oyuncu', 'Player')}${arrow('name')}</span></th>`;
+                const grpRow = (!gk && isAll) ? `<tr class="sqa-grp"><th colspan="2"></th>${ATTR_OUT.map(g => `<th colspan="${g.a.length + 1}" class="gs">${g.l[en ? 1 : 0]}</th>`).join('')}${pad(extra, 'th')}<th></th></tr>` : '';
+                const hdr = `<tr class="sqa-h${!gk && isAll ? ' sqa-h2' : ''}${gk ? ' sqa-hgk' : ''}">${nameTh}${th('ovr', 'OVR')}${cols.map((c, i) => th(gk ? 'g' + i : i, c.l, (c.main && cols.length > 6 ? 'mg' : '') + (c.gs ? ' gs' : ''), c.t)).join('')}${pad(extra, 'th')}${th('tot', L('Toplam Δ', 'Total Δ'))}</tr>`;
+                let lastPos = null;
+                const body = data.map(r => {
+                    const ps = String(r.p.pos || '').toUpperCase();
+                    const sep = attrByPos && !gk && lastPos !== null && lastPos !== ps ? ' sqa-psep' : ''; lastPos = ps;
+                    return `<tr class="bg-row-${(p => p === 'GK' ? 'GK' : /^(CB|LB|RB|LWB|RWB)$/.test(p) ? 'DEF' : /^(ST|CF|LW|RW)$/.test(p) ? 'FWD' : 'MID')(ps)}${sep}" onclick="openPlayerInfoModal('${r.p.id}')"><td class="n"><div class="sqa-pl"><i class="pos-${escapeHtml(ps)}">${escapeHtml(r.p.pos || '')}</i>${r.p.photoUrl && !/ui-avatars\.com/.test(r.p.photoUrl) ? `<img src="${escapeHtml(r.p.photoUrl)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">` : '<span class="sqa-noph"></span>'}<span class="sqa-nm">${escapeHtml(window.innerWidth < 768 && typeof formatShortPlayerName === 'function' ? formatShortPlayerName(r.p.name) : r.p.name)}</span></div></td>
+                        <td><span class="sqa-ovr" style="background:${mbOvrColor(r.ov.v)}">${r.ov.v || '–'}</span>${dHtml(r.ov.d)}</td>
+                        ${r.cells.map((c, i) => `<td class="${cols[i].main && cols.length > 6 ? 'mg' : ''}${cols[i].gs ? ' gs' : ''}${attrMode === 'delta' ? ' dm' : ''}">${cols[i].main ? `<b class="mv" style="--c:${attrColor(c.v)}">${c.v !== null ? c.v : '–'}</b>` : `<b style="color:${attrColor(c.v)}">${c.v !== null ? c.v : '–'}</b>`}${dHtml(c.d)}</td>`).join('')}${pad(extra, 'td')}
+                        <td class="tot ${r.tot > 0 ? 'up' : r.tot < 0 ? 'dn' : 'eq'}">${r.tot > 0 ? '+' + r.tot : r.tot}</td></tr>`;
+                }).join('');
+                return `<tbody class="${gk ? 'sqa-gk' : 'sqa-out'}">${gk || !hasGk ? '' : `<tr class="sqa-secr sqa-gap"><td colspan="${N + 3}"></td></tr>`}${grpRow}${hdr}${body}</tbody>`;
+            };
+            const body = withAll.length
+                ? (withData.length ? `<table class="sqa-tb sqa-one${isAll ? ' sqa-all' : ''}">${section(true)}${section(false)}</table>` : `<div class="sqa-note">${L('Seçili mevkilerde oyuncu yok.', 'No players in the selected positions.')}</div>`) + (noData ? `<div class="sqa-note">${noData} ${L('oyuncunun henüz özellik kaydı yok.', 'players have no attribute records yet.')}</div>` : '')
+                : `<div class="sqa-empty"><i class="fa-solid fa-chart-simple"></i><b>${L('Henüz özellik verisi yok', 'No attribute data yet')}</b><span>${L('FC26 Development Plans videonu bana gönder; hazırladığım veriyi "Toplu ekle" ile buraya yapıştır.', 'Send me your FC26 Development Plans video, then paste the data I prepare via "Bulk import".')}</span><button type="button" class="sqa-imp" onclick="openAttrImport()"><i class="fa-solid fa-file-import"></i> ${L('Toplu ekle', 'Bulk import')}</button></div>`;
+            updateContentArea(`<div class="sqa w-full flex flex-col h-full min-h-0">${head}<div class="sqa-wrap">${body}</div></div>`);
+        }
+        function renderSquadAttrsOld() {
             const en = attrEn(), L = (tr, e) => en ? e : tr;
             const all = (squadData[squadContext] || []).filter(p => p && p.name && !p.isArchived);
             const keys = [...new Set(all.flatMap(p => attrSnaps(p)))].sort((a, b) => attrKeyOrder(a) - attrKeyOrder(b));
@@ -8697,7 +8782,7 @@ function renderTrophyCabinet() {
                 staticCols.push({ id: 'countryCode', label: '<i class="fa-solid fa-globe text-sm"></i>', title: 'Ülke', w: 32, align: 'center' });
                 staticCols.push({ id: 'joinAge', label: '<i class="fa-solid fa-user-clock text-sm"></i>', title: 'Yaş', w: 34, align: 'center' });
                 staticCols.push({ id: 'joinOvr', label: '<i class="fa-solid fa-star text-sm"></i>', title: 'OVR', w: 36, align: 'center' });
-                staticCols.push({ id: 'growth', label: '<i class="fa-solid fa-chart-line text-sm"></i>', title: 'Gelişim (+/-)', w: 42, align: 'center' });
+                staticCols.push({ id: 'role', label: '<i class="fa-solid fa-signal text-sm"></i>', title: 'Önem / Rol', w: 30, align: 'center' }); staticCols.push({ id: 'growth', label: '<i class="fa-solid fa-chart-line text-sm"></i>', title: 'Gelişim (+/-)', w: 42, align: 'center' });
 
                 if (squadContext === 'akademi') {
                     staticCols.push({ id: 'pot', label: '<i class="fa-solid fa-bolt text-sm"></i>', title: 'Potansiyel (POT)', w: 36, align: 'center' });
@@ -8953,7 +9038,9 @@ function renderTrophyCabinet() {
                                 valA = Number(a.currentOvr || 0); valB = Number(b.currentOvr || 0);
                             } else if (squadSort.field === 'joinAge') {
                                 valA = Number(a.currentAge || 0); valB = Number(b.currentAge || 0);
-                            } else if (squadSort.field === 'caps') {
+                            } else if (squadSort.field === 'role') {
+    const rl = playerRoles[squadContext] || [], ia = rl.indexOf(a.role), ib = rl.indexOf(b.role); valA = ia < 0 ? 99 : ia; valB = ib < 0 ? 99 : ib;
+} else if (squadSort.field === 'caps') {
     valA = Number(a.caps || 0); valB = Number(b.caps || 0);
 } else if (squadSort.field === 'totalGoals') {
     valA = Number(a.totalGoals || 0); valB = Number(b.totalGoals || 0);
@@ -8990,6 +9077,7 @@ function renderTrophyCabinet() {
                                     // OVR sütunu artık sadece rozeti gösteriyor
                                     content = `<div class="flex items-center justify-center w-full h-full">${renderOvrBadge(p.currentOvr)}</div>`;
                                 }
+                                else if(c.id === 'role') content = `<div class="flex items-center justify-center w-full h-full">${sqRoleIcon(p.role, squadContext)}</div>`;
                                 else if(c.id === 'growth') {
                                     // YENİ: Yeni gelişim sütunu mantığı
                                     let delta = (parseInt(p.currentOvr) || 0) - (parseInt(p.joinOvr) || 0);
@@ -9856,6 +9944,15 @@ async function autoFetchPlayerPhotoOld(playerName, urlInputId) {
     }
 }
 
+        // Kadro tablosu: oyuncu önemi (Crucial, Important…) minik sinyal çubuklarıyla
+        function sqRoleIcon(role, ctx) {
+            if (!role) return '<span class="text-[10px] text-slate-600">-</span>';
+            const list = playerRoles[ctx] || [], i = list.indexOf(role), safe = escapeHtml(role);
+            if (/prospect|gelecek|genç|genc/i.test(role)) return `<span class="sq-role sq-role-p" title="${safe}"><i class="fa-solid fa-seedling"></i></span>`;
+            if (i < 0) return `<span class="sq-role sq-role-x" title="${safe}">${escapeHtml(role.charAt(0).toUpperCase())}</span>`;
+            const n = Math.max(1, 4 - i), col = ['#f87171', '#60a5fa', '#fbbf24', '#94a3b8'][Math.min(i, 3)];
+            return `<span class="sq-role" title="${safe}"><svg viewBox="0 0 15 12" width="15" height="12">${[0, 1, 2, 3].map(k => `<rect x="${k * 4}" y="${9 - k * 3}" width="3" height="${3 + k * 3}" rx="1" fill="${k < n ? col : '#334155'}"/>`).join('')}</svg></span>`;
+        }
         function sortSquad(field) {
             if (squadSort.field === field) {
                 squadSort.asc = !squadSort.asc;
@@ -9909,10 +10006,86 @@ let piTab = 'genel';
 let piTabHtml = { genel: '', gelisim: '', istatistik: '' };
 const PI_PERIODS = [['t1', 'Yaz'], ['s1', 'Aralık'], ['t2', 'Kış'], ['s2', 'Sezon sonu']];
 
+// ===================== OYUNCU NOTLARI (profil kartı · Genel sekmesi) =====================
+let pinP = null;
+function pinEn() { return typeof currentLang !== 'undefined' && currentLang === 'en'; }
+// Not paneli v2: ekleme düğmesi kartın üstünde (yıldızın yanında); not yoksa panel gizli
+let pinOpen = false;
+function pinOpenAdd() {
+    pinOpen = true;
+    if (typeof piTab !== 'undefined' && piTab !== 'genel') piSetTab('genel'); else pinMount();
+    setTimeout(() => { const i = document.getElementById('pin-in'); if (i) { i.focus(); i.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } }, 40);
+}
+function pinKey2(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); pinAdd(); }
+    else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); pinOpen = false; pinMount(); }
+}
+function pinMount() {
+    const w = document.getElementById('pin-wrap'), p = pinP; if (!p) return;
+    const en = pinEn(), notes = Array.isArray(p.notes) ? p.notes : [];
+    const hero = document.getElementById('pi-hero');
+    if (hero) {
+        let nb = document.getElementById('pih-note');
+        if (!nb) { nb = document.createElement('button'); nb.id = 'pih-note'; nb.type = 'button'; nb.className = 'pih-note'; hero.appendChild(nb); }
+        nb.title = en ? 'Add note' : 'Not ekle';
+        nb.innerHTML = `<i class="fa-regular fa-note-sticky"></i>${notes.length ? `<b>${notes.length}</b>` : ''}`;
+        nb.onclick = pinOpenAdd;
+    }
+    if (!w) return;
+    if (!notes.length && !pinOpen) { w.innerHTML = ''; return; }
+    const fmt = (t) => { try { return new Date(t).toLocaleDateString(en ? 'en-GB' : 'tr-TR', { day: 'numeric', month: 'short', year: 'numeric' }); } catch (e) { return ''; } };
+    w.innerHTML = `<div class="pin-box">
+        <div class="pin-hd"><span><i class="fa-solid fa-note-sticky"></i> ${en ? 'Notes' : 'Notlar'}</span>${notes.length ? `<em>${notes.length}</em>` : ''}${pinOpen ? `<button type="button" class="pin-cl" onclick="pinOpen=false;pinMount()" title="${en ? 'Close' : 'Kapat'}"><i class="fa-solid fa-xmark"></i></button>` : ''}</div>
+        ${pinOpen ? `<div class="pin-add"><textarea id="pin-in" rows="1" placeholder="${en ? 'Write a note… Enter to save, Shift+Enter for new line' : 'Notunu yaz… Enter kaydeder, Shift+Enter alt satır'}" onkeydown="pinKey2(event)" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px'"></textarea><button type="button" onclick="pinAdd()" title="${en ? 'Save note' : 'Notu kaydet'}"><i class="fa-solid fa-check"></i></button></div>` : ''}
+        ${notes.length ? `<div class="pin-list">${notes.slice().sort((a, b) => b.t - a.t).map(n => `<div class="pin-it" data-id="${escapeHtml(n.id)}">
+            <div class="pin-meta">${n.season ? `<b>${escapeHtml(n.season)}</b> · ` : ''}${fmt(n.t)}${n.e ? ` · ${en ? 'edited' : 'düzenlendi'}` : ''}
+                <span><button type="button" onclick="pinEdit('${escapeHtml(n.id)}')" title="${en ? 'Edit' : 'Düzenle'}"><i class="fa-solid fa-pen"></i></button><button type="button" class="d" onclick="pinDel('${escapeHtml(n.id)}')" title="${en ? 'Delete' : 'Sil'}"><i class="fa-solid fa-trash-can"></i></button></span></div>
+            <div class="pin-tx">${escapeHtml(n.text)}</div></div>`).join('')}</div>` : ''}
+    </div>`;
+}
+function pinMountOld() {
+    const w = document.getElementById('pin-wrap'), p = pinP; if (!w || !p) return;
+    const en = pinEn(), notes = Array.isArray(p.notes) ? p.notes : [];
+    const fmt = (t) => { try { return new Date(t).toLocaleDateString(en ? 'en-GB' : 'tr-TR', { day: 'numeric', month: 'short', year: 'numeric' }); } catch (e) { return ''; } };
+    w.innerHTML = `<div class="pin-box">
+        <div class="pin-hd"><span><i class="fa-solid fa-note-sticky"></i> ${en ? 'Notes' : 'Notlar'}</span>${notes.length ? `<em>${notes.length}</em>` : ''}</div>
+        <div class="pin-add"><textarea id="pin-in" rows="1" placeholder="${en ? 'Add a note… (Enter to save, Shift+Enter for new line)' : 'Not ekle… (Enter ile kaydet, Shift+Enter alt satır)'}" onkeydown="pinKey(event)" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px'"></textarea><button type="button" onclick="pinAdd()" title="${en ? 'Save note' : 'Notu kaydet'}"><i class="fa-solid fa-plus"></i></button></div>
+        ${notes.length ? `<div class="pin-list">${notes.slice().sort((a, b) => b.t - a.t).map(n => `<div class="pin-it" data-id="${escapeHtml(n.id)}">
+            <div class="pin-meta">${n.season ? `<b>${escapeHtml(n.season)}</b> · ` : ''}${fmt(n.t)}${n.e ? ` · ${en ? 'edited' : 'düzenlendi'}` : ''}
+                <span><button type="button" onclick="pinEdit('${escapeHtml(n.id)}')" title="${en ? 'Edit' : 'Düzenle'}"><i class="fa-solid fa-pen"></i></button><button type="button" class="d" onclick="pinDel('${escapeHtml(n.id)}')" title="${en ? 'Delete' : 'Sil'}"><i class="fa-solid fa-trash-can"></i></button></span></div>
+            <div class="pin-tx">${escapeHtml(n.text)}</div></div>`).join('')}</div>` : `<div class="pin-empty">${en ? 'No notes yet. Scouting thoughts, contract plans, training focus…' : 'Henüz not yok. Gözlemler, sözleşme planı, antrenman odağı…'}</div>`}
+    </div>`;
+}
+function pinSeason() { return (typeof activeFixtureSeason !== 'undefined' && activeFixtureSeason) || seasonsList[seasonsList.length - 1] || ''; }
+function pinAdd() {
+    const i = document.getElementById('pin-in'), p = pinP; if (!i || !p) return;
+    const text = i.value.trim(); if (!text) { i.focus(); return; }
+    if (!Array.isArray(p.notes)) p.notes = [];
+    p.notes.push({ id: 'n' + Date.now().toString(36), t: Date.now(), season: pinSeason(), text });
+    saveToLocalStorage(); pinMount();
+    const ni = document.getElementById('pin-in'); if (ni) ni.focus();
+}
+function pinKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); pinAdd(); } }
+function pinDel(id) {
+    const p = pinP; if (!p || !Array.isArray(p.notes)) return;
+    if (!confirm(pinEn() ? 'Delete this note?' : 'Bu not silinsin mi?')) return;
+    p.notes = p.notes.filter(n => n.id !== id); saveToLocalStorage(); pinMount();
+}
+function pinEdit(id) {
+    const p = pinP, n = p && (p.notes || []).find(x => x.id === id); if (!n) return;
+    const el = document.querySelector(`.pin-it[data-id="${id}"] .pin-tx`); if (!el) return;
+    el.contentEditable = 'true'; el.classList.add('ed'); el.focus();
+    const r = document.createRange(); r.selectNodeContents(el); r.collapse(false); const s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    const done = (save) => { el.removeEventListener('blur', onBlur); el.removeEventListener('keydown', onKey); const t = el.innerText.trim(); if (save && t && t !== n.text) { n.text = t; n.e = Date.now(); saveToLocalStorage(); } pinMount(); };
+    const onBlur = () => done(true);
+    const onKey = (ev) => { if (ev.key === 'Enter' && !ev.shiftKey) { ev.preventDefault(); el.blur(); } else if (ev.key === 'Escape') { ev.preventDefault(); ev.stopPropagation(); el.removeEventListener('blur', onBlur); done(false); } };
+    el.addEventListener('blur', onBlur); el.addEventListener('keydown', onKey);
+}
+
 function piSetTab(t) {
     piTab = t;
     const body = document.getElementById('pi-tab-body');
-    if (body) body.innerHTML = piTabHtml[t] || '';
+    if (body) body.innerHTML = piTabHtml[t] || ''; if (t === 'genel') pinMount();
     document.querySelectorAll('#pi-tabs .pi-tab').forEach(b => b.classList.toggle('active', b.dataset.t === t));
 }
 
@@ -10041,7 +10214,7 @@ function piFootFill(p) {
     el.innerHTML = `<b class="ft-l">${full}</b><b class="ft-s">${short}</b><svg viewBox="0 0 24 24" aria-hidden="true">${f === 'L' ? PI_FOOT_L : PI_FOOT_R}</svg>`;
 }
 
-function piRenderProfile(p) {
+function piRenderProfile(p) { pinP = p; pinOpen = false;
     const esc = (s) => escapeHtml(String(s));
     const ovrCol = (o) => (typeof mbOvrColor === 'function' ? mbOvrColor(o) : '#facc15');
 
@@ -10133,7 +10306,7 @@ function piRenderProfile(p) {
         ${tile('Güncel Yaş', cur.age || '-', `Geliş yaşı ${esc(p.joinAge)}`, 'inherit', 'transparent')}
         ${tile('Takımda', `${seasonCount}<span class="text-sm text-slate-500 font-bold"> sezon</span>`, esc(p.role || ''), 'inherit', 'transparent')}
     </div>
-    <div class="${box} px-3 mt-2"><div class="text-[10px] text-slate-500 font-bold uppercase tracking-widest pt-2.5 pb-1">Kariyer Öne Çıkanlar</div>${hls}</div>`;
+    <div class="${box} px-3 mt-2"><div class="text-[10px] text-slate-500 font-bold uppercase tracking-widest pt-2.5 pb-1">Kariyer Öne Çıkanlar</div>${hls}</div><div id="pin-wrap"></div>`;
 
     // =============== GELİŞİM (Seçenek 1: Grafik + Tablo) ===============
     const n = pts.length;
@@ -13341,6 +13514,44 @@ function autoFillTeamLogo(nameInput, urlInputId) {
             if (el && el.isContentEditable && el.innerText) { const c = TEAM_ALIASES[teamNorm(el.innerText)]; if (c && c !== el.innerText.trim()) el.innerText = c; }
         }, true);
 
+        // ===================== ORTAK TAKIM DEFTERİ: sitede bir yere eklenen takım adı + logo her yerden bulunur =====================
+        let teamBook = {}; // kalıcı: normalize ad -> { n: ad, l: logo }
+        let _urIdx = null, urDirty = true;
+        function urNorm(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim(); }
+        function urOk(u) { return !!u && typeof u === 'string' && !/ui-avatars\.com/.test(u) && u !== 'Yerel Dosya Yüklendi (Sıkıştırıldı)'; }
+        function urBuild() {
+            const m = new Map();
+            const put = (n, l) => { n = String(n || '').trim(); if (!n || n === '-' || /^(takım adı|team name)$/i.test(n)) return; const k = urNorm(n), cur = m.get(k); if (!cur) m.set(k, { name: n, logo: urOk(l) ? l : '' }); else if (!cur.logo && urOk(l)) cur.logo = l; };
+            try {
+                ['kulup', 'milli'].forEach(k => { const t = managedTeams && managedTeams[k]; if (t) put(t.name, t.logoUrl); });
+                ['kulup', 'milli'].forEach(ctx => { const o = opponentsConfig && opponentsConfig[ctx]; if (!o) return;
+                    ((o.domestic && o.domestic.teams) || []).forEach(t => t && put(t.name, t.logoUrl));
+                    (o.foreign || []).forEach(g => ((g && g.teams) || []).forEach(t => t && put(t.name, t.logoUrl))); });
+                const seasons = Object.keys(customTournamentsData || {}).sort().reverse(); // en yeni sezon önce
+                seasons.forEach(s => (customTournamentsData[s] || []).forEach(t => {
+                    if (!t) return;
+                    (Array.isArray(t.table) ? t.table : []).forEach(r => r && put(r.name, r.logo));
+                    (Array.isArray(t.knockouts) ? t.knockouts : []).forEach(k => { if (k) { put(k.home, k.homeLogo); put(k.away, k.awayLogo); } });
+                }));
+                Object.values(euroLeaguesData || {}).forEach(o => Object.values(o || {}).forEach(rows => (Array.isArray(rows) ? rows : []).forEach(r => r && put(r.name, r.logo))));
+                Object.values((typeof fixtureData !== 'undefined' && fixtureData) || {}).forEach(arr => (arr || []).forEach(f => { if (f) { put(f.home, f.homeLogo); put(f.away, f.awayLogo); } }));
+                Object.values(pyramidData || {}).forEach(o => Object.values(o || {}).forEach(arr => (Array.isArray(arr) ? arr : []).forEach(n => put(typeof n === 'string' ? n : n && n.name, n && n.logo))));
+                (leagueHistoryData || []).forEach(t => t && put(t.name, t.logo || t.logoUrl));
+                ['in', 'out'].forEach(k => ((transferData && transferData[k]) || []).forEach(t => t && put(t.team)));
+            } catch (e) { console.warn('urBuild', e); }
+            // Daha önce görülmüş ama artık hiçbir tabloda olmayan takımlar da hatırlanır
+            Object.values(teamBook || {}).forEach(b => b && put(b.n, b.l));
+            m.forEach((v, k) => { const b = teamBook[k]; if (!b || (v.logo && b.l !== v.logo)) teamBook[k] = { n: v.name, l: v.logo || (b && b.l) || '' }; });
+            _urIdx = m; urDirty = false;
+        }
+        function urGet(name) {
+            if (urDirty || !_urIdx) urBuild();
+            const v = _urIdx.get(urNorm(name)) || (typeof teamCanon === 'function' ? _urIdx.get(urNorm(teamCanon(name))) : null);
+            return v || null;
+        }
+        function urLogo(name) { const v = urGet(name); return v && v.logo ? v.logo : ''; }
+        function urList() { if (urDirty || !_urIdx) urBuild(); return [..._urIdx.values()]; }
+
         function getTeamLogoByName(name) {
             name = teamCanon(name);
             if (!name || name === '-') return '';
@@ -13368,6 +13579,7 @@ function autoFillTeamLogo(nameInput, urlInputId) {
 
             if (customLogo) return customLogo;
 
+            { const ul = urLogo(name); if (ul) return ul; } // sitede elle eklenmiş takım logoları
             // FC26 Veritabanından (team-tournament-data.js) genel kontrol et
             if (typeof FC26_TEAM_DATABASE !== 'undefined') {
                 const dbMatch = FC26_TEAM_DATABASE.find(t => typeof t === 'object' && t.name && t.name.toLowerCase() === name.toLowerCase());
@@ -13531,7 +13743,11 @@ function formatShortPlayerName(name) {
                 const n = euAcNorm(t.name);
                 if (n.startsWith(q)) starts.push(t); else if (n.includes(q)) inc.push(t);
             });
-            euAcMatches = _lt ? _lt : starts.concat(inc).slice(0, 8);
+            if (_lt) euAcMatches = _lt; else {
+                const mine = urList().filter(t => { const n = euAcNorm(t.name); return n.startsWith(q) || n.includes(q); }).sort((a, b) => euAcNorm(b.name).startsWith(q) - euAcNorm(a.name).startsWith(q));
+                const seen = new Set(mine.map(t => euAcNorm(t.name)));
+                euAcMatches = mine.concat(starts.concat(inc).filter(t => !seen.has(euAcNorm(t.name)))).slice(0, 8).map(t => ({ name: t.name, logo: urLogo(t.name) || t.logo || '' }));
+            }
             if (!euAcMatches.length) { euAcClose(); return; }
             if (!euAcEl) {
                 euAcEl = document.createElement('div');
@@ -13937,7 +14153,17 @@ function formatShortPlayerName(name) {
             const order = ['closed', 'slice', 'full'];
             ltViewModes[tourId] = order[(order.indexOf(ltGetMode(tourId)) + 1) % order.length];
             try { localStorage.setItem('ltViewModes', JSON.stringify(ltViewModes)); } catch (e) {}
+            fxRenderKeepScroll();
+        }
+        // Sezonlar panelini kaydırma konumlarını koruyarak yeniden çiz (tablo aç/kapat sonrası sayfa başa atlamasın)
+        function fxRenderKeepScroll() {
+            const area = document.getElementById('content-area');
+            const pick = () => area ? [area, ...area.querySelectorAll('*')].filter(e => e.scrollHeight > e.clientHeight + 1 && /(auto|scroll)/.test(getComputedStyle(e).overflowY)) : [];
+            const before = pick().map(e => e.scrollTop), winY = window.scrollY;
             renderFixturePanel();
+            const after = pick();
+            after.forEach((e, i) => { if (before[i] !== undefined) e.scrollTop = before[i]; });
+            window.scrollTo(0, winY);
         }
         function ltModeButtonHtml(tourId, mode) {
             const m = { closed: ['fa-eye-slash', 'Kapalı'], slice: ['fa-bullseye', 'Özet'], full: ['fa-table-list', 'Tam'] }[mode];
@@ -15544,6 +15770,12 @@ function renderFixturePanel() {
                                                 currentTextColor = 'text-white';
                                             }
 
+                                            // Kendi takımımızın oynamadığı maçlar: gri skor rozeti, kazanana hafif parıltı
+                                            if (hasL1 && !isOurTeam(hName) && !isOurTeam(aName)) {
+                                                scoreBoxClass = 'ko-neu'; currentTextColor = 'ko-neu-t';
+                                                hLogoStyle = hLogoStyle.replace(' drop-shadow-[0_0_12px_rgba(52,211,153,0.9)] scale-110 z-10 relative', ' ko-win-n');
+                                                aLogoStyle = aLogoStyle.replace(' drop-shadow-[0_0_12px_rgba(52,211,153,0.9)] scale-110 z-10 relative', ' ko-win-n');
+                                            }
                                             // Skor Gösterim Alanı (Yükseklik sabit, içerik değişiyor)
                                             let scoreDisplayHtml = `<span class="${currentTextColor} font-black text-sm tracking-widest">- : -</span>`;
                                             if (hasL1 && hasL2) {
@@ -16768,7 +17000,210 @@ document.addEventListener('click', function(e) {
     if (wrapper && !wrapper.contains(e.target)) closeKadrolarMenu();
 });
 
-function openFormationModal(kadroType = 'ilk11') {
+// ===================== KADROLAR v2: web'de 3 saha yan yana, alttan açılan oyuncu kartı seçici =====================
+let fmSel = null, fmQ = '', fmResizeT = null;
+const FM_TYPES = ['ilk11', 'yedek', 'rezerv'];
+const FM_LBL = { ilk11: ['İlk 11', 'Starting XI'], yedek: ['Yedek', 'Subs'], rezerv: ['Rezerv', 'Reserves'] };
+const FM_POS = ['GK', 'LB', 'CB', 'RB', 'LWB', 'RWB', 'DM', 'CM', 'AM', 'LM', 'RM', 'LW', 'RW', 'CF', 'ST'];
+const FM_SIM = { GK: ['GK'], CB: ['CB', 'LB', 'RB', 'DM'], LB: ['LB', 'LWB', 'CB', 'LM'], RB: ['RB', 'RWB', 'CB', 'RM'], LWB: ['LWB', 'LB', 'LM'], RWB: ['RWB', 'RB', 'RM'], DM: ['DM', 'CDM', 'CM', 'CB'], CM: ['CM', 'DM', 'CDM', 'AM', 'CAM'], AM: ['AM', 'CAM', 'CM', 'LM', 'RM'], CAM: ['CAM', 'AM', 'CM', 'LM', 'RM'], LM: ['LM', 'LW', 'LWB', 'AM'], RM: ['RM', 'RW', 'RWB', 'AM'], LW: ['LW', 'LM', 'ST', 'CF'], RW: ['RW', 'RM', 'ST', 'CF'], ST: ['ST', 'CF', 'LW', 'RW'], CF: ['CF', 'ST', 'CAM', 'AM'] };
+function fmEn() { return typeof currentLang !== 'undefined' && currentLang === 'en'; }
+function fmL(tr, en) { return fmEn() ? en : tr; }
+function fmWide() { return window.innerWidth >= 1024; }
+function fmFill(arr) { (arr || []).forEach((n, i) => { if (n.pos === undefined || n.pos === '') { const d = defaultFormationFor(activeFormationContext)[i]; n.pos = d ? d.pos : 'POS'; } }); return arr; }
+function fmOpen(type) {
+    activeFormationContext = squadContext;
+    activeFormationType = type || 'ilk11';
+    if (!formations) formations = {};
+    if (!formations[activeFormationContext]) formations[activeFormationContext] = { ilk11: null, yedek: null, rezerv: null };
+    tempFormationsAll = {};
+    FM_TYPES.forEach(t => { tempFormationsAll[t] = fmFill(JSON.parse(JSON.stringify(formations[activeFormationContext][t] || defaultFormationFor(activeFormationContext)))); });
+    tempFormation = tempFormationsAll[activeFormationType];
+    updateMockPlayers();
+    fmSel = null; fmQ = '';
+    let m = document.getElementById('fm2');
+    if (!m) {
+        m = document.createElement('div'); m.id = 'fm2'; m.className = 'fm2';
+        m.addEventListener('mousedown', e => { if (e.target === m) fmClose(); });
+        document.body.appendChild(m);
+    }
+    fmRender();
+    m.classList.add('on');
+}
+function fmClose() { const m = document.getElementById('fm2'); if (m) m.classList.remove('on'); fmSel = null; }
+function fmSave() {
+    if (!formations[activeFormationContext]) formations[activeFormationContext] = {};
+    FM_TYPES.forEach(t => { formations[activeFormationContext][t] = tempFormationsAll[t]; });
+    saveToLocalStorage();
+    fmClose();
+    if (typeof rerenderCurrentPanel === 'function') try { rerenderCurrentPanel(); } catch (e) {}
+}
+function fmTab(t) { activeFormationType = t; tempFormation = tempFormationsAll[t]; fmSel = null; fmRender(); }
+function fmReset(t) {
+    if (!confirm(fmL(`${FM_LBL[t][0]} dizilişi ve oyuncuları sıfırlansın mı?`, `Reset the ${FM_LBL[t][1]} formation and players?`))) return;
+    tempFormationsAll[t] = JSON.parse(JSON.stringify(defaultFormationFor(activeFormationContext)));
+    if (activeFormationType === t) tempFormation = tempFormationsAll[t];
+    if (fmSel && fmSel.type === t) fmSel = null;
+    fmRender();
+}
+function fmCopy(t) {
+    const txt = tempFormationsAll[t].filter(n => n.name && n.name.trim()).map(n => n.name).join('\n');
+    if (!txt) { alert(fmL('Sahada henüz oyuncu yok.', 'No players on the pitch yet.')); return; }
+    const done = () => alert(fmL(`${FM_LBL[t][0]} listesi panoya kopyalandı!`, `${FM_LBL[t][1]} list copied!`) + '\n\n' + txt);
+    if (navigator.clipboard) navigator.clipboard.writeText(txt).then(done).catch(() => alert(txt)); else alert(txt);
+}
+// Dizilişi (mevki ve yerleşim) başka kadrolara kopyala; hedefteki oyuncular aynı sırayla yerinde kalır
+let fmCm = null;
+function fmClone(src, targets) {
+    const from = tempFormationsAll[src];
+    targets.forEach(tg => { const old = tempFormationsAll[tg] || []; tempFormationsAll[tg] = from.map((n, i) => ({ x: n.x, y: n.y, pos: n.pos, name: old[i] ? old[i].name || '' : '' })); });
+    tempFormation = tempFormationsAll[activeFormationType];
+    if (fmSel && targets.includes(fmSel.type) && fmSel.idx >= tempFormationsAll[fmSel.type].length) fmSel = null;
+    fmCm = null; fmRender();
+}
+document.addEventListener('click', () => { if (fmCm) { fmCm = null; fmRender(); } });
+function fmAutoPos(x, y) {
+    if (y >= 85) return 'GK';
+    if (y >= 65) return x <= 25 ? (y <= 75 ? 'LWB' : 'LB') : x >= 75 ? (y <= 75 ? 'RWB' : 'RB') : 'CB';
+    if (y >= 35) return x <= 25 ? 'LM' : x >= 75 ? 'RM' : y >= 55 ? 'DM' : y <= 45 ? 'AM' : 'CM';
+    return x <= 30 ? 'LW' : x >= 70 ? 'RW' : y >= 20 ? 'CF' : 'ST';
+}
+function fmNodeHtml(t, n, i) {
+    const pc = homeXiPosColor(n.pos), sel = fmSel && fmSel.type === t && fmSel.idx === i;
+    const photo = n.name ? getPlayerPhotoByName(n.name) : '';
+    let ovr = '<b class="xi-ovr" style="color:#64748b">–</b>';
+    if (n.name) { const cur = getPlayerCurrentStatsByName(n.name, activeFormationContext); if (cur && cur.ovr) ovr = `<b class="xi-ovr" style="color:${mbOvrColor(cur.ovr)}">${escapeHtml(String(cur.ovr))}</b>`; }
+    return `<div class="xi-card xi-edit fm-node${n.name ? '' : ' fm-empty'}${sel ? ' fm-sel' : ''}" data-t="${t}" data-i="${i}" style="--c:${pc};left:${n.x}%;top:${n.y}%">
+        <div class="xi-top">${ovr}<span class="xi-pos" style="color:${pc}">${escapeHtml(n.pos || 'POS')}</span></div>
+        <div class="xi-photo">${photo ? `<img src="${escapeHtml(photo)}" alt="" class="xi-img" draggable="false">` : `<div class="xi-ph">${n.name ? escapeHtml(n.name.charAt(0).toUpperCase()) : '+'}</div>`}</div>
+        <div class="xi-name">${n.name ? escapeHtml(homeSurname(n.name)) : fmL('Seç', 'Pick')}</div></div>`;
+}
+function fmPitchHtml(t) {
+    const arr = tempFormationsAll[t], filled = arr.filter(n => n.name).length;
+    return `<div class="fm-col${fmSel && fmSel.type === t ? ' act' : ''}">
+        <div class="fm-ph"><b>${FM_LBL[t][fmEn() ? 1 : 0]}</b><span>${filled}/${arr.length}</span>
+            <div class="fm-cl${fmCm === t ? ' open' : ''}"><button type="button" title="${fmL('Dizilişi diğer kadrolara kopyala', 'Copy formation to other squads')}" onclick="event.stopPropagation();fmCm=fmCm==='${t}'?null:'${t}';fmRender()"><i class="fa-solid fa-clone"></i></button>${fmCm === t ? `<div class="fm-clm" onclick="event.stopPropagation()"><em>${fmL('Dizilişi kopyala', 'Copy formation')}</em>${FM_TYPES.filter(x => x !== t).map(x => `<button type="button" onclick="fmClone('${t}',['${x}'])"><i class="fa-solid fa-arrow-right"></i> ${FM_LBL[x][fmEn() ? 1 : 0]}</button>`).join('')}<button type="button" onclick="fmClone('${t}',${JSON.stringify(FM_TYPES.filter(x => x !== t)).replace(/"/g, "'")})"><i class="fa-solid fa-layer-group"></i> ${fmL('Hepsine', 'All')}</button></div>` : ''}</div><button type="button" title="${fmL('Listeyi kopyala', 'Copy list')}" onclick="fmCopy('${t}')"><i class="fa-solid fa-list-ul"></i></button>
+            <button type="button" class="r" title="${fmL('Sıfırla', 'Reset')}" onclick="fmReset('${t}')"><i class="fa-solid fa-rotate-left"></i></button></div>
+        <div class="fm-pitch xi-scope" data-t="${t}">
+            <i class="fm-l b"></i><i class="fm-l h"></i><i class="fm-l c"></i><i class="fm-l pt"></i><i class="fm-l pb"></i><i class="fm-l gt"></i><i class="fm-l gb"></i>
+            ${arr.map((n, i) => fmNodeHtml(t, n, i)).join('')}
+        </div></div>`;
+}
+function fmPool() {
+    const c = activeFormationContext;
+    const list = c === 'milli' ? (squadData.milli || []) : c === 'akademi' ? (squadData.akademi || []) : [...(squadData.astakim || []), ...(squadData.akademi || [])];
+    return list.filter(p => p && p.name && !p.isArchived && !p.isPromoted);
+}
+function fmCardsHtml() {
+    if (!fmSel) return '';
+    const en = fmEn(), t = fmSel.type, node = tempFormationsAll[t][fmSel.idx];
+    const pos = String(node.pos || '').toUpperCase(), sim = FM_SIM[pos] || [pos];
+    const low = (s) => String(s || '').trim().toLowerCase();
+    const here = {}; tempFormationsAll[t].forEach((n, i) => { if (n.name && i !== fmSel.idx) here[low(n.name)] = 1; });
+    const elsewhere = {}; FM_TYPES.filter(x => x !== t).forEach(x => tempFormationsAll[x].forEach(n => { if (n.name) elsewhere[low(n.name)] = x; }));
+    const q = typeof psNorm === 'function' ? psNorm(fmQ) : low(fmQ);
+    let pool = fmPool().map(p => { const cur = getPlayerCurrentStatsByName(p.name, activeFormationContext) || {}; const pp = String(p.pos || '').toUpperCase(); const r = sim.indexOf(pp); return { p, pp, ovr: parseInt(cur.ovr) || 0, r: r < 0 ? 99 : r, used: !!here[low(p.name)], other: elsewhere[low(p.name)], cur: low(p.name) === low(node.name) }; });
+    if (q) pool = pool.filter(x => (typeof psNorm === 'function' ? psNorm(x.p.name) : low(x.p.name)).includes(q) || low(x.pp) === q);
+    pool.sort((a, b) => (a.used - b.used) || (a.r - b.r) || (b.ovr - a.ovr));
+    if (!pool.length) return `<div class="fm-none">${fmL('Oyuncu bulunamadı', 'No player found')}</div>`;
+    const best = pool.find(x => !x.used && x.r === 0);
+    return pool.map(x => {
+        const pc = homeXiPosColor(x.pp), ph = x.p.photoUrl && !/ui-avatars\.com/.test(x.p.photoUrl) ? `<img src="${escapeHtml(x.p.photoUrl)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">` : `<span>${escapeHtml(x.p.name.charAt(0).toUpperCase())}</span>`;
+        const tag = x.cur ? fmL('bu mevkide', 'in this slot') : x.used ? fmL('sahada', 'on pitch') : x.other ? FM_LBL[x.other][en ? 1 : 0] : x.r === 0 ? '✓ ' + pos : '';
+        return `<button type="button" class="fm-cd${x === best ? ' best' : ''}${x.used ? ' used' : ''}${x.cur ? ' cur' : ''}" style="--c:${pc}" data-name="${escapeHtml(x.p.name)}" onclick="fmAssign(this.dataset.name)">
+            <i class="o" style="color:${x.ovr ? mbOvrColor(x.ovr) : '#64748b'}">${x.ovr || '–'}</i><u>${escapeHtml(x.pp)}</u>
+            <span class="f">${ph}</span><b>${escapeHtml(homeSurname(x.p.name))}</b><em class="${!x.used && !x.cur && !x.other && x.r === 0 ? 'ok' : ''}">${x.p.role ? `<span class="fm-rl">${sqRoleIcon(x.p.role, (squadData.akademi || []).includes(x.p) && activeFormationContext !== 'akademi' ? 'akademi' : activeFormationContext)}</span>` : ''}${escapeHtml(tag)}</em></button>`;
+    }).join('');
+}
+function fmCards() { const c = document.getElementById('fm-cards'); if (c) c.innerHTML = fmCardsHtml(); }
+function fmSheetHtml() {
+    if (!fmSel) return '';
+    const t = fmSel.type, node = tempFormationsAll[t][fmSel.idx], pos = String(node.pos || '').toUpperCase();
+    return `<div class="fm-sheet"><div class="fm-grab"></div>
+        <div class="fm-sh-hd">
+            <div class="fm-sh-t"><b><span style="color:${homeXiPosColor(pos)}">${escapeHtml(pos)}</span> ${fmL('için oyuncu seç', '· pick a player')}</b><em>${FM_LBL[t][fmEn() ? 1 : 0]}${node.name ? ' · ' + escapeHtml(node.name) : ''}</em></div>
+            <div class="fm-pchips">${FM_POS.map(p => `<button type="button" class="${p === pos ? 'on' : ''}" style="--c:${homeXiPosColor(p)}" onclick="fmSetPos('${p}')">${p}</button>`).join('')}</div>
+            ${node.name ? `<button type="button" class="fm-clear" onclick="fmAssign('')"><i class="fa-solid fa-user-slash"></i> ${fmL('Boşalt', 'Clear')}</button>` : ''}
+            <button type="button" class="fm-x sm" onclick="fmSel=null;fmRender()" title="${fmL('Kapat', 'Close')}"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="fm-q"><i class="fa-solid fa-magnifying-glass"></i><input id="fm-q" type="text" autocomplete="off" value="${escapeHtml(fmQ)}" placeholder="${fmL('İsim ya da mevki ara…', 'Search name or position…')}" oninput="fmQ=this.value;fmCards()" onkeydown="fmKey(event)"></div>
+        <div id="fm-cards" class="fm-cards custom-scrollbar">${fmCardsHtml()}</div></div>`;
+}
+function fmRender() {
+    const m = document.getElementById('fm2'); if (!m) return;
+    const en = fmEn(), wide = fmWide(), shown = wide ? FM_TYPES : [activeFormationType];
+    const ctxName = activeFormationContext === 'astakim' ? fmL('As Takım', 'First Team') : activeFormationContext === 'akademi' ? fmL('Akademi', 'Academy') : fmL('Milli Takım', 'National Team');
+    const keep = document.getElementById('fm-cards'), st = keep ? keep.scrollTop : 0;
+    m.innerHTML = `<div class="fm-box${fmSel ? ' sheet-on' : ''}">
+        <div class="fm-hd"><h3>${ctxName} · ${fmL('Kadrolar', 'Squads')}</h3>
+            ${wide ? `<span class="fm-tip"><i class="fa-solid fa-hand-pointer"></i> ${fmL('Mevkiye tıkla → oyuncu seç · kartı sürükleyerek yerini değiştir', 'Tap a slot → pick a player · drag a card to move it')}</span>` : `<div class="fm-tabs">${FM_TYPES.map(t => `<button type="button" class="${t === activeFormationType ? 'on' : ''}" onclick="fmTab('${t}')">${FM_LBL[t][en ? 1 : 0]}</button>`).join('')}</div>`}
+            <button type="button" class="fm-x" onclick="fmClose()" title="${fmL('Kapat', 'Close')}"><i class="fa-solid fa-xmark"></i></button></div>
+        <div class="fm-pitches n${shown.length}">${shown.map(fmPitchHtml).join('')}</div>
+        ${fmSheetHtml()}
+        <div class="fm-ft"><button type="button" class="fm-b" onclick="fmClose()">${fmL('İptal', 'Cancel')}</button><button type="button" class="fm-b p" onclick="fmSave()"><i class="fa-solid fa-floppy-disk"></i> ${fmL('Kaydet', 'Save')}</button></div>
+    </div>`;
+    m.querySelectorAll('.fm-node').forEach(el => {
+        const t = el.dataset.t, i = parseInt(el.dataset.i);
+        el.addEventListener('mousedown', e => fmDown(e, t, i, el));
+        el.addEventListener('touchstart', e => fmDown(e, t, i, el), { passive: true });
+    });
+    const c = document.getElementById('fm-cards'); if (c) c.scrollTop = st;
+}
+function fmSelect(t, i) {
+    fmSel = { type: t, idx: i }; activeFormationType = t; tempFormation = tempFormationsAll[t]; fmQ = '';
+    fmRender();
+    const c = document.getElementById('fm-cards'); if (c) c.scrollTop = 0;
+    if (fmWide()) setTimeout(() => { const q = document.getElementById('fm-q'); if (q) q.focus(); }, 30);
+}
+function fmSetPos(p) { if (!fmSel) return; tempFormationsAll[fmSel.type][fmSel.idx].pos = p; fmRender(); }
+function fmAssign(name) {
+    if (!fmSel) return;
+    const t = fmSel.type, arr = tempFormationsAll[t], node = arr[fmSel.idx];
+    if (name) FM_TYPES.forEach(tt => tempFormationsAll[tt].forEach((n, i) => { if ((tt !== t || i !== fmSel.idx) && n.name && n.name.trim().toLowerCase() === name.trim().toLowerCase()) n.name = ''; }));
+    node.name = name;
+    if (name && (!node.pos || node.pos === 'POS')) { const p = fmPool().find(x => x.name === name); if (p && p.pos) node.pos = p.pos; }
+    // Seçimden sonra aynı sahadaki bir sonraki boş mevkiye geç; boş yoksa kapat
+    let next = -1;
+    if (name) for (let k = 1; k <= arr.length; k++) { const j = (fmSel.idx + k) % arr.length; if (!arr[j].name) { next = j; break; } }
+    if (next >= 0) { fmSel = { type: t, idx: next }; fmQ = ''; } else fmSel = null;
+    fmRender();
+    const c = document.getElementById('fm-cards'); if (c) c.scrollTop = 0;
+    if (fmSel && fmWide()) setTimeout(() => { const q = document.getElementById('fm-q'); if (q) q.focus(); }, 30);
+}
+function fmKey(e) {
+    if (e.key === 'Enter') { e.preventDefault(); const b = document.querySelector('#fm-cards .fm-cd:not(.used)'); if (b) fmAssign(b.dataset.name); }
+    else if (e.key === 'Escape') { e.stopPropagation(); fmSel = null; fmRender(); }
+}
+function fmDown(e, t, i, el) {
+    if (e.button !== undefined && e.button !== 0) return;
+    const pt = e.touches ? e.touches[0] : e, sx = pt.clientX, sy = pt.clientY;
+    const pitch = el.closest('.fm-pitch'), rect = pitch.getBoundingClientRect(), node = tempFormationsAll[t][i];
+    let moved = false;
+    const mv = (ev) => {
+        const q = ev.touches ? ev.touches[0] : ev;
+        if (!moved && Math.hypot(q.clientX - sx, q.clientY - sy) < 6) return;
+        moved = true; if (ev.cancelable) ev.preventDefault();
+        el.classList.add('fm-drag');
+        let x = Math.round(Math.min(96, Math.max(4, (q.clientX - rect.left) / rect.width * 100)) / 5) * 5;
+        let y = Math.round(Math.min(96, Math.max(4, (q.clientY - rect.top) / rect.height * 100)) / 5) * 5;
+        node.x = x; node.y = y; el.style.left = x + '%'; el.style.top = y + '%';
+        const np = fmAutoPos(x, y);
+        if (np !== node.pos) { node.pos = np; const pc = homeXiPosColor(np); el.style.setProperty('--c', pc); const b = el.querySelector('.xi-pos'); if (b) { b.textContent = np; b.style.color = pc; } }
+    };
+    const up = (ev) => {
+        if (ev && ev.type === 'touchend' && ev.cancelable) ev.preventDefault(); // dokunmatikte hayalet tıklamayı engelle
+        document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up);
+        document.removeEventListener('touchmove', mv); document.removeEventListener('touchend', up);
+        el.classList.remove('fm-drag');
+        if (!moved) fmSelect(t, i); else if (fmSel && fmSel.type === t && fmSel.idx === i) fmRender();
+    };
+    document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
+    document.addEventListener('touchmove', mv, { passive: false }); document.addEventListener('touchend', up);
+}
+document.addEventListener('keydown', e => { const m = document.getElementById('fm2'); if (e.key === 'Escape' && m && m.classList.contains('on') && !e.target.closest('#fm-q')) { if (fmSel) { fmSel = null; fmRender(); } else fmClose(); } });
+window.addEventListener('resize', () => { const m = document.getElementById('fm2'); if (!m || !m.classList.contains('on')) return; clearTimeout(fmResizeT); fmResizeT = setTimeout(fmRender, 150); });
+
+function openFormationModal(kadroType = 'ilk11') { return fmOpen(kadroType); }
+function openFormationModalOld(kadroType = 'ilk11') {
     activeFormationContext = squadContext;
     activeFormationType = kadroType;
     document.getElementById('formation-title').innerText = (squadContext === 'astakim' ? 'As Takım' : (squadContext === 'akademi' ? 'Akademi' : 'Milli Takım')) + ' Kadroları';
