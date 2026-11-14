@@ -1,0 +1,284 @@
+/* =====================================================================
+   GloryTrack · modern tasarım katmanı
+   Bu dosya style.css ve tailwind.css'ten SONRA yüklenir; mevcut kuralları
+   silmez, üzerine ince bir katman ekler. Geri almak için index.html'deki
+   <link rel="stylesheet" href="gt-modern.css"> satırını kaldırmak yeterli.
+   ===================================================================== */
+
+/* ---------- 1. Tasarım değişkenleri (tema rengi ailesine göre vurgu) ---------- */
+:root {
+  --gt-accent: #10b981; --gt-accent-rgb: 16,185,129; --gt-accent-soft: #34d399;
+  --gt-line: rgba(148,163,184,.16);
+  --gt-line-strong: rgba(148,163,184,.26);
+  --gt-nav-fg: #8ea0b8;
+  --gt-nav-fg-hover: #f1f5f9;
+  --gt-surface: #101a2c;
+  --gt-raise: 0 18px 40px -22px rgba(0,0,0,.75);
+  --gt-ease: cubic-bezier(.2,.8,.2,1);
+}
+body[data-theme-family="red"]    { --gt-accent: #ef4444; --gt-accent-rgb: 239,68,68;  --gt-accent-soft: #f87171; }
+body[data-theme-family="yellow"] { --gt-accent: #eab308; --gt-accent-rgb: 234,179,8;  --gt-accent-soft: #facc15; }
+body[data-theme-family="blue"]   { --gt-accent: #3b82f6; --gt-accent-rgb: 59,130,246; --gt-accent-soft: #60a5fa; }
+body[data-theme-family="orange"] { --gt-accent: #f97316; --gt-accent-rgb: 249,115,22; --gt-accent-soft: #fb923c; }
+body[data-theme-family="beige"]  { --gt-accent: #b45309; --gt-accent-rgb: 180,83,9;   --gt-accent-soft: #d97706; }
+body[data-theme-family="gray"]   { --gt-accent: #64748b; --gt-accent-rgb: 100,116,139; --gt-accent-soft: #94a3b8; }
+body.theme-light {
+  --gt-accent: #991b1b; --gt-accent-rgb: 153,27,27; --gt-accent-soft: #991b1b;
+  --gt-line: rgba(44,36,32,.14); --gt-line-strong: rgba(44,36,32,.24);
+  --gt-nav-fg: #7a6e65; --gt-nav-fg-hover: #2c2420;
+  --gt-surface: #fdfbf7;
+  --gt-raise: 0 16px 34px -22px rgba(44,36,32,.35);
+}
+body.theme-light[data-theme-family="red"]    { --gt-accent: #dc2626; --gt-accent-rgb: 220,38,38;  --gt-accent-soft: #dc2626; }
+body.theme-light[data-theme-family="yellow"] { --gt-accent: #ca8a04; --gt-accent-rgb: 202,138,4;  --gt-accent-soft: #a16207; }
+body.theme-light[data-theme-family="blue"]   { --gt-accent: #2563eb; --gt-accent-rgb: 37,99,235;  --gt-accent-soft: #2563eb; }
+body.theme-light[data-theme-family="orange"] { --gt-accent: #ea580c; --gt-accent-rgb: 234,88,12;  --gt-accent-soft: #ea580c; }
+body.theme-light[data-theme-family="gray"]   { --gt-accent: #475569; --gt-accent-rgb: 71,85,105;  --gt-accent-soft: #475569; }
+body.theme-light[data-theme-family="green"]  { --gt-accent: #059669; --gt-accent-rgb: 5,150,105;  --gt-accent-soft: #059669; }
+
+/* ---------- 2. Genel doku ---------- */
+html { color-scheme: dark; }
+html:has(body.theme-light) { color-scheme: light; }
+body {
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  -webkit-tap-highlight-color: transparent;
+  background-image:
+    radial-gradient(900px 520px at 100% -8%, rgba(var(--gt-accent-rgb), .09), transparent 62%),
+    radial-gradient(760px 520px at -6% 108%, rgba(56,189,248,.05), transparent 60%);
+  background-attachment: fixed;
+}
+/* Dokunuşa küçük bir tepki: tüm butonlar basılınca hafifçe küçülür */
+button, [role="button"] { transition-property: color, background-color, border-color, box-shadow, opacity, filter, scale; transition-duration: .15s; transition-timing-function: var(--gt-ease); }
+button:active:not(:disabled) { scale: .97; }
+button:disabled { cursor: not-allowed; }
+/* Klavye odağı: sarı yerine tema rengi */
+button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visible, [role="button"]:focus-visible {
+  outline-color: var(--gt-accent-soft) !important;
+}
+/* Koyu temada kenarlıkları yumuşat (ince çizgi görünümü) */
+body:not(.theme-light) .border-slate-700 { border-color: var(--gt-line); }
+body:not(.theme-light) .border-slate-600 { border-color: var(--gt-line-strong); }
+
+/* ---------- 3. Ana menü (solda ray / mobilde alt çubuk) ---------- */
+#main-nav { border-color: var(--gt-line) !important; }
+body:not(.theme-light) #main-nav { background: linear-gradient(180deg, #060b17, #0a1120) !important; }
+#main-nav > div:first-child > div { border-radius: 14px !important; }
+#main-nav .main-btn {
+  position: relative; background-color: transparent !important; border-color: transparent !important;
+  color: var(--gt-nav-fg) !important;
+}
+#main-nav .main-btn:hover { background-color: rgba(148,163,184,.1) !important; color: var(--gt-nav-fg-hover) !important; }
+#main-nav .main-btn.border-emerald-500 {
+  background-color: rgba(var(--gt-accent-rgb), .14) !important; color: var(--gt-accent-soft) !important;
+  box-shadow: inset 0 0 0 1px rgba(var(--gt-accent-rgb), .28);
+}
+#main-nav .main-btn::before {
+  content: ""; position: absolute; border-radius: 99px; background: var(--gt-accent); opacity: 0;
+  transition: opacity .2s var(--gt-ease), transform .2s var(--gt-ease);
+}
+#main-nav .main-btn.border-emerald-500::before { opacity: 1; }
+@media (min-width: 640px) {
+  #main-nav { width: 4rem; }
+  #main-nav nav { gap: 4px; padding-left: 6px; padding-right: 6px; }
+  #main-nav .main-btn { aspect-ratio: auto; height: 56px; flex-direction: column; gap: 4px; border-radius: 14px; }
+  #main-nav .main-btn i { font-size: 22px; }
+  /* Sayfa adı ikonun altında: title metnini kullanır, dil değişince kendiliğinden güncellenir */
+  #main-nav .main-btn::after {
+    content: none; max-width: 100%; padding: 0 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    font-size: 9.5px; font-weight: 700; letter-spacing: .01em; line-height: 1;
+  }
+  #main-nav .main-btn::before { left: -6px; top: 14px; bottom: 14px; width: 3px; transform: scaleY(.4); }
+  #main-nav .main-btn.border-emerald-500::before { transform: none; }
+}
+@media (max-width: 639px) {
+  #main-nav { box-shadow: 0 -10px 30px -12px rgba(0,0,0,.55); }
+  #main-nav .main-btn { border-radius: 12px; }
+  #main-nav .main-btn i { font-size: 16px; }
+  #main-nav .main-btn::before { left: 28%; right: 28%; top: -6px; height: 3px; transform: scaleX(.4); }
+  #main-nav .main-btn.border-emerald-500::before { transform: none; }
+}
+/* Fikstür şeridi tutamacı */
+@media (min-width: 640px) {
+  #qfb-handle { border-color: var(--gt-line) !important; border-left-width: 0; }
+  body:not(.theme-light) #qfb-handle { background-color: #080e1b; }
+  body:not(.theme-light) #qfb-handle:hover { background-color: #111a2c; }
+  body:not(.theme-light) #quick-fixture-bar { background-color: #080e1b; }
+}
+
+/* ---------- 4. İçerik çerçevesi: çift çerçeve yerine tek, ferah alan ---------- */
+#content-area { background-color: transparent; border-color: transparent; padding: 2px; }
+@media (min-width: 640px) {
+  main.w-full { padding: 14px 16px 12px; }
+  #content-area { padding: 2px 2px 0; }
+}
+#submenu-container, #tertiary-menu-container { background-color: transparent; border-color: var(--gt-line); }
+#submenu-container .sub-btn { box-shadow: 0 1px 0 rgba(255,255,255,.04) inset; }
+
+/* Paneller: ince çizgi, hafif derinlik, başlıkta yumuşak ışık */
+body:not(.theme-light) #content-area [id^="hcontent-"],
+body:not(.theme-light) #content-area .fx-panel,
+body:not(.theme-light) #content-area .rounded-xl.border.bg-slate-900,
+body:not(.theme-light) #content-area .rounded-xl.border.bg-slate-800 { box-shadow: var(--gt-raise), 0 1px 0 rgba(255,255,255,.035) inset; }
+body:not(.theme-light) #content-area [id^="hcontent-"] > .bg-slate-800,
+body:not(.theme-light) #content-area .fx-panel > .bg-slate-800 { background-image: linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,0)); }
+/* Boş durum metinleri biraz daha sakin */
+#content-area [id^="hcontent-"] .text-center.text-slate-500,
+#content-area [id^="hcontent-"] p.text-slate-500 { line-height: 1.6; }
+
+/* ---------- 5. Pencereler (modallar) ---------- */
+div.fixed.inset-0[id$="-modal"] {
+  background-color: rgba(2,6,23,.72);
+  -webkit-backdrop-filter: blur(10px) saturate(1.15); backdrop-filter: blur(10px) saturate(1.15);
+  padding-left: 12px; padding-right: 12px;
+}
+div.fixed.inset-0[id$="-modal"] > div {
+  border-radius: 18px;
+  background-image: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0) 140px);
+  box-shadow: 0 34px 80px -24px rgba(0,0,0,.8), 0 1px 0 rgba(255,255,255,.05) inset;
+  animation: gtPop .2s var(--gt-ease) both;
+}
+body.theme-light div.fixed.inset-0[id$="-modal"] { background-color: rgba(44,36,32,.45); }
+body.theme-light div.fixed.inset-0[id$="-modal"] > div { box-shadow: 0 34px 80px -28px rgba(44,36,32,.5); }
+@keyframes gtPop { from { opacity: 0; transform: translateY(10px) scale(.975); } to { opacity: 1; transform: none; } }
+/* Küçük ekranlarda / kısa pencerelerde içerik taşarsa pencere kendi içinde kayar */
+@media (max-width: 639px), (max-height: 760px) {
+  div.fixed.inset-0[id$="-modal"] > div:not(.flex-col):not(.mt-modal):not(.h2h-modal) { max-height: calc(100dvh - 24px); overflow-y: auto; scrollbar-width: thin; }
+  div.fixed.inset-0[id$="-modal"] > div.w-\[90\%\], div.fixed.inset-0[id$="-modal"] > div.w-\[95\%\] { width: 100%; }
+}
+/* Kapat düğmesi: büyük, yuvarlak dokunma alanı */
+div.fixed.inset-0[id$="-modal"] > div > button.absolute.top-4.right-4 {
+  top: 12px; right: 12px; width: 34px; height: 34px; border-radius: 11px; z-index: 5;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+div.fixed.inset-0[id$="-modal"] > div > button.absolute.top-4.right-4:hover { background: rgba(148,163,184,.16); }
+div.fixed.inset-0[id$="-modal"] > div > button.absolute.top-4.right-4 i { font-size: 16px; }
+div.fixed.inset-0[id$="-modal"] > div > h3 { letter-spacing: -.015em; padding-right: 40px; }
+div.fixed.inset-0[id$="-modal"] > div > h3 + p { line-height: 1.45; }
+#player-info-modal .pih { border-radius: 17px 17px 0 0; }
+/* Düğmeler */
+div.fixed.inset-0[id$="-modal"] button.rounded-lg { border-radius: 11px; }
+div.fixed.inset-0[id$="-modal"] button.rounded:not(.rounded-lg) { border-radius: 9px; }
+div.fixed.inset-0[id$="-modal"] button[class*="bg-"]:not([class*="hover:bg-"]):hover { filter: brightness(1.12); }
+div.fixed.inset-0[id$="-modal"] button.bg-emerald-600,
+div.fixed.inset-0[id$="-modal"] button.bg-blue-600 { box-shadow: 0 8px 18px -10px rgba(0,0,0,.7), 0 1px 0 rgba(255,255,255,.14) inset; }
+/* Form alanları: tek tip görünüm + belirgin odak */
+div.fixed.inset-0[id$="-modal"] :is(input, select, textarea):is(.border-slate-600, .border-slate-700):not([type="color"]) {
+  border-radius: 10px; transition: border-color .15s, box-shadow .15s, background-color .15s;
+}
+body:not(.theme-light) div.fixed.inset-0[id$="-modal"] :is(input, select, textarea):is(.border-slate-600, .border-slate-700):not([type="color"]) { background-color: #0a1222; border-color: rgba(148,163,184,.24); }
+body:not(.theme-light) div.fixed.inset-0[id$="-modal"] :is(input, select, textarea):is(.border-slate-600, .border-slate-700):hover { border-color: rgba(148,163,184,.4); }
+:is(input, select, textarea).border:focus,
+.pb-in:focus, .xc-in:focus, .lo-in:focus { box-shadow: 0 0 0 3px rgba(var(--gt-accent-rgb), .2); }
+div.fixed.inset-0[id$="-modal"] :is(input, select, textarea):is(.border-slate-600, .border-slate-700):focus { border-color: var(--gt-accent) !important; }
+div.fixed.inset-0[id$="-modal"] label { letter-spacing: .01em; }
+::placeholder { opacity: .75; }
+input[type="color"] { cursor: pointer; }
+
+/* Sonradan oluşturulan pencereler (katalog, logo, bulut, hızlı arama, kadrolar) */
+.pyr-ov, .lo-ov, .qs-ov, .cpw-modal { -webkit-backdrop-filter: blur(10px) saturate(1.15); backdrop-filter: blur(10px) saturate(1.15); }
+.pyr-modal, .lo-modal, .cpw-box, .qs-box { animation: gtPop .2s var(--gt-ease) both; }
+.pyr-modal, .lo-modal { border-radius: 18px; }
+.qs-box { border-radius: 16px; }
+.qs-item.sel i { color: var(--gt-accent-soft); }
+.qs-inp input::placeholder { color: #64748b; }
+
+/* ---------- 6. Bildirimler (alert yerine) ---------- */
+#gt-toasts {
+  position: fixed; z-index: 10000; top: calc(14px + env(safe-area-inset-top)); right: 14px;
+  display: flex; flex-direction: column; gap: 8px; width: min(380px, calc(100vw - 28px)); pointer-events: none;
+}
+@media (max-width: 639px) { #gt-toasts { left: 14px; right: 14px; width: auto; } }
+.gt-toast {
+  --tc: #38bdf8; pointer-events: auto; display: flex; align-items: flex-start; gap: 10px;
+  padding: 11px 12px 11px 13px; border-radius: 14px; text-align: left;
+  background: #111b2e; color: #e2e8f0; border: 1px solid rgba(148,163,184,.22);
+  box-shadow: 0 18px 40px -16px rgba(0,0,0,.7), inset 3px 0 0 var(--tc);
+  font-size: 13px; font-weight: 600; line-height: 1.4;
+  animation: gtToastIn .26s var(--gt-ease) both;
+}
+.gt-toast.out { animation: gtToastOut .2s ease-in both; }
+.gt-toast > i { color: var(--tc); font-size: 15px; margin-top: 2px; flex-shrink: 0; }
+.gt-toast > span { flex: 1; min-width: 0; white-space: pre-line; overflow-wrap: anywhere; }
+.gt-toast > button { flex-shrink: 0; border-radius: 8px; font-size: 12px; font-weight: 800; }
+.gt-toast > button.gt-x { width: 24px; height: 24px; color: #64748b; }
+.gt-toast > button.gt-x:hover { color: #e2e8f0; background: rgba(148,163,184,.14); }
+.gt-toast > button.gt-act { padding: 5px 11px; color: #0b1220; background: var(--tc); }
+.gt-toast.ok { --tc: #34d399; } .gt-toast.warn { --tc: #fbbf24; } .gt-toast.err { --tc: #f87171; }
+body.theme-light .gt-toast { background: #fff; color: #2c2420; border-color: #d6cfc2; box-shadow: 0 18px 40px -18px rgba(44,36,32,.4), inset 3px 0 0 var(--tc); }
+body.theme-light .gt-toast.ok { --tc: #059669; } body.theme-light .gt-toast.warn { --tc: #b45309; } body.theme-light .gt-toast.err { --tc: #dc2626; } body.theme-light .gt-toast { --tc: #0284c7; }
+body.theme-light .gt-toast > button.gt-act { color: #fff; }
+@keyframes gtToastIn { from { opacity: 0; transform: translateY(-10px) scale(.97); } to { opacity: 1; transform: none; } }
+@keyframes gtToastOut { to { opacity: 0; transform: translateY(-6px) scale(.97); } }
+
+/* Uzun mesajlar ve kısayol listesi için küçük pencere */
+.gt-dlg-ov { position: fixed; inset: 0; z-index: 10001; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(2,6,23,.72); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+.gt-dlg { width: min(460px, 100%); max-height: calc(100dvh - 32px); display: flex; flex-direction: column; gap: 12px; padding: 18px; border-radius: 18px; text-align: left; background: #111b2e; color: #e2e8f0; border: 1px solid rgba(148,163,184,.22); box-shadow: 0 34px 80px -24px rgba(0,0,0,.8); animation: gtPop .2s var(--gt-ease) both; }
+.gt-dlg h3 { display: flex; align-items: center; gap: 9px; margin: 0; font-size: 16px; font-weight: 800; color: #fff; }
+.gt-dlg h3 i { color: var(--tc, #38bdf8); }
+.gt-dlg.ok { --tc: #34d399; } .gt-dlg.warn { --tc: #fbbf24; } .gt-dlg.err { --tc: #f87171; }
+.gt-dlg-body { overflow-y: auto; font-size: 13px; line-height: 1.55; color: #cbd5e1; white-space: pre-wrap; overflow-wrap: anywhere; }
+.gt-dlg-foot { display: flex; justify-content: flex-end; gap: 8px; }
+.gt-dlg-foot button { padding: 9px 20px; border-radius: 11px; font-size: 13px; font-weight: 800; color: #fff; background: var(--gt-accent); }
+.gt-dlg-foot button:hover { filter: brightness(1.1); }
+.gt-keys { display: grid; grid-template-columns: auto 1fr; gap: 9px 14px; align-items: center; white-space: normal; }
+.gt-keys kbd { display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 24px; padding: 0 7px; margin-right: 3px; border-radius: 7px; font: 700 11px/1 var(--font-body, sans-serif); color: #e2e8f0; background: #0a1222; border: 1px solid rgba(148,163,184,.3); box-shadow: 0 2px 0 rgba(148,163,184,.18); }
+body.theme-light .gt-dlg { background: #fdfbf7; color: #2c2420; border-color: #d6cfc2; }
+body.theme-light .gt-dlg h3 { color: #2c2420; } body.theme-light .gt-dlg-body { color: #4a3f39; }
+body.theme-light .gt-keys kbd { background: #fff; color: #2c2420; border-color: #d6cfc2; box-shadow: 0 2px 0 #e8e2d5; }
+
+/* ---------- 7. Açık tema: eksik kalan koyu yüzeyleri tamamla ---------- */
+body.theme-light :is(.bg-slate-900\/60, .bg-slate-900\/70, .bg-slate-900\/80, .bg-slate-900\/90, .bg-slate-950\/60, .bg-slate-950\/70, .bg-slate-950\/80, .bg-slate-950\/90) { background-color: rgba(255,255,255,.62) !important; }
+body.theme-light :is(.bg-slate-800\/20, .bg-slate-800\/40, .bg-slate-800\/60, .bg-slate-700\/30) { background-color: rgba(44,36,32,.06) !important; }
+body.theme-light :is(.hover\:bg-slate-800\/30, .hover\:bg-slate-800\/40, .hover\:bg-slate-800\/60, .hover\:bg-slate-700\/60, .hover\:bg-slate-700\/80):hover { background-color: rgba(44,36,32,.1) !important; }
+body.theme-light #quick-fixture-bar { background-color: var(--gt-surface) !important; }
+/* Ana sayfa maç satırları: skorlar açık zeminde okunur olsun */
+body.theme-light .score-display.text-white { color: #2c2420 !important; text-shadow: none; }
+body.theme-light .score-display.score-W { color: #15803d !important; text-shadow: none; }
+body.theme-light .score-display.score-D { color: #a16207 !important; text-shadow: none; }
+body.theme-light .score-display.score-L { color: #b91c1c !important; text-shadow: none; }
+body.theme-light .frow-W { background-color: rgba(22,163,74,.12) !important; }
+body.theme-light .frow-L { background-color: rgba(220,38,38,.1) !important; }
+/* Transfer penceresi */
+body.theme-light .trx-k, body.theme-light .trx-chk { background: #fff; border-color: #d6cfc2; }
+body.theme-light .trx-k button { color: #7a6d63; }
+body.theme-light .trx-k button:hover { color: #2c2420; }
+body.theme-light .trx-k button.on { color: #fff; }
+body.theme-light .trx-chk b { color: #2c2420; } body.theme-light .trx-chk em { color: #7a6d63; }
+body.theme-light .trx-dd { background: #fff; border-color: #d6cfc2; }
+body.theme-light .trx-it .n { color: #2c2420; } body.theme-light .trx-it:hover, body.theme-light .trx-it.hl { background: #f0ebe1; }
+
+/* ---------- 8. Küçük dokunuşlar ---------- */
+.qs-top, .nb-fab { transition: background-color .15s, color .15s, scale .15s; }
+.nb-panel { border-radius: 18px 0 0 18px; }
+#hist-toast { border-radius: 14px; }
+.fm-box { border-radius: 20px; }
+.tl-img, .ps-card { border-radius: 12px; }
+/* Çevrimdışı rozeti: takım logosunun köşesinde */
+#main-nav > div:first-child { position: relative; }
+body.gt-offline #main-nav > div:first-child::after {
+  content: ""; position: absolute; right: 6px; bottom: 0; width: 11px; height: 11px; border-radius: 50%;
+  background: #f59e0b; border: 2px solid #060b17;
+}
+@media (max-width: 639px) { body.gt-offline #main-nav > div:first-child::after { right: 0; } }
+@media print {
+  #main-nav, #quick-fixture-bar, #qfb-handle, #gt-toasts, .nb-fab, .qs-top { display: none !important; }
+  body { height: auto !important; overflow: visible !important; background: #fff !important; }
+}
+
+/* ---------- 9. Açık tema: Sezon İstatistikleri paneli ---------- */
+body.theme-light .ss-top { background: #fdfbf7; }
+body.theme-light .ss-box, body.theme-light .ss-rk > div { background: rgba(255,255,255,.7); border-color: #d6cfc2; }
+body.theme-light .ss-tg, body.theme-light .ss-ctx button, body.theme-light .ss-tabs button { background: #fff; border-color: #d6cfc2; color: #7a6d63; }
+body.theme-light .ss-tg button { color: #7a6d63; }
+body.theme-light .ss-tg button.on, body.theme-light .ss-ctx button.on { color: #fff; }
+body.theme-light .ss-ctx button.on { background: #065f46; border-color: #059669; }
+body.theme-light .ss-tabs button.on { background: #e8e2d5; color: #2c2420; }
+body.theme-light :is(.ss-v, .ss-tb .t, .ss-ldr b, .ss-opp b, .ss-rr > div > b, .ss-rr > div > span b, .ss-l5 > em, .ss-l5 > span, .ss-mini em, .ss-scs span b, .ss-duo > div b, .ss-tr b, .ss-rk b, .ss-wleg em, .ss-cmp td.cur, .ss-ac .cur span) { color: #2c2420; }
+body.theme-light :is(.ss-tb td, .ss-pg > span, .ss-shleg span, .ss-hf > span, .ss-mg em, .ss-ac em) { color: #4a3f39; }
+body.theme-light :is(.ss-tb th, .ss-tb td, .ss-rr, .ss-l5, .ss-mini, .ss-fg + .ss-fg, .ss-mg span) { border-color: #e0d7c6; }
+body.theme-light :is(.ss-pg > div, .ss-hfb > div, .ss-fgb i.z) { background: #e8e2d5; }
+body.theme-light .ss-pill:not(.gold):not(.silver):not(.win):not(.loss) { background: #e8e2d5; color: #2c2420; }
+body.theme-light .ss-body .W { color: #15803d; } body.theme-light .ss-body .D { color: #a16207; } body.theme-light .ss-body .L { color: #b91c1c; }
+body.theme-light .ss-body .ss-rb { color: #fff; }
+body.theme-light .ss-wave .g { stroke: #e0d7c6; } body.theme-light .ss-wdot { border-color: #fdfbf7; }

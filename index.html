@@ -1,9 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no, viewport-fit=cover">
     <title>GloryTrack</title>
+    <meta name="description" content="GloryTrack: EA Sports FC kariyer modu için kadro, fikstür, transfer, kupa ve istatistik takipçisi.">
+    <meta name="color-scheme" content="dark light">
     
     <!-- Site İkonu (Favicon) -->
     <link rel="icon" type="image/svg+xml" href="favicon.svg?v=3">
@@ -21,13 +23,15 @@
     <!-- Google Fonts: Figtree (gövde) + Sora (başlık/sayı) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preconnect" href="https://assets.football-logos.cc">
     <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800;900&family=Sora:wght@500;600;700;800&display=swap&subset=latin-ext" rel="stylesheet">
     <!-- Tailwind CSS -->
     <!-- Tailwind artık tailwind.css dosyasından yükleniyor -->
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
     <!-- Firebase (Cloud Sync) -->
     <script src="https://www.gstatic.com/firebasejs/12.11.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/12.11.0/firebase-auth-compat.js"></script>
@@ -37,19 +41,21 @@
     <script src="team-tournament-data.js"></script>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="tailwind.css?v=1">
+    <!-- Modern tasarım katmanı (en son yüklenir) -->
+    <link rel="stylesheet" href="gt-modern.css?v=1">
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans h-[100dvh] flex flex-col-reverse sm:flex-row selection:bg-emerald-500 selection:text-white overflow-hidden">
 
     <!-- Bulut butonu kaldırıldı (Efekt logoya taşındı) -->
 
     <!-- Sol/Alt Panel (Ana Menü Sidebar) -->
-    <aside class="w-full h-[60px] sm:w-20 sm:h-full min-h-0 bg-slate-950 border-t sm:border-t-0 sm:border-r border-slate-800 flex flex-row sm:flex-col items-center sm:py-3 shrink-0 z-[60] overflow-x-auto sm:overflow-y-auto hide-scrollbar sm:sidebar-scroll pb-safe">
+    <aside id="main-nav" aria-label="Ana menü" class="w-full h-[60px] sm:w-20 sm:h-full min-h-0 bg-slate-950 border-t sm:border-t-0 sm:border-r border-slate-800 flex flex-row sm:flex-col items-center sm:py-3 shrink-0 z-[60] overflow-x-auto sm:overflow-y-auto hide-scrollbar sm:sidebar-scroll pb-safe">
         <div class="flex sm:mb-3 items-center justify-center sm:w-full pl-2 pr-0.5 sm:px-2 shrink-0">
             <div class="w-9 h-9 sm:w-12 sm:h-12 bg-slate-800 rounded-full flex items-center justify-center border border-slate-700 shadow-inner overflow-hidden cursor-pointer hover:scale-105 transition-transform" onclick="openManagedTeamModal()" title="Takımı Düzenle">
                 <img id="sidebar-team-logo" src="https://ui-avatars.com/api/?name=FC&background=random&color=fff" alt="Logo" class="w-full h-full object-contain p-0.5">
             </div>
         </div>
-        <nav class="flex flex-row sm:flex-col items-center justify-between sm:justify-center w-full h-full sm:h-auto gap-0.5 sm:gap-2 px-1 sm:px-2 py-1.5 sm:py-0 sm:pb-2 m-0">
+        <nav aria-label="Sayfalar" class="flex flex-row sm:flex-col items-center justify-between sm:justify-center w-full h-full sm:h-auto gap-0.5 sm:gap-2 px-1 sm:px-2 py-1.5 sm:py-0 sm:pb-2 m-0">
             <button onclick="selectMainMenu('anasayfa')" id="btn-anasayfa" title="Ana Sayfa" aria-label="Ana Sayfa" class="main-btn h-full sm:h-auto flex-1 sm:flex-none sm:w-full sm:aspect-square rounded-lg sm:rounded-xl bg-slate-800 hover:bg-slate-700 transition-colors border-[1.5px] sm:border-2 border-transparent focus:outline-none flex justify-center items-center text-slate-100 min-w-0"><i class="fa-solid fa-house text-[15px] sm:text-xl"></i></button>
             <button onclick="selectMainMenu('kupalar')" id="btn-kupalar" title="Kupalar" aria-label="Kupalar" class="main-btn h-full sm:h-auto flex-1 sm:flex-none sm:w-full sm:aspect-square rounded-lg sm:rounded-xl bg-slate-800 hover:bg-slate-700 transition-colors border-[1.5px] sm:border-2 border-transparent focus:outline-none flex justify-center items-center text-slate-100 min-w-0"><i class="fa-solid fa-trophy text-[15px] sm:text-xl"></i></button>            
             <button onclick="selectMainMenu('maclar')" id="btn-maclar" title="Maçlar" aria-label="Maçlar" class="main-btn h-full sm:h-auto flex-1 sm:flex-none sm:w-full sm:aspect-square rounded-lg sm:rounded-xl bg-slate-800 hover:bg-slate-700 transition-colors border-[1.5px] sm:border-2 border-transparent focus:outline-none flex justify-center items-center text-slate-100 min-w-0"><i class="fa-solid fa-chart-simple text-[15px] sm:text-xl"></i></button>
@@ -80,7 +86,7 @@
         </div>
 
         <!-- Ana Çerçeve -->
-        <main class="w-full px-2 py-4 sm:px-4 flex-1 flex flex-col min-h-0 overflow-hidden">
+        <main id="main" class="w-full px-2 py-4 sm:px-4 flex-1 flex flex-col min-h-0 overflow-hidden">
             <div id="content-area" class="bg-slate-800/30 rounded-xl p-2 sm:p-4 border border-slate-700/50 flex-1 flex flex-col items-center justify-center text-center fade-in w-full max-w-full overflow-hidden">
                 <!-- Dinamik İçerik Buraya Yüklenir -->
             </div>
@@ -101,7 +107,7 @@
                     <div class="flex gap-2 mb-2">
                         <input type="text" id="champ-name-input" class="w-full bg-slate-950 border border-slate-600 rounded px-3 py-2 text-white focus:outline-none focus:border-yellow-500" placeholder="Takım Adı" list="global-team-datalist" onchange="autoFillTeamLogo(this, 'champ-url-input')">
                         <button onclick="searchTeamLogos('champ')" class="bg-blue-600 hover:bg-blue-500 px-3 rounded text-white whitespace-nowrap" title="Logoları Ara"><i class="fa-solid fa-search"></i></button>
-                        <a href="https://football-logos.cc/" target="_blank" class="bg-indigo-600 hover:bg-indigo-500 flex items-center justify-center px-3 rounded text-white transition-colors" title="Football-Logos'ta Ara"><i class="fa-solid fa-globe"></i></a>
+                        <a href="https://football-logos.cc/" target="_blank" rel="noopener" class="bg-indigo-600 hover:bg-indigo-500 flex items-center justify-center px-3 rounded text-white transition-colors" title="Football-Logos'ta Ara"><i class="fa-solid fa-globe"></i></a>
                     </div>
                     <div id="champ-logo-results" class="flex gap-2 overflow-x-auto hidden py-2 mb-2 hide-scrollbar bg-slate-950/50 rounded px-2 min-h-[60px] items-center border border-slate-700/50"></div>
                     <div class="flex gap-2 items-center">
@@ -116,7 +122,7 @@
                     <div class="flex gap-2 mb-2">
                         <input type="text" id="runner-name-input" class="w-full bg-slate-950 border border-slate-600 rounded px-3 py-2 text-white" placeholder="Takım Adı" list="global-team-datalist" onchange="autoFillTeamLogo(this, 'runner-url-input')">
                         <button onclick="searchTeamLogos('runner')" class="bg-blue-600 hover:bg-blue-500 px-3 rounded text-white whitespace-nowrap" title="Logoları Ara"><i class="fa-solid fa-search"></i></button>
-                        <a href="https://football-logos.cc/" target="_blank" class="bg-indigo-600 hover:bg-indigo-500 flex items-center justify-center px-3 rounded text-white transition-colors" title="Football-Logos'ta Ara"><i class="fa-solid fa-globe"></i></a>
+                        <a href="https://football-logos.cc/" target="_blank" rel="noopener" class="bg-indigo-600 hover:bg-indigo-500 flex items-center justify-center px-3 rounded text-white transition-colors" title="Football-Logos'ta Ara"><i class="fa-solid fa-globe"></i></a>
                     </div>
                     <div id="runner-logo-results" class="flex gap-2 overflow-x-auto hidden py-2 mb-2 hide-scrollbar bg-slate-950/50 rounded px-2 min-h-[60px] items-center border border-slate-700/50"></div>
                     <div class="flex gap-2 items-center">
@@ -282,7 +288,7 @@
                     <div class="flex gap-2 mb-2">
                         <input type="text" id="opp-name-input" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white" list="global-team-datalist" onchange="autoFillTeamLogo(this, 'opp-url-input')">
                         <button onclick="searchTeamLogos('opp')" class="bg-blue-600 hover:bg-blue-500 px-3 rounded text-white whitespace-nowrap" title="Logoları Ara"><i class="fa-solid fa-search"></i></button>
-                        <a href="https://football-logos.cc/" target="_blank" class="bg-indigo-600 hover:bg-indigo-500 flex items-center justify-center px-3 rounded text-white transition-colors" title="Football-Logos'ta Ara"><i class="fa-solid fa-globe"></i></a>
+                        <a href="https://football-logos.cc/" target="_blank" rel="noopener" class="bg-indigo-600 hover:bg-indigo-500 flex items-center justify-center px-3 rounded text-white transition-colors" title="Football-Logos'ta Ara"><i class="fa-solid fa-globe"></i></a>
                     </div>
                     <div id="opp-logo-results" class="flex gap-2 overflow-x-auto hidden py-2 mb-2 hide-scrollbar bg-slate-950/50 rounded px-2 items-center border border-slate-700/50"></div>
                 </div>
@@ -462,20 +468,8 @@
                     <div id="pi-shield" class="pih-sh"></div>
                 </div>
                 <div style="display:none">
-                    <img id="pi-view-photo" src="" class="object-cover object-top shrink-0 bg-slate-900 pointer-events-none" style="width:64px;height:64px;border-radius:50%;border:3px solid #ef4444" onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name=Oyuncu&background=334155&color=fff'">
-                    <div class="flex-1 min-w-0">
-                        <h3 id="pi-view-name" class="text-xl font-black text-white leading-tight truncate">İsim Soyisim</h3>
-                        <div class="mt-1.5 flex items-center gap-1.5 flex-wrap text-xs text-slate-400 font-medium">
-                            <span id="pi-view-pos" class="font-black px-2 py-0.5 rounded bg-slate-900/80 border border-slate-700">POS</span>
-                            <span id="pi-view-role">Rol</span><span>·</span>
-                            <span id="pi-view-flag-container" class="pi-flag"></span><span>·</span>
-                            <span><span id="pi-view-current-age">-</span> yaş</span>
-                        </div>
-                    </div>
-                    <div class="text-right shrink-0">
-                        <div id="pi-view-current-ovr" class="font-black leading-none text-emerald-400" style="font-size:36px">-</div>
-                        <div id="pi-view-delta-container" class="mt-1.5 flex justify-end"></div>
-                    </div>
+                    <div id="pi-view-current-ovr"></div>
+                    <div id="pi-view-delta-container"></div>
                 </div>
                 <div id="pi-tabs" class="pi-tabs">
                     <button type="button" class="pi-tab active" data-t="genel" onclick="piSetTab('genel')">Genel</button>
@@ -499,64 +493,6 @@
                     <div id="pi-view-pot-container" class="hidden"><span id="pi-view-pot"></span></div>
                 </div>
             </div>
-            <!-- ESKİ PROFİL (artık kullanılmıyor, silinebilir) -->
-            <div id="pi-view-section-old" style="display:none!important">
-                <!-- Fotoğrafı büyütüp (w-36 h-36) negatif margin (-mt-20) ile yukarı taşırdık -->
-                <div class="relative w-36 h-36 mb-4 -mt-20 flex items-end justify-center">
-                    <!-- Kenarlığı arka planla aynı renk (slate-800) ve kalın (border-[6px]) yaparak şık bir kesik efekti verdik -->
-                    <div class="absolute bottom-0 w-36 h-36 rounded-full border-[6px] border-slate-800 shadow-2xl bg-slate-900"></div>
-                    <img id="pi-view-photo" src="" class="relative z-10 object-cover object-top pointer-events-none drop-shadow-lg" style="width:100%; height:138%;" onerror="this.src='https://ui-avatars.com/api/?name=Oyuncu&background=random&color=fff'">
-                    <!-- Bayrağı da yeni boyuta göre hizaladık -->
-                    <div class="absolute bottom-1 right-2 border-[3px] border-slate-800 rounded shadow-md bg-slate-800 z-20">
-                        <div id="pi-view-flag-container"></div>
-                    </div>
-                </div>
-                
-                <h3 id="pi-view-name" class="text-2xl font-bold text-white mb-1 text-center">İsim Soyisim</h3>
-                <p class="text-sm text-slate-400 font-medium mb-6 flex items-center justify-center gap-2">
-                    <span id="pi-view-pos" class="font-black px-2 py-0.5 rounded bg-slate-900/80 border border-slate-700">POS</span>
-                    <span>•</span>
-                    <span id="pi-view-role">Rol</span>
-                </p>
-                
-                <div class="grid grid-cols-2 gap-3 w-full mb-6">
-                    <!-- Güncel OVR Kartı -->
-                    <div class="bg-slate-900/50 p-3 rounded-xl border border-slate-700/50 flex flex-col items-center justify-center">
-                        <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1.5">Güncel OVR</span>
-                        <div class="flex items-center gap-2 mb-1">
-                            <span id="pi-view-current-ovr" class="text-3xl font-black text-emerald-400 drop-shadow-md">-</span>
-                            <div id="pi-view-delta-container"></div>
-                        </div>
-                        <span id="pi-view-join-ovr" class="text-[10px] text-slate-500 mt-1">Geliş OVR: -</span>
-                    </div>
-                    
-                    <!-- Güncel Yaş Kartı -->
-                    <div class="bg-slate-900/50 p-3 rounded-xl border border-slate-700/50 flex flex-col items-center justify-center">
-                        <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1.5">Güncel Yaş</span>
-                        <span id="pi-view-current-age" class="text-3xl font-black text-white drop-shadow-md mb-1">-</span>
-                        <span id="pi-view-join-age" class="text-[10px] text-slate-500 mt-1">Geliş Yaşı: -</span>
-                    </div>
-
-                    <!-- Potansiyel Kutusu (Dokunulmadı) -->
-                    <div id="pi-view-pot-container" class="col-span-2 bg-slate-900/50 p-3 rounded-xl border border-slate-700/50 flex flex-col items-center justify-center hidden">
-                        <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1">Max Potansiyel</span>
-                        <span id="pi-view-pot" class="text-xl font-black text-emerald-300">90</span>
-                    </div>
-                </div>
-                
-                <div class="flex justify-between w-full gap-2">
-                    <button id="btn-view-archive" type="button" onclick="toggleArchivePlayer()" class="px-3 py-2.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 font-medium text-xs sm:text-sm flex-1 transition-colors whitespace-nowrap">
-                        <i class="fa-solid fa-box-archive mr-1"></i> Arşive Taşı
-                    </button>
-                    <button id="btn-view-promote" type="button" onclick="promotePlayer()" class="hidden px-3 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm flex-1 transition-colors shadow-lg whitespace-nowrap">
-                        <i class="fa-solid fa-arrow-up mr-1"></i> Yükselt
-                    </button>
-                    <button type="button" onclick="togglePlayerEditMode()" class="px-3 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs sm:text-sm flex-1 transition-colors shadow-lg whitespace-nowrap">
-                        <i class="fa-solid fa-pen mr-1"></i> Düzenle
-                    </button>
-                </div>
-            </div>
-
             <!-- DÜZENLEME MODU (ESKİ FORM) -->
             <div id="pi-edit-section" class="w-full">
                 <h3 class="text-xl font-bold mb-4 text-white" id="player-info-title">Oyuncu Ekle</h3>
@@ -1421,6 +1357,9 @@
     <datalist id="global-tournament-datalist"></datalist>
 
     <script src="script.js"></script>
+    <!-- Kullanım iyileştirmeleri: bildirimler, kısayollar, sayfa adresi -->
+    <script src="gt-enhance.js?v=1"></script>
+    <noscript><p style="padding:24px;text-align:center">GloryTrack'in çalışması için tarayıcında JavaScript açık olmalı.</p></noscript>
 </body>
 </html>
 

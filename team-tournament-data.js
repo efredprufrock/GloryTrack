@@ -31,7 +31,7 @@ const FC26_TEAM_DATABASE = [
     { name: "Saudi Arabia", logo: "https://assets.football-logos.cc/logos/saudi-arabia/700x700/saudi-arabia-national-team.dd90336c.png" }, //
     { name: "Senegal", logo: "https://assets.football-logos.cc/logos/senegal/700x700/senegal-national-team.9d38991b.png" }, //
     { name: "South Africa", logo: "https://assets.football-logos.cc/logos/south-africa/700x700/south-africa-national-team.fe892688.png" }, //
-    { name: "Switzerland", logo: "https://assets.football-logos.cc/logos/switzerland/700x700/switzerland-national-team.2bff4e73.png" },, //
+    { name: "Switzerland", logo: "https://assets.football-logos.cc/logos/switzerland/700x700/switzerland-national-team.2bff4e73.png" }, //
     { name: "Tunisia", logo: "https://assets.football-logos.cc/logos/tunisia/700x700/tunisia-national-team.55eea647.png" }, //
     { name: "Türkiye", logo: "https://assets.football-logos.cc/logos/turkey/700x700/turkey-national-team.2e627602.png" }, //
     { name: "Uruguay", logo: "https://assets.football-logos.cc/logos/uruguay/700x700/uruguay-national-team.d4efefc9.png" }, //
@@ -663,7 +663,7 @@ const FC26_TEAM_DATABASE = [
     "Tianjin TEDA",
     { name: "Tigre", logo: "https://assets.football-logos.cc/logos/argentina/256x256/tigre.81ae80b6.png" }, //[cite: 1]
     "Tigres UANL",
-    "Tijuana — full roster of 18 total)",
+    "Tijuana",
     "Toluca",
     { name: "Tondela", logo: "https://assets.football-logos.cc/logos/portugal/256x256/tondela.e08b9ef4.png" }, //
     { name: "Torino", logo: "https://assets.football-logos.cc/logos/italy/256x256/torino.a6c78dd6.png" }, //[cite: 2]
@@ -809,7 +809,7 @@ function populateGlobalNameDatalists() {
     const teamDL = document.getElementById('global-team-datalist');
     if (teamDL && !teamDL.dataset.filled) {
         const allTeamNames = [...new Set([
-            ...FC26_TEAM_DATABASE.map(t => typeof t === 'string' ? t : t.name),
+            ...FC26_TEAM_DATABASE.filter(Boolean).map(t => typeof t === 'string' ? t : t.name),
             ...Object.values(managedTeams || {}).map(t => t.name).filter(Boolean)
         ])].sort((a, b) => a.localeCompare(b, 'tr'));
         teamDL.innerHTML = allTeamNames.map(n => `<option value="${escapeHtml(n)}">`).join('');
@@ -821,20 +821,10 @@ function populateGlobalNameDatalists() {
         const allTourNames = [...new Set([
             ...(typeof allTournamentOptions !== 'undefined' ? allTournamentOptions : []),
             ...(typeof tournamentOptions !== 'undefined' ? tournamentOptions : []),
-            ...FC26_TOURNAMENT_DATABASE.map(t => typeof t === 'string' ? t : t.name)
+            // "Bundesliga:" gibi sonu iki noktalı adlar listede temiz görünsün (yinelenenler de birleşir)
+            ...FC26_TOURNAMENT_DATABASE.map(t => String(typeof t === 'string' ? t : t.name).replace(/:\s*$/, ''))
         ])].sort((a, b) => a.localeCompare(b, 'tr'));
         tourDL.innerHTML = allTourNames.map(n => `<option value="${escapeHtml(n)}">`).join('');
         tourDL.dataset.filled = '1';
     }
-}
-
-// getFixtureTournaments() fikstür panelindeki turnuva datalist'ini besliyordu;
-// artık genel turnuva veritabanını da içeriyor ki "birkaç harf yazınca" tüm
-// gerçek lig/kupa isimleri de önerilsin.
-if (typeof getFixtureTournaments === 'function') {
-    const _origGetFixtureTournaments = getFixtureTournaments;
-    getFixtureTournaments = function() {
-        const base = _origGetFixtureTournaments();
-        return [...new Set([...base, ...FC26_TOURNAMENT_DATABASE.map(t => typeof t === 'string' ? t : t.name)])].sort((a, b) => a.localeCompare(b, 'tr'));
-    };
 }

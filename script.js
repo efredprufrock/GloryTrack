@@ -2920,7 +2920,8 @@ function getFlagIcon(countryCode) {
                 });
             }
         };
-        Chart.register(pointLabelsPlugin);
+        // Chart.js yüklenemediyse (CDN engeli / çevrimdışı ilk açılış) uygulamanın geri kalanı çalışmaya devam etsin
+        if (typeof Chart !== 'undefined') Chart.register(pointLabelsPlugin);
 
         // --- CUSTOM AUTOCOMPLETE LOGIC ---
         let activeAutocompleteInput = null;
