@@ -126,10 +126,17 @@ function gtLgDecorateH(t) {
     const cols = []; r3.querySelectorAll('th[onclick^="handleOpponentClick"]').forEach(th => { const x = gtLgOppFrom(th.getAttribute('onclick')); if (x) cols.push({ th, opp: x.opp, g: x.g }); });
     const dom = cols.filter(c => c.g === 'domestic');
     if (!title || title.hidden || !dom.length || !gtLgHasData(dom)) return;
+    // Bayrak satırının yurtiçi bölümü (hep aynı ülke) gereksiz boşluk yaratıyor: kaldırıp lig hücrelerini 2 satıra yay
+    const r2 = rows[1]; let acc = 0, cut = [];
+    for (const ch of Array.from(r2.children)) { if (acc >= dom.length) break; cut.push(ch); acc += ch.colSpan || 1; }
+    const canMerge = acc === dom.length && cut.length > 0;
+    if (canMerge) cut.forEach(ch => ch.remove());
+    t.dataset.gtlgDom = canMerge ? dom.length : 0;
     const acts = title.querySelector('div.absolute'), runs = gtLgRuns(dom), frag = document.createDocumentFragment(), grpName = (title.textContent || '').trim();
     runs.forEach((r, ri) => {
         const th = document.createElement('th'), m = gtLgMeta(r.k);
         th.className = 'p-1 border-r border-b border-slate-700 gtlg-th group relative'; th.colSpan = r.n;
+        if (canMerge) th.rowSpan = 2;
         th.style.background = gtLgBg(r.k === 'EMPTY' ? '#334155' : m.c); th.style.borderBottom = `2px solid ${r.k === 'EMPTY' ? '#334155' : m.c}`;
         th.title = r.k === 'EMPTY' ? grpName : `${gtLgLabel(r.k)} · ${r.items.length} ${gtMfL('takım', 'teams')}`;
         th.innerHTML = r.k === 'EMPTY' ? `<span class="gtlg-in"><b class="full">${gtMfE(grpName)}</b></span>`
@@ -149,8 +156,8 @@ function gtLgApplyH(t, ST) {
         const first = tr.cells[0]; if (!first || !/openSeasonStatsModal/.test(first.getAttribute('onclick') || '')) return;
         for (let j = 0; j < N; j++) { const td = tr.cells[j + 1]; if (td) td.style.display = vis[j] ? '' : 'none'; }
     });
-    const fix = (row, startAt) => {
-        let pos = 0;
+    const fix = (row, startAt, from) => {
+        let pos = from || 0;
         Array.from(row.children).slice(startAt).forEach(ch => {
             if (pos >= N || ch.hidden) return;
             const cs = +ch.dataset.ocs || ch.colSpan || 1; ch.dataset.ocs = cs;
@@ -160,7 +167,7 @@ function gtLgApplyH(t, ST) {
             pos += cs;
         });
     };
-    fix(r1, 1); fix(r2, 0);
+    fix(r1, 1); fix(r2, 0, +t.dataset.gtlgDom || 0);
     const named = cols.filter(c => c.opp && c.opp.name);
     return { vis: named.filter(c => gtMfPass(c.opp, ST)).length, tot: named.length };
 }
