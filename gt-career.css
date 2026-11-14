@@ -204,3 +204,13 @@ body.theme-light .cr-face { background: #e8e2d5; color: #4a3f39; } body.theme-li
 body.theme-light .cr-now { background: rgba(44,36,32,.04); }
 body.theme-light .cr .cr-tb td.W { color: #15803d; } body.theme-light .cr .cr-tb td.D { color: #a16207; } body.theme-light .cr .cr-tb td.L { color: #b91c1c; }
 body.theme-light .cr-min span b { color: #4a3f39; }
+
+/* Fikstür sayfasındaki Kariyer düğmesi + geri düğmesi */
+.gt-cr-fxbtn { flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px; padding: 2px 12px 2px 10px; margin-right: 4px; border-radius: 999px; font-size: 12px; font-weight: 800; white-space: nowrap; color: var(--gt-accent-soft, #34d399); background: rgba(var(--gt-accent-rgb, 16,185,129), .14); border: 1px solid rgba(var(--gt-accent-rgb, 16,185,129), .45); transition: background .15s, color .15s; }
+.gt-cr-fxbtn:hover { background: var(--gt-accent, #10b981); color: #04130d; }
+.gt-cr-fxbtn i { font-size: 11px; }
+@media (max-width: 640px) { .gt-cr-fxbtn { font-size: 10px; padding: 2px 9px 2px 8px; } }
+.cr-back { display: inline-flex; align-items: center; gap: 8px; height: 34px; padding: 0 14px; border-radius: 11px; font-size: 12px; font-weight: 800; color: #e2e8f0; background: #0b1220; border: 1px solid #334155; }
+.cr-back:hover { color: #fff; border-color: var(--gt-accent, #10b981); }
+body.theme-light .cr-back { background: #fff; border-color: #d6cfc2; color: #2c2420; }
+body.theme-light .gt-cr-fxbtn:hover { color: #fff; }

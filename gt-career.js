@@ -9,8 +9,12 @@ function gtCrSave() { try { localStorage.setItem('gt_cr_ui', JSON.stringify(GTCR
 function gtCrE(s) { return escapeHtml(String(s == null ? '' : s)); }
 function gtCrNum(v) { if (v === '' || v === null || v === undefined) return null; const n = parseInt(v); return isNaN(n) ? null : n; }
 function gtCrSetView(on) { GTCR.on = !!on; gtCrSave(); renderMatchesGrid(); }
-function gtCrSetTour(t) { GTCR.tour = t; gtCrSave(); renderMatchesGrid(); }
-function gtCrSetCtx(c) { matchContext = c; GTCR.tour = 'all'; gtCrSave(); renderMatchesGrid(); }
+// Fikstür sayfasından açıldıysa (GTCR.fx) panel yerinde yenilenir, değilse Maçlar sayfası çizilir
+function gtCrRefresh() { gtCrShowFx(); }
+function gtCrShowFx() { GTCR.fx = true; window.__gtCrOwn = true; try { updateContentArea(gtCrRender()); } finally { window.__gtCrOwn = false; } }
+function gtCrCloseFx() { GTCR.fx = false; if (typeof renderFixturePanel === 'function') renderFixturePanel(); }
+function gtCrSetTour(t) { GTCR.tour = t; gtCrSave(); gtCrRefresh(); }
+function gtCrSetCtx(c) { matchContext = c; GTCR.tour = 'all'; gtCrSave(); gtCrRefresh(); }
 
 // ---------------- Veri ----------------
 function gtCrMatches(ctx) {
@@ -160,7 +164,7 @@ function gtCrRender() {
         <div class="cr-ctl">
             <select onchange="gtCrSetTour(this.value)" title="${L('Turnuva filtresi', 'Competition filter')}"><option value="all">${L('Tüm turnuvalar', 'All competitions')}</option>${D.tours.map(t => `<option value="${gtCrE(t)}"${GTCR.tour === t ? ' selected' : ''}>${gtCrE(t)}</option>`).join('')}</select>
             <div class="cr-seg"><button type="button" class="${ctx === 'kulup' ? 'on' : ''}" onclick="gtCrSetCtx('kulup')">${L('Kulüp', 'Club')}</button><button type="button" class="${ctx === 'milli' ? 'on' : ''}" onclick="gtCrSetCtx('milli')">${L('Milli', 'National')}</button></div>
-            ${gtCrSwitch()}
+            <button type="button" class="cr-back" onclick="gtCrCloseFx()"><i class="fa-solid fa-arrow-left"></i>${L('Fikstür', 'Fixtures')}</button>
         </div></div>`;
     if (!R.n) return `<div class="cr">${head}<div class="cr-empty"><i class="fa-solid fa-chart-line"></i><b>${L('Henüz oynanmış maç yok', 'No played matches yet')}</b><span>${L('Fikstürden ya da Maçlar sayfasından skor girdikçe bu panel dolacak.', 'This panel fills up as you enter results from the fixtures or the Matches page.')}</span></div></div>`;
 
@@ -227,20 +231,27 @@ function gtCrRender() {
 function gtCrSwitch() {
     return `<div class="cr-seg cr-sw"><button type="button" class="${GTCR.on ? '' : 'on'}" onclick="gtCrSetView(false)"><i class="fa-solid fa-table-cells-large"></i>${gtCrL('Rakipler', 'Opponents')}</button><button type="button" class="${GTCR.on ? 'on' : ''}" onclick="gtCrSetView(true)"><i class="fa-solid fa-chart-pie"></i>${gtCrL('Kariyer', 'Career')}</button></div>`;
 }
-// Maçlar sayfasını sar: "Kariyer" seçiliyse paneli, değilse eski ızgarayı (üstünde görünüm düğmesiyle) göster
+// Panel yalnızca Fikstür sayfasından açılır
 (function gtCrWrap() {
-    if (window.__gtCrWrapped || typeof renderMatchesGrid !== 'function') return;
+    if (window.__gtCrWrapped) return;
     window.__gtCrWrapped = true;
-    const orig = window.renderMatchesGrid;
-    window.renderMatchesGrid = function () {
-        const ca = document.getElementById('content-area');
-        if (GTCR.on) { updateContentArea(gtCrRender()); if (ca) ca.classList.remove('gt-cr-has'); return; }
-        const r = orig.apply(this, arguments);
-        try {
-            if (ca && !ca.querySelector('.gt-cr-bar')) { const bar = document.createElement('div'); bar.className = 'gt-cr-bar'; bar.innerHTML = gtCrSwitch(); ca.insertBefore(bar, ca.firstChild); ca.classList.add('gt-cr-has'); }
-        } catch (e) { console.warn(e); }
-        return r;
-    };
     // Başka sayfaya geçince işaret sınıfını kaldır
-    if (typeof updateContentArea === 'function') { const u = window.updateContentArea; window.updateContentArea = function () { const ca = document.getElementById('content-area'); if (ca) ca.classList.remove('gt-cr-has'); return u.apply(this, arguments); }; }
+    if (typeof updateContentArea === 'function') { const u = window.updateContentArea; window.updateContentArea = function () { const ca = document.getElementById('content-area'); if (ca) ca.classList.remove('gt-cr-has'); if (!window.__gtCrOwn) GTCR.fx = false; return u.apply(this, arguments); }; }
+    // Fikstür sayfası: sezon rozetlerinin soluna "Kariyer" düğmesi
+    if (typeof renderFixturePanel === 'function') {
+        const fo = window.renderFixturePanel;
+        window.renderFixturePanel = function () {
+            const r = fo.apply(this, arguments);
+            try {
+                const ca = document.getElementById('content-area'), b = ca && ca.querySelector('button[onclick^="switchFixtureSeason"]'), row = b && b.parentElement;
+                if (row && !row.querySelector('.gt-cr-fxbtn')) {
+                    const k = document.createElement('button'); k.type = 'button'; k.className = 'gt-cr-fxbtn'; k.title = gtCrL('Kariyer istatistikleri', 'Career statistics');
+                    k.innerHTML = '<i class="fa-solid fa-chart-pie"></i><span>' + gtCrL('Kariyer', 'Career') + '</span>';
+                    k.onclick = function () { gtCrShowFx(); };
+                    row.insertBefore(k, row.firstChild);
+                }
+            } catch (e) { console.warn(e); }
+            return r;
+        };
+    }
 })();

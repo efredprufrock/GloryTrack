@@ -6861,6 +6861,24 @@ function renderTrophyCabinet() {
         // --- MAÇLAR TABLOSU ---
         // ===================== İSTATİSTİK (MAÇLAR) TABLOSU: mobilde dikey düzen (takımlar yukarıdan aşağı, sezonlar soldan sağa) =====================
         function renderMatchesGrid() {
+            try {
+                const myC = managedTeams.kulup && managedTeams.kulup.country;
+                const cfg = opponentsConfig.kulup;
+                if (myC && cfg && cfg.domestic) {
+                    const myFlag = getFlagIcon(myC);
+                    const stray = cfg.domestic.teams.filter(t => t && t.name && t.country && getFlagIcon(t.country) && getFlagIcon(t.country) !== myFlag);
+                    if (stray.length) {
+                        stray.forEach(t => {
+                            cfg.domestic.teams.splice(cfg.domestic.teams.indexOf(t), 1);
+                            const gname = getContinentForCountry(t.country);
+                            let g = cfg.foreign.find(x => (x.name || '').toUpperCase() === gname.toUpperCase());
+                            if (!g) { g = { id: 'f_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5), name: gname, color: '#1e3a8a', teams: [] }; cfg.foreign.push(g); }
+                            g.teams.push(t);
+                        });
+                        saveToLocalStorage();
+                    }
+                }
+            } catch (e) { console.warn(e); }
             if (window.innerWidth < 640) renderMatchesGridVertical();
             else renderMatchesGridHorizontal();
         }
@@ -7520,7 +7538,7 @@ function renderTrophyCabinet() {
         function addOpponentColumn(groupType, groupIndex) {
             const newId = `${matchContext === 'kulup' ? 'k' : 'm'}_${groupType.charAt(0)}_${Date.now()}`;
             // Boş görünmemesi ve anında listeye girmesi için geçici bir isim veriyoruz
-            const newOpp = { id: newId, name: 'Yeni Takım', logoUrl: '', country: groupType === 'domestic' ? 'TURKEY' : '' };
+            const newOpp = { id: newId, name: 'Yeni Takım', logoUrl: '', country: groupType === 'domestic' ? ((managedTeams[matchContext] && managedTeams[matchContext].country) || 'TURKEY') : '' };
             
             let targetArray = groupType === 'domestic' ? opponentsConfig[matchContext].domestic.teams : opponentsConfig[matchContext].foreign[groupIndex].teams;
             targetArray.push(newOpp);
@@ -9524,7 +9542,7 @@ function savePlayerBulkEdit() {
                 if (parts.length >= 5) {
                     const pos = parts[0].toUpperCase();
                     const name = parts[1];
-                    const countryCode = parts[2].toLowerCase();
+                    const countryCode = (typeof gtCountryKey === 'function' && gtCountryKey(parts[2], 'flag')) || parts[2].toLowerCase();
                     const age = parseInt(parts[3]) || 18;
                     const ovr = parseInt(parts[4]) || 50;
 
@@ -16821,8 +16839,14 @@ function renderFixturePanel() {
             let targetContinent = getContinentForCountry(oppCountryCode);
 
             let isDomestic = false;
-            if (context === 'kulup' && (oppCountryCode === 'TR' || oppCountryCode === 'TUR' || targetContinent === opponentsConfig.kulup.domestic.name || !oppCountryCode)) {
-                isDomestic = true;
+            if (context === 'kulup') {
+                const myC = (managedTeams.kulup && managedTeams.kulup.country) || '';
+                const myFlag = myC ? getFlagIcon(myC) : '';
+                const oppFlag = oppCountryCode ? getFlagIcon(oppCountryCode) : '';
+                // Ülkesi bizimle aynıysa yurtiçi; ülke bilgisi yoksa yurtiçi say; bizim ülke tanımsızsa eski davranış (TR)
+                if (!oppCountryCode) isDomestic = true;
+                else if (myFlag) isDomestic = (oppFlag === myFlag);
+                else isDomestic = (oppCountryCode === 'TR' || oppCountryCode === 'TUR' || oppCountryCode === 'TURKEY');
             } else if (context === 'milli' && targetContinent === opponentsConfig.milli.domestic.name) {
                 // HATA ÇÖZÜMÜ: Sadece rakibin kıtası gerçekten AVRUPA ise yerel (domestic) kabul et.
                 isDomestic = true; 

@@ -10,7 +10,7 @@ const KEEP = [CACHE, CDN_CACHE];
 // İlk kurulumda önbelleğe alınan uygulama kabuğu (biri eksikse kurulum yine tamamlanır)
 const SHELL = [
     './', 'index.html', 'style.css', 'tailwind.css?v=1', 'gt-modern.css?v=1',
-    'script.js', 'gt-enhance.js?v=1', 'gt-squad.js?v=1', 'gt-squad.css?v=1', 'gt-career.js?v=1', 'gt-career.css?v=1', 'team-tournament-data.js', 'firebase-config.js',
+    'script.js', 'gt-enhance.js?v=1', 'gt-squad.js?v=1', 'gt-squad.css?v=1', 'gt-career.js?v=1', 'gt-country.js?v=1', 'gt-career.css?v=1', 'team-tournament-data.js', 'firebase-config.js',
     'manifest.json', 'favicon.svg?v=3', 'icons/icon-192.png'
 ];
 
