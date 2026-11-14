@@ -8628,7 +8628,7 @@ function renderTrophyCabinet() {
                     const ps = String(r.p.pos || '').toUpperCase();
                     const sep = attrByPos && !gk && lastPos !== null && lastPos !== ps ? ' sqa-psep' : ''; lastPos = ps;
                     return `<tr class="bg-row-${(p => p === 'GK' ? 'GK' : /^(CB|LB|RB|LWB|RWB)$/.test(p) ? 'DEF' : /^(ST|CF|LW|RW)$/.test(p) ? 'FWD' : 'MID')(ps)}${sep}" onclick="openPlayerInfoModal('${r.p.id}')"><td class="n"><div class="sqa-pl"><i class="pos-${escapeHtml(ps)}">${escapeHtml(r.p.pos || '')}</i>${r.p.photoUrl && !/ui-avatars\.com/.test(r.p.photoUrl) ? `<img src="${escapeHtml(r.p.photoUrl)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">` : '<span class="sqa-noph"></span>'}<span class="sqa-nm">${escapeHtml(window.innerWidth < 768 && typeof formatShortPlayerName === 'function' ? formatShortPlayerName(r.p.name) : r.p.name)}</span></div></td>
-                        <td><span class="sqa-ovr" style="background:${mbOvrColor(r.ov.v)}">${r.ov.v || '–'}</span>${dHtml(r.ov.d)}</td>
+                        <td>${gtSqAttrAge(r.p, r.pr)}<span class="sqa-ovr" style="background:${mbOvrColor(r.ov.v)}">${r.ov.v || '–'}</span>${dHtml(r.ov.d)}</td>
                         ${r.cells.map((c, i) => `<td class="${cols[i].main && cols.length > 6 ? 'mg' : ''}${cols[i].gs ? ' gs' : ''}${attrMode === 'delta' ? ' dm' : ''}">${cols[i].main ? `<b class="mv" style="--c:${attrColor(c.v)}">${c.v !== null ? c.v : '–'}</b>` : `<b style="color:${attrColor(c.v)}">${c.v !== null ? c.v : '–'}</b>`}${dHtml(c.d)}</td>`).join('')}${pad(extra, 'td')}
                         <td class="tot ${r.tot > 0 ? 'up' : r.tot < 0 ? 'dn' : 'eq'}">${r.tot > 0 ? '+' + r.tot : r.tot}</td></tr>`;
                 }).join('');
@@ -8688,7 +8688,7 @@ function renderTrophyCabinet() {
                 const dHtml = d => d === null || d === undefined ? '<span class="d eq">·</span>' : `<span class="d ${d > 0 ? 'up' : d < 0 ? 'dn' : 'eq'}">${d > 0 ? '+' + d : d < 0 ? d : '·'}</span>`;
                 return `<div class="sqa-sec">${gk ? L('KALECİLER', 'GOALKEEPERS') : L('SAHA OYUNCULARI', 'OUTFIELD PLAYERS')}</div><table class="sqa-tb${grpRow ? ' sqa-all' : ''}"><thead>${grpRow}<tr>${th('name', L('Oyuncu', 'Player'), 'n')}${th('ovr', 'OVR')}${cols.map((c, i) => th(i, c.l, (c.main && cols.length > 6 ? 'mg' : '') + (c.gs ? ' gs' : ''), c.t)).join('')}${th('tot', L('Toplam Δ', 'Total Δ'))}</tr></thead><tbody>` +
                     data.map(r => `<tr class="bg-row-${(p => p === 'GK' ? 'GK' : /^(CB|LB|RB|LWB|RWB)$/.test(p) ? 'DEF' : /^(ST|CF|LW|RW)$/.test(p) ? 'FWD' : 'MID')(String(r.p.pos || '').toUpperCase())}" onclick="openPlayerInfoModal('${r.p.id}')"><td class="n"><div class="sqa-pl"><i class="pos-${escapeHtml(String(r.p.pos || '').toUpperCase())}">${escapeHtml(r.p.pos || '')}</i>${r.p.photoUrl && !/ui-avatars\.com/.test(r.p.photoUrl) ? `<img src="${escapeHtml(r.p.photoUrl)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">` : '<span class="sqa-noph"></span>'}<span class="sqa-nm">${escapeHtml(window.innerWidth < 768 && typeof formatShortPlayerName === 'function' ? formatShortPlayerName(r.p.name) : r.p.name)}</span></div></td>
-                        <td><span class="sqa-ovr" style="background:${mbOvrColor(r.ov.v)}">${r.ov.v || '–'}</span>${dHtml(r.ov.d)}</td>
+                        <td>${gtSqAttrAge(r.p, r.pr)}<span class="sqa-ovr" style="background:${mbOvrColor(r.ov.v)}">${r.ov.v || '–'}</span>${dHtml(r.ov.d)}</td>
                         ${r.cells.map((c, i) => `<td class="${cols[i].main && cols.length > 6 ? 'mg' : ''}${cols[i].gs ? ' gs' : ''}${attrMode === 'delta' ? ' dm' : ''}">${cols[i].main ? `<b class="mv" style="--c:${attrColor(c.v)}">${c.v !== null ? c.v : '–'}</b>` : `<b style="color:${attrColor(c.v)}">${c.v !== null ? c.v : '–'}</b>`}${dHtml(c.d)}</td>`).join('')}
                         <td class="tot ${r.tot > 0 ? 'up' : r.tot < 0 ? 'dn' : 'eq'}">${r.tot > 0 ? '+' + r.tot : r.tot}</td></tr>`).join('') + '</tbody></table>';
             };
@@ -8783,7 +8783,7 @@ function renderTrophyCabinet() {
                 staticCols.push({ id: 'countryCode', label: '<i class="fa-solid fa-globe text-sm"></i>', title: 'Ülke', w: 32, align: 'center' });
                 staticCols.push({ id: 'joinAge', label: '<i class="fa-solid fa-user-clock text-sm"></i>', title: 'Yaş', w: 34, align: 'center' });
                 staticCols.push({ id: 'joinOvr', label: '<i class="fa-solid fa-star text-sm"></i>', title: 'OVR', w: 36, align: 'center' });
-                staticCols.push({ id: 'role', label: '<i class="fa-solid fa-signal text-sm"></i>', title: 'Önem / Rol', w: 30, align: 'center' }); staticCols.push({ id: 'growth', label: '<i class="fa-solid fa-chart-line text-sm"></i>', title: 'Gelişim (+/-)', w: 42, align: 'center' });
+                staticCols.push({ id: 'role', label: '<i class="fa-solid fa-signal text-sm"></i>', title: 'Önem / Rol', w: 30, align: 'center' }); staticCols.push({ id: 'growth', label: '<i class="fa-solid fa-chart-line text-sm"></i>', title: 'Gelişim (+/-)', w: 42, align: 'center' }); staticCols.push({ id: 'spark', label: '<i class="fa-solid fa-wave-square text-sm"></i>', title: 'OVR seyri', w: 58, align: 'center' });
 
                 if (squadContext === 'akademi') {
                     staticCols.push({ id: 'pot', label: '<i class="fa-solid fa-bolt text-sm"></i>', title: 'Potansiyel (POT)', w: 36, align: 'center' });
@@ -8902,7 +8902,7 @@ function renderTrophyCabinet() {
                         <button onclick="squadContext='milli'; renderSquadGrid();" class="px-6 py-1.5 rounded-full text-xs font-bold transition-colors ${squadContext === 'milli' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}">Milli</button>
                     </div>
 
-                    <div class="flex items-center justify-end gap-4 ml-auto xl:ml-0 w-full sm:w-auto">
+                    <div class="flex items-center justify-end gap-4 ml-auto xl:ml-0 w-full sm:w-auto">${gtSqToolbar()}
                         ${getScaleSelectorHtml()}
                     </div>
                 </div>
@@ -8948,18 +8948,18 @@ function renderTrophyCabinet() {
 
             squadSeasons.forEach(season => {
                 const activeCols = seasonActiveColsMap[season];
-                html += `<th colspan="${activeCols.length}" class="p-1 border-r border-b border-slate-700 text-center font-black tracking-widest bg-slate-800 text-emerald-500 relative group/season">
+                gtSqCols(seasonActiveColsMap, squadSeasons, players, staticCols); html += `<th colspan="${activeCols.length}" onclick="gtSqToggleSeason('${season}')" title="Sezonu aç / katla" class="p-1 border-r border-b border-slate-700 text-center font-black tracking-widest bg-slate-800 text-emerald-500 relative group/season cursor-pointer">
                             ${season}
                             <button onclick="deleteSeason('${season}')" class="absolute top-1 right-1 opacity-0 group-hover/season:opacity-100 text-red-500 hover:text-red-400 transition-opacity" title="Sezonu Sil"><i class="fa-solid fa-trash text-[10px]"></i></button>
                          </th>`;
             });
             html += `<th class="border-b border-slate-700 w-full bg-slate-950"></th></tr><tr>`;
 
-            const bulkStatBtn = (season, cellKey) => `<button onclick="event.stopPropagation(); openBulkStatModal('${season.replace(/'/g,"\\'")}', '${cellKey}')" class="text-slate-400 hover:text-emerald-400 transition-colors" title="Toplu Yaş/OVR Gir"><i class="fa-solid fa-bolt text-[9px]"></i></button>`;
+            const bulkStatBtn = (season, cellKey) => `<button onclick="event.stopPropagation(); openBulkStatModal('${season.replace(/'/g,"\\'")}', '${cellKey}')" class="text-slate-400 hover:text-emerald-400 transition-colors" title="Toplu Yaş/OVR Gir"><i class="fa-solid fa-bolt text-[9px]"></i></button>` + gtSqEntryBtn(season, cellKey);
 
             squadSeasons.forEach(season => {
                 const activeCols = seasonActiveColsMap[season];
-                if (activeCols.includes('s2')) html += `<th class="p-1 border-r border-b border-slate-700 bg-slate-900 text-[9px] font-bold text-slate-300 min-w-[125px] w-[125px] max-w-[125px]"><div class="flex items-center justify-center gap-1.5">HAZ-ŞUB ${bulkStatBtn(season, 's2')}</div></th>`;
+                if (activeCols.includes('sum')) html += gtSqSumHead(season); if (activeCols.includes('s2')) html += `<th class="p-1 border-r border-b border-slate-700 bg-slate-900 text-[9px] font-bold text-slate-300 min-w-[125px] w-[125px] max-w-[125px]"><div class="flex items-center justify-center gap-1.5">HAZ-ŞUB ${bulkStatBtn(season, 's2')}</div></th>`;
                 if (activeCols.includes('t2')) html += `<th class="p-1 border-r border-b border-slate-700 bg-orange-900/30 text-[9px] font-bold text-orange-300 min-w-[125px] w-[125px] max-w-[125px]"><div class="flex items-center justify-center gap-1.5">KIŞ TR. ${bulkStatBtn(season, 't2')}</div></th>`;
                 if (activeCols.includes('s1')) html += `<th class="p-1 border-r border-b border-slate-700 bg-slate-900 text-[9px] font-bold text-slate-300 min-w-[125px] w-[125px] max-w-[125px]"><div class="flex items-center justify-center gap-1.5">ARA-EYL ${bulkStatBtn(season, 's1')}</div></th>`;
                 if (activeCols.includes('t1')) html += `<th class="p-1 border-r border-b border-slate-700 bg-blue-900/30 text-[9px] font-bold text-blue-300 min-w-[125px] w-[125px] max-w-[125px]"><div class="flex items-center justify-center gap-1.5">YAZ TR. ${bulkStatBtn(season, 't1')}</div></th>`;
@@ -9019,7 +9019,7 @@ function renderTrophyCabinet() {
                         if (p.totalAssists > maxAssists) maxAssists = p.totalAssists;
                     });
 
-                    let resultHtml = '';
+                    list = gtSqFilter(list); let resultHtml = '';
                     (squadFlatSort ? [{ id: 'ALL' }] : groups).forEach(group => {
                         let groupPlayers = squadFlatSort ? list.slice() : list.filter(p => getGroupForPos(p.pos) === group.id);
                         if (groupPlayers.length === 0) return;
@@ -9063,7 +9063,7 @@ function renderTrophyCabinet() {
                             let photoHtml = p.photoUrl ? `<img src="${p.photoUrl}" class="w-6 h-6 rounded-full inline-block mr-1.5 object-cover bg-slate-800">` : `<div class="w-6 h-6 rounded-full inline-flex items-center justify-center bg-slate-700 text-xs font-bold mr-1.5">${safeName.charAt(0)}</div>`;
                             let flagHtml = p.countryCode ? `<img src="https://flagcdn.com/24x18/${p.countryCode.toLowerCase()}.png" alt="${p.countryCode}" title="${p.countryCode.toUpperCase()}" class="w-5 h-auto mx-auto shadow-sm">` : '-';
 
-                            let rowBgClass = `bg-row-${getMacroGroupForPos(p.pos)}`;
+                            let rowBgClass = `bg-row-${getMacroGroupForPos(p.pos)}` + gtSqTrendCls(p);
                             let archiveStyles = isArchivedSection ? 'opacity-60 hover:opacity-100 grayscale hover:grayscale-0' : '';
 
                             resultHtml += `<tr class="group/row group-row hover:bg-slate-800/30 transition-colors ${archiveStyles}">`;
@@ -9072,7 +9072,7 @@ function renderTrophyCabinet() {
                                 let content = '';
                                 if(c.id === 'pos') content = `<span class="pos-${p.pos} font-black text-[10px]">${p.pos}</span>`;
                                 else if(c.id === 'name') content = `<div class="flex items-center justify-start w-full overflow-hidden hover:text-emerald-400 cursor-pointer" onclick="openPlayerInfoModal('${p.id}')" title="Düzenle">${photoHtml}<span class="truncate text-xs font-bold" title="${safeName}">${escapeHtml(sqDispName(p.name))}</span></div>`;
-                                else if(c.id === 'countryCode') content = flagHtml;
+                                else if(c.id === 'countryCode') content = flagHtml; else if(c.id === 'spark') content = gtSqSpark(p);
                                 else if(c.id === 'joinAge') content = `<div class="flex items-center justify-center w-full h-full">${renderAgeBadge(p.currentAge)}</div>`;
                                 else if(c.id === 'joinOvr') {
                                     // OVR sütunu artık sadece rozeti gösteriyor
@@ -9167,7 +9167,7 @@ function renderTrophyCabinet() {
                                 };
 
                                 const renderSeasonCell = (cellKey) => {
-                                    const bg = getSeasonCellBg(cellKey);
+                                    const bg = getSeasonCellBg(cellKey); const gtIn = gtSqEntryCell(p, season, cellKey, bg, isArchivedSection); if (gtIn) return gtIn;
                                     const age = sData[`${cellKey}a`];
                                     const ovr = sData[`${cellKey}o`];
                                     const prevKey = (cellKey === 't1') ? 's1' : (cellKey === 't2') ? 's2' : cellKey;
@@ -9195,7 +9195,7 @@ function renderTrophyCabinet() {
                                     return `<td class="p-0 border-r border-b border-slate-700/50 hover:bg-slate-800/80 align-middle cursor-pointer text-center transition-colors min-w-[125px] w-[125px] max-w-[125px] ${bg}" onclick="openPlayerCellModal('${p.id}', '${season}', '${cellKey}')">${content}</td>`;
                                 };
 
-                                if (activeCols.includes('s2')) resultHtml += renderSeasonCell('s2');
+                                if (activeCols.includes('sum')) resultHtml += gtSqSumCell(p, season, group.strip); if (activeCols.includes('s2')) resultHtml += renderSeasonCell('s2');
                                 if (activeCols.includes('t2')) resultHtml += renderSeasonCell('t2');
                                 if (activeCols.includes('s1')) resultHtml += renderSeasonCell('s1');
                                 if (activeCols.includes('t1')) resultHtml += renderSeasonCell('t1');
