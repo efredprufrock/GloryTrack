@@ -1,0 +1,45 @@
+/* GloryTrack · Maçlar: lig bandı + filtre çubuğu (gt-league.js ile birlikte) */
+
+/* Üst bant: lig segmentleri */
+.gtlg-th { text-align: center; overflow: hidden; padding: 6px 6px !important; }
+.gtlg-in { display: inline-flex; align-items: center; justify-content: center; gap: 7px; max-width: 100%; vertical-align: middle; }
+.gtlg-lg { width: 24px; height: 24px; object-fit: contain; flex-shrink: 0; filter: drop-shadow(0 2px 4px rgba(0,0,0,.45)); }
+.gtlg-ab { display: inline-flex; align-items: center; justify-content: center; border-radius: 7px; font: 900 9px/1 var(--font-head, sans-serif); color: #fff; letter-spacing: .02em; filter: none; }
+.gtlg-th b { font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 2px rgba(0,0,0,.4); }
+.gtlg-th .abbr { display: none; }
+.gtlg-th i { font-style: normal; font-size: 10px; font-weight: 800; padding: 1px 6px; border-radius: 99px; background: rgba(0,0,0,.28); color: rgba(255,255,255,.9); }
+.gtlg-th.n2 .full, .gtlg-th.n2 i { display: none; } .gtlg-th.n2 .abbr { display: inline; }
+.gtlg-th.n1 .full, .gtlg-th.n1 .abbr, .gtlg-th.n1 i { display: none; }
+.gtlg-th.n1 .gtlg-lg { width: 22px; height: 22px; }
+
+/* Mobil: lig ayırıcı satırı */
+.gtlg-sepin { position: sticky; left: 0; width: max-content; display: flex; align-items: center; gap: 8px; padding: 4px 10px; }
+.gtlg-sepin .gtlg-lg { width: 20px; height: 20px; }
+.gtlg-sepin b { font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #fff; }
+
+/* Filtre çubuğu */
+.gtmf { flex-shrink: 0; display: flex; align-items: center; gap: 8px; padding: 0 8px 10px; overflow-x: auto; scrollbar-width: none; }
+.gtmf::-webkit-scrollbar { display: none; }
+.gtmf-grp { display: inline-flex; gap: 4px; padding: 3px; border-radius: 12px; background: #0b1220; border: 1px solid #334155; flex-shrink: 0; }
+.gtmf-chip { --lc: var(--gt-accent, #10b981); display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: 9px; font-size: 11px; font-weight: 800; color: #94a3b8; white-space: nowrap; transition: background .15s, color .15s; }
+.gtmf-chip:hover { color: #fff; background: rgba(148,163,184,.12); }
+.gtmf-chip.on { color: #fff; background: color-mix(in srgb, var(--lc) 38%, transparent); box-shadow: inset 0 0 0 1px var(--lc); }
+.gtmf-chip.dim { opacity: .4; }
+.gtmf-chip em { font-style: normal; font-size: 9.5px; font-weight: 800; padding: 1px 5px; border-radius: 99px; background: rgba(148,163,184,.16); color: #cbd5e1; }
+.gtmf-lg { width: 16px; height: 16px; object-fit: contain; flex-shrink: 0; }
+.gtmf-lg.gtlg-ab { width: 16px; height: 16px; font-size: 7px; border-radius: 5px; }
+.gtmf-sel { flex-shrink: 0; height: 34px; max-width: 190px; padding: 0 10px; border-radius: 10px; font-size: 11.5px; font-weight: 700; color: #e2e8f0; background: #0f172a; border: 1px solid #334155; outline: none; cursor: pointer; }
+.gtmf-sel:focus { border-color: var(--gt-accent, #10b981); }
+.gtmf-q { flex-shrink: 0; display: inline-flex; align-items: center; gap: 7px; height: 34px; padding: 0 10px; border-radius: 10px; background: #0f172a; border: 1px solid #334155; }
+.gtmf-q:focus-within { border-color: var(--gt-accent, #10b981); }
+.gtmf-q i { font-size: 11px; color: #64748b; }
+.gtmf-q input { width: 120px; background: transparent; border: 0; outline: 0; font-size: 12px; font-weight: 600; color: #fff; }
+.gtmf-rst { flex-shrink: 0; width: 34px; height: 34px; border-radius: 10px; color: #fca5a5; background: rgba(239,68,68,.12); border: 1px solid rgba(239,68,68,.4); font-size: 12px; }
+.gtmf-rst:hover { background: rgba(239,68,68,.25); }
+.gtmf-rst[hidden] { display: none; }
+.gtmf-cnt { flex-shrink: 0; margin-left: auto; font-size: 11px; font-weight: 800; color: #64748b; white-space: nowrap; }
+
+body.theme-light .gtmf-grp, body.theme-light .gtmf-sel, body.theme-light .gtmf-q { background: #fff; border-color: #d6cfc2; }
+body.theme-light .gtmf-sel, body.theme-light .gtmf-q input { color: #2c2420; }
+body.theme-light .gtmf-chip { color: #7a6d63; } body.theme-light .gtmf-chip:hover, body.theme-light .gtmf-chip.on { color: #2c2420; }
+body.theme-light .gtmf-chip em { background: rgba(44,36,32,.08); color: #4a3f39; }

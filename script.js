@@ -6951,7 +6951,7 @@ function renderTrophyCabinet() {
                 });
                 let sortedFilled = [];
                 sortedCountries.forEach(c => {
-                    sortedFilled.push(...countryMap[c].sort((a, b) => a.name.localeCompare(b.name, 'tr', { sensitivity: 'base' })));
+                    sortedFilled.push(...countryMap[c].sort((a, b) => ((typeof gtLgRank === 'function' ? gtLgRank(a.name) - gtLgRank(b.name) : 0) || a.name.localeCompare(b.name, 'tr', { sensitivity: 'base' }))));
                 });
                 teamsArr.length = 0;
                 if (sortedFilled.length === 0) {
@@ -7164,7 +7164,7 @@ function renderTrophyCabinet() {
                 // Sıralanmış ülkelerin içindeki takımları da kendi içinde alfabetik diz
                 let sortedFilled = [];
                 sortedCountries.forEach(c => {
-                    const sortedInCountry = countryMap[c].sort((a, b) => a.name.localeCompare(b.name, 'tr', { sensitivity: 'base' }));
+                    const sortedInCountry = countryMap[c].sort((a, b) => ((typeof gtLgRank === 'function' ? gtLgRank(a.name) - gtLgRank(b.name) : 0) || a.name.localeCompare(b.name, 'tr', { sensitivity: 'base' })));
                     sortedFilled.push(...sortedInCountry);
                 });
 
