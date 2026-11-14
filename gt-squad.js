@@ -314,6 +314,7 @@ function gtSqToolbar() {
         </select>
         <button type="button" class="gt-sq-tb${GTSQ.trend ? ' on' : ''}" onclick="gtSqToggle('trend')" title="${gtSqL('Satırları trende göre renklendir (yeşil: yükseliyor, kırmızı: düşüyor)', 'Colour rows by trend (green: rising, red: declining)')}"><i class="fa-solid fa-arrow-trend-up"></i></button>
         <button type="button" class="gt-sq-tb" onclick="gtTrSyncAll()" title="${gtSqL('Transfer panelindeki kayıtları kadroya işle', 'Apply transfer panel records to the squad')}"><i class="fa-solid fa-right-left"></i></button>
+        <button type="button" class="gt-sq-tb" onclick="gtfOpen()" title="${gtSqL('Sözleşme & finans (rol, maaş, değer, kontrat, klozül…)', 'Contracts & finance (role, wage, value, contract, clause…)')}"><i class="fa-solid fa-file-contract"></i></button>
         <button type="button" class="gt-sq-tb" onclick="gtSqBirthOpen()" title="${gtSqL('Doğum tarihlerini toplu gir', 'Enter birth dates in bulk')}"><i class="fa-solid fa-cake-candles"></i></button>
         <button type="button" class="gt-sq-tb${GTSQ.all ? ' on' : ''}" onclick="gtSqToggle('all')" title="${gtSqL('Tüm dönem sütunlarını göster (boşlar dahil)', 'Show every period column (including empty ones)')}"><i class="fa-solid fa-table-columns"></i></button>`;
     return h + '</span>';

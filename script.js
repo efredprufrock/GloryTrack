@@ -536,7 +536,7 @@ const TR_EN = {
     "İÇ": "HOME",
     "DEP": "AWAY",
     "TAR": "NEUTRAL",
-    "Müsabaka Tabloları": "Competition Tables",
+    "Müsabakalar": "Competitions",
     "GRUP / LİG TABLOSU": "GROUP / LEAGUE TABLE",
     "SIRA": "RANK",
     "Gol Kralı ekle": "Add Top Scorer",
@@ -15599,7 +15599,7 @@ function renderFixturePanel() {
                     <!-- 2. ORTA PANEL: MÜSABAKA TABLOLARI -->
                     <div class="fx-panel hidden xl:flex flex-col bg-slate-900 border border-slate-700 rounded-b-xl rounded-tr-xl xl:rounded-xl overflow-hidden shadow-lg flex-1 min-h-0 xl:h-full relative z-0">
                         <div class="bg-slate-800 border-b border-slate-700 p-1.5 sm:p-3 shrink-0 flex justify-between items-center">
-                            <h3 class="text-sm sm:text-lg font-bold text-white"><i class="fa-solid fa-trophy mr-2 text-yellow-500"></i>Müsabaka Tabloları</h3>
+                            <h3 class="text-sm sm:text-lg font-bold text-white"><i class="fa-solid fa-trophy mr-2 text-yellow-500"></i>Müsabakalar</h3>
                             
                             <div class="flex gap-2">
                                 <select id="custom-tour-select" class="hidden">

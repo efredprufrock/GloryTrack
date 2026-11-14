@@ -3,7 +3,7 @@
 // script.js'ten SONRA yüklenir. Maçlar sayfasındaki tüm maç kayıtlarından
 // (matchDataStore) kariyer boyu istatistikleri hesaplar; veri yazmaz, yalnızca okur.
 // =====================================================================
-const GTCR = (() => { let s = {}; try { s = JSON.parse(localStorage.getItem('gt_cr_ui') || '{}') || {}; } catch (e) {} return Object.assign({ on: false, tour: 'all' }, s); })();
+const GTCR = (() => { let s = {}; try { s = JSON.parse(localStorage.getItem('gt_cr_ui') || '{}') || {}; } catch (e) {} return Object.assign({ on: false, tour: 'all', tab: 'ozet' }, s); })();
 function gtCrL(tr, en) { return (typeof currentLang !== 'undefined' && currentLang === 'en') ? en : tr; }
 function gtCrSave() { try { localStorage.setItem('gt_cr_ui', JSON.stringify(GTCR)); } catch (e) {} }
 function gtCrE(s) { return escapeHtml(String(s == null ? '' : s)); }
@@ -13,6 +13,7 @@ function gtCrSetView(on) { GTCR.on = !!on; gtCrSave(); renderMatchesGrid(); }
 function gtCrRefresh() { gtCrShowFx(); }
 function gtCrShowFx() { GTCR.fx = true; window.__gtCrOwn = true; try { updateContentArea(gtCrRender()); } finally { window.__gtCrOwn = false; } }
 function gtCrCloseFx() { GTCR.fx = false; if (typeof renderFixturePanel === 'function') renderFixturePanel(); }
+function gtCrSetTab(t) { GTCR.tab = t; gtCrSave(); gtCrRefresh(); }
 function gtCrSetTour(t) { GTCR.tour = t; gtCrSave(); gtCrRefresh(); }
 function gtCrSetCtx(c) { matchContext = c; GTCR.tour = 'all'; gtCrSave(); gtCrRefresh(); }
 
@@ -81,6 +82,7 @@ function gtCrData(ctx, tour) {
     D.oppNight = top(D.opps.filter(o => o.l > 0), o => o.l * 1000 - o.gd);
     D.oppPerfect = D.opps.filter(o => o.n >= 3 && o.w === o.n).sort((a, b) => b.n - a.n).slice(0, 3);
     // Gol / asist
+    const HT = {}, BR = {}, OS = {}; let ev_us_total = 0, ev_us_ast = 0;
     const G = {}, A = {}, PA = {}, hats = [], BK = [0, 0, 0, 0, 0, 0].map(() => ({ f: 0, a: 0 }));
     const bIdx = b => b <= 15 ? 0 : b <= 30 ? 1 : b <= 45 ? 2 : b <= 60 ? 3 : b <= 75 ? 4 : 5;
     let goalNo = 0, winNo = 0; const GM = [1, 50, 100, 250, 500, 1000], WM = [1, 50, 100, 250, 500], miles = [];
@@ -88,16 +90,35 @@ function gtCrData(ctx, tour) {
         const per = {}, us = x.ev.filter(ev => ev && ev.type === 'US');
         const add = (s, a) => { s = String(s || '').trim(); a = String(a || '').trim(); if (s) { G[s] = (G[s] || 0) + 1; per[s] = (per[s] || 0) + 1; } if (a) A[a] = (A[a] || 0) + 1; if (s && a) { const k = a + ' → ' + s; PA[k] = (PA[k] || 0) + 1; } };
         if (us.length) us.forEach(ev => add(ev.scorer, ev.assist)); else { (x.lg || []).forEach(g => add(g, '')); (x.la || []).forEach(a => add('', a)); }
-        Object.keys(per).forEach(n => { if (per[n] >= 3) hats.push({ n, c: per[n], x }); });
+        Object.keys(per).forEach(n => { if (per[n] >= 3) { hats.push({ n, c: per[n], x }); HT[n] = (HT[n] || 0) + 1; } else if (per[n] === 2) BR[n] = (BR[n] || 0) + 1; });
+        ev_us_total += us.length; ev_us_ast += us.filter(ev => String(ev.assist || '').trim()).length;
+        x.ev.forEach(ev => { if (ev && ev.type === 'OPP' && String(ev.scorer || '').trim()) { const k = String(ev.scorer).trim(); OS[k] = (OS[k] || 0) + 1; } });
         x.ev.forEach(ev => { if (!ev || !/^(US|OPP|OG)$/.test(ev.type)) return; const m = String(ev.min == null ? '' : ev.min).match(/(\d+)/); if (m) BK[bIdx(parseInt(m[1]))][ev.type === 'US' ? 'f' : 'a']++; });
         if (x.gf) { const before = goalNo; goalNo += x.gf; GM.forEach(k => { if (before < k && goalNo >= k) { const ev = us.length === x.gf ? us[k - before - 1] : null; miles.push({ k, type: 'g', x, who: ev && ev.scorer }); } }); }
         if (x.r === 'W') { winNo++; if (WM.indexOf(winNo) !== -1) miles.push({ k: winNo, type: 'w', x }); }
     });
     const rank = (o, n) => Object.keys(o).map(k => ({ n: k, v: o[k] })).sort((a, b) => b.v - a.v).slice(0, n);
-    D.scorers = rank(G, 8); D.assists = rank(A, 8); D.duos = rank(PA, 4); D.hats = hats; D.BK = BK; D.miles = miles;
+    D.scorers = rank(G, 8); D.assists = rank(A, 8); D.duos = rank(PA, 3); D.hats = hats; D.BK = BK; D.miles = miles;
     const GA = {}; Object.keys(G).forEach(k => GA[k] = (GA[k] || 0) + G[k]); Object.keys(A).forEach(k => GA[k] = (GA[k] || 0) + A[k]);
-    D.contrib = rank(GA, 5).map(x => Object.assign(x, { g: G[x.n] || 0, a: A[x.n] || 0 }));
+    D.contrib = rank(GA, 4).map(x => Object.assign(x, { g: G[x.n] || 0, a: A[x.n] || 0 }));
     D.nScorers = Object.keys(G).length;
+
+    // ---- Yeni istatistikler ----
+    D.last = M.slice(-8).reverse();
+    D.trend = []; if (M.length >= 4) { const w = Math.min(5, M.length); for (let i = w - 1; i < M.length; i++) { const a = M.slice(i - w + 1, i + 1); D.trend.push({ v: a.reduce((q, y) => q + (y.r === 'W' ? 3 : y.r === 'D' ? 1 : 0), 0) / w, x: M[i] }); } D.trendW = w; }
+    const mg = { w3: 0, w2: 0, w1: 0, d: 0, l1: 0, l2: 0, l3: 0 };
+    sc.forEach(x => { const d = x.gf - x.ga; if (d === 0) mg.d++; else if (d > 0) mg['w' + Math.min(3, d)]++; else mg['l' + Math.min(3, -d)]++; });
+    D.margins = mg;
+    const SR = D.seasons.filter(q => q.n >= 2), best = (f, hi) => SR.length ? SR.slice().sort((a, b) => hi ? f(b) - f(a) : f(a) - f(b))[0] : null;
+    D.sRec = { ppg: best(q => q.ppg, true), gf: best(q => q.gf / (q.sn || 1), true), ga: best(q => q.ga / (q.sn || 1), false), w: best(q => q.w, true) };
+    D.gsrc = { tot: ev_us_total, ast: ev_us_ast, h1: BK[0].f + BK[1].f + BK[2].f, h2: BK[3].f + BK[4].f + BK[5].f, late: BK[5].f, lateA: BK[5].a, h1a: BK[0].a + BK[1].a + BK[2].a, h2a: BK[3].a + BK[4].a + BK[5].a };
+    D.oppScorers = rank(OS, 6);
+    const brNames = Array.from(new Set(Object.keys(BR).concat(Object.keys(HT))));
+    D.brace = brNames.map(n => ({ n, b: BR[n] || 0, h: HT[n] || 0 })).sort((a, b) => b.h - a.h || b.b - a.b).slice(0, 6);
+    const OL = D.opps;
+    D.oppFav5 = OL.filter(o => o.w > 0).sort((a, b) => b.w - a.w || b.gd - a.gd || b.n - a.n).slice(0, 5);
+    D.oppNight5 = OL.filter(o => o.l > 0).sort((a, b) => b.l - a.l || a.gd - b.gd).slice(0, 5);
+    D.oppGF = OL.filter(o => o.gf > 0).sort((a, b) => b.gf - a.gf).slice(0, 4); D.oppGA = OL.filter(o => o.ga > 0).sort((a, b) => b.ga - a.ga).slice(0, 4);
     // Skor dağılımı
     const SL = {}; sc.forEach(x => { const k = x.gf + '-' + x.ga; (SL[k] = SL[k] || { k, n: 0, r: x.r }).n++; });
     D.scores = Object.values(SL).sort((a, b) => b.n - a.n).slice(0, 8);
@@ -113,6 +134,23 @@ function gtCrData(ctx, tour) {
         D.trophies.sort((a, b) => b.seasons.length - a.seasons.length);
     } catch (e) {}
     D.nTrophy = D.trophies.reduce((s, t) => s + t.seasons.length, 0);
+
+    // Eleme turları (kendi takımının oynadığı eleme maçları) + kupa takvimi + transfer rekorları
+    D.ko = [];
+    try {
+        const our = team.toLowerCase(), W = k => { const n = v => (v === '' || v == null || isNaN(parseInt(v))) ? null : parseInt(v), h1 = n(k.homeScore), a1 = n(k.awayScore), h2 = n(k.homeScore2), a2 = n(k.awayScore2); if (h1 === null || a1 === null) return ''; const l2 = h2 !== null && a2 !== null, H = h1 + (l2 ? a2 : 0), A = a1 + (l2 ? h2 : 0); if (H !== A) return H > A ? 'h' : 'a'; const ph = n(k.penHome), pa = n(k.penAway); return (ph !== null && pa !== null && ph !== pa) ? (ph > pa ? 'h' : 'a') : ''; };
+        const ST = [['Final', gtCrL('Final', 'Finals')], ['Yarı Final', gtCrL('Yarı final', 'Semi-finals')], ['Çeyrek Final', gtCrL('Çeyrek final', 'Quarter-finals')], ['Son 16', gtCrL('Son 16', 'Round of 16')], ['Son 32', gtCrL('Son 32', 'Round of 32')]], acc = {};
+        Object.keys(customTournamentsData || {}).forEach(se => (customTournamentsData[se] || []).forEach(t => (t.knockouts || []).forEach(k => {
+            if (!k || !ST.some(q => q[0] === k.stage)) return; const hu = homeIsUs(k.home, our), au = homeIsUs(k.away, our); if (!hu && !au) return;
+            const a = acc[k.stage] = acc[k.stage] || { n: 0, w: 0, l: 0 }, w = W(k); a.n++; if (w === (hu ? 'h' : 'a')) a.w++; else if (w) a.l++;
+        })));
+        D.ko = ST.filter(q => acc[q[0]]).map(q => Object.assign({ k: q[1] }, acc[q[0]]));
+    } catch (e) {}
+    D.cal = seasonsList.map(se => ({ s: se, t: D.trophies.filter(t => t.seasons.indexOf(se) !== -1) })).filter(q => q.t.length);
+    if (ctx === 'kulup' && typeof transferData !== 'undefined') {
+        const top = a => (a || []).filter(t => (parseInt(t.fee) || 0) > 0).slice().sort((x, y) => (y.fee || 0) - (x.fee || 0)).slice(0, 4);
+        D.trk = { in: top(transferData.in), out: top(transferData.out) };
+    }
     // Transferler (yalnızca kulüp)
     if (ctx === 'kulup' && typeof transferData !== 'undefined') {
         const sum = a => (a || []).reduce((s, t) => s + (parseInt(t.fee) || 0), 0), big = a => (a || []).slice().sort((x, y) => (y.fee || 0) - (x.fee || 0))[0];
@@ -153,6 +191,42 @@ function gtCrMinutes(BK) {
     return `<div class="cr-min">${BK.map((b, i) => `<div><span class="f" style="height:${b.f / mx * 100}%"><b>${b.f || ''}</b></span><span class="a" style="height:${b.a / mx * 100}%"><b>${b.a || ''}</b></span><em>${L[i]}</em></div>`).join('')}</div><div class="cr-leg"><span><i class="bf"></i>${gtCrL('Attığımız', 'Scored')}</span><span><i class="ba"></i>${gtCrL('Yediğimiz', 'Conceded')}</span></div>`;
 }
 
+
+function gtCrTrendChart(T) {
+    if (!T || T.length < 2) return `<p class="cr-none">${gtCrL('Form grafiği için en az 4 maç gerekli.', 'At least 4 matches are needed.')}</p>`;
+    const W = 420, H = 130, pl = 24, pr = 10, pt = 14, pb = 12, iw = W - pl - pr, ih = H - pt - pb, x = i => pl + i * iw / (T.length - 1), y = v => pt + ih - v / 3 * ih;
+    let g = ''; [0, 1, 2, 3].forEach(v => { g += `<line x1="${pl}" x2="${W - pr}" y1="${y(v)}" y2="${y(v)}" class="cr-gl"/><text x="${pl - 6}" y="${y(v) + 3}" text-anchor="end" class="cr-ax">${v}</text>`; });
+    const avg = T.reduce((q, t) => q + t.v, 0) / T.length;
+    g += `<line x1="${pl}" x2="${W - pr}" y1="${y(avg)}" y2="${y(avg)}" class="cr-avg"/>`;
+    g += `<polygon points="${pl},${y(0)} ${T.map((t, i) => x(i) + ',' + y(t.v)).join(' ')} ${x(T.length - 1)},${y(0)}" class="cr-area"/><polyline points="${T.map((t, i) => x(i) + ',' + y(t.v)).join(' ')}" class="cr-ln"/>`;
+    T.forEach((t, i) => { if (T.length <= 24 || i === T.length - 1) g += `<circle cx="${x(i)}" cy="${y(t.v)}" r="3.2" class="cr-pt"><title>${gtCrE(t.x.s + ' · ' + t.x.opp)}: ${t.v.toFixed(2)}</title></circle>`; });
+    const last = T[T.length - 1];
+    return `<svg class="cr-chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">${g}</svg><div class="cr-leg"><span><i class="ln"></i>${gtCrL('Son 5 maç puan ortalaması', 'Points avg., last 5')}</span><span>${gtCrL('Şu an', 'Now')}: <b class="cr-nowv">${last.v.toFixed(2)}</b></span><span>${gtCrL('Ortalama', 'Average')}: ${avg.toFixed(2)}</span></div>`;
+}
+
+function gtCrCumChart(M) {
+    const sc = M.filter(x => x.gf !== null && x.ga !== null); if (sc.length < 3) return `<p class="cr-none">${gtCrL('Grafik için en az 3 skorlu maç gerekli.', 'At least 3 scored matches needed.')}</p>`;
+    const W = 640, H = 170, pl = 28, pr = 10, pt = 12, pb = 20, iw = W - pl - pr, ih = H - pt - pb, n = sc.length;
+    let cum = 0; const cs = sc.map(x => (cum += x.gf - x.ga)), ds = sc.map(x => x.gf - x.ga);
+    const hi = Math.max(1, ...cs, ...ds), lo = Math.min(0, ...cs, ...ds), rng = (hi - lo) || 1, y = v => pt + ih - (v - lo) / rng * ih, bw = Math.max(2, Math.min(18, iw / n * .6)), x = i => pl + (i + .5) * iw / n;
+    let g = `<line x1="${pl}" x2="${W - pr}" y1="${y(0)}" y2="${y(0)}" class="cr-gl" style="stroke:rgba(148,163,184,.35)"/>`;
+    [hi, lo].forEach(v => { g += `<text x="${pl - 5}" y="${y(v) + 3}" text-anchor="end" class="cr-ax">${v > 0 ? '+' : ''}${v}</text>`; });
+    let prevS = null;
+    sc.forEach((m, i) => {
+        const d = ds[i], top = Math.min(y(0), y(d)), h = Math.max(2, Math.abs(y(d) - y(0)));
+        g += `<rect x="${x(i) - bw / 2}" y="${d === 0 ? y(0) - 1 : top}" width="${bw}" height="${d === 0 ? 2 : h}" rx="2" class="cr-cb ${m.r}"><title>${gtCrE(m.s + ' · ' + m.opp + ' ' + m.gf + '–' + m.ga)}</title></rect>`;
+        if (m.s !== prevS) { g += `<line x1="${x(i) - iw / n / 2}" x2="${x(i) - iw / n / 2}" y1="${pt}" y2="${pt + ih}" class="cr-sep"/><text x="${x(i) - iw / n / 2 + 4}" y="${H - 6}" class="cr-ax">${gtCrE(m.s)}</text>`; prevS = m.s; }
+    });
+    g += `<polyline points="${cs.map((v, i) => x(i) + ',' + y(v)).join(' ')}" class="cr-ln"/><circle cx="${x(n - 1)}" cy="${y(cs[n - 1])}" r="3.6" class="cr-pt"/>`;
+    return `<svg class="cr-chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">${g}</svg><div class="cr-leg"><span><i class="ln"></i>${gtCrL('Toplam averaj', 'Cumulative goal difference')}</span><span><i class="gw"></i>${gtCrL('Maç farkı (galibiyet)', 'Match margin (win)')}</span><span><i class="gl"></i>${gtCrL('Yenilgi', 'Defeat')}</span></div>`;
+}
+function gtCrMargins(m) {
+    const rows = [['w3', gtCrL('3+ farkla galibiyet', 'Win by 3+'), 'W'], ['w2', gtCrL('2 farkla galibiyet', 'Win by 2'), 'W'], ['w1', gtCrL('1 farkla galibiyet', 'Win by 1'), 'W'], ['d', gtCrL('Beraberlik', 'Draw'), 'D'], ['l1', gtCrL('1 farkla yenilgi', 'Lose by 1'), 'L'], ['l2', gtCrL('2 farkla yenilgi', 'Lose by 2'), 'L'], ['l3', gtCrL('3+ farkla yenilgi', 'Lose by 3+'), 'L']];
+    const mx = Math.max(1, ...rows.map(r => m[r[0]]));
+    return rows.map(r => `<div class="cr-mg ${r[2]}"><span>${r[1]}</span><i><u style="width:${m[r[0]] * 100 / mx}%"></u></i><b>${m[r[0]]}</b></div>`).join('');
+}
+function gtCrRk(o, key, cls) { return `<div class="cr-rk">${gtCrLogo(o.opp)}<span>${gtCrE(o.opp)}</span><small>${o.w}-${o.d}-${o.l}</small><b class="${cls || ''}">${key}</b></div>`; }
+
 // ---------------- Panel ----------------
 function gtCrRender() {
     const ctx = matchContext === 'milli' ? 'milli' : 'kulup', L = gtCrL;
@@ -160,11 +234,10 @@ function gtCrRender() {
     if (GTCR.tour !== 'all' && D.tours.indexOf(GTCR.tour) === -1) { GTCR.tour = 'all'; D = gtCrData(ctx, 'all'); }
     const R = D.rec, f1 = n => (Math.round(n * 10) / 10).toFixed(1), f2 = n => n.toFixed(2), per = (a, b) => b ? f2(a / b) : '–';
     const head = `<div class="cr-top">
-        <div class="cr-id">${gtCrLogo(D.team, 'cr-crest')}<div><span>${L('Kariyer istatistikleri', 'Career statistics')}</span><h2>${gtCrE(D.team || L('Takım seçilmedi', 'No team set'))}</h2></div></div>
+        <div class="cr-id"><button type="button" class="cr-back" onclick="gtCrCloseFx()" title="${L('Fikstüre dön', 'Back to Fixtures')}"><i class="fa-solid fa-arrow-left"></i>${L('Fikstür', 'Fixtures')}</button>${gtCrLogo(D.team, 'cr-crest')}<div><span>${L('Kariyer istatistikleri', 'Career statistics')}</span><h2>${gtCrE(D.team || L('Takım seçilmedi', 'No team set'))}</h2></div></div>
         <div class="cr-ctl">
             <select onchange="gtCrSetTour(this.value)" title="${L('Turnuva filtresi', 'Competition filter')}"><option value="all">${L('Tüm turnuvalar', 'All competitions')}</option>${D.tours.map(t => `<option value="${gtCrE(t)}"${GTCR.tour === t ? ' selected' : ''}>${gtCrE(t)}</option>`).join('')}</select>
             <div class="cr-seg"><button type="button" class="${ctx === 'kulup' ? 'on' : ''}" onclick="gtCrSetCtx('kulup')">${L('Kulüp', 'Club')}</button><button type="button" class="${ctx === 'milli' ? 'on' : ''}" onclick="gtCrSetCtx('milli')">${L('Milli', 'National')}</button></div>
-            <button type="button" class="cr-back" onclick="gtCrCloseFx()"><i class="fa-solid fa-arrow-left"></i>${L('Fikstür', 'Fixtures')}</button>
         </div></div>`;
     if (!R.n) return `<div class="cr">${head}<div class="cr-empty"><i class="fa-solid fa-chart-line"></i><b>${L('Henüz oynanmış maç yok', 'No played matches yet')}</b><span>${L('Fikstürden ya da Maçlar sayfasından skor girdikçe bu panel dolacak.', 'This panel fills up as you enter results from the fixtures or the Matches page.')}</span></div></div>`;
 
@@ -176,8 +249,8 @@ function gtCrRender() {
     const bar = (list, cls) => { const mx = Math.max(1, ...list.map(x => x.v)); return list.length ? list.map((x, i) => `<div class="cr-pl"><em>${i + 1}</em>${gtCrFace(x.n)}<span>${gtCrE(x.n)}</span><i><u class="${cls}" style="width:${x.v * 100 / mx}%"></u></i><b>${x.v}</b></div>`).join('') : `<p class="cr-none">${L('Kayıt yok.', 'No records.')}</p>`; };
     const mileTxt = m => m.type === 'g' ? `<b>${m.k}.</b> ${L('gol', m.k === 1 ? 'st goal' : 'th goal')}${m.who ? ' · ' + gtCrE(m.who) : ''}` : `<b>${m.k}.</b> ${L('galibiyet', m.k === 1 ? 'st win' : 'th win')}`;
 
-    return `<div class="cr custom-scrollbar">${head}
-    <section class="cr-hero">
+    const S = {};
+    S.hero = `<section class="cr-hero">
         <div class="cr-hd">${gtCrDonut(R)}<div class="cr-hw"><div><b class="W">${R.w}</b><span>${L('Galibiyet', 'Wins')}</span></div><div><b class="D">${R.d}</b><span>${L('Beraberlik', 'Draws')}</span></div><div><b class="L">${R.l}</b><span>${L('Mağlubiyet', 'Losses')}</span></div></div></div>
         <div class="cr-kpis">
             <div class="cr-kpi"><span>${L('Maç', 'Matches')}</span><b>${R.n}</b><em>${D.seasons.length} ${L('sezon', 'seasons')}</em></div>
@@ -189,44 +262,77 @@ function gtCrRender() {
             <div class="cr-kpi"><span>${L('Gol atamadan', 'Failed to score')}</span><b>${R.fts}</b><em>%${R.sn ? Math.round(R.fts * 100 / R.sn) : 0} ${L('maçların', 'of matches')}</em></div>
             <div class="cr-kpi gold"><span>${L('Kupa', 'Trophies')}</span><b>${D.nTrophy}</b><em>${D.runner} ${L('ikincilik', 'runner-up')}</em></div>
         </div>
-    </section>
-    <div class="cr-grid">
-        <section class="cr-card c7"><h3><i class="fa-solid fa-chart-line"></i>${L('Sezon sezon', 'Season by season')}</h3>${gtCrSeasonChart(D.seasons)}
+    </section>`;
+    S.season = `<section class="cr-card k-season"><h3><i class="fa-solid fa-chart-line"></i>${L('Sezon sezon', 'Season by season')}</h3>${gtCrSeasonChart(D.seasons)}
             <div class="cr-tw"><table class="cr-tb"><thead><tr><th>${L('Sezon', 'Season')}</th><th>${L('M', 'P')}</th><th>${L('G', 'W')}</th><th>${L('B', 'D')}</th><th>${L('M', 'L')}</th><th>${L('A', 'GF')}</th><th>${L('Y', 'GA')}</th><th>±</th><th>%</th><th>${L('P/M', 'PPG')}</th><th></th></tr></thead><tbody>
-            ${D.seasons.slice().reverse().map(s => `<tr><td class="s">${gtCrE(s.s)}</td><td>${s.n}</td><td class="W">${s.w}</td><td class="D">${s.d}</td><td class="L">${s.l}</td><td>${s.gf}</td><td>${s.ga}</td><td class="${s.gd > 0 ? 'W' : s.gd < 0 ? 'L' : ''}">${s.gd > 0 ? '+' : ''}${s.gd}</td><td>${Math.round(s.wp)}</td><td><b>${f2(s.ppg)}</b></td><td class="b">${gtCrWdl(s)}</td></tr>`).join('')}</tbody></table></div></section>
-        <section class="cr-card c5"><h3><i class="fa-solid fa-fire"></i>${L('Seriler ve form', 'Streaks and form')}</h3>
+            ${D.seasons.slice().reverse().map(s => `<tr><td class="s">${gtCrE(s.s)}</td><td>${s.n}</td><td class="W">${s.w}</td><td class="D">${s.d}</td><td class="L">${s.l}</td><td>${s.gf}</td><td>${s.ga}</td><td class="${s.gd > 0 ? 'W' : s.gd < 0 ? 'L' : ''}">${s.gd > 0 ? '+' : ''}${s.gd}</td><td>${Math.round(s.wp)}</td><td><b>${f2(s.ppg)}</b></td><td class="b">${gtCrWdl(s)}</td></tr>`).join('')}</tbody></table></div></section>`;
+    S.streaks = `<section class="cr-card k-streaks"><h3><i class="fa-solid fa-fire"></i>${L('Seriler ve form', 'Streaks and form')}</h3>
             <div class="cr-now ${cur[2]}"><b>${cur[0]}</b><span>${cur[1]}</span><div class="cr-form">${last.map(x => `<i class="${x.r}" title="${gtCrE(x.s + ' · ' + x.opp + (x.gf !== null ? ' ' + x.gf + '–' + x.ga : ''))}">${x.r === 'W' ? L('G', 'W') : x.r === 'D' ? L('B', 'D') : L('M', 'L')}</i>`).join('')}</div></div>
-            <div class="cr-sts">${stCard('fa-trophy', L('Galibiyet serisi', 'Winning run'), st.win)}${stCard('fa-shield-halved', L('Yenilmezlik serisi', 'Unbeaten run'), st.unb)}${stCard('fa-lock', L('Gol yemeden seri', 'Clean-sheet run'), st.cs)}${stCard('fa-futbol', L('Üst üste gol atılan maç', 'Scoring run'), st.sco)}${stCard('fa-hourglass-half', L('Galibiyetsiz seri', 'Winless run'), st.now)}${stCard('fa-arrow-trend-down', L('Mağlubiyet serisi', 'Losing run'), st.lose)}</div></section>
-        <section class="cr-card c4"><h3><i class="fa-solid fa-medal"></i>${L('Rekor maçlar', 'Record matches')}</h3>
+            <div class="cr-sts">${stCard('fa-trophy', L('Galibiyet serisi', 'Winning run'), st.win)}${stCard('fa-shield-halved', L('Yenilmezlik serisi', 'Unbeaten run'), st.unb)}${stCard('fa-lock', L('Gol yemeden seri', 'Clean-sheet run'), st.cs)}${stCard('fa-futbol', L('Üst üste gol atılan maç', 'Scoring run'), st.sco)}${stCard('fa-hourglass-half', L('Galibiyetsiz seri', 'Winless run'), st.now)}${stCard('fa-arrow-trend-down', L('Mağlubiyet serisi', 'Losing run'), st.lose)}</div></section>`;
+    S.records = `<section class="cr-card k-records"><h3><i class="fa-solid fa-medal"></i>${L('Rekor maçlar', 'Record matches')}</h3>
             ${recRow('fa-bolt', L('En farklı galibiyet', 'Biggest win'), rc.bigWin, 'W')}${recRow('fa-skull', L('En ağır yenilgi', 'Heaviest defeat'), rc.bigLoss, 'L')}${recRow('fa-fire-flame-curved', L('En gollü maç', 'Highest-scoring match'), rc.goalFest, 'D')}${rc.mostFor && rc.mostFor !== rc.bigWin ? recRow('fa-futbol', L('Bir maçta en çok gol', 'Most goals in a match'), rc.mostFor, 'W') : ''}
-            ${(rc.bigWin || rc.bigLoss) ? '' : `<p class="cr-none">${L('Skoru girilmiş maç yok.', 'No matches with scores.')}</p>`}</section>
-        <section class="cr-card c4"><h3><i class="fa-solid fa-house"></i>${L('İç saha / deplasman', 'Home / away')}</h3><div class="cr-sps">${split(L('İç saha', 'Home'), 'fa-house', D.home)}${split(L('Deplasman', 'Away'), 'fa-plane', D.away)}</div></section>
-        <section class="cr-card c4"><h3><i class="fa-solid fa-clock"></i>${L('Gol dakikaları', 'Goal minutes')}</h3>${gtCrMinutes(D.BK)}</section>
-        <section class="cr-card c4"><h3><i class="fa-solid fa-futbol"></i>${L('Gol krallığı', 'Top scorers')}<em>${D.nScorers} ${L('farklı oyuncu', 'different scorers')}</em></h3>${bar(D.scorers, 'g')}</section>
-        <section class="cr-card c4"><h3><i class="fa-solid fa-shoe-prints"></i>${L('Asist krallığı', 'Top assists')}</h3>${bar(D.assists, 'a')}</section>
-        <section class="cr-card c4"><h3><i class="fa-solid fa-star"></i>${L('Gol katkısı ve ikililer', 'Goal involvement and duos')}</h3>
+            ${(rc.bigWin || rc.bigLoss) ? '' : `<p class="cr-none">${L('Skoru girilmiş maç yok.', 'No matches with scores.')}</p>`}</section>`;
+    S.homeaway = `<section class="cr-card k-ha"><h3><i class="fa-solid fa-house"></i>${L('İç saha / deplasman', 'Home / away')}</h3><div class="cr-sps">${split(L('İç saha', 'Home'), 'fa-house', D.home)}${split(L('Deplasman', 'Away'), 'fa-plane', D.away)}</div></section>`;
+    S.minutes = `<section class="cr-card k-min"><h3><i class="fa-solid fa-clock"></i>${L('Gol dakikaları', 'Goal minutes')}</h3>${gtCrMinutes(D.BK)}</section>`;
+    S.scorers = `<section class="cr-card k-sc"><h3><i class="fa-solid fa-futbol"></i>${L('Gol krallığı', 'Top scorers')}<em>${D.nScorers} ${L('farklı oyuncu', 'different scorers')}</em></h3>${bar(D.scorers, 'g')}</section>`;
+    S.assists = `<section class="cr-card k-as"><h3><i class="fa-solid fa-shoe-prints"></i>${L('Asist krallığı', 'Top assists')}</h3>${bar(D.assists, 'a')}</section>`;
+    S.contrib = `<section class="cr-card k-co"><h3><i class="fa-solid fa-star"></i>${L('Gol katkısı ve ikililer', 'Goal involvement and duos')}</h3>
             ${D.contrib.length ? D.contrib.map(x => `<div class="cr-pl"><em></em>${gtCrFace(x.n)}<span>${gtCrE(x.n)}</span><small>${x.g}G + ${x.a}A</small><b>${x.v}</b></div>`).join('') : `<p class="cr-none">${L('Kayıt yok.', 'No records.')}</p>`}
             ${D.duos.length ? `<h5>${L('En verimli ikililer (asist → gol)', 'Best duos (assist → goal)')}</h5>${D.duos.map(d => `<div class="cr-duo"><span>${gtCrE(d.n)}</span><b>${d.v}</b></div>`).join('')}` : ''}
-            ${D.hats.length ? `<h5>${L('Hat-trick', 'Hat-tricks')} · ${D.hats.length}</h5>${D.hats.slice(-4).reverse().map(h => `<div class="cr-duo"><span>${gtCrE(h.n)} <em>${gtCrE(h.x.s)} · ${gtCrE(h.x.opp)}</em></span><b>${h.c}</b></div>`).join('')}` : ''}</section>
-        <section class="cr-card c7"><h3><i class="fa-solid fa-people-arrows"></i>${L('Rakipler', 'Opponents')}<em>${D.opps.length} ${L('farklı rakip', 'different opponents')}</em></h3>
+            ${D.hats.length ? `<h5>${L('Hat-trick', 'Hat-tricks')} · ${D.hats.length}</h5>${D.hats.slice(-3).reverse().map(h => `<div class="cr-duo"><span>${gtCrE(h.n)} <em>${gtCrE(h.x.s)} · ${gtCrE(h.x.opp)}</em></span><b>${h.c}</b></div>`).join('')}` : ''}</section>`;
+    S.opps = `<section class="cr-card k-opp"><h3><i class="fa-solid fa-people-arrows"></i>${L('Rakipler', 'Opponents')}<em>${D.opps.length} ${L('farklı rakip', 'different opponents')}</em></h3>
             <div class="cr-ops">${D.oppFav ? `<div class="cr-op w"><span>${L('En çok yendiğin', 'Favourite opponent')}</span>${gtCrLogo(D.oppFav.opp)}<b>${gtCrE(D.oppFav.opp)}</b><em>${D.oppFav.w} ${L('galibiyet', 'wins')} · ${D.oppFav.n} ${L('maç', 'matches')}</em></div>` : ''}${D.oppNight ? `<div class="cr-op l"><span>${L('Kâbus rakip', 'Bogey team')}</span>${gtCrLogo(D.oppNight.opp)}<b>${gtCrE(D.oppNight.opp)}</b><em>${D.oppNight.l} ${L('yenilgi', 'losses')} · ${D.oppNight.n} ${L('maç', 'matches')}</em></div>` : ''}${D.oppPerfect[0] ? `<div class="cr-op p"><span>${L('Kusursuz kayıt', 'Perfect record')}</span>${gtCrLogo(D.oppPerfect[0].opp)}<b>${gtCrE(D.oppPerfect[0].opp)}</b><em>${D.oppPerfect[0].n}/${D.oppPerfect[0].n} ${L('galibiyet', 'wins')}</em></div>` : ''}</div>
             <div class="cr-tw"><table class="cr-tb"><thead><tr><th>${L('En çok oynanan', 'Most played')}</th><th>${L('M', 'P')}</th><th>${L('G', 'W')}</th><th>${L('B', 'D')}</th><th>${L('M', 'L')}</th><th>${L('Gol', 'Goals')}</th><th>%</th><th></th></tr></thead><tbody>
-            ${D.oppMost.map(o => `<tr><td class="s t">${gtCrLogo(o.opp)}${gtCrE(o.opp)}</td><td>${o.n}</td><td class="W">${o.w}</td><td class="D">${o.d}</td><td class="L">${o.l}</td><td>${o.gf}–${o.ga}</td><td>${Math.round(o.wp)}</td><td class="b">${gtCrWdl(o)}</td></tr>`).join('')}</tbody></table></div></section>
-        <section class="cr-card c5"><h3><i class="fa-solid fa-layer-group"></i>${L('Turnuvalar', 'Competitions')}</h3>
-            ${D.byTour.map(t => { let lg = ''; try { lg = tourLogoOf(t.t) || ''; } catch (e) {} return `<div class="cr-tr">${lg ? `<img src="${gtCrE(lg)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">` : '<i class="fa-solid fa-trophy"></i>'}<div><b>${gtCrE(t.t)}</b>${gtCrWdl(t)}<em>${t.n} ${L('maç', 'matches')} · ${t.w}-${t.d}-${t.l} · ${t.gf}–${t.ga}</em></div><strong>%${Math.round(t.wp)}</strong></div>`; }).join('')}</section>
-        <section class="cr-card c4"><h3><i class="fa-solid fa-table-cells"></i>${L('En sık skorlar', 'Most common scores')}</h3>
-            ${D.scores.length ? `<div class="cr-scs">${D.scores.map(s => `<div class="${s.r}"><b>${s.k.replace('-', '–')}</b><span>${s.n}×</span></div>`).join('')}</div><div class="cr-kv"><span>${L('İki takım da gol attı', 'Both teams scored')}<b>${R.btts}</b></span><span>${L('Maç başı toplam gol', 'Goals per match')}<b>${per(R.gf + R.ga, R.sn)}</b></span></div>` : `<p class="cr-none">${L('Skoru girilmiş maç yok.', 'No matches with scores.')}</p>`}</section>
-        <section class="cr-card c4 gold"><h3><i class="fa-solid fa-trophy"></i>${L('Kupa dolabı', 'Trophy cabinet')}<em>${D.nTrophy}</em></h3>
-            ${D.trophies.length ? D.trophies.map(t => `<div class="cr-tr">${t.logo ? `<img src="${gtCrE(t.logo)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">` : '<i class="fa-solid fa-trophy"></i>'}<div><b>${gtCrE(t.name)}</b><em>${t.seasons.map(gtCrE).join(' · ')}</em></div><strong>${t.seasons.length}×</strong></div>`).join('') : `<p class="cr-none">${L('Henüz kupa yok. İlki yolda.', 'No trophies yet. The first one is on its way.')}</p>`}</section>
-        <section class="cr-card c4"><h3><i class="fa-solid fa-flag-checkered"></i>${L('Kilometre taşları', 'Milestones')}</h3>
-            ${D.miles.length ? `<div class="cr-mls">${D.miles.slice(-7).reverse().map(m => `<div class="cr-mi ${m.type}"><i class="fa-solid ${m.type === 'g' ? 'fa-futbol' : 'fa-check'}"></i><div><span>${mileTxt(m)}</span><em>${gtCrE(m.x.s)} · ${gtCrE(m.x.opp)}${m.x.gf !== null ? ' ' + m.x.gf + '–' + m.x.ga : ''}</em></div></div>`).join('')}</div>` : `<p class="cr-none">–</p>`}</section>
-        ${D.tr ? `<section class="cr-card c12"><h3><i class="fa-solid fa-right-left"></i>${L('Transfer bilançosu', 'Transfer balance')}</h3><div class="cr-trb">
+            ${D.oppMost.map(o => `<tr><td class="s t">${gtCrLogo(o.opp)}${gtCrE(o.opp)}</td><td>${o.n}</td><td class="W">${o.w}</td><td class="D">${o.d}</td><td class="L">${o.l}</td><td>${o.gf}–${o.ga}</td><td>${Math.round(o.wp)}</td><td class="b">${gtCrWdl(o)}</td></tr>`).join('')}</tbody></table></div></section>`;
+    S.tours = `<section class="cr-card k-tour"><h3><i class="fa-solid fa-layer-group"></i>${L('Turnuvalar', 'Competitions')}</h3>
+            ${D.byTour.map(t => { let lg = ''; try { lg = tourLogoOf(t.t) || ''; } catch (e) {} return `<div class="cr-tr">${lg ? `<img src="${gtCrE(lg)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">` : '<i class="fa-solid fa-trophy"></i>'}<div><b>${gtCrE(t.t)}</b>${gtCrWdl(t)}<em>${t.n} ${L('maç', 'matches')} · ${t.w}-${t.d}-${t.l} · ${t.gf}–${t.ga}</em></div><strong>%${Math.round(t.wp)}</strong></div>`; }).join('')}</section>`;
+    S.scores = `<section class="cr-card k-scr"><h3><i class="fa-solid fa-table-cells"></i>${L('En sık skorlar', 'Most common scores')}</h3>
+            ${D.scores.length ? `<div class="cr-scs">${D.scores.map(s => `<div class="${s.r}"><b>${s.k.replace('-', '–')}</b><span>${s.n}×</span></div>`).join('')}</div><div class="cr-kv"><span>${L('İki takım da gol attı', 'Both teams scored')}<b>${R.btts}</b></span><span>${L('Maç başı toplam gol', 'Goals per match')}<b>${per(R.gf + R.ga, R.sn)}</b></span></div>` : `<p class="cr-none">${L('Skoru girilmiş maç yok.', 'No matches with scores.')}</p>`}</section>`;
+    S.troph = `<section class="cr-card k-troph gold"><h3><i class="fa-solid fa-trophy"></i>${L('Kupa dolabı', 'Trophy cabinet')}<em>${D.nTrophy}</em></h3>
+            ${D.trophies.length ? D.trophies.map(t => `<div class="cr-tr">${t.logo ? `<img src="${gtCrE(t.logo)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">` : '<i class="fa-solid fa-trophy"></i>'}<div><b>${gtCrE(t.name)}</b><em>${t.seasons.map(gtCrE).join(' · ')}</em></div><strong>${t.seasons.length}×</strong></div>`).join('') : `<p class="cr-none">${L('Henüz kupa yok. İlki yolda.', 'No trophies yet. The first one is on its way.')}</p>`}</section>`;
+    S.miles = `<section class="cr-card k-mil"><h3><i class="fa-solid fa-flag-checkered"></i>${L('Kilometre taşları', 'Milestones')}</h3>
+            ${D.miles.length ? `<div class="cr-mls">${D.miles.slice(-7).reverse().map(m => `<div class="cr-mi ${m.type}"><i class="fa-solid ${m.type === 'g' ? 'fa-futbol' : 'fa-check'}"></i><div><span>${mileTxt(m)}</span><em>${gtCrE(m.x.s)} · ${gtCrE(m.x.opp)}${m.x.gf !== null ? ' ' + m.x.gf + '–' + m.x.ga : ''}</em></div></div>`).join('')}</div>` : `<p class="cr-none">–</p>`}</section>`;
+    S.tr = D.tr ? `<section class="cr-card k-tr"><h3><i class="fa-solid fa-right-left"></i>${L('Transfer bilançosu', 'Transfer balance')}</h3><div class="cr-trb">
             <div><span>${L('Harcanan', 'Spent')}</span><b class="L">${gtCrMoney(D.tr.spent)}</b><em>${D.tr.inN} ${L('gelen', 'signings')}</em></div>
             <div><span>${L('Kazanılan', 'Earned')}</span><b class="W">${gtCrMoney(D.tr.earned)}</b><em>${D.tr.outN} ${L('giden', 'departures')}</em></div>
             <div><span>${L('Net', 'Net')}</span><b class="${D.tr.earned - D.tr.spent >= 0 ? 'W' : 'L'}">${gtCrMoney(D.tr.earned - D.tr.spent)}</b><em>${L('gelir − gider', 'income − spend')}</em></div>
             <div><span>${L('En pahalı gelen', 'Record signing')}</span><b>${D.tr.bigIn && D.tr.bigIn.fee ? gtCrMoney(D.tr.bigIn.fee) : '–'}</b><em>${D.tr.bigIn && D.tr.bigIn.fee ? gtCrE(D.tr.bigIn.name) + ' · ' + gtCrE(D.tr.bigIn.season) : ''}</em></div>
-            <div><span>${L('En pahalı giden', 'Record sale')}</span><b>${D.tr.bigOut && D.tr.bigOut.fee ? gtCrMoney(D.tr.bigOut.fee) : '–'}</b><em>${D.tr.bigOut && D.tr.bigOut.fee ? gtCrE(D.tr.bigOut.name) + ' · ' + gtCrE(D.tr.bigOut.season) : ''}</em></div></div></section>` : ''}
-    </div></div>`;
+            <div><span>${L('En pahalı giden', 'Record sale')}</span><b>${D.tr.bigOut && D.tr.bigOut.fee ? gtCrMoney(D.tr.bigOut.fee) : '–'}</b><em>${D.tr.bigOut && D.tr.bigOut.fee ? gtCrE(D.tr.bigOut.name) + ' · ' + gtCrE(D.tr.bigOut.season) : ''}</em></div></div></section>` : '';
+
+        const none = `<p class="cr-none">${L('Henüz veri yok.', 'No data yet.')}</p>`, ico = (ic, t, em) => `<h3><i class="fa-solid ${ic}"></i>${t}${em ? `<em>${em}</em>` : ''}</h3>`;
+    S.last = `<section class="cr-card k-last">${ico('fa-list-check', L('Son maçlar', 'Recent matches'), D.M.length + ' ' + L('maç', 'matches'))}${D.last.map(x => `<div class="cr-lm ${x.r}"><i>${x.r === 'W' ? L('G', 'W') : x.r === 'D' ? L('B', 'D') : L('M', 'L')}</i>${gtCrLogo(x.opp)}<span>${gtCrE(x.opp)}</span><em>${gtCrE(x.s)} · ${x.loc === 'H' ? L('İç', 'H') : x.loc === 'A' ? L('Dep', 'A') : 'N'}</em><b>${x.gf !== null ? x.gf + '–' + x.ga : '–'}</b></div>`).join('')}</section>`;
+    S.trend = `<section class="cr-card k-trend">${ico('fa-wave-square', L('Form trendi', 'Form trend'))}${gtCrTrendChart(D.trend)}</section>`;
+    const sr = D.sRec, tile = (lbl, q, val, sub) => `<div class="cr-tile"><span>${lbl}</span><b>${q ? val : '–'}</b><em>${q ? gtCrE(q.s) + ' · ' + sub : ''}</em></div>`;
+    S.sezrec = `<section class="cr-card k-sezrec">${ico('fa-ranking-star', L('Sezon rekorları', 'Season bests'))}<div class="cr-tiles">${tile(L('En iyi puan ortalaması', 'Best points per match'), sr.ppg, sr.ppg && f2(sr.ppg.ppg), sr.ppg ? sr.ppg.w + 'G ' + sr.ppg.d + 'B ' + sr.ppg.l + 'M' : '')}${tile(L('En golcü sezon', 'Highest scoring'), sr.gf, sr.gf && per(sr.gf.gf, sr.gf.sn), sr.gf ? sr.gf.gf + ' ' + L('gol', 'goals') : '')}${tile(L('En sağlam savunma', 'Best defence'), sr.ga, sr.ga && per(sr.ga.ga, sr.ga.sn), sr.ga ? sr.ga.ga + ' ' + L('yenen', 'conceded') : '')}${tile(L('En çok galibiyet', 'Most wins'), sr.w, sr.w && sr.w.w, sr.w ? sr.w.n + ' ' + L('maçta', 'matches') : '')}</div></section>`;
+    S.cum = `<section class="cr-card k-cum">${ico('fa-chart-column', L('Maç maç averaj', 'Match-by-match goal difference'), D.M.length + ' ' + L('maç', 'matches'))}${gtCrCumChart(D.M)}</section>`;
+    S.margins = `<section class="cr-card k-mgn">${ico('fa-arrows-left-right', L('Skor farkı dağılımı', 'Winning margins'))}${gtCrMargins(D.margins)}</section>`;
+    const gs = D.gsrc, pc = (a, b) => b ? Math.round(a * 100 / b) + '%' : '–';
+    S.src = `<section class="cr-card k-src">${ico('fa-bullseye', L('Gol kaynakları', 'Goal sources'))}<div class="cr-kv">
+        <span>${L('Asistli goller', 'Assisted goals')}<b>${gs.tot ? pc(gs.ast, gs.tot) + ' · ' + gs.ast + '/' + gs.tot : '–'}</b></span>
+        <span>${L('1. yarı attığımız / yediğimiz', '1st half for / against')}<b>${gs.h1} / ${gs.h1a}</b></span>
+        <span>${L('2. yarı attığımız / yediğimiz', '2nd half for / against')}<b>${gs.h2} / ${gs.h2a}</b></span>
+        <span>${L("Son 15 dk (76'+) attığımız", "Late goals for (76'+)")}<b>${gs.late}</b></span>
+        <span>${L("Son 15 dk (76'+) yediğimiz", "Late goals against (76'+)")}<b>${gs.lateA}</b></span>
+        <span>${L('Gol atan oyuncu sayısı', 'Different scorers')}<b>${D.nScorers}</b></span></div></section>`;
+    S.oppsc = `<section class="cr-card k-oppsc">${ico('fa-skull-crossbones', L('Bize en çok gol atanlar', 'Opponent scorers'))}${D.oppScorers.length ? bar(D.oppScorers, 'o') : `<p class="cr-none">${L('Rakip golcü ismi girilmemiş.', 'No opponent scorer names entered.')}</p>`}</section>`;
+    S.brace = `<section class="cr-card k-brace">${ico('fa-crown', L('Çifteler ve hat-trickler', 'Braces and hat-tricks'))}${D.brace.length ? D.brace.map(b => `<div class="cr-duo"><span>${gtCrE(b.n)}</span><b>${b.h ? b.h + ' ' + L('hat-trick', 'hat-trick') + (b.b ? ' · ' : '') : ''}${b.b ? b.b + ' ' + L('çifte', b.b === 1 ? 'brace' : 'braces') : ''}</b></div>`).join('') : `<p class="cr-none">${L('Bir maçta 2+ gol atan oyuncu yok.', 'No multi-goal games yet.')}</p>`}</section>`;
+    S.favn = `<section class="cr-card k-favn"><div class="cr-two"><div>${ico('fa-thumbs-up', L('Favori rakipler', 'Favourite opponents'))}${D.oppFav5.length ? D.oppFav5.map(o => gtCrRk(o, o.w + ' ' + L('G', 'W'), 'W')).join('') : none}</div><div>${ico('fa-ghost', L('Kabus rakipler', 'Bogey teams'))}${D.oppNight5.length ? D.oppNight5.map(o => gtCrRk(o, o.l + ' ' + L('M', 'L'), 'L')).join('') : none}</div></div></section>`;
+    S.gx = `<section class="cr-card k-gx"><div class="cr-two"><div>${ico('fa-futbol', L('En çok gol attıkların', 'Most goals scored against'))}${D.oppGF.length ? D.oppGF.map(o => gtCrRk(o, o.gf, 'W')).join('') : none}</div><div>${ico('fa-shield', L('En çok gol yediklerin', 'Most goals conceded to'))}${D.oppGA.length ? D.oppGA.map(o => gtCrRk(o, o.ga, 'L')).join('') : none}</div></div></section>`;
+    S.ko = `<section class="cr-card k-ko">${ico('fa-sitemap', L('Eleme turları', 'Knockout rounds'))}${D.ko.length ? D.ko.map(k => `<div class="cr-kr"><span>${k.k}</span><i><u style="width:${k.n ? k.w * 100 / k.n : 0}%"></u></i><b>${k.w}/${k.n}</b></div>`).join('') + `<p class="cr-note">${L('Oynanan turlar içinde geçilen tur sayısı', 'Rounds won out of rounds played')}</p>` : `<p class="cr-none">${L('Eleme maçı kaydı yok.', 'No knockout matches recorded.')}</p>`}</section>`;
+    const trl = (t, c) => `<div class="cr-tl"><span>${gtCrE(t.name || '?')}<em>${gtCrE([t.team, t.season].filter(Boolean).join(' · '))}</em></span><b class="${c}">${gtCrMoney(t.fee)}</b></div>`;
+    S.trk = D.trk ? `<section class="cr-card k-trk">${ico('fa-money-bill-transfer', L('Transfer rekorları', 'Transfer records'))}<div class="cr-two"><div><h5>${L('En pahalı gelenler', 'Biggest signings')}</h5>${D.trk.in.length ? D.trk.in.map(t => trl(t, 'L')).join('') : none}</div><div><h5>${L('En pahalı gidenler', 'Biggest sales')}</h5>${D.trk.out.length ? D.trk.out.map(t => trl(t, 'W')).join('') : none}</div></div></section>` : '';
+    S.cal = `<section class="cr-card k-cal gold">${ico('fa-calendar-check', L('Kupa takvimi', 'Trophy timeline'))}${D.cal.length ? `<div class="cr-cal">${D.cal.map(q => `<div><b>${gtCrE(q.s)}</b>${q.t.map(t => `<span>${t.logo ? `<img src="${gtCrE(t.logo)}" alt="" onerror="this.style.display='none'">` : '<i class="fa-solid fa-trophy"></i>'}${gtCrE(t.name)}</span>`).join('')}</div>`).join('')}</div>` : `<p class="cr-none">${L('Henüz kupa yok.', 'No trophies yet.')}</p>`}</section>`;
+    const TABS = [['ozet', 'fa-gauge-high', L('Genel', 'Overview')], ['sezon', 'fa-chart-line', L('Sezonlar', 'Seasons')], ['oyuncu', 'fa-futbol', L('Oyuncular', 'Players')], ['rakip', 'fa-people-arrows', L('Rakipler', 'Opponents')], ['basari', 'fa-trophy', L('Başarılar', 'Achievements')]];
+    const tab = TABS.some(t => t[0] === GTCR.tab) ? GTCR.tab : 'ozet';
+    const tabs = `<nav class="cr-tabs">${TABS.map(t => `<button type="button" class="${t[0] === tab ? 'on' : ''}" onclick="gtCrSetTab('${t[0]}')"><i class="fa-solid ${t[1]}"></i><span>${t[2]}</span></button>`).join('')}</nav>`;
+    const PG = {
+        ozet: `<div class="cr-pg p-ozet">${S.hero}${S.streaks}${S.records}${S.homeaway}${S.last}${S.trend}</div>`,
+        sezon: `<div class="cr-pg p-sezon"><div class="cr-col">${S.season}${S.sezrec}${S.cum}</div><div class="cr-col">${S.minutes}${S.scores}${S.margins}</div></div>`,
+        oyuncu: `<div class="cr-pg p-oyuncu">${S.scorers}${S.assists}${S.contrib}${S.src}${S.oppsc}${S.brace}</div>`,
+        rakip: `<div class="cr-pg p-rakip"><div class="cr-col">${S.opps}${S.favn}</div><div class="cr-col">${S.tours}${S.gx}</div></div>`,
+        basari: `<div class="cr-pg p-basari">${S.troph}${S.miles}${S.ko}${S.tr}${S.trk}${S.cal}</div>`
+    };
+    return `<div class="cr custom-scrollbar cr-t-${tab}">${head}${tabs}${PG[tab]}</div>`;
 }
 function gtCrSwitch() {
     return `<div class="cr-seg cr-sw"><button type="button" class="${GTCR.on ? '' : 'on'}" onclick="gtCrSetView(false)"><i class="fa-solid fa-table-cells-large"></i>${gtCrL('Rakipler', 'Opponents')}</button><button type="button" class="${GTCR.on ? 'on' : ''}" onclick="gtCrSetView(true)"><i class="fa-solid fa-chart-pie"></i>${gtCrL('Kariyer', 'Career')}</button></div>`;
