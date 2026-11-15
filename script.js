@@ -11833,7 +11833,8 @@ function piRenderProfile(p) { pinP = p; pinOpen = false;
                     listHTML = `<div class="text-center p-4 text-slate-500 text-sm">Kayıtlı transfer bulunmuyor.</div>`;
                 } else {
                     tData.forEach(t => {
-                        let photoHtml = t.photoUrl ? `<img src="${t.photoUrl}" class="w-7 h-7 rounded-full object-cover shadow-sm bg-slate-800 shrink-0">` : `<div class="w-7 h-7 rounded-full flex items-center justify-center bg-slate-700 font-bold text-xs shadow-sm shrink-0">${t.name.charAt(0)}</div>`;
+                        const _lp = (() => { const u = getPlayerPhotoByName(t.name) || t.photoUrl || ''; return /ui-avatars\.com/.test(u) ? '' : u; })(); if (_lp && _lp !== t.photoUrl) t.photoUrl = _lp;
+                        let photoHtml = _lp ? `<img src="${_lp}" class="w-7 h-7 rounded-full object-cover shadow-sm bg-slate-800 shrink-0" onerror="this.style.display='none'">` : `<div class="w-7 h-7 rounded-full flex items-center justify-center bg-slate-700 font-bold text-xs shadow-sm shrink-0">${t.name.charAt(0)}</div>`;
                         let feeText = (t.kind === 'loan' ? `<span class="trx-pill">${trxEn() ? 'Loan' : 'Kiralık'}</span>` : '') + (t.fee > 0 ? `€${t.fee.toLocaleString('tr-TR')}` : (t.kind === 'loan' ? '' : 'Bedelsiz'));
                         let feeColor = type === 'in' ? (t.fee > 0 ? 'text-red-400' : 'text-emerald-400') : (t.fee > 0 ? 'text-emerald-400' : 'text-slate-400');
                         
