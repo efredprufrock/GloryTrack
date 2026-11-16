@@ -8564,7 +8564,7 @@ function renderTrophyCabinet() {
 
         // ---------- Kadro paneli: Özellikler görünümü (A) ----------
         let sqView = 'list';
-        try { sqView = localStorage.getItem('gt_sq_view') === 'attrs' ? 'attrs' : 'list'; } catch (e) {}
+        // Kadro sayfası her açılışta 'Kadro' görünümüyle başlar (son seçim hatırlanmaz)
         let attrShow = (window.innerWidth >= 1024 ? 'all' : 'main'), attrMode = 'val', attrFrom = '', attrTo = '', attrSort = { col: 'ovr', dir: -1 };
         function setSqView(v) { sqView = v; try { localStorage.setItem('gt_sq_view', v); } catch (e) {} renderSquadGrid(); }
         function sqViewToggleHtml() {
@@ -8573,7 +8573,7 @@ function renderTrophyCabinet() {
         }
         function attrSetSort(col) { attrSort = { col, dir: attrSort.col === col ? -attrSort.dir : -1 }; renderSquadAttrs(); }
         // ---------- Özellikler görünümü v2: mevki sıralaması/gruplama, mevki filtresi, kaleciler üstte ve aynı hizada ----------
-        let attrPosF = [], attrByPos = 0; let attrPfOpen = false; function attrPfToggle() { attrPfOpen = !attrPfOpen; document.querySelectorAll('.sqa-pfd').forEach(d => d.classList.toggle('open', attrPfOpen)); } document.addEventListener('click', () => { if (attrPfOpen) { attrPfOpen = false; document.querySelectorAll('.sqa-pfd.open').forEach(d => d.classList.remove('open')); } }); // attrByPos: 0 kapalı, 1 GK→ST, -1 ST→GK
+        let attrPosF = [], attrByPos = 1; let attrPfOpen = false; function attrPfToggle() { attrPfOpen = !attrPfOpen; document.querySelectorAll('.sqa-pfd').forEach(d => d.classList.toggle('open', attrPfOpen)); } document.addEventListener('click', () => { if (attrPfOpen) { attrPfOpen = false; document.querySelectorAll('.sqa-pfd.open').forEach(d => d.classList.remove('open')); } }); // attrByPos: 0 kapalı, 1 GK→ST, -1 ST→GK
         const ATTR_POS_ORDER = ['GK', 'CB', 'LB', 'RB', 'LWB', 'RWB', 'DM', 'CDM', 'CM', 'AM', 'CAM', 'LM', 'RM', 'LW', 'RW', 'CF', 'ST'];
         function attrPosIdx(p) { const i = ATTR_POS_ORDER.indexOf(String((p && p.pos) || '').toUpperCase()); return i < 0 ? 99 : i; }
         function attrTogglePos() { attrByPos = attrByPos === 0 ? 1 : attrByPos === 1 ? -1 : 0; renderSquadAttrs(); }
@@ -11834,7 +11834,7 @@ function piRenderProfile(p) { pinP = p; pinOpen = false;
                 } else {
                     tData.forEach(t => {
                         const _lp = (() => { const u = getPlayerPhotoByName(t.name) || t.photoUrl || ''; return /ui-avatars\.com/.test(u) ? '' : u; })(); if (_lp && _lp !== t.photoUrl) t.photoUrl = _lp;
-                        let photoHtml = _lp ? `<img src="${_lp}" class="w-7 h-7 rounded-full object-cover shadow-sm bg-slate-800 shrink-0" onerror="this.style.display='none'">` : `<div class="w-7 h-7 rounded-full flex items-center justify-center bg-slate-700 font-bold text-xs shadow-sm shrink-0">${t.name.charAt(0)}</div>`;
+                        let photoHtml = _lp ? `<img src="${_lp}" class="w-12 h-12 sm:w-14 sm:h-14 object-contain object-bottom shrink-0 -my-1" style="background:none;border:0;box-shadow:none" onerror="this.style.display='none'">` : `<div class="w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center bg-slate-700 font-bold text-base shadow-sm shrink-0">${t.name.charAt(0)}</div>`;
                         let feeText = (t.kind === 'loan' ? `<span class="trx-pill">${trxEn() ? 'Loan' : 'Kiralık'}</span>` : '') + (t.fee > 0 ? `€${t.fee.toLocaleString('tr-TR')}` : (t.kind === 'loan' ? '' : 'Bedelsiz'));
                         let feeColor = type === 'in' ? (t.fee > 0 ? 'text-red-400' : 'text-emerald-400') : (t.fee > 0 ? 'text-emerald-400' : 'text-slate-400');
                         
@@ -12671,7 +12671,7 @@ function closeTransferModal() {
  
                 </th>`;
             let totalCols = 1;
-            seasonsList.forEach(season => {
+            [...seasonsList].reverse().forEach(season => {
                 totalCols += 1;
                 head += `<th class="stv2-sep bg-slate-900" style="${topSticky}${colStyle[season]}"><div class="stv2-hfit stv2-hrow">${sortBtn('s_' + season + '_' + mName, escapeHtml(season), '')}<button onclick="statsToggleSeasonTours('${context}', '${season}')" title="Turnuva Dağılımını Göster / Gizle" class="stv2-tgl ${statsToursOpen.has(context + '|' + season) ? 'on' : ''}"><i class="fa-solid fa-layer-group"></i></button></div></th>`;
             });
@@ -12704,7 +12704,7 @@ function closeTransferModal() {
                         ${posHtml}${photoHtml}
                         <span class="text-[0.92em] cursor-pointer hover:text-emerald-400 transition-colors" data-pname="${escapeHtml(p.name)}" onclick="openStatsPlayerProfile(this)" title="Profili Görüntüle">${nameHtml}</span>
                     </div></td>`;
-                seasonsList.forEach(season => {
+                [...seasonsList].reverse().forEach(season => {
                     if (!sums.seasons[season]) sums.seasons[season] = { v: 0, tours: {} };
                     const ps = p.seasons[season] || { totalGoals: 0, totalAssists: 0, tournaments: {} };
                     sums.seasons[season].v += ps[sKey];
@@ -12717,7 +12717,7 @@ function closeTransferModal() {
             // --- Takım toplamı ---
             const fz = 'position:sticky;bottom:0;z-index:25;';
             let foot = `<tr class="font-black"><td class="stv2-id stv2-idshadow bg-slate-950 text-slate-400 uppercase tracking-wider text-[0.75em]" style="position:sticky;left:0;bottom:0;z-index:35;text-align:left;"><i class="fa-solid fa-trophy text-yellow-500 mr-1"></i><span>Takım Toplamı</span></td>`;
-            seasonsList.forEach(season => {
+            [...seasonsList].reverse().forEach(season => {
                 const sm = sums.seasons[season] || { v: 0, tours: {} };
                 foot += `<td class="stv2-sep stv2-mw bg-slate-900 text-slate-300 text-[1.05em]" style="${fz}${colStyle[season]}"><div class="stv2-cell">${tcHtml(season, t => sm.tours[t] || 0)}<span>${sm.v}</span></div></td>`;
             });
