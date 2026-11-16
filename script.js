@@ -720,6 +720,15 @@ const TR_EN = {
     "Sonuçları Kaydet": "Save Results",
     "Oyuncu Ekle": "Add Player",
     "Mevki": "Position",
+    "KALECİ": "GOALKEEPER",
+    "DEFANS": "DEFENDERS",
+    "ORTA SAHA": "MIDFIELDERS",
+    "FORVET": "FORWARDS",
+    "Yıldız Adayı": "Future Star",
+    "Uzun Vadeli Proje": "Long-Term Project",
+    "Satış Adayı": "Sell Candidate",
+    "Akademi Yedeği": "Academy Depth",
+    "Serbest Bırakılacak": "Release Candidate",
     "GK (Kaleci)": "GK (Goalkeeper)",
     "CB (Stoper)": "CB (Center Back)",
     "LB (Sol Bek)": "LB (Left Back)",
@@ -1088,7 +1097,7 @@ function applyStoredThemeFamily() {
 }
 
 let currentLang = localStorage.getItem('fc26_lang') || 'en';
-const I18N_ATTRS = ['placeholder', 'title', 'aria-label'];
+const I18N_ATTRS = ['placeholder', 'title', 'aria-label', 'label'];
 
 function i18nTranslateAttrs(el, dict) {
     I18N_ATTRS.forEach(attr => {
@@ -1272,7 +1281,7 @@ function escapeHtml(str) {
         let squadContext = 'astakim';
         let playerRoles = {
             astakim: ['Crucial', 'Important', 'Rotation', 'Sporadic', 'Prospect'],
-            akademi: ['A Takım Adayı', 'Kiralık Gelişecek', 'Gelecek Vadeden', 'Yetersiz'],
+            akademi: ['A Takım Adayı', 'Yıldız Adayı', 'Kiralık Gelişecek', 'Uzun Vadeli Proje', 'Satış Adayı', 'Akademi Yedeği', 'Serbest Bırakılacak'],
             milli: ['Kadroda', 'Yedek', 'Genç Milli', 'İzlemede']
         };
         let squadData = { astakim: [], akademi: [], milli: [] };
@@ -2115,6 +2124,15 @@ function getFlagIcon(countryCode) {
                 playerRoles.astakim = ['Crucial', 'Important', 'Rotation', 'Sporadic', 'Prospect'];
                 const roleMap = { 'Yıldız': 'Crucial', 'İlk 11': 'Important', 'Rotasyon': 'Rotation', 'Gelecek Vadeden': 'Prospect' };
                 (squadData.astakim || []).forEach(p => { if (roleMap[p.role]) p.role = roleMap[p.role]; });
+            }
+
+            // Akademi rol listesi güncellemesi (bir kez uygulanır)
+            if (!(playerRoles.akademi || []).includes('Yıldız Adayı')) {
+                const old = playerRoles.akademi || [], map = { 'Gelecek Vadeden': 'Uzun Vadeli Proje', 'Yetersiz': 'Serbest Bırakılacak' };
+                const neu = ['A Takım Adayı', 'Yıldız Adayı', 'Kiralık Gelişecek', 'Uzun Vadeli Proje', 'Satış Adayı', 'Akademi Yedeği', 'Serbest Bırakılacak'];
+                old.forEach(r => { const m = map[r] || r; if (!neu.includes(m)) neu.push(m); });
+                playerRoles.akademi = neu;
+                (squadData.akademi || []).forEach(p => { if (map[p.role]) p.role = map[p.role]; });
             }
 
             return true;
