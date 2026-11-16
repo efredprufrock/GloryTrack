@@ -4,7 +4,7 @@
    - Üst bantta (eskiden boş duran alan) ligler logolarıyla gösterilir.
    - Filtreler: lig, sezon rakipleri / kalan maçlar, bilanço durumu, takım arama.
    Panel yalnızca okur; hiçbir veriyi değiştirmez. */
-const GTMF = { lg: 'all', season: 'all', st: 'all', q: '' };
+const GTMF = { lg: 'all', season: 'all', st: 'all', q: '', def: 'all', init: false };
 let GTLG_IDX = null;
 
 const gtMfEn = () => typeof currentLang !== 'undefined' && currentLang === 'en';
@@ -77,7 +77,7 @@ function gtMfStats() {
     });
     return S;
 }
-function gtMfActive() { return GTMF.lg !== 'all' || GTMF.season !== 'all' || GTMF.st !== 'all' || !!GTMF.q.trim(); }
+function gtMfActive() { return GTMF.lg !== 'all' || GTMF.season !== GTMF.def || GTMF.st !== 'all' || !!GTMF.q.trim(); }
 function gtMfPass(opp, ST) {
     if (!opp || !opp.name) return !gtMfActive();
     const ctx = matchContext === 'milli' ? 'milli' : 'kulup';
@@ -213,6 +213,7 @@ function gtLgApplyV(t, ST) {
 function gtMfBarHtml(counts) {
     const club = matchContext !== 'milli', ST = gtMfStats();
     const seasons = (seasonsList || []).slice().reverse(), cur = seasonsList && seasonsList.length ? seasonsList[seasonsList.length - 1] : null;
+    if (!GTMF.init && cur) { GTMF.init = true; GTMF.def = cur; GTMF.season = cur; } // varsayılan: güncel sezonun rakipleri
     let hasRem = false; if (cur) Object.keys(ST).forEach(id => { if (ST[id].ss[cur] && ST[id].ss[cur].rem) hasRem = true; });
     const lgCnt = { all: 0 }; const cfg = opponentsConfig[matchContext], all = [].concat(cfg.domestic.teams || [], ...(cfg.foreign || []).map(g => g.teams || [])).filter(t => t && t.name);
     all.forEach(t => { lgCnt.all++; const o = gtLgOf(t.name), k = o ? o.k : 'OTHER'; lgCnt[k] = (lgCnt[k] || 0) + 1; });
@@ -238,7 +239,7 @@ function gtMfApply() {
 function gtMfPaint() { const bar = document.querySelector('.gtmf'); if (bar) bar.innerHTML = gtMfBarHtml(); gtMfApply(); }
 function gtMfSet(k, v) { GTMF[k] = (k === 'lg' && GTMF.lg === v) ? 'all' : v; gtMfPaint(); }
 function gtMfQuery(v) { GTMF.q = v; gtMfApply(); }
-function gtMfReset() { GTMF.lg = 'all'; GTMF.season = 'all'; GTMF.st = 'all'; GTMF.q = ''; gtMfPaint(); }
+function gtMfReset() { GTMF.lg = 'all'; GTMF.season = GTMF.def; GTMF.st = 'all'; GTMF.q = ''; gtMfPaint(); }
 
 // ---------------- Render sonrası ----------------
 function gtLgPost() {
