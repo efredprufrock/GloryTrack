@@ -334,3 +334,27 @@ body.theme-light .cr .cr-rk > b.W { color: #15803d; } body.theme-light .cr .cr-r
 
 /* form rozetleri: tüm harfler aynı renk */
 .cr-form i, .cr-form .W, .cr-form .D, .cr-form .L { color: #fff !important; text-shadow: 0 1px 1px rgba(0,0,0,.45); }
+
+/* ---- Finans sekmesi ---- */
+.cr-fb.e { fill: #22c55e; } .cr-fb.s { fill: #ef4444; }
+.cr-ax.p { fill: #4ade80; } .cr-ax.n { fill: #f87171; }
+.cr-tile b.W, .cr-tl b.W { color: #4ade80; } .cr-tile b.L, .cr-tl b.L { color: #f87171; }
+.k-fsum .cr-tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.k-fsum .cr-tile b { font-size: 21px; }
+@media (min-width: 1024px) {
+  .p-fin { grid-template-columns: repeat(12, minmax(0, 1fr)); grid-template-rows: auto auto auto; align-content: start; }
+  .p-fin .k-fsum { grid-column: span 5; } .p-fin .k-fses { grid-column: span 7; }
+  .p-fin .k-froi, .p-fin .k-fpl, .p-fin .k-fclb { grid-column: span 4; }
+  .p-fin .k-fknd { grid-column: span 5; } .p-fin .k-fprf { grid-column: span 7; }
+  .p-fin .cr-chart { max-height: 190px; }
+  .p-pv { grid-template-columns: repeat(12, minmax(0, 1fr)); grid-template-rows: auto auto auto; align-content: start; }
+  .p-pv .k-fsum { grid-column: span 5; } .p-pv .k-fses { grid-column: span 7; }
+  .p-pv .k-froi, .p-pv .k-fpl, .p-pv .k-fclb { grid-column: span 4; }
+  .p-pv .k-fknd { grid-column: span 6; } .p-pv .k-fprf { grid-column: span 6; }
+  .p-pv .cr-chart { max-height: 190px; }
+}
+@media (min-width: 1024px) and (max-height: 840px) {
+  .p-fin .k-fsum .cr-tile { padding: 8px 10px 7px; } .p-fin .k-fsum .cr-tile b { font-size: 18px; }
+  .p-fin .cr-tl:nth-of-type(n+4), .p-pv .cr-tl:nth-of-type(n+4) { display: none; } .p-fin .k-froi .cr-note { display: none; }
+}
+@media (max-width: 1023px) { .k-fsum .cr-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

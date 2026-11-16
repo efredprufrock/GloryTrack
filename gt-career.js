@@ -156,6 +156,55 @@ function gtCrData(ctx, tour) {
         const sum = a => (a || []).reduce((s, t) => s + (parseInt(t.fee) || 0), 0), big = a => (a || []).slice().sort((x, y) => (y.fee || 0) - (x.fee || 0))[0];
         D.tr = { inN: (transferData.in || []).length, outN: (transferData.out || []).length, spent: sum(transferData.in), earned: sum(transferData.out), bigIn: big(transferData.in), bigOut: big(transferData.out) };
     }
+    // Finans (yalnızca kulüp): transfer verisinden
+    if (ctx === 'kulup' && typeof transferData !== 'undefined' && ((transferData.in || []).length || (transferData.out || []).length)) {
+        const ins = transferData.in || [], outs = transferData.out || [], fee = t => parseInt(t && t.fee) || 0, sum = a => a.reduce((s, t) => s + fee(t), 0), avg = (a, f) => { const v = a.map(f).filter(x => x > 0); return v.length ? v.reduce((s, x) => s + x, 0) / v.length : 0; };
+        const nk = x => String(x || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+        const same = (a, b) => { a = nk(a); b = nk(b); if (!a || !b) return false; if (a === b) return true; const x = a.split(' '), y = b.split(' '); return x.length > 1 && y.length > 1 && x[x.length - 1] === y[y.length - 1] && x[0][0] === y[0][0]; };
+        const contrib = n => { let g = 0, a = 0; Object.keys(G).forEach(k => { if (same(k, n)) g += G[k]; }); Object.keys(A).forEach(k => { if (same(k, n)) a += A[k]; }); return { g, a, ga: g + a }; };
+        const kindOf = t => t.kind === 'loan' ? 'loan' : fee(t) > 0 ? 'paid' : 'free';
+        const F = { spent: sum(ins), earned: sum(outs), nIn: ins.length, nOut: outs.length };
+        F.net = F.earned - F.spent;
+        F.avgIn = avg(ins.filter(t => kindOf(t) === 'paid'), fee); F.avgOut = avg(outs.filter(t => kindOf(t) === 'paid'), fee);
+        const pts = M.reduce((s, x) => s + (x.r === 'W' ? 3 : x.r === 'D' ? 1 : 0), 0);
+        F.perPt = pts && F.spent ? F.spent / pts : 0; F.pts = pts;
+        const ss = [...new Set([].concat(seasonsList, ins.map(t => t.season), outs.map(t => t.season)))].filter(Boolean).sort();
+        F.seasons = ss.map(se => { const i = ins.filter(t => t.season === se), o = outs.filter(t => t.season === se); return { s: se, spent: sum(i), earned: sum(o), net: sum(o) - sum(i), nIn: i.length, nOut: o.length }; }).filter(q => q.nIn || q.nOut);
+        F.kinds = ['paid', 'free', 'loan'].map(k => ({ k, in: ins.filter(t => kindOf(t) === k).length, out: outs.filter(t => kindOf(t) === k).length }));
+        const paid = ins.filter(t => kindOf(t) === 'paid').map(t => Object.assign({ name: t.name, fee: fee(t), season: t.season }, contrib(t.name)));
+        F.roiGood = paid.filter(x => x.ga > 0).sort((a, b) => a.fee / a.ga - b.fee / b.ga).slice(0, 3);
+        F.roiBad = paid.filter(x => x.ga === 0).sort((a, b) => b.fee - a.fee).slice(0, 3);
+        F.pl = outs.map(o => { const i = ins.filter(t => same(t.name, o.name) && kindOf(t) !== 'loan'); if (!i.length || kindOf(o) === 'loan') return null; const b = i.slice().sort((x, y) => String(x.season).localeCompare(String(y.season)))[0]; return { name: o.name, buy: fee(b), sell: fee(o), p: fee(o) - fee(b), s1: b.season, s2: o.season }; }).filter(Boolean).sort((a, b) => Math.abs(b.p) - Math.abs(a.p)).slice(0, 4);
+        const C = {}, addC = (t, dir) => { const k = String(t.team || '').trim(); if (!k || /^unknown$|^bilinmiyor$/i.test(k)) return; const c = C[k] = C[k] || { c: k, in: 0, out: 0, nIn: 0, nOut: 0 }; if (dir === 'in') { c.in += fee(t); c.nIn++; } else { c.out += fee(t); c.nOut++; } };
+        ins.forEach(t => addC(t, 'in')); outs.forEach(t => addC(t, 'out'));
+        F.clubs = Object.values(C).sort((a, b) => (b.in + b.out) - (a.in + a.out) || (b.nIn + b.nOut) - (a.nIn + a.nOut)).slice(0, 4);
+        F.age = { in: avg(ins, t => parseInt(t.age) || 0), out: avg(outs, t => parseInt(t.age) || 0) }; F.ovr = { in: avg(ins, t => parseInt(t.ovr) || 0), out: avg(outs, t => parseInt(t.ovr) || 0) };
+        const pi = ins.filter(t => kindOf(t) === 'paid' && (parseInt(t.ovr) || 0) > 0); F.perOvr = pi.length ? pi.reduce((s, t) => s + fee(t), 0) / pi.reduce((s, t) => s + (parseInt(t.ovr) || 0), 0) : 0;
+        const fr = ins.filter(t => kindOf(t) === 'free').map(t => contrib(t.name)), ln = ins.filter(t => kindOf(t) === 'loan').map(t => contrib(t.name));
+        F.free = { n: fr.length, g: fr.reduce((s, x) => s + x.g, 0), a: fr.reduce((s, x) => s + x.a, 0) }; F.loan = { n: ln.length, g: ln.reduce((s, x) => s + x.g, 0), a: ln.reduce((s, x) => s + x.a, 0) };
+        D.fin = F;
+    }
+
+    // Oyuncu değerleri (yalnızca kulüp): kadro sayfasındaki sözleşme & finans kayıtlarından
+    if (ctx === 'kulup' && typeof squadData !== 'undefined' && typeof gtfKeys === 'function') {
+        const nk = x => String(x || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+        const same = (a, b) => { a = nk(a); b = nk(b); if (!a || !b) return false; if (a === b) return true; const x = a.split(' '), y = b.split(' '); return x.length > 1 && y.length > 1 && x[x.length - 1] === y[y.length - 1] && x[0][0] === y[0][0]; };
+        const contrib = n => { let g = 0, a = 0; Object.keys(G).forEach(k => { if (same(k, n)) g += G[k]; }); Object.keys(A).forEach(k => { if (same(k, n)) a += A[k]; }); return { g, a, ga: g + a }; };
+        const pls = (squadData.astakim || []).filter(p => p && p.name && !p.isArchived && p.fin && gtfKeys(p).length);
+        if (pls.length) {
+            const rows = pls.map(p => { const k = gtfLatestKey(p), d = p.fin[k] || {}; return Object.assign({ name: p.name, pos: p.pos || '', key: k, v: d.value, w: d.wage, chg: d.valueChg, left: d.contractLeft, clause: d.clause }, contrib(p.name)); });
+            const sm = (a, f) => a.reduce((s, x) => s + (f(x) || 0), 0), hv = rows.filter(r => r.v > 0), hw = rows.filter(r => r.w > 0);
+            const P = { n: rows.length, nV: hv.length, nW: hw.length, totV: sm(hv, r => r.v), totW: sm(hw, r => r.w) };
+            P.avgV = hv.length ? P.totV / hv.length : 0; P.avgW = hw.length ? P.totW / hw.length : 0; P.clause = sm(rows, r => r.clause);
+            P.topV = hv.slice().sort((a, b) => b.v - a.v).slice(0, 4); P.topW = hw.slice().sort((a, b) => b.w - a.w).slice(0, 4);
+            P.rise = rows.filter(r => r.chg > 0).sort((a, b) => b.chg - a.chg).slice(0, 3); P.fall = rows.filter(r => r.chg < 0).sort((a, b) => a.chg - b.chg).slice(0, 3);
+            P.exp = rows.filter(r => r.left != null && r.left <= 12).sort((a, b) => a.left - b.left).slice(0, 4);
+            P.effGood = hw.filter(r => r.ga > 0).sort((a, b) => a.w / a.ga - b.w / b.ga).slice(0, 3); P.effBad = hw.filter(r => r.ga === 0).sort((a, b) => b.w - a.w).slice(0, 3);
+            const keys = [...new Set([].concat(...pls.map(p => gtfKeys(p))))].sort((a, b) => gtfKeyOrder(a) - gtfKeyOrder(b)).slice(-8);
+            P.trend = keys.map(k => { let v = 0, w = 0; pls.forEach(p => { const ks = gtfKeys(p).filter(x => gtfKeyOrder(x) <= gtfKeyOrder(k)); if (!ks.length) return; const d = p.fin[ks[ks.length - 1]]; v += d.value || 0; w += d.wage || 0; }); return { k, v, w }; });
+            if (P.nV || P.nW) D.pv = P;
+        }
+    }
     return D;
 }
 
@@ -219,6 +268,33 @@ function gtCrCumChart(M) {
     });
     g += `<polyline points="${cs.map((v, i) => x(i) + ',' + y(v)).join(' ')}" class="cr-ln"/><circle cx="${x(n - 1)}" cy="${y(cs[n - 1])}" r="3.6" class="cr-pt"/>`;
     return `<svg class="cr-chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">${g}</svg><div class="cr-leg"><span><i class="ln"></i>${gtCrL('Toplam averaj', 'Cumulative goal difference')}</span><span><i class="gw"></i>${gtCrL('Maç farkı (galibiyet)', 'Match margin (win)')}</span><span><i class="gl"></i>${gtCrL('Yenilgi', 'Defeat')}</span></div>`;
+}
+
+function gtCrFinChart(rows) {
+    if (!rows.length) return `<p class="cr-none">${gtCrL('Henüz transfer yok.', 'No transfers yet.')}</p>`;
+    const W = 640, H = 190, pl = 40, pr = 10, pt = 14, pb = 34, iw = W - pl - pr, ih = H - pt - pb, n = rows.length;
+    const mx = Math.max(1, ...rows.map(r => Math.max(r.spent, r.earned))), y0 = pt + ih / 2, k = (ih / 2 - 4) / mx, bw = Math.max(8, Math.min(34, iw / n * .3));
+    let g = `<line x1="${pl}" x2="${W - pr}" y1="${y0}" y2="${y0}" style="stroke:rgba(148,163,184,.35)"/><text x="${pl - 6}" y="${pt + 8}" text-anchor="end" class="cr-ax">${gtCrMoney(mx)}</text><text x="${pl - 6}" y="${pt + ih}" text-anchor="end" class="cr-ax">${gtCrMoney(mx)}</text>`;
+    rows.forEach((r, i) => {
+        const cx = pl + (i + .5) * iw / n, he = r.earned * k, hs = r.spent * k;
+        g += `<rect x="${cx - bw - 1}" y="${y0 - he}" width="${bw}" height="${Math.max(r.earned ? 2 : 0, he)}" rx="3" class="cr-fb e"><title>${gtCrE(r.s)} · ${gtCrL('Gelir', 'Income')} ${gtCrMoney(r.earned)}</title></rect>`;
+        g += `<rect x="${cx + 1}" y="${y0}" width="${bw}" height="${Math.max(r.spent ? 2 : 0, hs)}" rx="3" class="cr-fb s"><title>${gtCrE(r.s)} · ${gtCrL('Harcama', 'Spent')} ${gtCrMoney(r.spent)}</title></rect>`;
+        g += `<text x="${cx}" y="${H - 18}" text-anchor="middle" class="cr-ax">${gtCrE(r.s)}</text><text x="${cx}" y="${H - 5}" text-anchor="middle" class="cr-ax ${r.net >= 0 ? 'p' : 'n'}">${r.net > 0 ? '+' : ''}${gtCrMoney(r.net)}</text>`;
+    });
+    return `<svg class="cr-chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">${g}</svg><div class="cr-leg"><span><i class="gw"></i>${gtCrL('Satış geliri', 'Sales income')}</span><span><i class="gl"></i>${gtCrL('Transfer harcaması', 'Transfer spend')}</span></div>`;
+}
+function gtCrValChart(rows) {
+    const rs = rows.filter(r => r.v > 0); if (rs.length < 1) return `<p class="cr-none">${gtCrL('Henüz piyasa değeri kaydı yok.', 'No market value records yet.')}</p>`;
+    const ph = { t1: gtCrL('Yaz', 'Sum'), s1: gtCrL('Ara', 'Mid'), t2: gtCrL('Kış', 'Win'), s2: gtCrL('Haz', 'End') };
+    const W = 640, H = 190, pl = 40, pr = 10, pt = 22, pb = 34, iw = W - pl - pr, ih = H - pt - pb, n = rs.length, mx = Math.max(1, ...rs.map(r => r.v)), bw = Math.max(10, Math.min(46, iw / n * .55));
+    let g = `<line x1="${pl}" x2="${W - pr}" y1="${pt + ih}" y2="${pt + ih}" style="stroke:rgba(148,163,184,.35)"/>`, pts = [];
+    rs.forEach((r, i) => {
+        const cx = pl + (i + .5) * iw / n, h = Math.max(2, r.v / mx * ih), pr0 = i ? rs[i - 1].v : 0, up = r.v >= pr0;
+        g += `<rect x="${cx - bw / 2}" y="${pt + ih - h}" width="${bw}" height="${h}" rx="3" class="cr-fb ${i && !up ? 's' : 'e'}"><title>${gtCrE(r.k.replace('|', ' · '))} · ${gtCrMoney(r.v)}</title></rect>`;
+        g += `<text x="${cx}" y="${pt + ih - h - 5}" text-anchor="middle" class="cr-ax">${gtCrMoney(r.v)}</text>`;
+        const p = r.k.split('|'); g += `<text x="${cx}" y="${H - 18}" text-anchor="middle" class="cr-ax">${gtCrE(p[0])}</text><text x="${cx}" y="${H - 5}" text-anchor="middle" class="cr-ax">${gtCrE(ph[p[1]] || p[1] || '')}</text>`;
+    });
+    return `<svg class="cr-chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">${g}</svg><div class="cr-leg"><span><i class="gw"></i>${gtCrL('Kadro değeri arttı', 'Squad value up')}</span><span><i class="gl"></i>${gtCrL('Düştü', 'Down')}</span></div>`;
 }
 function gtCrMargins(m) {
     const rows = [['w3', gtCrL('3+ farkla galibiyet', 'Win by 3+'), 'W'], ['w2', gtCrL('2 farkla galibiyet', 'Win by 2'), 'W'], ['w1', gtCrL('1 farkla galibiyet', 'Win by 1'), 'W'], ['d', gtCrL('Beraberlik', 'Draw'), 'D'], ['l1', gtCrL('1 farkla yenilgi', 'Lose by 1'), 'L'], ['l2', gtCrL('2 farkla yenilgi', 'Lose by 2'), 'L'], ['l3', gtCrL('3+ farkla yenilgi', 'Lose by 3+'), 'L']];
@@ -322,7 +398,43 @@ function gtCrRender() {
     const trl = (t, c) => `<div class="cr-tl"><span>${gtCrE(t.name || '?')}<em>${gtCrE([t.team, t.season].filter(Boolean).join(' · '))}</em></span><b class="${c}">${gtCrMoney(t.fee)}</b></div>`;
     S.trk = D.trk ? `<section class="cr-card k-trk">${ico('fa-money-bill-transfer', L('Transfer rekorları', 'Transfer records'))}<div class="cr-two"><div><h5>${L('En pahalı gelenler', 'Biggest signings')}</h5>${D.trk.in.length ? D.trk.in.map(t => trl(t, 'L')).join('') : none}</div><div><h5>${L('En pahalı gidenler', 'Biggest sales')}</h5>${D.trk.out.length ? D.trk.out.map(t => trl(t, 'W')).join('') : none}</div></div></section>` : '';
     S.cal = `<section class="cr-card k-cal gold">${ico('fa-calendar-check', L('Kupa takvimi', 'Trophy timeline'))}${D.cal.length ? `<div class="cr-cal">${D.cal.map(q => `<div><b>${gtCrE(q.s)}</b>${q.t.map(t => `<span>${t.logo ? `<img src="${gtCrE(t.logo)}" alt="" onerror="this.style.display='none'">` : '<i class="fa-solid fa-trophy"></i>'}${gtCrE(t.name)}</span>`).join('')}</div>`).join('')}</div>` : `<p class="cr-none">${L('Henüz kupa yok.', 'No trophies yet.')}</p>`}</section>`;
-    const TABS = [['ozet', 'fa-gauge-high', L('Genel', 'Overview')], ['sezon', 'fa-chart-line', L('Sezonlar', 'Seasons')], ['oyuncu', 'fa-futbol', L('Oyuncular', 'Players')], ['rakip', 'fa-people-arrows', L('Rakipler', 'Opponents')], ['basari', 'fa-trophy', L('Başarılar', 'Achievements')]];
+    if (D.fin) {
+        const F = D.fin, mny = gtCrMoney, f1 = v => v ? v.toFixed(1) : '–', tl2 = (nm, em, val, c) => `<div class="cr-tl"><span>${gtCrE(nm)}<em>${gtCrE(em)}</em></span><b class="${c}">${val}</b></div>`;
+        const ft = (lbl, val, sub, c) => `<div class="cr-tile"><span>${lbl}</span><b class="${c || ''}">${val}</b><em>${sub || ''}</em></div>`;
+        S.finSum = `<section class="cr-card k-fsum">${ico('fa-sack-dollar', L('Takım finansı', 'Club finances'), F.nIn + ' ' + L('gelen', 'in') + ' · ' + F.nOut + ' ' + L('giden', 'out'))}<div class="cr-tiles">
+            ${ft(L('Toplam harcama', 'Total spent'), mny(F.spent), F.nIn + ' ' + L('transfer', 'signings'), 'L')}${ft(L('Toplam gelir', 'Total income'), mny(F.earned), F.nOut + ' ' + L('satış', 'sales'), 'W')}
+            ${ft(L('Net bilanço', 'Net balance'), (F.net > 0 ? '+' : '') + mny(F.net), F.net >= 0 ? L('kâr', 'profit') : L('zarar', 'loss'), F.net >= 0 ? 'W' : 'L')}${ft(L('Puan başı harcama', 'Spend per point'), F.perPt ? mny(F.perPt) : '–', F.pts + ' ' + L('puan', 'points'))}
+            ${ft(L('Ort. alım bedeli', 'Avg. signing fee'), F.avgIn ? mny(F.avgIn) : '–', L('bedelli gelenler', 'paid signings'))}${ft(L('Ort. satış bedeli', 'Avg. sale fee'), F.avgOut ? mny(F.avgOut) : '–', L('bedelli gidenler', 'paid sales'))}</div></section>`;
+        S.finSeason = `<section class="cr-card k-fses">${ico('fa-chart-column', L('Sezon sezon harcama / gelir', 'Spend vs income by season'))}${gtCrFinChart(F.seasons)}</section>`;
+        const roi = (x, c) => tl2(x.name, mny(x.fee) + ' · ' + x.g + 'G ' + x.a + 'A', x.ga ? mny(x.fee / x.ga) + '/' + L('katkı', 'G+A') : '0', c);
+        S.finRoi = `<section class="cr-card k-froi">${ico('fa-scale-balanced', L('Yatırım getirisi', 'Return on signings'))}<div class="cr-two"><div><h5>${L('Verimli alımlar', 'Best value')}</h5>${F.roiGood.length ? F.roiGood.map(x => roi(x, 'W')).join('') : none}</div><div><h5>${L('Katkısız pahalılar', 'No output yet')}</h5>${F.roiBad.length ? F.roiBad.map(x => roi(x, 'L')).join('') : none}</div></div><p class="cr-note">${L('Katkı = gol + asist. Maç verisindeki isimlerle eşleşir.', 'Contribution = goals + assists, matched by name in match data.')}</p></section>`;
+        S.finPl = `<section class="cr-card k-fpl">${ico('fa-arrow-trend-up', L('Kâr / zarar satışları', 'Resale profit / loss'))}${F.pl.length ? F.pl.map(x => tl2(x.name, mny(x.buy) + ' → ' + mny(x.sell) + ' · ' + x.s1 + (x.s1 !== x.s2 ? '→' + x.s2 : ''), (x.p > 0 ? '+' : '') + mny(x.p), x.p >= 0 ? 'W' : 'L')).join('') : `<p class="cr-none">${L('Aynı oyuncunun alım ve satımı eşleşmedi.', 'No signing has been sold on yet.')}</p>`}</section>`;
+        S.finClubs = `<section class="cr-card k-fclb">${ico('fa-handshake', L('En çok ticaret yapılan kulüpler', 'Top trading partners'))}${F.clubs.length ? F.clubs.map(x => tl2(x.c, x.nIn + ' ' + L('alım', 'in') + ' ' + mny(x.in) + ' · ' + x.nOut + ' ' + L('satış', 'out') + ' ' + mny(x.out), (x.out - x.in > 0 ? '+' : '') + mny(x.out - x.in), x.out - x.in >= 0 ? 'W' : 'L')).join('') : none}</section>`;
+        const mxK = Math.max(1, ...F.kinds.map(q => q.in + q.out)), kn = { paid: L('Bedelli', 'Paid'), free: L('Bedelsiz', 'Free'), loan: L('Kiralık', 'Loan') };
+        S.finKind = `<section class="cr-card k-fknd">${ico('fa-tags', L('Transfer türleri', 'Transfer types'), L('gelen · giden', 'in · out'))}${F.kinds.map(q => `<div class="cr-kr"><span>${kn[q.k]}</span><i><u style="width:${(q.in + q.out) * 100 / mxK}%"></u></i><b>${q.in} · ${q.out}</b></div>`).join('')}</section>`;
+        S.finProf = `<section class="cr-card k-fprf">${ico('fa-user-gear', L('Transfer profili', 'Transfer profile'))}<div class="cr-kv">
+            <span>${L('Ort. yaş (gelen / giden)', 'Avg. age (in / out)')}<b>${f1(F.age.in)} / ${f1(F.age.out)}</b></span>
+            <span>${L('Ort. OVR (gelen / giden)', 'Avg. OVR (in / out)')}<b>${f1(F.ovr.in)} / ${f1(F.ovr.out)}</b></span>
+            <span>${L('OVR başına bedel', 'Fee per OVR point')}<b>${F.perOvr ? mny(F.perOvr) : '–'}</b></span>
+            <span>${L('Bedelsiz gelenlerin katkısı', 'Free signings: output')}<b>${F.free.n ? F.free.n + ' ' + L('oyuncu', 'players') + ' · ' + F.free.g + 'G ' + F.free.a + 'A' : '–'}</b></span>
+            <span>${L('Kiralıkların katkısı', 'Loan signings: output')}<b>${F.loan.n ? F.loan.n + ' ' + L('oyuncu', 'players') + ' · ' + F.loan.g + 'G ' + F.loan.a + 'A' : '–'}</b></span></div></section>`;
+    }
+    if (D.pv) {
+        const P = D.pv, mny = gtCrMoney, ft = (lbl, val, sub, c) => `<div class="cr-tile"><span>${lbl}</span><b class="${c || ''}">${val}</b><em>${sub || ''}</em></div>`;
+        const tl3 = (nm, em, val, c) => `<div class="cr-tl"><span>${gtCrE(nm)}<em>${gtCrE(em)}</em></span><b class="${c || ''}">${val}</b></div>`, pc = v => (v > 0 ? '+' : '') + (Math.round(v * 10) / 10) + '%', mo = m => { const y = Math.floor(m / 12), r = m % 12; return ((y ? y + L('y ', 'y ') : '') + ((r || !y) ? r + L('a', 'm') : '')).trim(); };
+        const lastT = P.trend.length ? P.trend[P.trend.length - 1] : null, firstV = P.trend.find(t => t.v > 0), dV = lastT && firstV && firstV !== lastT ? lastT.v - firstV.v : null;
+        S.pvSum = `<section class="cr-card k-fsum">${ico('fa-gem', L('Kadro değeri', 'Squad value'), P.n + ' ' + L('oyuncu', 'players'))}<div class="cr-tiles">
+            ${ft(L('Toplam piyasa değeri', 'Total market value'), P.nV ? mny(P.totV) : '–', P.nV + ' ' + L('oyuncu', 'players'), 'W')}${ft(L('Toplam maaş', 'Total wages'), P.nW ? mny(P.totW) : '–', P.nW + ' ' + L('oyuncu', 'players'), 'L')}
+            ${ft(L('Değer değişimi', 'Value change'), dV == null ? '–' : (dV > 0 ? '+' : '') + mny(dV), dV == null ? '' : L('ilk kayda göre', 'since first record'), dV == null ? '' : dV >= 0 ? 'W' : 'L')}${ft(L('Ort. oyuncu değeri', 'Avg. player value'), P.avgV ? mny(P.avgV) : '–', L('kayıtlı oyuncular', 'recorded players'))}
+            ${ft(L('Ort. maaş', 'Avg. wage'), P.avgW ? mny(P.avgW) : '–', L('kayıtlı oyuncular', 'recorded players'))}${ft(L('Toplam klozül', 'Total clauses'), P.clause ? mny(P.clause) : '–', L('serbest kalma bedelleri', 'release clauses'))}</div></section>`;
+        S.pvTrend = `<section class="cr-card k-fses">${ico('fa-chart-column', L('Kadro değeri gelişimi', 'Squad value over time'))}${gtCrValChart(P.trend)}</section>`;
+        S.pvVal = `<section class="cr-card k-froi">${ico('fa-gem', L('En değerli oyuncular', 'Most valuable'))}${P.topV.length ? P.topV.map(r => tl3(r.name, [r.pos, r.chg != null ? pc(r.chg) : ''].filter(Boolean).join(' · '), mny(r.v), 'W')).join('') : `<p class="cr-none">${L('Henüz veri yok.', 'No data yet.')}</p>`}</section>`;
+        S.pvWage = `<section class="cr-card k-fpl">${ico('fa-money-check-dollar', L('En yüksek maaşlılar', 'Top earners'))}${P.topW.length ? P.topW.map(r => tl3(r.name, r.pos + (P.totW ? ' · %' + Math.round(r.w * 100 / P.totW) : ''), mny(r.w), 'L')).join('') : `<p class="cr-none">${L('Henüz veri yok.', 'No data yet.')}</p>`}</section>`;
+        S.pvEff = `<section class="cr-card k-fclb">${ico('fa-scale-balanced', L('Maaş verimliliği', 'Wage efficiency'))}<div class="cr-two"><div><h5>${L('Verimli', 'Best value')}</h5>${P.effGood.length ? P.effGood.map(r => tl3(r.name, mny(r.w) + ' · ' + r.g + 'G ' + r.a + 'A', mny(r.w / r.ga) + '/' + L('katkı', 'G+A'), 'W')).join('') : `<p class="cr-none">–</p>`}</div><div><h5>${L('Katkısız', 'No output')}</h5>${P.effBad.length ? P.effBad.map(r => tl3(r.name, r.pos, mny(r.w), 'L')).join('') : `<p class="cr-none">–</p>`}</div></div></section>`;
+        S.pvMove = `<section class="cr-card k-fknd">${ico('fa-arrow-trend-up', L('Değer hareketleri', 'Value movers'), L('son kayda göre %', 'latest change %'))}<div class="cr-two"><div><h5>${L('Yükselenler', 'Risers')}</h5>${P.rise.length ? P.rise.map(r => tl3(r.name, r.v ? mny(r.v) : '', pc(r.chg), 'W')).join('') : `<p class="cr-none">–</p>`}</div><div><h5>${L('Düşenler', 'Fallers')}</h5>${P.fall.length ? P.fall.map(r => tl3(r.name, r.v ? mny(r.v) : '', pc(r.chg), 'L')).join('') : `<p class="cr-none">–</p>`}</div></div></section>`;
+        S.pvExp = `<section class="cr-card k-fprf">${ico('fa-file-contract', L('Sözleşmesi bitenler (12 ay içinde)', 'Contracts expiring (within 12 mo)'))}${P.exp.length ? P.exp.map(r => tl3(r.name, [r.pos, typeof gtfExpiry === 'function' ? gtfExpiry(r.key, r.left) : ''].filter(Boolean).join(' · '), mo(r.left), r.left <= 6 ? 'L' : '')).join('') : `<p class="cr-none">${L('Yakın zamanda biten sözleşme yok.', 'No contracts expiring soon.')}</p>`}</section>`;
+    }
+    const TABS = [['ozet', 'fa-gauge-high', L('Genel', 'Overview')], ['sezon', 'fa-chart-line', L('Sezonlar', 'Seasons')], ['oyuncu', 'fa-futbol', L('Oyuncular', 'Players')], ['rakip', 'fa-people-arrows', L('Rakipler', 'Opponents')], ['basari', 'fa-trophy', L('Başarılar', 'Achievements')]].concat(D.fin ? [['fin', 'fa-sack-dollar', L('Finans', 'Finance')]] : []).concat(D.pv ? [['pv', 'fa-gem', L('Değerler', 'Values')]] : []);
     const tab = TABS.some(t => t[0] === GTCR.tab) ? GTCR.tab : 'ozet';
     const tabs = `<nav class="cr-tabs">${TABS.map(t => `<button type="button" class="${t[0] === tab ? 'on' : ''}" onclick="gtCrSetTab('${t[0]}')"><i class="fa-solid ${t[1]}"></i><span>${t[2]}</span></button>`).join('')}</nav>`;
     const PG = {
@@ -330,7 +442,9 @@ function gtCrRender() {
         sezon: `<div class="cr-pg p-sezon"><div class="cr-col">${S.season}${S.sezrec}${S.cum}</div><div class="cr-col">${S.minutes}${S.scores}${S.margins}</div></div>`,
         oyuncu: `<div class="cr-pg p-oyuncu">${S.scorers}${S.assists}${S.contrib}${S.src}${S.oppsc}${S.brace}</div>`,
         rakip: `<div class="cr-pg p-rakip"><div class="cr-col">${S.opps}${S.favn}</div><div class="cr-col">${S.tours}${S.gx}</div></div>`,
-        basari: `<div class="cr-pg p-basari">${S.troph}${S.miles}${S.ko}${S.tr}${S.trk}${S.cal}</div>`
+        basari: `<div class="cr-pg p-basari">${S.troph}${S.miles}${S.ko}${S.tr}${S.trk}${S.cal}</div>`,
+        pv: D.pv ? `<div class="cr-pg p-pv">${S.pvSum}${S.pvTrend}${S.pvVal}${S.pvWage}${S.pvEff}${S.pvMove}${S.pvExp}</div>` : '',
+        fin: D.fin ? `<div class="cr-pg p-fin">${S.finSum}${S.finSeason}${S.finRoi}${S.finPl}${S.finClubs}${S.finKind}${S.finProf}</div>` : ''
     };
     return `<div class="cr custom-scrollbar cr-t-${tab}">${head}${tabs}${PG[tab]}</div>`;
 }
