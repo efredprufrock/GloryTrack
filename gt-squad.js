@@ -24,7 +24,7 @@ let gtSqCtx = null;     // son çizimin bilgileri
 function gtSqL(tr, en) { return (typeof currentLang !== 'undefined' && currentLang === 'en') ? en : tr; }
 function gtSqSave() { try { localStorage.setItem('gt_sq_ui', JSON.stringify(GTSQ)); } catch (e) {} }
 function gtSqLabel(key) {
-    return ({ t1: gtSqL('YAZ TR.', 'SUMMER TR.'), s1: gtSqL('ARA-EYL', 'DEC-SEP'), t2: gtSqL('KIŞ TR.', 'WINTER TR.'), s2: gtSqL('HAZ-ŞUB', 'JUN-FEB') })[key] || key;
+    return ({ t1: gtSqL('YAZ TR.', 'SUMMER TR.'), s1: gtSqL('EYL-ARA', 'SEP-DEC'), t2: gtSqL('KIŞ TR.', 'WINTER TR.'), s2: gtSqL('ŞUB-HAZ', 'FEB-JUN') })[key] || key;
 }
 function gtSqJs(s) { return String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'"); }
 
@@ -56,15 +56,15 @@ function gtSqBefore(p, season, key, field) {
 
 // ---- 0) Dönem sütunları Özellikler sayfasına yüklenen veriden beslenir ----
 // Özellik kayıtları kadro tablosuyla aynı dört döneme göre tutulur:
-//   YAZ TR. (t1) · ARA-EYL (s1) · KIŞ TR. (t2) · HAZ-ŞUB (s2)
-// Eski "sezon başı / ortası / sonu" kayıtları sırasıyla YAZ TR. / ARA-EYL / HAZ-ŞUB'a taşınır.
+//   YAZ TR. (t1) · EYL-ARA (s1) · KIŞ TR. (t2) · ŞUB-HAZ (s2)
+// Eski "sezon başı / ortası / sonu" kayıtları sırasıyla YAZ TR. / EYL-ARA / ŞUB-HAZ'a taşınır.
 const GTSQ_PHASE_CELL = { t1: 't1', s1: 's1', t2: 't2', s2: 's2', start: 't1', mid: 's1', end: 's2' };
 const GTSQ_OLD_PHASE = { start: 't1', mid: 's1', end: 's2' };
 // script.js'teki dönem listesini dört döneme çevir (zaman sırasıyla) ve etiketleri kadro sütunlarıyla aynı yap
 try {
     if (typeof ATTR_PHASES !== 'undefined' && typeof ATTR_PHASE_LBL !== 'undefined') {
         ATTR_PHASES.splice(0, ATTR_PHASES.length, 't1', 's1', 't2', 's2');
-        Object.assign(ATTR_PHASE_LBL, { t1: ['YAZ TR.', 'SUMMER TR.'], s1: ['ARA-EYL', 'DEC-SEP'], t2: ['KIŞ TR.', 'WINTER TR.'], s2: ['HAZ-ŞUB', 'JUN-FEB'] });
+        Object.assign(ATTR_PHASE_LBL, { t1: ['YAZ TR.', 'SUMMER TR.'], s1: ['EYL-ARA', 'SEP-DEC'], t2: ['KIŞ TR.', 'WINTER TR.'], s2: ['ŞUB-HAZ', 'FEB-JUN'] });
     }
 } catch (e) { console.warn(e); }
 // Eski anahtarları ("25/26|end") yenisine ("25/26|s2") taşır
@@ -176,14 +176,14 @@ window.addEventListener('load', () => setTimeout(() => {
     window.openAttrImport = function () { const r = oOpen.apply(this, arguments); try { fill();
         // Sezonu ya da dönemi elle seçtiysen, yapıştırılan verideki sezon/dönem bunu değiştiremez
         ['ai-season', 'ai-phase'].forEach(id => { const el = document.getElementById(id); if (el) el.addEventListener('change', () => { el.dataset.user = '1'; }); }); const ta = document.getElementById('ai-text'); if (ta) ta.placeholder = '{"gt":"attrs","v":1,"season":"25/26","phase":"s2","players":[ ... ]}'; } catch (e) { console.warn(e); } return r; };
-    // Yapıştırılan veride eski dönem adı ("start" / "mid" / "end") ya da sütun adı ("JUN-FEB") varsa karşılığını seç
+    // Yapıştırılan veride eski dönem adı ("start" / "mid" / "end") ya da sütun adı ("FEB-JUN") varsa karşılığını seç
     if (typeof oPrev === 'function') window.attrImportPreview = function () {
         const se = document.getElementById('ai-season'), ph = document.getElementById('ai-phase');
         const mine = { s: se && se.value, p: ph && ph.value, us: !!(se && se.dataset.user), up: !!(ph && ph.dataset.user) };
         const r = oPrev.apply(this, arguments);
         try {
             const d = JSON.parse(document.getElementById('ai-text').value.trim()), raw = String((d && d.phase) || '').trim().toLowerCase().replace(/[.\s_]+/g, '');
-            const alias = { start: 't1', mid: 's1', end: 's2', summertr: 't1', yaztr: 't1', decsep: 's1', 'dec-sep': 's1', 'ara-eyl': 's1', araeyl: 's1', wintertr: 't2', 'kıştr': 't2', kistr: 't2', 'jun-feb': 's2', junfeb: 's2', 'haz-şub': 's2', 'haz-sub': 's2', 'hazşub': 's2', hazsub: 's2' };
+            const alias = { start: 't1', mid: 's1', end: 's2', summertr: 't1', yaztr: 't1', decsep: 's1', 'dec-sep': 's1', 'ara-eyl': 's1', araeyl: 's1', 'sep-dec': 's1', sepdec: 's1', 'eyl-ara': 's1', eylara: 's1', wintertr: 't2', 'kıştr': 't2', kistr: 't2', 'jun-feb': 's2', junfeb: 's2', 'feb-jun': 's2', febjun: 's2', 'şub-haz': 's2', 'sub-haz': 's2', 'şubhaz': 's2', subhaz: 's2', 'haz-şub': 's2', 'haz-sub': 's2', 'hazşub': 's2', hazsub: 's2' };
             const k = GTSQ_K.indexOf(raw) !== -1 ? raw : alias[raw];
             if (ph) ph.value = mine.up ? mine.p : (k || mine.p);
             if (se && mine.us) se.value = mine.s;
@@ -475,7 +475,7 @@ function gtSqAfterRender() {
 // =====================================================================
 // DOĞUM TARİHLERİ (p.birthDate = 'YYYY-AA-GG') ve yaş hesabı
 // =====================================================================
-// Yaşın hesaplandığı tarih (25/26 sezonu için): YAZ TR. 01.07.2025 · ARA-EYL 01.10.2025 · KIŞ TR. 01.02.2026 · HAZ-ŞUB 01.05.2026
+// Yaşın hesaplandığı tarih (25/26 sezonu için): YAZ TR. 01.07.2025 · EYL-ARA 01.10.2025 · KIŞ TR. 01.02.2026 · ŞUB-HAZ 01.05.2026
 const GTSQ_REF = { t1: [0, 7, 1], s1: [0, 10, 1], t2: [1, 2, 1], s2: [1, 5, 1] };
 function gtSqSeasonYear(season) { const m = String(season || '').match(/\d+/); if (!m) return null; const n = parseInt(m[0]); return n < 100 ? 2000 + n : n; }
 function gtSqParseDate(raw) {

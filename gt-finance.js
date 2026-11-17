@@ -12,7 +12,7 @@ const GTF_REF = { t1: [0, 7], s1: [0, 10], t2: [1, 2], s2: [1, 5] };   // gt-squ
 const GTF_FIELDS = ['role', 'wage', 'value', 'valueChg', 'contractLeft', 'clause', 'sellOn', 'bonus', 'fees', 'status'];
 const GTF_ROLES = ['Star Player', 'Crucial', 'Important', 'Rotation', 'Sporadic', 'Hot Prospect', 'Prospect', 'Backup'];
 const GTF_ROLE_CLS = r => { const f = gtfFold(r); return /star|crucial/.test(f) ? 'a' : /important|key/.test(f) ? 'b' : /rotation/.test(f) ? 'c' : /prospect/.test(f) ? 'd' : 'e'; };
-const gtfPeriodLabel = k => (typeof gtfLabelFn === 'function' ? gtfLabelFn(k) : ({ t1: gtfL('YAZ TR.', 'SUMMER TR.'), s1: gtfL('ARA-EYL', 'DEC-SEP'), t2: gtfL('KIŞ TR.', 'WINTER TR.'), s2: gtfL('HAZ-ŞUB', 'JUN-FEB') })[k] || k);
+const gtfPeriodLabel = k => (typeof gtfLabelFn === 'function' ? gtfLabelFn(k) : ({ t1: gtfL('YAZ TR.', 'SUMMER TR.'), s1: gtfL('EYL-ARA', 'SEP-DEC'), t2: gtfL('KIŞ TR.', 'WINTER TR.'), s2: gtfL('ŞUB-HAZ', 'FEB-JUN') })[k] || k);
 const gtfLabelFn = typeof gtSqLabel === 'function' ? gtSqLabel : null;
 
 // ---------------- Sayı / süre ayrıştırma ----------------

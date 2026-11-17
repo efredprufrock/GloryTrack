@@ -428,9 +428,9 @@ const TR_EN = {
     "Yeni Takım": "New Team",
 
     // --- KADRO (SQUAD) ---
-    "HAZ-ŞUB": "JUN-FEB",
+    "ŞUB-HAZ": "FEB-JUN",
     "KIŞ TR.": "WINTER TR.",
-    "ARA-EYL": "DEC-SEP",
+    "EYL-ARA": "SEP-DEC",
     "YAZ TR.": "SUMMER TR.",
     "TAKIMDAN AYRILANLAR / ARŞİV": "DEPARTED PLAYERS / ARCHIVE",
     "Ülke/Yaş/OVR/Gelişim/Gol/Asist sütunlarını gizle veya göster": "Hide or show Country/Age/OVR/Growth/Goal/Assist columns",
@@ -8995,10 +8995,10 @@ function renderTrophyCabinet() {
 
             squadSeasons.forEach(season => {
                 const activeCols = seasonActiveColsMap[season];
-                if (activeCols.includes('sum')) html += gtSqSumHead(season); if (activeCols.includes('s2')) html += `<th class="p-1 border-r border-b border-slate-700 bg-slate-900 text-[9px] font-bold text-slate-300 min-w-[125px] w-[125px] max-w-[125px]"><div class="flex items-center justify-center gap-1.5">HAZ-ŞUB ${bulkStatBtn(season, 's2')}</div></th>`;
-                if (activeCols.includes('t2')) html += `<th class="p-1 border-r border-b border-slate-700 bg-orange-900/30 text-[9px] font-bold text-orange-300 min-w-[125px] w-[125px] max-w-[125px]"><div class="flex items-center justify-center gap-1.5">KIŞ TR. ${bulkStatBtn(season, 't2')}</div></th>`;
-                if (activeCols.includes('s1')) html += `<th class="p-1 border-r border-b border-slate-700 bg-slate-900 text-[9px] font-bold text-slate-300 min-w-[125px] w-[125px] max-w-[125px]"><div class="flex items-center justify-center gap-1.5">ARA-EYL ${bulkStatBtn(season, 's1')}</div></th>`;
-                if (activeCols.includes('t1')) html += `<th class="p-1 border-r border-b border-slate-700 bg-blue-900/30 text-[9px] font-bold text-blue-300 min-w-[125px] w-[125px] max-w-[125px]"><div class="flex items-center justify-center gap-1.5">YAZ TR. ${bulkStatBtn(season, 't1')}</div></th>`;
+                if (activeCols.includes('sum')) html += gtSqSumHead(season); if (activeCols.includes('s2')) html += `<th class="p-1 border-r border-b border-slate-700 bg-slate-900 text-[9px] font-bold text-slate-300 min-w-[125px] w-[125px] max-w-[125px]"><div class="flex items-center justify-center gap-1.5">ŞUB-HAZ ${bulkStatBtn(season, 's2')}</div></th>`;
+                if (activeCols.includes('t2')) html += `<th class="p-1 border-r border-b border-slate-700 bg-blue-900/30 text-[9px] font-bold text-blue-300 min-w-[125px] w-[125px] max-w-[125px]"><div class="flex items-center justify-center gap-1.5">KIŞ TR. ${bulkStatBtn(season, 't2')}</div></th>`;
+                if (activeCols.includes('s1')) html += `<th class="p-1 border-r border-b border-slate-700 bg-slate-900 text-[9px] font-bold text-slate-300 min-w-[125px] w-[125px] max-w-[125px]"><div class="flex items-center justify-center gap-1.5">EYL-ARA ${bulkStatBtn(season, 's1')}</div></th>`;
+                if (activeCols.includes('t1')) html += `<th class="p-1 border-r border-b border-slate-700 bg-orange-900/30 text-[9px] font-bold text-orange-300 min-w-[125px] w-[125px] max-w-[125px]"><div class="flex items-center justify-center gap-1.5">YAZ TR. ${bulkStatBtn(season, 't1')}</div></th>`;
             });
             html += `<th class="border-b border-slate-700 w-full bg-slate-950"></th></tr></thead><tbody>`;
 
