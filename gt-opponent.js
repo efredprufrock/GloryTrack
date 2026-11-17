@@ -160,5 +160,34 @@
         } catch (e) { console.warn('gt-opponent', e); }
         return r;
     };
+
+    // ---- Maç girdisi penceresi: skor kutusunun üstüne "turnuvada kaçıncı maç / hangi aşama" rozeti ----
+    function stageBadge(season, id) {
+        const list = (typeof fixtureData !== 'undefined' && fixtureData[season]) || [];
+        const m = list.find(x => x.id === id); if (!m) return '';
+        const num = v => parseInt(v) || 999;
+        const same = list.filter(x => (x.tournament || '') === (m.tournament || '')).sort((a, b) => num(a.matchNo) - num(b.matchNo));
+        const idx = same.findIndex(x => x.id === m.id) + 1;
+        const round = String(m.round || '').trim();
+        if (!round) return idx ? idx + '.' : '';
+        const ab = typeof getRoundAbbr === 'function' ? getRoundAbbr(round) : round;
+        return /^\d+$/.test(ab) ? ab + '.' : ab;
+    }
+    const origOpenMR = window.openMatchResultModal;
+    if (typeof origOpenMR === 'function') {
+        window.openMatchResultModal = function (season, id) {
+            const r = origOpenMR.apply(this, arguments);
+            try {
+                const box = document.getElementById('mr-score-container'), host = box && box.parentElement;
+                if (host) {
+                    let b = document.getElementById('mr-stage-badge');
+                    if (!b) { b = document.createElement('span'); b.id = 'mr-stage-badge'; b.className = 'op-stage'; host.insertBefore(b, box); }
+                    const t = stageBadge(season, id);
+                    b.textContent = t; b.style.display = t ? '' : 'none';
+                }
+            } catch (e) { console.warn('gt-opponent', e); }
+            return r;
+        };
+    }
     window.GTOPP = { history, build };
 })();
