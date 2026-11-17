@@ -71,3 +71,12 @@ body.theme-light .gtac-pw select { background: #fff; color: #2c2420; border-colo
 
 /* toplu düzenle: POT hücreleri */
 .pb-pot { color: #fbbf24 !important; font-weight: 800; }
+
+.gtac-emode { display:inline-flex; border:1px solid #475569; border-radius:6px; overflow:hidden; margin:0 4px; }
+.gtac-emode button { background:transparent; color:#94a3b8; font-size:11px; font-weight:800; padding:2px 8px; border:0; cursor:pointer; }
+.gtac-emode button.on { background:#fbbf24; color:#1e1b0b; }
+.gtac-potin { color:#fbbf24 !important; }
+body.theme-light .gtac-potin { color:#b45309 !important; }
+body.theme-light .gtac-emode { border-color:#b8ad9c; }
+body.theme-light .gtac-emode button { color:#7a6d63; }
+body.theme-light .gtac-emode button.on { background:#d97706; color:#fff; }

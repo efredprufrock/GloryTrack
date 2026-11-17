@@ -297,12 +297,109 @@
         return origPbSave.apply(this, arguments);
     };
 
+
+    // ===== ⚡ Toplu giriş ve klavye hızlı girişine POT desteği (yalnızca akademi) =====
+    const isAc = () => squadContext === 'akademi';
+    const potBefore = (p, season, key) /* verilen dönemden ÖNCEKİ son POT */ => {
+        const si = seasonsList.indexOf(season), ki = CH.indexOf(key); let v = 0;
+        for (let i = 0; i <= si && i < seasonsList.length; i++) {
+            const h = p.history && p.history[seasonsList[i]]; if (!h) continue;
+            for (let j = 0; j < 4; j++) { if (i === si && j >= ki) break; const x = parseInt(h[CH[j] + '_acadPot']); if (x) v = x; }
+        }
+        return v || parseInt(p.pot) || 0;
+    };
+    const syncPot = p => { const v = latestPot(p); if (v) p.pot = String(v); };
+
+    // -- ⚡ modal
+    const origRows = window.renderBulkStatRows;
+    window.renderBulkStatRows = function () {
+        const r = origRows.apply(this, arguments);
+        if (!isAc()) return r;
+        const sn = activeBulkStatSeason, ck = activeBulkStatCellKey;
+        document.querySelectorAll('#bs-players-container [data-player-id]').forEach(row => {
+            const p = (squadData.akademi || []).find(x => String(x.id) === row.getAttribute('data-player-id')); if (!p) return;
+            const cur = ((p.history || {})[sn] || {})[ck + '_acadPot'] || '', pv = potBefore(p, sn, ck);
+            const inp = document.createElement('input');
+            inp.type = 'number'; inp.className = 'bs-pot-input w-14 bg-slate-950 border border-slate-600 rounded p-1 sm:p-1.5 text-center font-bold outline-none focus:border-amber-400 appearance-none';
+            inp.style.color = '#fbbf24'; inp.placeholder = pv ? String(pv) : 'POT'; inp.title = 'POT'; inp.value = cur; inp.min = 1; inp.max = 99;
+            row.appendChild(inp);
+        });
+        return r;
+    };
+    const origOpenBs = window.openBulkStatModal;
+    window.openBulkStatModal = function () {
+        const r = origOpenBs.apply(this, arguments);
+        if (isAc()) { const t = document.getElementById('bs-modal-title'); if (t) t.innerText = 'Toplu Yaş / OVR / POT Girişi'; }
+        return r;
+    };
+    const origSaveBs = window.saveBulkStatModal;
+    window.saveBulkStatModal = function () {
+        if (!isAc()) return origSaveBs.apply(this, arguments);
+        const sn = activeBulkStatSeason, ck = activeBulkStatCellKey; let potN = 0, other = false;
+        document.querySelectorAll('#bs-players-container [data-player-id]').forEach(row => {
+            const p = (squadData.akademi || []).find(x => String(x.id) === row.getAttribute('data-player-id')); if (!p) return;
+            if (row.querySelector('.bs-age-input').value.trim() || row.querySelector('.bs-ovr-input').value.trim()) other = true;
+            const el = row.querySelector('.bs-pot-input'); if (!el) return;
+            const v = el.value.trim(), old = String(((p.history || {})[sn] || {})[ck + '_acadPot'] || '');
+            if (v === old) return;
+            if (v !== '' && !(parseInt(v) >= 1 && parseInt(v) <= 99)) return;
+            if (!p.history) p.history = {}; if (!p.history[sn]) p.history[sn] = {};
+            if (v === '') delete p.history[sn][ck + '_acadPot']; else p.history[sn][ck + '_acadPot'] = String(parseInt(v));
+            syncPot(p); potN++;
+        });
+        if (other) return origSaveBs.apply(this, arguments);       // yaş/OVR kaydı + yeniden çizim
+        if (potN) { saveToLocalStorage(); closeBulkStatModal(); renderSquadGrid(); return; }
+        alert('Hiçbir oyuncu için yaş, OVR veya POT girilmedi.');
+    };
+
+    // -- Klavye hızlı girişi: OVR / POT geçişi
+    let entryMode = 'o';
+    const potOn = () => isAc() && entryMode === 'p' && typeof gtSqEntry !== 'undefined' && gtSqEntry;
+    const origEC = window.gtSqEntryCell;
+    window.gtSqEntryCell = function (p, season, key, bg, archived) {
+        if (!potOn() || archived || gtSqEntry.season !== season || gtSqEntry.key !== key) return origEC.apply(this, arguments);
+        const cur = ((p.history || {})[season] || {})[key + '_acadPot'] || '', prev = potBefore(p, season, key) || '';
+        const diff = cur && prev ? parseInt(cur) - prev : 0;
+        return `<td class="p-0 border-r border-b border-slate-700/50 align-middle text-center min-w-[125px] w-[125px] max-w-[125px] gt-sq-ecell ${bg}">
+        <div class="gt-sq-e"><span class="gt-sq-prev" title="Önceki POT">${prev}</span>
+        <input class="gt-sq-in gtac-potin" type="text" inputmode="text" maxlength="3" autocomplete="off" placeholder="POT" value="${escapeHtml(String(cur))}" data-pot="1" data-pid="${escapeHtml(String(p.id))}" data-prev="${prev}" data-orig="${escapeHtml(String(cur))}" onfocus="this.select()" onkeydown="gtSqKey(event, this)" onblur="gtSqCommit(this)">
+        <span class="gt-sq-d ${diff > 0 ? 'up' : diff < 0 ? 'dn' : ''}">${diff ? (diff > 0 ? '+' : '') + diff : ''}</span><span></span></div></td>`;
+    };
+    const origCommit = window.gtSqCommit;
+    window.gtSqCommit = function (inp, noSave) {
+        if (!inp || !inp.dataset || !inp.dataset.pot) return origCommit.apply(this, arguments);
+        if (!gtSqEntry || inp._busy) return false;
+        const p = (squadData.akademi || []).find(x => String(x.id) === inp.dataset.pid); if (!p) return false;
+        const v = gtSqParse(inp.value, inp.dataset.prev);
+        if (v === null || (v !== '' && (v < 1 || v > 99))) { inp.classList.add('bad'); return false; }
+        inp.classList.remove('bad');
+        const { season, key } = gtSqEntry, next = v === '' ? '' : String(v); inp.value = next;
+        const dEl = inp.parentElement.querySelector('.gt-sq-d'), pv = parseInt(inp.dataset.prev), diff = next && pv ? v - pv : 0;
+        if (dEl) { dEl.textContent = diff ? (diff > 0 ? '+' : '') + diff : ''; dEl.className = 'gt-sq-d ' + (diff > 0 ? 'up' : diff < 0 ? 'dn' : ''); }
+        if (next === inp.dataset.orig) return false;
+        if (!p.history) p.history = {}; if (!p.history[season]) p.history[season] = {};
+        if (next === '') delete p.history[season][key + '_acadPot']; else p.history[season][key + '_acadPot'] = next;
+        syncPot(p); inp.dataset.orig = next;
+        if (!noSave) { try { saveToLocalStorage(); } catch (e) {} }
+        return true;
+    };
+    const origTb = window.gtSqToolbar;
+    window.gtSqToolbar = function () {
+        const h = origTb.apply(this, arguments);
+        if (!isAc() || typeof gtSqEntry === 'undefined' || !gtSqEntry) return h;
+        const sw = `<span class="gtac-emode"><button type="button" class="${entryMode === 'o' ? 'on' : ''}" onclick="GTAC.setEntryMode('o')">OVR</button><button type="button" class="${entryMode === 'p' ? 'on' : ''}" onclick="GTAC.setEntryMode('p')">POT</button></span>`;
+        return h.replace('<button type="button" onclick="gtSqFillSame()"', sw + '<button type="button" onclick="gtSqFillSame()"');
+    };
+    const origSetEntry = window.gtSqSetEntry;
+    window.gtSqSetEntry = function (season) { if (!season) entryMode = 'o'; return origSetEntry.apply(this, arguments); };
+
     window.GTAC = {
         pbMp(id, el) { pbDraft[id].mp = el.value; el.classList.toggle('pb-chg', el.value.trim() !== String(pbOrig[id].mp).trim()); pbUpdateCount(); },
         get mode() { return mode; },
         setMode(m) { mode = m === 'old' ? 'old' : 'new'; try { localStorage.setItem(MODE_KEY, mode); } catch (e) {} renderSquadGrid(); },
         setFilter(f) { ST.filter = f; render(); },
         setSort(s) { ST.sort = s; render(); },
+        setEntryMode(m) { entryMode = m === 'p' ? 'p' : 'o'; if (typeof gtSqEntry !== 'undefined' && gtSqEntry) gtSqEntry.focus = true; renderSquadGrid(); },
         build, evalP
     };
 
