@@ -167,12 +167,14 @@
         });
         return { season, cell };
     }
-    function stampNew(before, forced) {
+    function stampNew(before, forced, opt) {
         const t = forced || targetCell();
         let n = 0;
         (squadData.akademi || []).forEach(p => {
             if (!p || before.has(p.id) || snap(p)) return;
-            const ovr = parseInt(p.joinOvr), age = parseInt(p.joinAge), pot = parseInt(p.pot);
+            const ovr = parseInt(p.joinOvr), age = parseInt(p.joinAge);
+            let pot = parseInt(p.pot);
+            if (opt && opt.pots && opt.pots.has(p.name)) { const pv = opt.pots.get(p.name); if (pv) { p.pot = String(pv); pot = pv; } else pot = 0; }
             if (!ovr) return;
             p.history = p.history || {};
             const h = p.history[t.season] = p.history[t.season] || {};
@@ -213,13 +215,90 @@
     };
     const origBulk = window.processSquadBulkInput;
     if (typeof origBulk === 'function') window.processSquadBulkInput = async function () {
-        const isAk = squadContext === 'akademi', before = idsBefore();
+        const isAk = squadContext === 'akademi', before = idsBefore(), pots = new Map(), ta = document.getElementById('squad-bulk-input');
+        if (isAk && ta) ta.value.split('\n').forEach(line => { const q = line.split(',').map(x => x.trim()); if (q.length >= 5 && q[1]) { const pv = parseInt(q[5]); pots.set(q[1], pv > 0 ? pv : null); } });
         const r = await origBulk.apply(this, arguments);
-        if (isAk) stampNew(before);
+        if (isAk) stampNew(before, null, { pots });
         return r;
     };
 
+    // Toplu ekle: akademide isteğe bağlı 6. sütun = POT
+    const origBulkOpen = window.openSquadBulkModal;
+    if (typeof origBulkOpen === 'function') window.openSquadBulkModal = function () {
+        const r = origBulkOpen.apply(this, arguments);
+        if (squadContext === 'akademi') {
+            const h = document.getElementById('squad-bulk-format-hint'), t = document.getElementById('squad-bulk-input');
+            if (h) h.innerText = L('Pozisyon, İsim Soyisim, Ülke, Yaş, Reyting, POT (isteğe bağlı)', 'Position, Full name, Country, Age, Rating, POT (optional)');
+            if (t) t.placeholder = 'Örnek:\nST, Lamine Yamal, ESP, 17, 78, 94\nCM, Pau Cubarsi, ESP, 18, 77, 90\nCB, Genç Oyuncu, TUR, 16, 62';
+        }
+        return r;
+    };
+
+    // Toplu düzenle: akademide Max POT ve dönem POT sütunları
+    function pbPotCols() {
+        const box = document.getElementById('pb-box'), table = box && box.querySelector('table.pb');
+        if (!table || table.dataset.gtac) return;
+        table.dataset.gtac = '1';
+        const sea = pbSeason, rows = table.querySelectorAll('tbody tr[data-pb-name]');
+        const heads = table.querySelectorAll('thead tr');
+        const r1 = heads[0], r2 = heads[1];
+        const th = document.createElement('th'); th.rowSpan = 2; th.className = 'pb-h'; th.textContent = 'Max POT';
+        r1.insertBefore(th, r1.children[3]);
+        r1.querySelectorAll('th[colspan="2"]').forEach(x => x.colSpan = 3);
+        Array.from(r2.children).forEach(c => { if (c.textContent.trim() === 'OVR') { const n = document.createElement('th'); n.className = c.className; n.textContent = 'POT'; c.after(n); } });
+        const cell = (id, k) => {
+            const cur = String((((pbDraft[id].h || {})[sea]) || {})[k + '_acadPot'] || ''), orig = String((((pbOrig[id].h || {})[sea]) || {})[k + '_acadPot'] || '');
+            return `<td class="pb-n"><input class="pb-in pb-num pb-pot ${cur.trim() !== orig.trim() ? 'pb-chg' : ''}" data-col="${k}_acadPot" inputmode="numeric" value="${E(cur)}" oninput="pbSetH('${id}','${k}_acadPot',this)" onkeydown="pbKey(event,this)"></td>`;
+        };
+        rows.forEach(tr => {
+            const inp = tr.querySelector('input[oninput^="pbSet("]'), m = inp && inp.getAttribute('oninput').match(/pbSet\('([^']+)'/);
+            if (!m) return;
+            const id = m[1], pl = (squadData.akademi || []).find(x => x.id === id);
+            if (pbOrig[id].mp === undefined) { pbOrig[id].mp = pbDraft[id].mp = String((pl && pl.pot) || ''); }
+            const mp = document.createElement('td'); mp.className = 'pb-n';
+            mp.innerHTML = `<input class="pb-in pb-num pb-pot ${String(pbDraft[id].mp).trim() !== String(pbOrig[id].mp).trim() ? 'pb-chg' : ''}" data-col="mp" inputmode="numeric" value="${E(pbDraft[id].mp)}" oninput="GTAC.pbMp('${id}',this)" onkeydown="pbKey(event,this)">`;
+            tr.insertBefore(mp, tr.children[3]);
+            PB_PERIODS.forEach(([k]) => { const o = tr.querySelector(`input[data-col="${k}o"]`); if (o) o.closest('td').insertAdjacentHTML('afterend', cell(id, k)); });
+        });
+        const note = box.querySelector('p.text-\\[11px\\]');
+        if (note) note.insertAdjacentText('beforeend', ' ' + L('POT sütunları dönem kutularındaki potansiyeldir; Max POT oyuncunun genel potansiyelidir.', 'POT columns are the per-period potential boxes; Max POT is the player\'s overall potential.'));
+    }
+    const origPbRender = window.pbRender;
+    if (typeof origPbRender === 'function') window.pbRender = function () {
+        const r = origPbRender.apply(this, arguments);
+        if (pbCtx === 'akademi') { try { pbPotCols(); } catch (e) { console.warn('GTAC', e); } }
+        return r;
+    };
+    const origPbCount = window.pbChangedCount;
+    if (typeof origPbCount === 'function') window.pbChangedCount = function () {
+        let n = origPbCount.apply(this, arguments);
+        if (pbCtx === 'akademi') Object.keys(pbDraft).forEach(id => {
+            const d = pbDraft[id], o = pbOrig[id];
+            if (o.mp !== undefined && String(d.mp || '').trim() !== String(o.mp || '').trim()) n++;
+            const seas = new Set([...Object.keys(d.h || {}), ...Object.keys(o.h || {})]);
+            seas.forEach(sn => PB_PERIODS.forEach(([k]) => {
+                const dv = String((((d.h || {})[sn]) || {})[k + '_acadPot'] || '').trim(), ov = String((((o.h || {})[sn]) || {})[k + '_acadPot'] || '').trim();
+                if (dv !== ov) n++;
+            }));
+        });
+        return n;
+    };
+    const origPbSave = window.savePlayerBulkEdit;
+    if (typeof origPbSave === 'function') window.savePlayerBulkEdit = function () {
+        if (pbCtx === 'akademi') (squadData.akademi || []).forEach(p => {
+            const d = pbDraft[p.id], o = pbOrig[p.id];
+            if (!d || !o) return;
+            if (o.mp !== undefined && String(d.mp || '').trim() !== String(o.mp || '').trim()) p.pot = String(d.mp || '').trim();
+            Object.keys(p.history || {}).forEach(sn => PB_PERIODS.forEach(([k]) => {
+                const key = k + '_acadPot', dv = (((d.h || {})[sn]) || {})[key];
+                if (p.history[sn][key] !== undefined && (dv === undefined || dv === '')) delete p.history[sn][key];
+            }));
+        });
+        return origPbSave.apply(this, arguments);
+    };
+
     window.GTAC = {
+        pbMp(id, el) { pbDraft[id].mp = el.value; el.classList.toggle('pb-chg', el.value.trim() !== String(pbOrig[id].mp).trim()); pbUpdateCount(); },
         get mode() { return mode; },
         setMode(m) { mode = m === 'old' ? 'old' : 'new'; try { localStorage.setItem(MODE_KEY, mode); } catch (e) {} renderSquadGrid(); },
         setFilter(f) { ST.filter = f; render(); },

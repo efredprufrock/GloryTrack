@@ -68,3 +68,6 @@ body.theme-light .gtac-b.dev { color: #0369a1; } body.theme-light .gtac-chip.on 
 .gtac-pw select { width: 100%; background: #0f172a; color: #fff; border: 1px solid #475569; border-radius: 4px; padding: 8px; font-size: 13px; outline: none; }
 .gtac-pw select:focus { border-color: #10b981; }
 body.theme-light .gtac-pw select { background: #fff; color: #2c2420; border-color: #d6cfc2; }
+
+/* toplu düzenle: POT hücreleri */
+.pb-pot { color: #fbbf24 !important; font-weight: 800; }
