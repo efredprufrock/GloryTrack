@@ -7,6 +7,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyBLTjkZHEjOzSYJ5mePCntEjrF0q2qsu_U",
   authDomain: "glorytrack-719cc.firebaseapp.com",
   projectId: "glorytrack-719cc",
+  databaseURL: "https://glorytrack-719cc-default-rtdb.europe-west1.firebasedatabase.app",
   storageBucket: "glorytrack-719cc.firebasestorage.app",
   messagingSenderId: "1045571405363",
   appId: "1:1045571405363:web:43b82208c8eaa605a3c546"

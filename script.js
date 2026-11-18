@@ -2660,7 +2660,7 @@ function getFlagIcon(countryCode) {
             const id = bkToday(now) + (tag === 'daily' ? '' : '_' + [now.getHours(), now.getMinutes(), now.getSeconds()].map(x => String(x).padStart(2, '0')).join('') + '_' + tag);
             const clean = JSON.parse(JSON.stringify(data)); delete clean._sid; delete clean._bkMeta;
             const size = new Blob([JSON.stringify(clean)]).size;
-            if (size > 900 * 1024) return false;
+            if (size > 8 * 1024 * 1024) return false;
             const meta = Object.assign(bkMeta(clean), { id, tag, at: Date.now(), device: clean._device || gtDeviceName(), size });
             await col.doc(id).set(Object.assign(clean, { _bkMeta: meta }));
             const idxRef = col.doc('_index'), idx = await idxRef.get();
