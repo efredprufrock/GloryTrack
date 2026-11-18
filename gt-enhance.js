@@ -112,19 +112,17 @@
 
     // ---------------- 2) Sayfa adresi (#sayfa) + geri tuşu ----------------
     let navLock = false, booted = false;
-    const hashPage = () => { let h = ''; try { h = decodeURIComponent((location.hash || '').slice(1)); } catch (e) {} return fromSlug(h); };
-    const SLUG = { anasayfa: 'home', kupalar: 'trophies', maclar: 'matches', kadro: 'squad', ligtarihi: 'league-history', transfer: 'transfers', golasist: 'goals-assists', sezonlar: 'seasons', ayarlar: 'settings' };
-    function fromSlug(s) { return PAGES.find(p => p === s || SLUG[p] === s) || null; }
+    const hashPage = () => { let h = ''; try { h = decodeURIComponent((location.hash || '').slice(1)); } catch (e) {} return PAGES.includes(h) ? h : null; };
     // Açılışta istenen sayfa (script.js ana sayfayı açmadan önce okunur): #kadro ya da ?p=kadro
     let initialWant = hashPage();
-    try { const q = new URLSearchParams(location.search).get('p'); if (!initialWant && fromSlug(q)) initialWant = fromSlug(q); } catch (e) {}
+    try { const q = new URLSearchParams(location.search).get('p'); if (!initialWant && PAGES.includes(q)) initialWant = q; } catch (e) {}
     if (typeof window.selectMainMenu === 'function') {
         const orig = window.selectMainMenu;
         window.selectMainMenu = function (id) {
             const r = orig.apply(this, arguments);
             try {
                 if (!navLock && PAGES.includes(id) && hashPage() !== id) {
-                    const url = id === 'anasayfa' && !location.hash ? location.href : '#' + SLUG[id];
+                    const url = id === 'anasayfa' && !location.hash ? location.href : '#' + id;
                     if (booted) history.pushState({ gt: id }, '', url); else history.replaceState({ gt: id }, '', url);
                 }
             } catch (e) {}
@@ -133,7 +131,7 @@
         window.addEventListener('popstate', () => {
             let cur = null; try { cur = activeMain; } catch (e) {}
             // Geri tuşu önce açık pencereyi kapatır (telefonda uygulamadan çıkmak yerine)
-            if (anyOverlayOpen()) { pressEscape(); try { history.pushState({ gt: cur }, '', '#' + SLUG[cur || 'anasayfa']); } catch (e) {} return; }
+            if (anyOverlayOpen()) { pressEscape(); try { history.pushState({ gt: cur }, '', '#' + (cur || 'anasayfa')); } catch (e) {} return; }
             const target = hashPage() || 'anasayfa';
             if (target === cur) return;
             navLock = true; try { window.selectMainMenu(target); } finally { navLock = false; }
@@ -235,4 +233,69 @@
     // script.js sayfayı window.onload içinde kurar; onun ardından çalış
     if (document.readyState === 'complete') setTimeout(start, 0);
     else window.addEventListener('load', () => setTimeout(start, 0));
+})();
+
+// =====================================================================
+// Bulut boyutu (900 KB) için: tüm verideki gömülü görselleri küçült + boyut dökümü
+//  "Fotoğrafları Küçült" düğmesi artık yalnızca oyuncu fotoğraflarını değil, verinin HER yerindeki
+//  (takım/rakip/turnuva logoları, transferler, defter vb.) gömülü görselleri tarar.
+// =====================================================================
+(function () {
+    'use strict';
+    const L = (tr, en) => (typeof currentLang !== 'undefined' && currentLang === 'en') ? en : tr;
+    const kb = n => Math.round(n / 1024);
+    const sizeOf = v => { try { return new Blob([JSON.stringify(v) === undefined ? '' : JSON.stringify(v)]).size; } catch (e) { return 0; } };
+    const isRaster = s => typeof s === 'string' && /^data:image\/(png|jpe?g|webp|gif)/i.test(s);
+
+    function report(data, top) {
+        return Object.keys(data).map(k => [k, sizeOf(data[k])]).sort((a, b) => b[1] - a[1]).slice(0, top || 6)
+            .map(([k, n]) => `${k}: ${kb(n)} KB`).join('\n');
+    }
+    function shrink(url, maxD, q) {
+        return new Promise(res => {
+            const img = new Image();
+            img.onload = () => {
+                try {
+                    const k = Math.min(1, maxD / Math.max(img.width, img.height));
+                    const w = Math.max(1, Math.round(img.width * k)), h = Math.max(1, Math.round(img.height * k));
+                    const c = document.createElement('canvas'); c.width = w; c.height = h;
+                    c.getContext('2d').drawImage(img, 0, 0, w, h);
+                    const out = c.toDataURL('image/webp', q);
+                    res(out.length < url.length * 0.92 ? out : url);
+                } catch (e) { res(url); }
+            };
+            img.onerror = () => res(url);
+            img.src = url;
+        });
+    }
+
+    window.optimizeStoredImages = async function () {
+        const data = getAllData(), before = sizeOf(data), beforeRep = report(data);
+        const cache = new Map(); let found = 0, changed = 0;
+        const jobs = [];
+        const walk = (o, key, depth) => {
+            if (!o || typeof o !== 'object' || depth > 8) return;
+            for (const k of Object.keys(o)) {
+                const v = o[k];
+                if (isRaster(v) && v.length > 2500) {
+                    found++;
+                    const photo = /photo|face|img|avatar/i.test(k);
+                    jobs.push([o, k, v, photo ? 96 : 128, photo ? 0.55 : 0.65]);
+                } else if (v && typeof v === 'object') walk(v, k, depth + 1);
+            }
+        };
+        walk(data, '', 0);
+        for (const [o, k, v, d, q] of jobs) {
+            const ck = v + '|' + d;
+            if (!cache.has(ck)) cache.set(ck, shrink(v, d, q));
+            const out = await cache.get(ck);
+            if (out !== v) { o[k] = out; changed++; }
+        }
+        if (changed) { try { saveToLocalStorage(); } catch (e) {} try { rerenderCurrentPanel(); } catch (e) {} }
+        const after = sizeOf(getAllData());
+        const msg = L(
+            `${found} gömülü görsel bulundu, ${changed} tanesi küçültüldü.\nToplam: ${kb(before)} KB → ${kb(after)} KB (${kb(before - after)} KB kazanç)\nBulut sınırı: 900 KB\n\nBölümlere göre boyut (şimdi):\n${report(getAllData())}`,
+            `${found} embedded images found, ${changed} shrunk.\nTotal: ${kb(before)} KB → ${kb(after)} KB (saved ${kb(before - after)} KB)\nCloud limit: 900 KB\n\nSize by section (now):\n${report(getAllData())}`);
+        alert(msg);
+    };
 })();
