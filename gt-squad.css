@@ -15,12 +15,7 @@
 .gt-sq-ebar button.ok:hover { background: #fde047; }
 
 /* Sezon özeti hücresi */
-.gt-sum { display: grid; grid-template-columns: 20px 9px 26px 22px 26px; align-items: center; justify-content: center; justify-items: center; gap: 3px; min-height: 26px; padding: 0 4px; font-variant-numeric: tabular-nums; }
-.gt-sum > .gt-sum-a { grid-column: 1; justify-self: end; }
-.gt-sum > .gt-sum-ar { grid-column: 2; }
-.gt-sum > *:not(.gt-sum-a):not(.gt-sum-ar):not(b):not(.gt-sum-ic) { grid-column: 3; }
-.gt-sum > b { grid-column: 4; justify-self: start; }
-.gt-sum > .gt-sum-ic { grid-column: 5; justify-self: start; }
+.gt-sum { display: flex; align-items: center; justify-content: center; gap: 5px; min-height: 26px; padding: 0 4px; font-variant-numeric: tabular-nums; }
 .gt-sum-a { font-size: 10.5px; font-weight: 800; color: #94a3b8; }
 .gt-sum-ar { font-size: 8px; color: #475569; }
 .gt-sum b { font-size: 10px; font-weight: 900; min-width: 16px; text-align: left; }
@@ -150,3 +145,83 @@ body.theme-light .gt-nat-box p b { color: #2c2420; }
 #main-nav .nb-fab:hover { background: rgba(148,163,184,.1); color: var(--gt-nav-fg-hover, #f1f5f9); }
 body.theme-light #main-nav .nb-fab { background: transparent; border-color: transparent; color: var(--gt-nav-fg, #7a6e65); }
 body.gt-nb-docked .gt-sq-sumbar { margin-right: 0; }
+
+/* ===== Gelişim sayıları: pozitif HER ZAMAN yeşil, negatif HER ZAMAN kırmızı (tema ailesi rengi ezmesin) ===== */
+html body div.bg-emerald-950\/60.border-emerald-800\/80.text-emerald-400.bg-emerald-950\/60.border-emerald-800\/80.text-emerald-400.bg-emerald-950\/60.border-emerald-800\/80.text-emerald-400 { color:#4ade80 !important; background-color:rgba(5,46,22,.6) !important; border-color:rgba(22,101,52,.85) !important; }
+html body div.bg-red-950\/60.border-red-800\/80.text-red-400.bg-red-950\/60.border-red-800\/80.text-red-400.bg-red-950\/60.border-red-800\/80.text-red-400 { color:#f87171 !important; background-color:rgba(69,10,10,.6) !important; border-color:rgba(153,27,27,.85) !important; }
+html body span.text-emerald-400.drop-shadow-md.text-emerald-400.drop-shadow-md.text-emerald-400.drop-shadow-md { color:#4ade80 !important; }
+html body span.text-red-400.drop-shadow-md.text-red-400.drop-shadow-md.text-red-400.drop-shadow-md { color:#f87171 !important; }
+html body.theme-light div.bg-emerald-950\/60.border-emerald-800\/80.text-emerald-400.bg-emerald-950\/60.border-emerald-800\/80.text-emerald-400.bg-emerald-950\/60.border-emerald-800\/80.text-emerald-400 { color:#15803d !important; background-color:#dcfce7 !important; border-color:#86efac !important; }
+html body.theme-light div.bg-red-950\/60.border-red-800\/80.text-red-400.bg-red-950\/60.border-red-800\/80.text-red-400.bg-red-950\/60.border-red-800\/80.text-red-400 { color:#b91c1c !important; background-color:#fee2e2 !important; border-color:#fca5a5 !important; }
+html body.theme-light span.text-emerald-400.drop-shadow-md.text-emerald-400.drop-shadow-md.text-emerald-400.drop-shadow-md { color:#15803d !important; }
+html body.theme-light span.text-red-400.drop-shadow-md.text-red-400.drop-shadow-md.text-red-400.drop-shadow-md { color:#b91c1c !important; }
+
+/* "Takıma geldi" ikonu: ok sola baksın (oyuncu gelen taraf), giden oyuncu ikonu aynı kalır */
+.fa-arrow-right-to-bracket { display: inline-block; transform: scaleX(-1); }
+
+/* ===== Durum / aksiyon rozetleri: gelen yeşil · giden kırmızı · akademi mavi · yenileme mor · kiralık = kesikli çerçeve ===== */
+html body .gt-tb { color:#fff !important; border-width:1px !important; }
+html body .gt-tb-in      { background:#16a34a !important; border-color:#22c55e !important; }
+html body .gt-tb-academy { background:#2563eb !important; border-color:#3b82f6 !important; }
+html body .gt-tb-renew   { background:#9333ea !important; border-color:#a855f7 !important; }
+html body .gt-tb-out     { background:#dc2626 !important; border-color:#ef4444 !important; }
+html body .gt-tb-loan_in  { background:rgba(22,163,74,.22) !important; border:1px dashed #22c55e !important; color:#86efac !important; }
+html body .gt-tb-loan_out { background:rgba(220,38,38,.22) !important; border:1px dashed #ef4444 !important; color:#fca5a5 !important; }
+html body.theme-light .gt-tb-loan_in  { background:#dcfce7 !important; color:#15803d !important; border-color:#16a34a !important; }
+html body.theme-light .gt-tb-loan_out { background:#fee2e2 !important; color:#b91c1c !important; border-color:#dc2626 !important; }
+/* seçim listesindeki seçenek renkleri */
+html body #pc-tr-type option.gt-op-in, html body #pc-tr-type option.gt-op-loan_in { color:#22c55e; }
+html body #pc-tr-type option.gt-op-academy { color:#3b82f6; }
+html body #pc-tr-type option.gt-op-renew { color:#a855f7; }
+html body #pc-tr-type option.gt-op-out, html body #pc-tr-type option.gt-op-loan_out { color:#ef4444; }
+
+/* Turnuva başlığındaki şampiyon logosu: arka plan, çerçeve ve daire kırpması yok */
+img.w-5.h-5.rounded-full.object-cover.bg-slate-800.border-slate-700 { background: transparent !important; border: 0 !important; border-radius: 0 !important; object-fit: contain !important; box-shadow: none !important; }
+
+/* ===== Dönem hücresi: yaş · OVR · fark · rozet arasında eşit boşluk, üst üste binme yok ===== */
+td.min-w-\[125px\] > div.flex.items-center.justify-center.w-full.h-full { gap: 0; }
+td.min-w-\[125px\] > div.flex.items-center.justify-center.w-full.h-full div.w-\[14px\].flex.justify-start.items-center.shrink-0 { width: auto !important; min-width: 19px; margin-right: 5px; white-space: nowrap; }
+td.min-w-\[125px\] > div.flex.items-center.justify-center.w-full.h-full div.min-w-0 > div { max-width: 100%; }
+@media (max-width: 640px) {
+  td.min-w-\[125px\] > div.flex.items-center.justify-center.w-full.h-full { padding-left: 2px; padding-right: 2px; }
+  td.min-w-\[125px\] > div.flex.items-center.justify-center.w-full.h-full div.w-\[14px\].flex.justify-start.items-center.shrink-0 { min-width: 16px; margin-right: 3px; font-size: 90%; }
+  td.min-w-\[125px\] > div.flex.items-center.justify-center.w-full.h-full div.truncate { max-width: 60px; }
+  html body span.gtac-t-b:not(.gtac-col), html body span.gtac-t-g:not(.gtac-col), html body span.gtac-t-y:not(.gtac-col), html body span.gtac-t-o:not(.gtac-col), html body span.gtac-t-r:not(.gtac-col) { width: 15px; height: 15px; font-size: 7px !important; }
+}
+/* Uzun takım adı rozeti hücre dışına taşmasın (kısalıp "…" ile biter) */
+td.min-w-\[125px\] > div.flex.items-center.justify-center.w-full.h-full > div.flex-1 { overflow: hidden; }
+td.min-w-\[125px\] > div.flex.items-center.justify-center.w-full.h-full > div.flex-1 > div:last-child { min-width: 0; max-width: 100%; overflow: hidden; }
+
+/* Bedelsiz (serbest) gelen oyuncu */
+html body .gt-tb-free_in { background:#0d9488 !important; border-color:#14b8a6 !important; }
+html body #pc-tr-type option.gt-op-free_in { color:#14b8a6; }
+
+/* OVR halkası: sayı halkanın renginde, daire içi şeffaf renk dolgusu */
+html body .mb-ovr { background: color-mix(in srgb, var(--c) 18%, transparent); border-radius: 50%; color: color-mix(in srgb, var(--c) 72%, #ffffff); }
+html body .mb-ovr > b { color: inherit; }
+html body.theme-light .mb-ovr { background: color-mix(in srgb, var(--c) 14%, transparent); color: color-mix(in srgb, var(--c) 80%, #000000); }
+
+/* OVR farkı: halkanın sağ üst köşesinde, işaretsiz renkli sayı (yeşil = artış, kırmızı = düşüş) */
+td.min-w-\[125px\] > div.flex.items-center.justify-center.w-full.h-full div.w-\[24px\].flex { position: relative; overflow: visible; }
+html body span.gt-dl { position: absolute; top: 3.5px; right: 3.5px; transform: translate(75%, -75%); font-size: 6.25px; font-weight: 900; font-family: inherit; font-variant-numeric: tabular-nums; line-height: 1; z-index: 2; pointer-events: none; text-shadow: -1px 0 #0b1220, 1px 0 #0b1220, 0 -1px #0b1220, 0 1px #0b1220, 1px 1px #0b1220, -1px -1px #0b1220, 1px -1px #0b1220, -1px 1px #0b1220; }
+body.theme-light span.gt-dl { text-shadow: -1px 0 #fffdf8, 1px 0 #fffdf8, 0 -1px #fffdf8, 0 1px #fffdf8, 1px 1px #fffdf8, -1px -1px #fffdf8, 1px -1px #fffdf8, -1px 1px #fffdf8; }
+td.min-w-\[125px\] > div.flex.items-center.justify-center.w-full.h-full div.w-\[14px\].flex.justify-start.items-center.shrink-0 { display: none !important; }
+td.min-w-\[125px\] > div.flex.items-center.justify-center.w-full.h-full > div.flex-1 { padding-left: 9px; }
+
+/* Özet formu: sütunlar sabit, aynı türden rozetler hep aynı hizada */
+.gt-sum { display: grid !important; grid-template-columns: 22px 10px 22px 38px; justify-content: center; align-items: center; column-gap: 4px; padding: 0 4px; }
+.gt-sum-a { text-align: right; }
+.gt-sum-ar { text-align: center; }
+.gt-sum-r { position: relative; display: inline-flex; align-items: center; justify-content: center; }
+.gt-sum-ic { display: inline-flex; gap: 4px; justify-content: flex-start; align-items: center; margin-left: 3px; white-space: nowrap; }
+html body .gt-sum span.gt-dl.up { color: #4ade80; } html body .gt-sum span.gt-dl.dn { color: #f87171; }
+html body.theme-light .gt-sum span.gt-dl.up { color: #15803d; } html body.theme-light .gt-sum span.gt-dl.dn { color: #b91c1c; }
+
+/* OVR farkı sayıları: yumuşatılmış tonlar */
+html body span.gt-dl.gt-dl.gt-dl.text-emerald-400, html body .gt-sum span.gt-dl.up { color: #86d9a8 !important; }
+html body span.gt-dl.gt-dl.gt-dl.text-red-400, html body .gt-sum span.gt-dl.dn { color: #f0a3a3 !important; }
+html body.theme-light span.gt-dl.gt-dl.gt-dl.text-emerald-400, html body.theme-light .gt-sum span.gt-dl.up { color: #3f9a62 !important; }
+html body.theme-light span.gt-dl.gt-dl.gt-dl.text-red-400, html body.theme-light .gt-sum span.gt-dl.dn { color: #c46868 !important; }
+
+/* Özet formundaki halka sayısı: tam ortalı */
+html body .gt-sum .mb-ovr > b { min-width: 0; text-align: center; font-size: inherit; }

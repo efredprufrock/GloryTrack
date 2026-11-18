@@ -494,6 +494,7 @@ const TR_EN = {
     "EKLE": "ADD",
     "Kayıtlı transfer bulunmuyor.": "No registered transfers.",
     "Bedelsiz": "Free",
+    "Bedelsiz Geldi (Serbest)": "Joined Free (Free Agent)",
     "Sezona Göre Sırala": "Sort by Season",
     "İsme Göre Sırala": "Sort by Name",
     "Mevkiye Göre Sırala": "Sort by Position",
@@ -8397,8 +8398,8 @@ function renderTrophyCabinet() {
         function getDeltaHtml(current, prev) {
             if (!current || !prev) return '';
             const diff = parseInt(current) - parseInt(prev);
-            if (diff > 0) return `<span class="text-[10px] font-black text-emerald-400 drop-shadow-md">+${diff}</span>`;
-            if (diff < 0) return `<span class="text-[10px] font-black text-red-400 drop-shadow-md">${diff}</span>`;
+            if (diff > 0) return `<span class="gt-dl text-[10px] font-black text-emerald-400 drop-shadow-md">${diff}</span>`;
+            if (diff < 0) return `<span class="gt-dl text-[10px] font-black text-red-400 drop-shadow-md">${Math.abs(diff)}</span>`;
             return ''; // Fark sıfırsa bir şey göstermiyoruz, kalabalık yapmasın
         }
         // ----------------------------------------------
@@ -8885,17 +8886,18 @@ function renderTrophyCabinet() {
                 if (type === 'continue' || type === 'none') return '';
                 
                 // Eğer metin ve logo yoksa normalde rozet çizilmez, ama "academy" seçiliyse tek başına ikon çizilmesine izin veriyoruz
-                if (!text && !logo && type !== 'academy') return '';
+                if (!text && !logo && type !== 'academy' && type !== 'free_in') return '';
                 
                 let bg = 'bg-slate-700 text-slate-300 border-slate-600';
                 let icon = '';
                 
-                if (type === 'in') { bg = 'bg-green-600 text-white border-green-500 shadow-sm'; icon = '<i class="fa-solid fa-arrow-right-to-bracket"></i>'; }
-                if (type === 'academy') { bg = 'bg-cyan-600 text-white border-cyan-500 shadow-sm'; icon = '<i class="fa-solid fa-graduation-cap"></i>'; }
-                if (type === 'out') { bg = 'bg-red-600 text-white border-red-500 shadow-sm'; icon = '<i class="fa-solid fa-arrow-right-from-bracket"></i>'; }
-                if (type === 'renew') { bg = 'bg-purple-600 text-white border-purple-500 shadow-sm'; icon = '<i class="fa-solid fa-file-signature"></i>'; }
-                if (type === 'loan_in') { bg = 'bg-blue-600 text-white border-blue-500 shadow-sm'; icon = '<i class="fa-solid fa-handshake-angle"></i>'; }
-                if (type === 'loan_out') { bg = 'bg-orange-600 text-white border-orange-500 shadow-sm'; icon = '<i class="fa-solid fa-paper-plane"></i>'; }
+                if (type === 'in') { bg = 'gt-tb gt-tb-in shadow-sm'; icon = '<i class="fa-solid fa-arrow-right-to-bracket"></i>'; }
+                if (type === 'academy') { bg = 'gt-tb gt-tb-academy shadow-sm'; icon = '<i class="fa-solid fa-graduation-cap"></i>'; }
+                if (type === 'out') { bg = 'gt-tb gt-tb-out shadow-sm'; icon = '<i class="fa-solid fa-arrow-right-from-bracket"></i>'; }
+                if (type === 'renew') { bg = 'gt-tb gt-tb-renew shadow-sm'; icon = '<i class="fa-solid fa-file-circle-check"></i>'; }
+                if (type === 'loan_in') { bg = 'gt-tb gt-tb-loan_in shadow-sm'; icon = '<i class="fa-solid fa-arrow-rotate-left"></i>'; }
+                if (type === 'free_in') { bg = 'gt-tb gt-tb-free_in shadow-sm'; icon = '<i class="fa-solid fa-gift"></i>'; }
+                if (type === 'loan_out') { bg = 'gt-tb gt-tb-loan_out shadow-sm'; icon = '<i class="fa-solid fa-arrow-rotate-right"></i>'; }
                 
                 let contentHtml = '';
                 if (logo) {
@@ -9095,6 +9097,7 @@ function renderTrophyCabinet() {
                         resultHtml += `<tr><td colspan="100%" class="h-3 bg-slate-950 border-y border-slate-700 shadow-inner"></td></tr>`;
 
                         groupPlayers.forEach(p => {
+                            if (squadFlatSort) { const gg = groups.find(x => x.id === getGroupForPos(p.pos)); group.strip = gg ? gg.strip : 'bg-transparent'; }
                             const safeName = escapeHtml(p.name); // XSS Koruması
                             let photoHtml = p.photoUrl ? `<img src="${p.photoUrl}" class="w-6 h-6 rounded-full inline-block mr-1.5 object-cover bg-slate-800">` : `<div class="w-6 h-6 rounded-full inline-flex items-center justify-center bg-slate-700 text-xs font-bold mr-1.5">${safeName.charAt(0)}</div>`;
                             let flagHtml = p.countryCode ? `<img src="https://flagcdn.com/24x18/${p.countryCode.toLowerCase()}.png" alt="${p.countryCode}" title="${p.countryCode.toUpperCase()}" class="w-5 h-auto mx-auto shadow-sm">` : '-';
@@ -9217,11 +9220,11 @@ function renderTrophyCabinet() {
                                                 ${renderAgeBadge(age)}
                                             </div>
                                             <div class="w-[24px] flex justify-center items-center shrink-0">
-                                                ${renderOvrBadge(ovr)}
+                                                ${renderOvrBadge(ovr)}${delta}
                                             </div>
                                             <div class="flex-1 flex justify-start items-center pl-1.5 shrink-0 min-w-0">
                                                 <div class="w-[14px] flex justify-start items-center shrink-0">
-                                                    ${delta}
+
                                                 </div>
                                                 <div class="flex justify-start items-center shrink-0 min-w-0">
                                                     ${trBadge}
@@ -9341,7 +9344,7 @@ function openPlayerBulkEdit() {
     pbDraft = {}; pbOrig = {};
     list.forEach(p => {
         const o = { name: p.name || '', pos: p.pos || '', role: p.role || '', cc: String(p.countryCode || ''), photo: p.photoUrl || '', h: JSON.parse(JSON.stringify(p.history || {})) };
-        if (p.isArchived) return;
+        if (p.isArchived || p.isPromoted) return;
         pbOrig[p.id] = o;
         pbDraft[p.id] = JSON.parse(JSON.stringify(o));
     });

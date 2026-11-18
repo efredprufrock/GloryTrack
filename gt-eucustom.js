@@ -328,3 +328,22 @@
     // Kart başlığı sonradan yeniden çizilirse (sekme değişimi vb.)
     new MutationObserver(() => { const g = document.querySelector('.eu-grid'); if (g && !document.querySelector('.gt-eu-hb')) { decorate(); moveToggle(); } }).observe(document.body, { childList: true, subtree: true });
 })();
+
+/* Diğer Ligler: kartı hiç düzenlenmemiş sezonlar, en yakın düzenlenmiş sezonun lig listesini devralır */
+(function () {
+    if (typeof euroSlots !== 'function' || typeof EURO_LEAGUES_LIST === 'undefined') return;
+    const def = () => EURO_LEAGUES_LIST.map(l => l.name);
+    const same = (a, b) => a.length === b.length && a.every((v, i) => v === b[i]);
+    const own = s => { const v = euroSlotsData[s]; return (Array.isArray(v) && v.length && !same(v, def())) ? v : null; };
+    window.euroSlots = euroSlots = function (season) {
+        const v = own(season); if (v) return v;
+        const list = (typeof seasonsList !== 'undefined' && seasonsList) || [], i = list.indexOf(season);
+        if (i >= 0) {
+            let best = null, bd = 1e9;
+            list.forEach((s, j) => { if (s !== season && own(s)) { const d = Math.abs(j - i) + (j > i ? 0.5 : 0); if (d < bd) { bd = d; best = s; } } });
+            if (best) return euroSlotsData[best];
+        }
+        const s = euroSlotsData[season];
+        return (Array.isArray(s) && s.length) ? s : def();
+    };
+})();

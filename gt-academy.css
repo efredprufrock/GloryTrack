@@ -80,3 +80,28 @@ body.theme-light .gtac-potin { color:#b45309 !important; }
 body.theme-light .gtac-emode { border-color:#b8ad9c; }
 body.theme-light .gtac-emode button { color:#7a6d63; }
 body.theme-light .gtac-emode button.on { background:#d97706; color:#fff; }
+
+/* POT rozeti (klasik akademi tablosu): yuvarlak; 90+ mavi, 80-89 yeşil, 75-79 sarı, 70-74 turuncu, ≤69 kırmızı
+   Seçici özellikle güçlü: tema ailesi (sarı/kırmızı… temalar) .text-emerald-400 rengini ezmesin */
+html body span.gtac-t-b.gtac-t-b, html body span.gtac-t-g.gtac-t-g, html body span.gtac-t-y.gtac-t-y, html body span.gtac-t-o.gtac-t-o, html body span.gtac-t-r.gtac-t-r {
+  display:inline-flex !important; align-items:center; justify-content:center; width:16.5px; height:16.5px; padding:0 !important;
+  border-radius:50% !important; font-size:7.5px !important; line-height:1 !important; box-sizing:border-box; }
+html body span.gtac-t-b.gtac-t-b { color:#7dd3fc !important; background:rgba(2,132,199,.35) !important; border-color:rgba(56,189,248,.75) !important; }
+html body span.gtac-t-g.gtac-t-g { color:#6ee7b7 !important; background:rgba(5,150,105,.30) !important; border-color:rgba(16,185,129,.70) !important; }
+html body span.gtac-t-y.gtac-t-y { color:#fde047 !important; background:rgba(161,98,7,.38) !important; border-color:rgba(234,179,8,.75) !important; }
+html body span.gtac-t-o.gtac-t-o { color:#fdba74 !important; background:rgba(194,65,12,.38) !important; border-color:rgba(249,115,22,.75) !important; }
+html body span.gtac-t-r.gtac-t-r { color:#fca5a5 !important; background:rgba(185,28,28,.38) !important; border-color:rgba(239,68,68,.75) !important; }
+html body.theme-light span.gtac-t-b.gtac-t-b { color:#075985 !important; background:#e0f2fe !important; border-color:#0ea5e9 !important; }
+html body.theme-light span.gtac-t-g.gtac-t-g { color:#065f46 !important; background:#d1fae5 !important; border-color:#10b981 !important; }
+html body.theme-light span.gtac-t-y.gtac-t-y { color:#854d0e !important; background:#fef9c3 !important; border-color:#eab308 !important; }
+html body.theme-light span.gtac-t-o.gtac-t-o { color:#9a3412 !important; background:#ffedd5 !important; border-color:#f97316 !important; }
+html body.theme-light span.gtac-t-r.gtac-t-r { color:#991b1b !important; background:#fee2e2 !important; border-color:#ef4444 !important; }
+
+/* "Güncel POT" sütunu: dönem hücrelerindekinden büyük rozet */
+html body span.gtac-col.gtac-col.gtac-col { width:24px; height:24px; font-size:11px !important; }
+
+.sq-role-star { color:#fbbf24; font-size:11px; }
+body.theme-light .sq-role-star { color:#d97706; }
+
+/* Dönem hücresinde fark (+2) ile POT rozeti arasına boşluk */
+html body span.gtac-t-b:not(.gtac-col), html body span.gtac-t-g:not(.gtac-col), html body span.gtac-t-y:not(.gtac-col), html body span.gtac-t-o:not(.gtac-col), html body span.gtac-t-r:not(.gtac-col) { margin-left:0 !important; }

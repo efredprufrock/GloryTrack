@@ -403,14 +403,105 @@
         build, evalP
     };
 
+    // ===== Akademiden As Takıma yükseltilen oyuncuya otomatik "Altyapıdan Geldi" (kep) ikonu =====
+    const origPromote = window.promotePlayer;
+    window.promotePlayer = function () {
+        if (squadContext !== 'akademi') return origPromote.apply(this, arguments);
+        const before = new Set((squadData.astakim || []).map(x => x.id));
+        const src = (squadData.akademi || []).find(pl => pl.id === activePlayerId);
+        const r = origPromote.apply(this, arguments);            // onay penceresi + kopyalama burada
+        try {
+            const np = (squadData.astakim || []).find(x => !before.has(x.id));
+            if (np && src && src.isPromoted) {
+                let last = null;
+                seasonsList.forEach(sn => { const h = np.history && np.history[sn]; if (h) CH.forEach(c => { if (h[c + 'o'] || h[c + 'a']) last = { sn, c }; }); });
+                if (!last) { const t = targetCell(); last = { sn: t.season, c: t.cell }; }
+                np.history = np.history || {}; const h = np.history[last.sn] = np.history[last.sn] || {};
+                const cur = h[last.c + 'Type'];
+                if (!cur || cur === 'none' || cur === 'continue') { h[last.c + 'Type'] = 'academy'; saveToLocalStorage(); renderSquadGrid(); }
+            }
+        } catch (e) { console.warn('GTAC promote', e); }
+        return r;
+    };
+
+    // ===== Akademi rolleri: Future Star ★ · First Team (4 çubuk) · To Loan (3) · To Sell (2) · Release (1) =====
+    const AC_ROLES = ['Future Star', 'First Team', 'To Loan', 'To Sell', 'Release'];
+    const AC_OLD = { 'Yıldız Adayı': 'Future Star', 'A Takım Adayı': 'First Team', 'Kiralık Gelişecek': 'To Loan', 'Satış Adayı': 'To Sell', 'Serbest Bırakılacak': 'Release',
+                     'Gelecek Vadeden': 'Future Star', 'Yetersiz': 'Release',
+                     'First Team Candidate': 'First Team', 'Develop on Loan': 'To Loan', 'Sell Candidate': 'To Sell', 'Release Candidate': 'Release' };
+    function migrateRoles() {
+        const cur = playerRoles.akademi || [];
+        if (AC_ROLES.every(r => cur.includes(r)) && !cur.some(r => AC_OLD[r])) return false;
+        const used = new Set(); let moved = false;
+        (squadData.akademi || []).forEach(p => { if (AC_OLD[p.role]) { p.role = AC_OLD[p.role]; moved = true; } if (p.role) used.add(p.role); });
+        const extra = cur.filter(r => !AC_ROLES.includes(r) && !AC_OLD[r] && used.has(r));      // oyuncuda kullanılan özel roller korunur
+        playerRoles.akademi = AC_ROLES.concat(extra);
+        return true;
+    }
+    const origRoleIcon = window.sqRoleIcon;
+    window.sqRoleIcon = function (role, ctx) {
+        if (ctx === 'akademi') {
+            const safe = escapeHtml(role || '');
+            if (role === 'Future Star') return `<span class="sq-role sq-role-star" title="${safe}"><i class="fa-solid fa-star"></i></span>`;
+            const n = { 'First Team': 4, 'To Loan': 3, 'To Sell': 2, 'Release': 1 }[role];
+            if (n) {
+                const col = { 4: '#f87171', 3: '#60a5fa', 2: '#fbbf24', 1: '#94a3b8' }[n];
+                return `<span class="sq-role" title="${safe}"><svg viewBox="0 0 15 12" width="15" height="12">${[0, 1, 2, 3].map(k => `<rect x="${k * 4}" y="${9 - k * 3}" width="3" height="${3 + k * 3}" rx="1" fill="${k < n ? col : '#334155'}"/>`).join('')}</svg></span>`;
+            }
+        }
+        return origRoleIcon.apply(this, arguments);
+    };
+    const origPop = window.populateRolesDropdown;
+    window.populateRolesDropdown = function (id, sel) {
+        const ac = squadContext === 'akademi';
+        if (ac) { try { if (migrateRoles()) saveToLocalStorage(); } catch (e) {} }
+        const r = origPop.call(this, id, sel);
+        // Akademi: varsayılan rol boş (ilk seçenek "—")
+        if (ac) {
+            const el = document.getElementById(id);
+            if (el && !el.querySelector('option[value=""]')) {
+                const o = document.createElement('option'); o.value = ''; o.textContent = '—'; el.insertBefore(o, el.firstChild);
+                el.value = (playerRoles.akademi || []).includes(sel) ? sel : '';
+            }
+        }
+        return r;
+    };
+    // Toplu düzenleme (akademi): rol listesine boş seçenek ekler
+    if (typeof window.pbRender === 'function') {
+        const origPb = window.pbRender;
+        window.pbRender = function () {
+            const r = origPb.apply(this, arguments);
+            try {
+                if (pbCtx === 'akademi') document.querySelectorAll('#pb-box select[data-col="role"]').forEach(el => {
+                    if (el.querySelector('option[value=""]')) return;
+                    const m = /pbSet\('([^']+)','role'/.exec(el.getAttribute('onchange') || ''), d = m && pbDraft[m[1]];
+                    const o = document.createElement('option'); o.value = ''; o.textContent = '—'; el.insertBefore(o, el.firstChild);
+                    el.value = d && d.role ? d.role : '';
+                });
+            } catch (e) { console.warn(e); }
+            return r;
+        };
+    }
+
+    // Klasik tablodaki POT kutularını ve "güncel POT" sütunundaki sayıyı seviyesine göre renklendirir: 90+ mavi, 80–89 yeşil, 75–79 sarı, 70–74 turuncu, ≤69 kırmızı
+    function tierPots() {
+        document.querySelectorAll('span[class*="border-emerald-600/70"], span[class="text-[10px] font-bold text-emerald-300"]').forEach(el => {
+            const v = parseInt(el.textContent); if (!v) return;
+            if (el.className.indexOf('text-emerald-300') !== -1 || el.classList.contains('gtac-col')) el.classList.add('gtac-col');   // "güncel POT" sütunu: daha büyük rozet
+            el.classList.remove('gtac-t-hi', 'gtac-t-mid', 'gtac-t-lo', 'gtac-t-b', 'gtac-t-g', 'gtac-t-y', 'gtac-t-o', 'gtac-t-r');
+            el.classList.add(v >= 90 ? 'gtac-t-b' : v >= 80 ? 'gtac-t-g' : v >= 75 ? 'gtac-t-y' : v >= 70 ? 'gtac-t-o' : 'gtac-t-r');
+        });
+    }
+
     const orig = window.renderSquadGrid;
     window.renderSquadGrid = function () {
+        try { if (migrateRoles()) saveToLocalStorage(); } catch (e) { console.warn('GTAC roles', e); }
         const home = typeof activeMain !== 'undefined' && activeMain === 'anasayfa';
         if (squadContext === 'akademi' && !home && mode === 'new' && sqView !== 'attrs') {
             try { render(); return; } catch (e) { console.warn('GTAC', e); }
         }
         const r = orig.apply(this, arguments);
-        if (squadContext === 'akademi' && !home && sqView !== 'attrs') { try { injectBack(); } catch (e) {} }
+        if (squadContext === 'akademi' && !home && sqView !== 'attrs') { try { injectBack(); } catch (e) {} try { tierPots(); } catch (e) {} }
         return r;
     };
 })();

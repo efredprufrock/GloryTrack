@@ -159,7 +159,7 @@ window.addEventListener('load', () => setTimeout(() => {
     if (window.__gtSqRenderWrapped || typeof renderSquadGrid !== 'function') return;
     window.__gtSqRenderWrapped = true;
     const orig = window.renderSquadGrid;
-    window.renderSquadGrid = function () { try { gtSqSyncAll(); } catch (e) { console.warn(e); } return orig.apply(this, arguments); };
+    window.renderSquadGrid = function () { try { gtSqSyncAll(); } catch (e) { console.warn(e); } try { gtFreeMigrate(); } catch (e) { console.warn(e); } return orig.apply(this, arguments); };
 })();
 // Toplu özellik ekleme penceresi: dönem listesi kadro sütunlarıyla aynı adları ve sırayı kullanır
 (function gtSqWrapAttrImport() {
@@ -248,17 +248,22 @@ function gtSqSumCell(p, season, strip) {
     const types = GTSQ_CHRONO.map(k => d[k + 'Type']).filter(t => t && t !== 'none' && t !== 'continue');
     const click = `onclick="gtSqToggleSeason('${gtSqJs(season)}')"`;
     const base = 'p-0 border-r border-b border-slate-700/50 hover:bg-slate-800/80 align-middle cursor-pointer text-center transition-colors min-w-[125px] w-[125px] max-w-[125px]';
+    // Akademi: sezon sütunlarındaki gibi pozisyon rengi (tüm takım sıralamasında da korunur)
+    if (squadContext === 'akademi' && GTSQ_CHRONO.some(k => d[k + '_acadPot']) && typeof getMacroGroupForPos === 'function') {
+        const m = { GK: 'bg-orange-600/30', DEF: 'bg-blue-600/30', MID: 'bg-green-600/30', FWD: 'bg-red-600/30' }[getMacroGroupForPos(p.pos)];
+        if (m) strip = m;
+    }
     if (!pts.length && !types.length) return `<td class="${base} bg-transparent" ${click}></td>`;
-    const ICON = { in: ['fa-arrow-right-to-bracket', '#22c55e'], academy: ['fa-graduation-cap', '#06b6d4'], out: ['fa-arrow-right-from-bracket', '#ef4444'], renew: ['fa-file-signature', '#a855f7'], loan_in: ['fa-handshake-angle', '#3b82f6'], loan_out: ['fa-paper-plane', '#f97316'] };
+    const ICON = { in: ['fa-arrow-right-to-bracket', '#22c55e'], academy: ['fa-graduation-cap', '#3b82f6'], out: ['fa-arrow-right-from-bracket', '#ef4444'], renew: ['fa-file-circle-check', '#a855f7'], free_in: ['fa-gift', '#14b8a6'], loan_in: ['fa-arrow-rotate-left', '#22c55e'], loan_out: ['fa-arrow-rotate-right', '#ef4444'] };
     const icons = [...new Set(types)].slice(0, 2).map(t => ICON[t] ? `<i class="fa-solid ${ICON[t][0]}" style="color:${ICON[t][1]}"></i>` : '').join('');
     let body = '';
     if (pts.length) {
         const before = gtSqBefore(p, season, 't1', 'o');
         const start = before ? before.v : pts[0], end = pts[pts.length - 1], diff = end - start;
-        body = `<span class="gt-sum-a">${start}</span><i class="fa-solid fa-arrow-right-long gt-sum-ar"></i>${mbOvr(end, true)}` +
-            (diff ? `<b class="${diff > 0 ? 'up' : 'dn'}">${diff > 0 ? '+' : ''}${diff}</b>` : '<b class="eq">=</b>');
+        body = `<span class="gt-sum-a">${start}</span><i class="fa-solid fa-arrow-right-long gt-sum-ar"></i><span class="gt-sum-r">${mbOvr(end, true)}` +
+            (diff ? `<span class="gt-dl ${diff > 0 ? 'up' : 'dn'}">${Math.abs(diff)}</span>` : '') + '</span>';
     }
-    return `<td class="${base} ${strip || ''}" ${click}><div class="gt-sum">${body}${icons ? `<span class="gt-sum-ic">${icons}</span>` : ''}</div></td>`;
+    return `<td class="${base} ${strip || ''}" ${click}><div class="gt-sum">${body}<span class="gt-sum-ic">${icons}</span></div></td>`;
 }
 
 // ---- 3) OVR seyri ----
@@ -630,7 +635,7 @@ function gtTrApply(tr, type, opts) {
     if (!p.history) p.history = {};
     if (!p.history[tr.season]) p.history[tr.season] = {};
     const d = p.history[tr.season];
-    const cellType = type === 'in' ? (tr.kind === 'loan' ? 'loan_in' : 'in') : (tr.kind === 'loan' ? 'loan_out' : 'out');
+    const cellType = type === 'in' ? (tr.kind === 'loan' ? 'loan_in' : tr.kind === 'free' ? 'free_in' : 'in') : (tr.kind === 'loan' ? 'loan_out' : 'out');
     const text = String(tr.team || '').toLocaleUpperCase('tr'), logo = gtTrLogo(tr.team);
     if (d[win + 'Type'] !== cellType || (d[win] || '') !== text || (d[win + 'Logo'] || '') !== logo) out.cell = true;
     d[win + 'Type'] = cellType; d[win] = text;
@@ -643,7 +648,7 @@ function gtTrApply(tr, type, opts) {
 function gtTrClearCell(name, season, win, type, ovr, age) {
     const hit = gtTrFind(name), d = hit && hit.p.history && hit.p.history[season]; if (!d) return;
     const t = d[win + 'Type'];
-    if ((type === 'in' && (t === 'in' || t === 'loan_in')) || (type === 'out' && (t === 'out' || t === 'loan_out'))) {
+    if ((type === 'in' && (t === 'in' || t === 'loan_in' || t === 'free_in')) || (type === 'out' && (t === 'out' || t === 'loan_out'))) {
         delete d[win + 'Type']; delete d[win]; delete d[win + 'Logo'];
         // Hücreye transferle birlikte yazılmış OVR / yaş da (değiştirilmemişse) kalkar
         if (ovr && String(d[win + 'o'] || '') === String(ovr)) delete d[win + 'o'];
@@ -800,3 +805,17 @@ function gtSqNatSave() {
     const run = () => { dock(); new MutationObserver(dock).observe(document.body, { childList: true }); };
     if (document.readyState === 'complete') setTimeout(run, 0); else window.addEventListener('load', () => setTimeout(run, 0));
 })();
+
+// Bedelsiz gelen (kind 'free' ya da ücretsiz, kiralık olmayan) transferlerin kadro hücresindeki eski "Geldi" işaretini "Bedelsiz Geldi" yapar
+function gtFreeMigrate() {
+    const list = (typeof transferData !== 'undefined' && transferData && transferData.in) || []; let ch = false;
+    list.forEach(t => {
+        if (!t || !t.name || !t.season) return;
+        const free = t.kind === 'free' || (!t.kind && !(Number(t.fee) > 0));
+        if (!free) return;
+        const hit = gtTrFind(String(t.name).trim()), d = hit && hit.p.history && hit.p.history[t.season]; if (!d) return;
+        const w = t.win === 't2' ? 't2' : 't1';
+        if (d[w + 'Type'] === 'in') { d[w + 'Type'] = 'free_in'; ch = true; }
+    });
+    if (ch && typeof saveToLocalStorage === 'function') saveToLocalStorage();
+}

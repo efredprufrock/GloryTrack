@@ -3,7 +3,7 @@
 //  · Yazı tipi, ikon ve kütüphane dosyaları (CDN): önbellekten anında, arka planda tazelenir
 //    → çevrimdışıyken de ikonlar, yazı tipleri ve grafikler çalışır
 //  · Firebase / bulut istekleri ve logolar: dokunulmaz (doğrudan ağa gider)
-const CACHE = 'glorytrack-v4';
+const CACHE = 'glorytrack-v9';
 const CDN_CACHE = 'glorytrack-cdn-v1';
 const KEEP = [CACHE, CDN_CACHE];
 
