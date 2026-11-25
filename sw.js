@@ -3,14 +3,14 @@
 //  · Yazı tipi, ikon ve kütüphane dosyaları (CDN): önbellekten anında, arka planda tazelenir
 //    → çevrimdışıyken de ikonlar, yazı tipleri ve grafikler çalışır
 //  · Firebase / bulut istekleri ve logolar: dokunulmaz (doğrudan ağa gider)
-const CACHE = 'glorytrack-v9';
+const CACHE = 'glorytrack-v16';
 const CDN_CACHE = 'glorytrack-cdn-v1';
 const KEEP = [CACHE, CDN_CACHE];
 
 // İlk kurulumda önbelleğe alınan uygulama kabuğu (biri eksikse kurulum yine tamamlanır)
 const SHELL = [
     './', 'index.html', 'style.css', 'tailwind.css?v=1', 'gt-modern.css?v=1',
-    'script.js', 'gt-enhance.js?v=1', 'gt-squad.js?v=1', 'gt-squad.css?v=1', 'gt-career.js?v=1', 'gt-league.js?v=1', 'gt-finance.js?v=1', 'gt-finance.css?v=1', 'gt-league.css?v=1', 'gt-country.js?v=1', 'gt-career.css?v=1', 'team-tournament-data.js', 'firebase-config.js',
+    'script.js', 'gt-enhance.js?v=1', 'gt-entry.js', 'gt-entry.css', 'gt-squad.js?v=1', 'gt-squad.css?v=1', 'gt-home.js?v=1', 'gt-home.css?v=1', 'gt-career.js?v=1', 'gt-league.js?v=1', 'gt-finance.js?v=1', 'gt-finance.css?v=1', 'gt-league.css?v=1', 'gt-country.js?v=1', 'gt-career.css?v=1', 'team-tournament-data.js', 'firebase-config.js',
     'manifest.json', 'favicon.svg?v=3', 'icons/icon-192.png'
 ];
 

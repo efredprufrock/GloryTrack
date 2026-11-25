@@ -5310,7 +5310,10 @@ function handleFileUpload(event, type) {
             // ===== TASARIM 4: Lider kartı + 2 sütun mozaik, renkli turnuva rozetleri =====
             const palette = ['#38bdf8', '#34d399', '#f472b6', '#fbbf24', '#a78bfa', '#fb923c', '#2dd4bf', '#f87171'];
             const tColor = {};
-            tours.forEach((t, i) => { tColor[t] = palette[i % palette.length]; });
+            const allT = [];
+((fixtureData && fixtureData[season]) || []).forEach(m => { const t = m.tournament || ''; if (!allT.includes(t)) allT.push(t); });
+tours.forEach(t => { if (!allT.includes(t)) allT.push(t); });
+tours.forEach(t => { tColor[t] = palette[allT.indexOf(t) % palette.length]; });
             const unit = isGoal ? 'gol' : 'asist';
             const accHex = isGoal ? '#fbbf24' : '#60a5fa';
 
@@ -5358,11 +5361,11 @@ function handleFileUpload(event, type) {
                 const li = detByName[lead.name];
                 const lOpen = homeStatsOpen.has(kind + '|' + lead.name);
                 const hero = `<div class="rounded-2xl border border-slate-700/50 min-w-0 mb-1.5" style="background:linear-gradient(120deg, color-mix(in srgb, ${accHex} 18%, transparent), transparent 75%);border-color:color-mix(in srgb, ${accHex} 38%, transparent)">
-                    <div class="flex items-center justify-between gap-2 px-3 py-2.5 sm:px-4 sm:py-3 cursor-pointer" onclick="homeToggleStatRow('${kind}', '${encOf(lead)}')">
-                        <div class="flex items-center gap-3 min-w-0">
+                    <div class="flex items-center justify-between gap-2 pl-1.5 pr-3 py-2 sm:pr-4 sm:py-2.5 cursor-pointer" onclick="homeToggleStatRow('${kind}', '${encOf(lead)}')">
+                        <div class="flex items-center gap-2.5 min-w-0">
                             ${photoOf(lead, 'w-12 h-12 sm:w-14 sm:h-14', 'rounded-2xl')}
                             <div class="min-w-0">
-                                <div class="text-[9px] font-bold tracking-[0.16em] uppercase" style="color:${accHex}">Lider</div>
+                                 
                                 <div class="text-sm sm:text-base font-bold text-white truncate" title="${escapeHtml(lead.name)}">${escapeHtml(homeShortName(lead.name))}</div>
                                 <div class="flex items-center gap-1 mt-1 flex-wrap">${chipsHtml(li, true)}</div>
                             </div>
@@ -11836,6 +11839,7 @@ function piRenderProfile(p) { pinP = p; pinOpen = false;
             const renderTransferList = (type) => {
                 const tData = [...transferData[type]];
                 const tSort = transferSort[type];
+                const _ord = new Map(tData.map((x, i) => [x, i]));
 
                 tData.sort((a, b) => {
                     let valA = a[tSort.field]; let valB = b[tSort.field];
@@ -11846,7 +11850,7 @@ function piRenderProfile(p) { pinP = p; pinOpen = false;
                     }
                     if (valA < valB) return tSort.asc ? -1 : 1;
                     if (valA > valB) return tSort.asc ? 1 : -1;
-                    return 0;
+                    return tSort.asc ? _ord.get(a) - _ord.get(b) : _ord.get(b) - _ord.get(a);
                 });
 
                 let listHTML = '';
@@ -13217,6 +13221,7 @@ function applyQfbCollapsedState() {
             'play-off': 'PO',
             'play-off final': 'PF'
         };
+
 
         function getRoundAbbr(round) {
             if (!round) return '';
