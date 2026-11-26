@@ -75,3 +75,5 @@
 .gte-tb td { text-align: right; padding: 4px 6px; border-bottom: 1px solid #16213a; }
 .gte-tb th:nth-child(2), .gte-tb td:nth-child(2) { text-align: left; width: 100%; }
 .gte-tb td:first-child, .gte-tb th:first-child { color: #64748b; text-align: center; }
+
+.gte-sel{background:#0f172a;border:1px solid #475569;border-radius:6px;color:#e2e8f0;font-size:12px;padding:3px 6px;max-width:55%}

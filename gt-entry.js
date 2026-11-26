@@ -8,20 +8,20 @@
     const L = (tr, e) => (en() ? e : tr);
     const E = s => (typeof escapeHtml === 'function' ? escapeHtml(String(s == null ? '' : s)) : String(s == null ? '' : s));
 
-    window.gtEntryFlags = window.gtEntryFlags || {};
+    window.gtEntryFlags = window.gtEntryFlags || {}; window.gtDeletedCols = window.gtDeletedCols || [];
     window.gtTopPlayers = window.gtTopPlayers || {};
-    window.gtTables = window.gtTables || {};
+    window.gtTables = window.gtTables || {}; window.gtNameAlias = window.gtNameAlias || {};
     let sel = { s: null, c: 's2' };
     let openKey = null, aiKey = null, aiTxt = '', aiPrev = null, aiMsg = '';
 
     // ---- kalıcılık: kariyer verisine ve buluta eşlik eder ----
     if (typeof window.getAllData === 'function') {
         const o = window.getAllData;
-        window.getAllData = function () { const d = o.apply(this, arguments); try { d.entryFlags = window.gtEntryFlags; d.topPlayers = window.gtTopPlayers; d.tablesSnap = window.gtTables; } catch (e) {} return d; };
+        window.getAllData = function () { const d = o.apply(this, arguments); try { d.entryFlags = window.gtEntryFlags; d.topPlayers = window.gtTopPlayers; d.tablesSnap = window.gtTables; d.deletedCols = window.gtDeletedCols; d.leagueAlias = window.gtLeagueAlias; d.nameAlias = window.gtNameAlias; } catch (e) {} return d; };
     }
     if (typeof window.applyLoadedData === 'function') {
         const o = window.applyLoadedData;
-        window.applyLoadedData = function (data) { const r = o.apply(this, arguments); try { window.gtEntryFlags = (data && data.entryFlags && typeof data.entryFlags === 'object') ? data.entryFlags : {}; window.gtTopPlayers = (data && data.topPlayers && typeof data.topPlayers === 'object') ? data.topPlayers : {}; window.gtTables = (data && data.tablesSnap && typeof data.tablesSnap === 'object') ? data.tablesSnap : {}; } catch (e) {} return r; };
+        window.applyLoadedData = function (data) { const r = o.apply(this, arguments); try { window.gtNameAlias = (data && data.nameAlias && typeof data.nameAlias === 'object' && !Array.isArray(data.nameAlias)) ? data.nameAlias : {}; window.gtLeagueAlias = (data && data.leagueAlias && typeof data.leagueAlias === 'object' && !Array.isArray(data.leagueAlias)) ? data.leagueAlias : { 'superliga': 'Romanian Superliga', 'swiss super league': 'Swiss League' }; window.gtEntryFlags = (data && data.entryFlags && typeof data.entryFlags === 'object') ? data.entryFlags : {}; window.gtTopPlayers = (data && data.topPlayers && typeof data.topPlayers === 'object') ? data.topPlayers : {}; window.gtTables = (data && data.tablesSnap && typeof data.tablesSnap === 'object') ? data.tablesSnap : {}; ; window.gtDeletedCols = Array.isArray(data && data.deletedCols) ? data.deletedCols : [] } catch (e) {} return r; };
     }
     const flagged = (s, c, k) => !!(window.gtEntryFlags[s] && window.gtEntryFlags[s][c] && window.gtEntryFlags[s][c][k]);
     function toggleFlag(s, c, k) {
@@ -80,7 +80,7 @@
         t1: B.concat(['fin', 'acadpot', 'fixtures']),
         s1: B.concat(['fin', 'acadpot', 'tables', 'others', 'euro']),
         t2: B.concat(['acadpot', 'fin']),
-        s2: B.concat(['acadpot', 'fin', 'others', 'top', 'tables', 'cups'])
+        s2: B.concat(['acadpot', 'fin', 'others', 'tables', 'cups'])
     };
     function itemsFor(s, c) {
         const LST = LISTS[c];
@@ -128,7 +128,7 @@
         }
         {
             const lst = editable('akademi', s, c), have = lst.filter(p => parseInt(((p.history || {})[s] || {})[c + '_acadPot'])).length;
-            if (lst.length) out.push({ key: 'acadpot', ctx: 'akademi', label: L('Akademi potansiyeli', 'Academy Potential'), act: 'academy', state: have >= lst.length ? 'ok' : 'wr', n: lst.length - have, sub: have >= lst.length ? L(`${have} / ${lst.length} oyuncunun potansiyeli girildi`, `${have} / ${lst.length} players have potential`) : L(`${lst.length - have} oyuncunun potansiyeli eksik`, `${lst.length - have} players missing potential`) });
+            if (lst.length) out.push({ key: 'acadpot', ctx: 'akademi', label: L('Akademi potansiyeli', 'Academy Potential'), act: 'ai', ai: 1, state: have >= lst.length ? 'ok' : 'wr', n: lst.length - have, sub: have >= lst.length ? L(`${have} / ${lst.length} oyuncunun potansiyeli girildi`, `${have} / ${lst.length} players have potential`) : L(`${lst.length - have} oyuncunun potansiyeli eksik`, `${lst.length - have} players missing potential`) });
         }
         if (c === 's2') {
             const slots = typeof euroSlots === 'function' ? euroSlots(s) : [], ed = (euroLeaguesData && euroLeaguesData[s]) || {}, have = slots.filter(n => ed[n] && ed[n][0] && ed[n][0].name).length;
@@ -147,7 +147,7 @@
             const have = pyramidData && pyramidData[s] ? ['PL', 'CH', 'L1', 'L2'].filter(k => (pyramidData[s][k] || []).length).length : 0;
             out.push({ key: 'tables', ai: 1, label: L('Lig tabloları', 'League tables'), act: 'tables', state: have === 4 ? 'ok' : 'wr', n: have === 4 ? 0 : 1, sub: have === 4 ? L('4 / 4 lig girildi', '4 / 4 leagues entered') : L(`${have} / 4 lig girildi`, `${have} / 4 leagues entered`) });
             const tc = (typeof trophyData !== 'undefined' && trophyData && trophyData[s]) ? Object.keys(trophyData[s]).length : 0;
-            out.push({ key: 'cups', label: L('Kupa ve turnuva sonuçları', 'Cups and tournament results'), act: 'cups', state: tc ? 'ok' : 'wr', n: tc ? 0 : 1, sub: tc ? L(`${tc} turnuva girildi`, `${tc} tournaments entered`) : L('Henüz girilmedi', 'Not entered yet') });
+            out.push({ key: 'cups', ai: 1, label: L('Kupa ve turnuva sonuçları', 'Cups and tournament results'), act: 'ai', state: tc ? 'ok' : 'wr', n: tc ? 0 : 1, sub: tc ? L(`${tc} turnuva girildi`, `${tc} tournaments entered`) : L('Henüz girilmedi', 'Not entered yet') });
         }
         out.forEach(o => { if (o.state === 'wr' && flagged(s, c, o.key)) { o.state = 'flag'; o.sub = L('Bu sezon yok olarak işaretli', 'Marked as none this season'); } });
         return out;
@@ -254,7 +254,14 @@
     // ================= YAPAY ZEKA İLE İÇE AKTARMA =================
     const norm = x => String(x || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ı/g, 'i').toLowerCase().replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
     const POS = 'GK, CB, LB, RB, DM, CM, AM, LM, RM, LW, RW, ST';
+    let unmatched = [];
     function findPlayer(list, name) {
+        const n = norm(name); if (!n) return null;
+        const al = window.gtNameAlias[n]; if (al) { const ap = list.find(x => x.id === al); if (ap) return ap; }
+        const hit = findPlayer0(list, n); if (!hit && !unmatched.some(u => u.n === n)) unmatched.push({ n, name: String(name || '').trim(), list });
+        return hit;
+    }
+    function findPlayer0(list, name) {
         const n = norm(name); if (!n) return null;
         let m = list.filter(p => norm(p.name) === n); if (m.length === 1) return m[0];
         const last = n.split(' ').pop();
@@ -263,7 +270,7 @@
         return null;
     }
     const SNAPK = { tables: 'domestic', others: 'others', euro: 'euro' };
-    const WANT = { squad: 'squad', academy: 'academy', milli: 'national', tables: 'league_tables', transfer: 'transfers', fin: 'finance', others: 'other_leagues', top: 'top_players', birth: 'birth_dates', birth_milli: 'birth_dates' };
+    const WANT = { squad: 'squad', academy: 'academy', milli: 'national', tables: 'league_tables', transfer: 'transfers', fin: 'finance', acadpot: 'academy_pot', others: 'other_leagues', cups: 'cup_results', top: 'top_players', birth: 'birth_dates', birth_milli: 'birth_dates' };
     function snapPrompt(o, head) {
         const kind = SNAPK[o.key];
         const row = '{ "team": "Takım", "p": 17, "w": 10, "d": 4, "l": 3, "gf": 30, "ga": 15, "pts": 34 }';
@@ -281,6 +288,14 @@
             const m = ATTR_OUT.map(g => `"${g.k}": 0`).join(', '), a = ATTR_OUT.reduce((x, g) => x.concat(g.a.map(y => `"${y[0]}": 0`)), []).join(', '), ga = ATTR_GK.reduce((x, g) => x.concat(g.a.map(y => `"${y[0]}": 0`)), []).join(', ');
             return `${head('Ekteki EA FC 26 kariyer modu "Development Plans" ekranlarından oyuncuların genel değerini ve özelliklerini oku. Her oyuncu için ayrı ekran olabilir.')}\n- name: oyuncunun adı; aşağıdaki kadro listesindeki yazımla birebir kullan (ekranda çoğu zaman sadece soyadı yazar).\n- ovr: ekranda büyük görünen genel değer. age: ekranda yoksa null yaz.\n- pos: mevki kodu, role: oyuncu rolü (ör. Inside Forward), sm: teknik hareket yıldızı (1-5), wf: zayıf ayak yıldızı (1-5), foot: "R" veya "L".\n- m: 6 ana özellik (pac, sho, pas, dri, def, phy). a: alt özellikler (aşağıdaki anahtarlarla). Kaleciler için kaleci anahtarlarını kullan. Göremediğin özelliği yazma.\n\nBeklenen biçim (örnek, tek oyuncu için):\n${JSON.stringify({ gt: 'attrs', v: 1, season: sel.s, phase, ctx: o.ctx, players: [{ name: names[0] || 'Oyuncu Adı', pos: 'LM', role: 'Inside Forward', age: null, ovr: 58, sm: 3, wf: 4, foot: 'R', m: { pac: 71, sho: 46, pas: 52, dri: 59, def: 35, phy: 52 }, a: { acc: 67, spr: 75, fin: 43 } }] }, null, 2)}\n\nAlt özellik anahtarları (oyuncular): ${a}\nKaleci alt özellik anahtarları: ${ga}\n\nKadro listesi:\n${names.join('; ')}`;
         }
+        if (o.key === 'cups') {
+            const ts = cupList().map(t => t.name);
+            return `${head('Ekteki EA FC 26 kariyer modu ekran görüntüleri/videosundan bu sezon bitmiş kupa ve turnuvaların şampiyon ve finalisti (ikinci) takımını oku.')}\n- tournament: aşağıdaki listedeki ada birebir uy.\n- champion ve runnerUp: takım adı; bilmiyorsan runnerUp null.\n- Yalnızca ekranda sonucu görünen turnuvaları yaz, tahmin etme.\n\nBeklenen biçim (örnek):\n${JSON.stringify({ type: 'cup_results', season: sel.s, results: [{ tournament: ts[0] || 'Turnuva Adı', champion: 'Takım A', runnerUp: 'Takım B' }] }, null, 2)}\n\nTurnuva listesi:\n${ts.join('; ')}`;
+        }
+        if (o.key === 'acadpot') {
+            const names = nm('akademi');
+            return `${head('Ekteki EA FC 26 kariyer modu "Youth Squad" (akademi) ekran görüntüleri/videosundan akademi oyuncularının potansiyelini (POT) oku.')}\n- name: aşağıdaki akademi listesindeki yazımla birebir (ekranda çoğu zaman "P. Xhoma" gibi kısaltılmış yazar, listedeki tam adı kullan).\n- pot: POT sütunu veya oyuncu detayındaki "Potential" aralığının ÜST değeri (örn. "55 - 84" veya "79-94" için 84 ve 94). Tek sayı yazıyorsa onu kullan.\n- potMin: aralığın alt değeri, yoksa null.\n- ovr ve age: ekranda görünüyorsa yaz, yoksa null.\n\nBeklenen biçim (örnek):\n${JSON.stringify({ type: 'academy_pot', season: sel.s, checkpoint: sel.c, players: [{ name: names[0] || 'Oyuncu Adı', pot: 84, potMin: 55, ovr: 55, age: 16 }, { name: names[1] || 'Diğer Oyuncu', pot: 94, potMin: 79, ovr: 47, age: 14 }] }, null, 2)}\n\nAkademi listesi:\n${names.join('; ')}`;
+        }
         if (o.key === 'fin') { const names = nm('astakim'); return `${head('Ekteki EA FC 26 kariyer modu ekran görüntüleri/videosundan kadro oyuncularının piyasa değerini, maaşını ve sözleşme bilgisini oku.')}\n- name: aşağıdaki kadro listesindeki yazımla birebir.\n- value: piyasa değeri, euro cinsinden tam sayı (örn. 2,5 milyon € için 2500000).\n- wage: maaş, euro cinsinden tam sayı. wagePer: ekranda hangi periyotta yazıyorsa "week" veya "year".\n- until: sözleşme bitiş yılı (örn. 2028), yoksa null. clause: serbest kalma bedeli (euro) yoksa null.\n\nBeklenen biçim (örnek):\n${JSON.stringify({ type: 'finance', season: sel.s, checkpoint: sel.c, players: [{ name: names[0] || 'Oyuncu Adı', value: 2500000, wage: 18000, wagePer: 'week', until: 2028, clause: null }] }, null, 2)}\n\nKadro listesi:\n${names.join('; ')}`; }
         if (o.key === 'others') { const sl = typeof euroSlots === 'function' ? euroSlots(sel.s) : []; return `${head('Ekteki EA FC 26 kariyer modu ekran görüntüleri/videosundan diğer liglerin puan tablosunda ilk 6 takımı (sıra ve puan) oku.')}\n- Her lig için tam 6 takım yaz, 1. sıradan başlayarak. pts: puan (tam sayı).\n- Lig adlarını aşağıdaki listedeki gibi yaz. Görmediğin ligi çıkar.\n\nBeklenen biçim (örnek):\n${JSON.stringify({ type: 'other_leagues', season: sel.s, leagues: { [sl[0] || 'La Liga']: [{ name: 'Takım 1', pts: 78 }, { name: 'Takım 2', pts: 74 }, '...6 takım'] } }, null, 2)}\n\nLig listesi: ${sl.join('; ')}`; }
         if (o.key === 'top') { const ex = topExpected(sel.s); return `${head('Ekteki EA FC 26 kariyer modu ekran görüntüleri/videosundan her turnuvanın en çok gol atan ve en çok asist yapan birer oyuncusunu oku.')}\n- tournament: aşağıdaki listedeki ad ile birebir. Görmediğin turnuvayı çıkar. Gol veya asistten birini göremediysen o alanı null yaz.\n- team: oyuncunun takımı.\n\nBeklenen biçim (örnek):\n${JSON.stringify({ type: 'top_players', season: sel.s, tournaments: [{ tournament: ex[0] || 'Turnuva Adı', topScorer: { name: 'Oyuncu', team: 'Takım', goals: 21 }, topAssist: { name: 'Oyuncu', team: 'Takım', assists: 14 } }] }, null, 2)}\n\nTurnuva listesi: ${ex.join('; ')}`; }
@@ -297,6 +312,17 @@
         const i = t.indexOf('{'), j = t.lastIndexOf('}'); if (i < 0 || j <= i) throw new Error(L('JSON bulunamadı. Yapay zekanın cevabını olduğu gibi yapıştır.', 'No JSON found.'));
         return JSON.parse(t.slice(i, j + 1));
     }
+    function prevPot(p, s, c) {
+        const ss = seasonsList || []; let si = ss.indexOf(s), ci = ORDER.indexOf(c);
+        while (si >= 0) { ci--; if (ci < 0) { si--; ci = 3; if (si < 0) break; } const h = p.history && p.history[ss[si]]; const v = h && parseInt(h[ORDER[ci] + '_acadPot']); if (v > 0) return v; }
+        return 0;
+    }
+    function prevFin(p, s, c) {
+        const ss = seasonsList || []; let si = ss.indexOf(s), ci = ORDER.indexOf(c);
+        while (si >= 0) { ci--; if (ci < 0) { si--; ci = 3; if (si < 0) break; } const f = p.fin && p.fin[ss[si] + '|' + ORDER[ci]]; if (f && (f.value || f.wage)) return f; }
+        return null;
+    }
+    function cupList() { return (tournamentsList || []).filter(t => t && t.name && !/^lg_/.test(String(t.id))); }
     const okOvr = v => Number.isInteger(v) && v >= 1 && v <= 99, okAge = v => Number.isInteger(v) && v >= 14 && v <= 50;
     function buildPrev(o, d) {
         const warn = [], rows = [], skip = [];
@@ -321,12 +347,35 @@
                 rows.push({ key, t, txt: key, chg: `${t.length} ${L('takım', 'teams')} · ${t[0].team} ${t[0].pts}` });
             });
             if (!rows.length && !skip.length) throw new Error(L('Hiç tablo bulunamadı.', 'No tables found.'));
+        } else if (want === 'academy_pot') {
+            const list = ((squadData && squadData.akademi) || []).filter(p => !p.isArchived && !p.isPromoted), seen = new Set();
+            (d.players || []).forEach(x => {
+                const p = findPlayer(list, x.name), pot = Math.round(Number(x.pot));
+                if (!p) { skip.push(`${x.name || '?'} · ${L('akademide eşleşmedi', 'no match in academy')}`); return; }
+                if (!Number.isFinite(pot) || pot < 40 || pot > 99) { skip.push(`${x.name} · ${L('geçersiz POT', 'invalid POT')}`); return; }
+                if (seen.has(p)) { warn.push(`${p.name}: ${L('birden fazla kez geçiyor, sonuncusu işlenecek.', 'listed more than once; last one used.')}`); }
+                seen.add(p);
+                const min = Math.round(Number(x.potMin)), ov = parseInt(((p.history || {})[sel.s] || {})[sel.c + '_acadPot']) || 0;
+                if (Number.isFinite(min) && min > pot) warn.push(`${p.name}: ${L('alt değer üst değerden büyük.', 'min above max.')}`);
+                const cov = Math.round(Number(x.ovr)) || prevVals(p, sel.s, sel.c).o || 0;
+                if (cov && pot < cov) warn.push(`${p.name}: POT ${pot}, OVR ${cov}${L("'den düşük.", ' is higher than POT.')}`);
+                const pp = prevPot(p, sel.s, sel.c); if (pp && pot < pp - 5) warn.push(`${p.name}: POT ${pp} → ${pot} (${L('geçen ölçümden 5+ düştü', 'dropped 5+')}).`);
+                rows.push({ p, pot, same: ov === pot, txt: E(p.name), chg: `POT ${pot}${ov && ov !== pot ? ' (' + L('önceki', 'was') + ' ' + ov + ')' : ''}${ov === pot ? ' · ' + L('aynı', 'same') : ''}` });
+            });
+            const nm0 = list.filter(p => !seen.has(p)).length; if (nm0) warn.push(L(`${nm0} akademi oyuncusu sonuçta yok, bu oyuncuların POT'u boş kalacak.`, `${nm0} academy players missing from the result.`));
         } else if (want === 'finance') {
             const list = (squadData && squadData.astakim) || [];
             (d.players || []).forEach(x => {
                 const p = findPlayer(list, x.name), value = Math.round(Number(x.value)) || 0, wage = Math.round(Number(x.wage)) || 0;
                 if (!p) { skip.push(`${x.name || '?'} · ${L('kadroda eşleşmedi', 'no match')}`); return; }
                 if (!value && !wage) { skip.push(`${x.name} · ${L('değer ve maaş yok', 'no value or wage')}`); return; }
+                const pf = prevFin(p, sel.s, sel.c);
+                if (pf) {
+                    if (pf.value && value && (value > pf.value * 3 || value < pf.value / 3)) warn.push(`${p.name}: ${L('değer', 'value')} ${money(pf.value)} → ${money(value)}`);
+                    if (pf.wage && wage && (wage > pf.wage * 3 || wage < pf.wage / 3) && (pf.per || 'week') === (x.wagePer === 'year' ? 'year' : 'week')) warn.push(`${p.name}: ${L('maaş', 'wage')} ${money(pf.wage)} → ${money(wage)}`);
+                }
+                const un = parseInt(x.until), sy = 2000 + (parseInt(String(sel.s).slice(0, 2)) || 0);
+                if (un && un < sy) warn.push(`${p.name}: ${L('sözleşme bitişi', 'contract end')} ${un}, ${L('sezon başından önce', 'before season start')}.`);
                 rows.push({ p, value, wage, per: x.wagePer === 'year' ? 'year' : 'week', until: parseInt(x.until) || null, clause: Math.round(Number(x.clause)) || null, txt: E(p.name), chg: `${money(value)} · ${money(wage)}/${x.wagePer === 'year' ? L('yıl', 'yr') : L('hf', 'wk')}${x.until ? ' · ' + x.until : ''}` });
             });
         } else if (want === 'other_leagues') {
@@ -339,6 +388,19 @@
                 rows.push({ league: nmK, t, txt: nmK, chg: t.map(x => x.name).slice(0, 3).join(', ') + '…' });
             });
             if (!rows.length && !skip.length) throw new Error(L('Hiç lig bulunamadı.', 'No leagues found.'));
+        } else if (want === 'cup_results') {
+            const ts = cupList();
+            (d.results || []).forEach(x => {
+                const t = ts.find(z => norm(z.name) === norm(x.tournament) || (typeof tourCanon === 'function' && norm(tourCanon(z.name)) === norm(tourCanon(x.tournament))));
+                const ch = String(x.champion || '').trim(), ru = String(x.runnerUp || '').trim();
+                if (!t) { skip.push(`${x.tournament || '?'} · ${L('turnuva listesinde yok', 'not in the tournament list')}`); return; }
+                if (!ch) { skip.push(`${t.name} · ${L('şampiyon yok', 'no champion')}`); return; }
+                const cur = (trophyData[sel.s] && trophyData[sel.s][t.id]) || {};
+                const cc = cur.champion && cur.champion.name, cr = cur.runnerUp && cur.runnerUp.name;
+                if ((cc && norm(cc) !== norm(ch)) || (cr && ru && norm(cr) !== norm(ru))) warn.push(`${t.name}: ${L('mevcut kayıt değişecek', 'existing entry will change')} (${cc || '–'} / ${cr || '–'}).`);
+                rows.push({ t, ch, ru, same: cc && norm(cc) === norm(ch) && (!ru || (cr && norm(cr) === norm(ru))), txt: E(t.name), chg: `🏆 ${ch}${ru ? ' · ' + ru : ''}` });
+            });
+            if (!rows.length && !skip.length) throw new Error(L('Hiç sonuç bulunamadı.', 'No results found.'));
         } else if (want === 'top_players') {
             const ex = topExpected(sel.s);
             (d.tournaments || []).forEach(x => {
@@ -360,6 +422,10 @@
                 if (!p) { skip.push(`${mm[1]} · ${L('kadroda eşleşmedi', 'no match')}`); return; }
                 if (!(y >= 1960 && y <= 2013 && mo >= 1 && mo <= 12 && da >= 1 && da <= 31)) { skip.push(`${mm[1]} · ${L('geçersiz tarih', 'invalid date')}`); return; }
                 const iso = `${y}-${String(mo).padStart(2, '0')}-${String(da).padStart(2, '0')}`;
+                const ag = ageAt(iso, sel.s, 't1');
+                if (ag !== null && (ag < 15 || ag > 42)) warn.push(`${p.name}: ${L('bu tarihle yaş', 'age would be')} ${ag}.`);
+                const hs = (p.history && p.history[sel.s]) || {}; const kn = ORDER.map(cc => ({ cc, a: parseInt(hs[cc + 'a']) })).find(z => z.a > 0);
+                if (kn) { const ac = ageAt(iso, sel.s, kn.cc); if (ac !== null && Math.abs(ac - kn.a) > 1) warn.push(`${p.name}: ${L('girilmiş yaş', 'recorded age')} ${kn.a}, ${L('tarihten hesaplanan', 'computed')} ${ac}.`); }
                 rows.push({ p, iso, same: p.birthDate === iso, txt: E(p.name), chg: `${p.birthDate ? p.birthDate + ' → ' : ''}${iso}` });
             });
             if (blank) warn.push(L(`${blank} oyuncunun tarihi boş bırakıldı, işlenmeyecek.`, `${blank} players left blank, skipped.`));
@@ -409,6 +475,7 @@
             ${pv.rows.slice(0, 60).map(r => `<div class="gte-pl${r.same ? ' same' : ''}"><span>${r.txt}</span><span class="gte-sub">${E(r.chg)}</span></div>`).join('')}
             ${pv.rows.length > 60 ? `<div class="gte-sub">+${pv.rows.length - 60}…</div>` : ''}
             ${pv.skip.map(x => `<div class="gte-pl sk"><span>${E(x)}</span></div>`).join('')}
+            ${(pv.unm || []).length ? `<div class="gte-ph">${L('Eşleşmeyen isimleri bağla', 'Link unmatched names')}</div>` + pv.unm.map((u, i) => `<div class="gte-pl"><span>${E(u.name)}</span><select class="gte-sel" onchange="gtEntryLink(${i},this.value)"><option value="">${L('— oyuncu seç', '— pick player')}</option>${u.list.filter(p => p && p.name && !p.isArchived && !p.isPromoted).sort((a, b) => String(a.name).localeCompare(String(b.name))).map(p => `<option value="${E(p.id)}">${E(p.name)}</option>`).join('')}</select></div>`).join('') : ''}
             <div class="gte-ef"><span></span><button class="gte-btn g" onclick="gtEntryAiApply()" ${pv.rows.length ? '' : 'disabled'}>${L('Uygula', 'Apply')}</button></div></div>` : '';
         const step1 = o.noprompt
             ? `<div class="gte-st"><b>1</b> ${L('Kadrodaki oyuncular listelendi. Doğum tarihlerini GG.AA.YYYY olarak ; işaretinden sonra doldur, boş bıraktıkların atlanır.', 'Players are listed. Fill in DD.MM.YYYY after the semicolon; blank lines are skipped.')}</div>`
@@ -444,6 +511,12 @@
         render();
     };
     window.gtEntryAiIn = v => { aiTxt = v; };
+    window.gtEntryLink = (i, id) => {
+        const u = aiPrev && aiPrev.unm && aiPrev.unm[i]; if (!u || !id) return;
+        window.gtNameAlias[u.n] = id;
+        try { saveToLocalStorage(); } catch (e) {}
+        window.gtEntryAiPreview();
+    };
     window.gtEntryAiCopy = () => {
         const o = itemsFor(sel.s, sel.c).find(x => x.key === aiKey); if (!o) return;
         const t = aiPrompt(o);
@@ -453,7 +526,7 @@
     };
     window.gtEntryAiPreview = () => {
         const o = itemsFor(sel.s, sel.c).find(x => x.key === aiKey); if (!o) return;
-        aiMsg = ''; aiPrev = null;
+        aiMsg = ''; aiPrev = null; unmatched = [];
         if (o.key === 'dev' || o.key === 'dev_ac') {
             try {
                 const d = parseAi(aiTxt); if (!Array.isArray(d.players)) throw new Error(L('"players" listesi bulunamadı.', 'No "players" list.'));
@@ -466,7 +539,7 @@
                 return;
             } catch (e) { aiMsg = e.message || String(e); render(); return; }
         }
-        try { aiPrev = buildPrev(o, o.noprompt ? { text: aiTxt } : parseAi(aiTxt)); } catch (e) { aiMsg = e.message || String(e); }
+        try { aiPrev = buildPrev(o, o.noprompt ? { text: aiTxt } : parseAi(aiTxt)); aiPrev.unm = unmatched.slice(); } catch (e) { aiMsg = e.message || String(e); }
         const sc = document.querySelector('.gte-body').scrollTop; render(); document.querySelector('.gte-body').scrollTop = sc;
     };
     window.gtEntryAiApply = () => {
@@ -483,14 +556,21 @@
         } else if (pv.want === 'top_players') {
             window.gtTopPlayers[sel.s] = window.gtTopPlayers[sel.s] || {};
             pv.rows.forEach(r => { window.gtTopPlayers[sel.s][r.t] = { goals: r.g, assists: r.a }; });
+        } else if (pv.want === 'cup_results') {
+            const logo = n => (typeof getTeamLogoByName === 'function' && getTeamLogoByName(n)) || `https://ui-avatars.com/api/?name=${encodeURIComponent(n)}&background=random&color=fff`;
+            trophyData[sel.s] = trophyData[sel.s] || {};
+            pv.rows.forEach(r => { const cell = trophyData[sel.s][r.t.id] || { champion: null, runnerUp: null }; cell.champion = { name: r.ch, logoUrl: logo(r.ch) }; if (r.ru) cell.runnerUp = { name: r.ru, logoUrl: logo(r.ru) }; trophyData[sel.s][r.t.id] = cell; });
+        } else if (pv.want === 'academy_pot') {
+            pv.rows.forEach(r => { r.p.history = r.p.history || {}; const h = r.p.history[sel.s] = r.p.history[sel.s] || {}; h[sel.c + '_acadPot'] = String(r.pot); });
         } else if (pv.want === 'birth_dates') {
-            pv.rows.forEach(r => { r.p.birthDate = r.iso; });
+            pv.rows.forEach(r => { r.p.birthDate = r.iso; fillAges(r.p); });
         } else if (pv.want === 'squad' || pv.want === 'academy' || pv.want === 'national') {
             pv.rows.forEach(r => { r.p.history = r.p.history || {}; const h = r.p.history[sel.s] = r.p.history[sel.s] || {}; h[sel.c + 'o'] = r.ovr; h[sel.c + 'a'] = r.age; if (!PRESENT.includes(h[sel.c + 'Type'])) h[sel.c + 'Type'] = 'continue'; });
         } else if (pv.want === 'league_tables') {
             const cur = Object.assign({}, pyramidData[sel.s] || {});
             pv.rows.forEach(r => { cur[r.k] = r.t.map(x => (typeof pyrName === 'function' ? pyrName(x) : x)).filter(Boolean); });
             pyramidData[sel.s] = cur;
+            syncSeasonTrophies(sel.s);
         } else {
             pv.rows.forEach(r => { transferData[r.dir].push({ id: 'tr_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6), season: sel.s, name: r.name, pos: r.pos, age: r.age, ovr: r.ovr, team: r.team, fee: r.fee, photoUrl: '', kind: r.kind }); });
         }
@@ -617,5 +697,240 @@
     if (typeof window.renderSettingsPanel === 'function') {
         const o = window.renderSettingsPanel;
         window.renderSettingsPanel = function () { const r = o.apply(this, arguments); try { inject(); } catch (e) { console.warn('gt-entry:', e); } return r; };
+    }
+
+    // ================= KUPALAR: lig 1.-2.'leri sezon sonu girilene kadar yansımasın =================
+    // Son sezonda 4 ligin sezon sonu tablosu (30 Haz) girilmediyse, lig tablolarından gelen otomatik şampiyon/ikinci kupa kutularına yazılmaz.
+    // Eski sezonlar ve elle girilmiş kutular etkilenmez.
+    const lastSeason = () => { const l = seasonsList || []; return l[l.length - 1]; };
+    const seasonEndDone = s => { if (s !== lastSeason()) return true; try { return !!pyrFull(s); } catch (e) { return false; } };
+    window.gtSeasonEndDone = seasonEndDone;
+    if (typeof window.euroSyncTrophies === 'function') {
+        const oE = window.euroSyncTrophies;
+        window.euroSyncTrophies = function (season, league) {
+            if (seasonEndDone(season)) return oE.apply(this, arguments);
+            try {
+                const canon = typeof tourCanon === 'function' ? tourCanon(league) : league, t = (tournamentsList || []).find(x => tourCanon(x.name) === canon);
+                const cell = t && trophyData[season] && trophyData[season][t.id];
+                if (cell) { ['champion', 'runnerUp'].forEach(r => { if (cell[r] && cell[r].auto && cell[r].src !== 'ct') cell[r] = null; }); if (!cell.champion && !cell.runnerUp) delete trophyData[season][t.id]; }
+            } catch (e) {}
+        };
+    }
+    if (typeof window.ctSyncTrophies === 'function' && typeof window.ctTourResult === 'function') {
+        const oC = window.ctSyncTrophies, oT = window.ctTourResult;
+        window.ctSyncTrophies = function () {
+            const ls = lastSeason();
+            if (!ls || seasonEndDone(ls)) return oC.apply(this, arguments);
+            const gated = new Set((customTournamentsData && customTournamentsData[ls]) || []);
+            const isLeague = t => { const kos = Array.isArray(t.knockouts) ? t.knockouts : []; return !kos.find(k => k && (k.stage === 'Final' || k.stage === 'F')) && !(t.knockoutEnabled !== undefined ? t.knockoutEnabled : kos.length > 0); };
+            window.ctTourResult = function (t) { return gated.has(t) && isLeague(t) ? null : oT.apply(this, arguments); };
+            try {
+                const r = oC.apply(this, arguments);
+                Object.keys((euroLeaguesData && euroLeaguesData[ls]) || {}).forEach(l => window.euroSyncTrophies(ls, l));
+                return r;
+            } finally { window.ctTourResult = oT; }
+        };
+    }
+    function syncSeasonTrophies(se) {
+        try { Object.keys((euroLeaguesData && euroLeaguesData[se]) || {}).forEach(l => window.euroSyncTrophies(se, l)); window.ctSyncTrophies(); } catch (e) { console.warn('gt-entry trophies:', e); }
+    }
+    window.gtSyncSeasonTrophies = syncSeasonTrophies;
+    if (typeof window.pyrEdSave === 'function') {
+        const oS = window.pyrEdSave;
+        window.pyrEdSave = function () { const se = typeof pyrEd !== 'undefined' && pyrEd && pyrEd.season; const r = oS.apply(this, arguments); if (se) { syncSeasonTrophies(se); try { saveToLocalStorage(); } catch (e) {} } return r; };
+    }
+
+    // ================= KUPALAR: silinen sütun otomatik geri gelmesin =================
+    // Lig/özel lig senkronları sütunu yeniden oluşturabiliyor; kullanıcının sildiği otomatik sütunlar kara listeye alınır.
+    window.gtDeletedCols = window.gtDeletedCols || [];
+    const colKey = n => { try { return String(tourCanon(n) || n).toLowerCase().trim(); } catch (e) { return String(n || '').toLowerCase().trim(); } };
+    if (typeof window.deleteTournament === 'function') {
+        const oD = window.deleteTournament;
+        window.deleteTournament = function () {
+            const id = typeof editingTournamentId !== 'undefined' ? editingTournamentId : null, t = (tournamentsList || []).find(x => x.id === id), n = t && t.name;
+            const r = oD.apply(this, arguments);
+            try { if (n && !(tournamentsList || []).some(x => x.id === id)) { const k = colKey(n); if (!window.gtDeletedCols.includes(k)) window.gtDeletedCols.push(k); saveToLocalStorage(); } } catch (e) {}
+            return r;
+        };
+    }
+    function purgeAutoCols() {
+        const del = window.gtDeletedCols || []; if (!del.length || !Array.isArray(tournamentsList)) return false;
+        const used = id => Object.keys(trophyData || {}).some(se => { const c = trophyData[se] && trophyData[se][id]; return c && (c.champion || c.runnerUp); });
+        const n0 = tournamentsList.length;
+        tournamentsList = tournamentsList.filter(t => !(/^(lg_|ct_)/.test(String(t.id)) && del.includes(colKey(t.name)) && !used(t.id)));
+        return tournamentsList.length !== n0;
+    }
+    if (typeof window.renderTrophiesGrid === 'function') {
+        const oR = window.renderTrophiesGrid;
+        window.renderTrophiesGrid = function () {
+            // silinmiş özel lig sütunu, veri yoksa yeniden oluşturulmasın: oluşturma sırasında katalogdan geçici çıkar
+            const full = customCatalog; let swapped = false;
+            try {
+                if (purgeAutoCols()) saveToLocalStorage();
+                const del = window.gtDeletedCols || [];
+                if (del.length && Array.isArray(customCatalog)) {
+                    const used = nm => (tournamentsList || []).some(t => colKey(t.name) === colKey(nm));
+                    const keep = customCatalog.filter(e => !(e && e.custom && del.includes(colKey(e.n)) && !used(e.n)));
+                    if (keep.length !== customCatalog.length) { customCatalog = keep; swapped = true; }
+                }
+            } catch (e) {}
+            try { return oR.apply(this, arguments); } finally { if (swapped) customCatalog = full; }
+        };
+    }
+
+    // ================= LİG ADI BİRLEŞTİRME: tek ad, otomatik =================
+    // Aynı lig iki farklı adla kayıtlıysa (ör. "SuperLiga" ↔ "Romanian Superliga") tek ada toplanır:
+    // Diğer ligler verisi, sezon slotları, özel lig kaydı, logo ve Kupalar sütunu. Elle açılmış sütunlara dokunulmaz.
+    window.gtLeagueAlias = window.gtLeagueAlias || { 'superliga': 'Romanian Superliga', 'swiss super league': 'Swiss League' };
+    const AL = () => window.gtLeagueAlias || {};
+    const lgNorm = n => String(n || '').toLowerCase().replace(/\s+/g, ' ').trim();
+    const lgCanonOf = n => AL()[lgNorm(n)] || null;
+    window.gtLeagueCanon = n => lgCanonOf(n) || n;
+    function mergeLeagueNames() {
+        let ch = false;
+        try {
+            Object.keys(AL()).forEach(ak => {
+                const NEW = AL()[ak];
+                // 1) Diğer ligler verisi + sezon slotları
+                Object.keys(euroLeaguesData || {}).forEach(se => {
+                    const o = euroLeaguesData[se]; if (!o) return;
+                    Object.keys(o).filter(k => lgNorm(k) === ak).forEach(k => {
+                        const has = a => (a || []).some(x => x && String(x.name || '').trim());
+                        if (!has(o[NEW])) o[NEW] = o[k];
+                        delete o[k]; ch = true;
+                    });
+                });
+                Object.keys(euroSlotsData || {}).forEach(se => {
+                    const a = euroSlotsData[se]; if (!Array.isArray(a)) return;
+                    const m = a.map(n => lgNorm(n) === ak ? NEW : n), u = m.filter((n, i) => m.indexOf(n) === i);
+                    if (m.some((n, i) => n !== a[i]) || u.length !== m.length) { euroSlotsData[se] = u; ch = true; }
+                });
+                // 2) Özel lig kaydı ve logo
+                if (Array.isArray(customCatalog)) {
+                    const dup = customCatalog.filter(e => e && lgNorm(e.n) === ak);
+                    if (dup.length) {
+                        if (!customCatalog.some(e => e && e.n === NEW)) { dup[0].n = NEW; dup.shift(); }
+                        customCatalog = customCatalog.filter(e => !dup.includes(e)); ch = true;
+                    }
+                }
+                if (typeof competitionLogos === 'object' && competitionLogos) Object.keys(competitionLogos).filter(k => lgNorm(k) === ak).forEach(k => { if (!competitionLogos[NEW]) competitionLogos[NEW] = competitionLogos[k]; delete competitionLogos[k]; ch = true; });
+                // 3) Kupalar sütunu (yalnızca otomatik açılanlar: lg_ / ct_)
+                const cols = (tournamentsList || []).filter(t => lgNorm(t.name) === ak && /^(lg_|ct_)/.test(String(t.id)));
+                cols.forEach(c => {
+                    let dst = tournamentsList.find(t => t !== c && lgNorm(t.name) === lgNorm(NEW));
+                    if (!dst) { c.name = NEW; ch = true; return; }
+                    Object.keys(trophyData || {}).forEach(se => { const m = trophyData[se]; if (m && m[c.id]) { if (!m[dst.id]) m[dst.id] = m[c.id]; delete m[c.id]; } });
+                    tournamentsList = tournamentsList.filter(t => t !== c); ch = true;
+                });
+            });
+            // 4) Verisi olmayan ligin otomatik kupa kutusu (ör. Romanya şampiyonu Danimarka sütununda) temizlenir
+            const hasData = {};
+            Object.keys(euroLeaguesData || {}).forEach(se => Object.keys(euroLeaguesData[se] || {}).forEach(k => { if ((euroLeaguesData[se][k] || []).some(x => x && String(x.name || '').trim())) { (hasData[se] = hasData[se] || new Set()).add(colKey(k)); } }));
+            (tournamentsList || []).filter(t => /^lg_/.test(String(t.id))).forEach(t => {
+                Object.keys(trophyData || {}).forEach(se => {
+                    const c = trophyData[se] && trophyData[se][t.id]; if (!c) return;
+                    if (hasData[se] && hasData[se].has(colKey(t.name))) return;
+                    const mine = (customTournamentsData && customTournamentsData[se] || []).some(x => x && x.type && colKey(x.type) === colKey(t.name));
+                    if (mine) return;
+                    ['champion', 'runnerUp'].forEach(r => { if (c[r] && c[r].auto && c[r].src !== 'ct') { c[r] = null; ch = true; } });
+                    if (!c.champion && !c.runnerUp) delete trophyData[se][t.id];
+                });
+            });
+            // 4b) Otomatik açılmış, hiçbir sezonda verisi kalmayan ve özel lig kaydı olmayan sütun kaldırılır
+            if (ch) {
+                const used = id => Object.keys(trophyData || {}).some(se => { const c = trophyData[se] && trophyData[se][id]; return c && (c.champion || c.runnerUp); });
+                const cat = (customCatalog || []).map(e => colKey(e.n));
+                const n0 = (tournamentsList || []).length;
+                tournamentsList = tournamentsList.filter(t => !(/^lg_/.test(String(t.id)) && !used(t.id) && !cat.includes(colKey(t.name)) && !Object.keys(euroLeaguesData || {}).some(se => Object.keys(euroLeaguesData[se] || {}).some(k => colKey(k) === colKey(t.name)))));
+                if (tournamentsList.length !== n0) ch = true;
+            }
+            // 5) Doğru ad altında kupa kutularını yeniden üret
+            if (ch) Object.keys(euroLeaguesData || {}).forEach(se => Object.keys(euroLeaguesData[se] || {}).forEach(k => { try { window.euroSyncTrophies(se, k); } catch (e) {} }));
+        } catch (e) { console.warn('gt-entry lig birleştirme:', e); }
+        if (ch) { try { saveToLocalStorage(); } catch (e) {} }
+        return ch;
+    }
+    window.gtMergeLeagueNames = mergeLeagueNames;
+    if (typeof window.applyLoadedData === 'function') {
+        const oA = window.applyLoadedData;
+        window.applyLoadedData = function () { const r = oA.apply(this, arguments); mergeLeagueNames(); return r; };
+    }
+    // Yeni girişlerde de otomatik: slot seçimi ve toplu ekleme eski adı yazsa bile tek ada çevrilir
+    if (typeof window.setEuroSlot === 'function') {
+        const oS = window.setEuroSlot;
+        window.setEuroSlot = function (season, idx, name) { return oS.call(this, season, idx, lgCanonOf(name) || name); };
+    }
+    if (typeof window.processEuroLeaguesBulkInput === 'function') {
+        const oB = window.processEuroLeaguesBulkInput;
+        window.processEuroLeaguesBulkInput = function () {
+            try { const ta = document.getElementById('el-bulk-input'); if (ta) ta.value = ta.value.split('\n').map(l => { const p = l.split(/([,;\t])/); const c = lgCanonOf((p[0] || '').trim()); if (c) p[0] = c; return p.join(''); }).join('\n'); } catch (e) {}
+            const r = oB.apply(this, arguments); mergeLeagueNames(); return r;
+        };
+    }
+    if (typeof window.renderTrophiesGrid === 'function') {
+        const oG = window.renderTrophiesGrid;
+        window.renderTrophiesGrid = function () { mergeLeagueNames(); return oG.apply(this, arguments); };
+    }
+    setTimeout(mergeLeagueNames, 0);
+
+    // ================= YAŞ: doğum tarihinden otomatik =================
+    const CP_DATE = { t1: [8, 31, 0], s1: [12, 31, 0], t2: [1, 31, 1], s2: [6, 30, 1] };
+    function ageAt(iso, season, cp) {
+        const m = String(iso || '').match(/^(\d{4})-(\d{2})-(\d{2})/), sy = parseInt(String(season || '').slice(0, 2)), d = CP_DATE[cp];
+        if (!m || !(sy >= 0) || !d) return null;
+        const y = 2000 + sy + d[2]; let a = y - (+m[1]);
+        if (d[0] < +m[2] || (d[0] === +m[2] && d[1] < +m[3])) a--;
+        return a;
+    }
+    function fillAges(p) {
+        let ch = false;
+        if (!p || !p.birthDate || !p.history) return ch;
+        Object.keys(p.history).forEach(sn => {
+            const h = p.history[sn]; if (!h) return;
+            ORDER.forEach(c => {
+                const have = parseInt(h[c + 'a']) > 0, auto = h[c + 'aA'] === 1;
+                if (have && !auto) return;
+                if (!(parseInt(h[c + 'o']) > 0 || ['in', 'free_in', 'loan_in', 'academy'].includes(h[c + 'Type']))) return;
+                const a = ageAt(p.birthDate, sn, c); if (a === null || a < 10 || a > 55) return;
+                if (h[c + 'a'] !== a) { h[c + 'a'] = a; h[c + 'aA'] = 1; ch = true; }
+            });
+        });
+        return ch;
+    }
+    function fillAgesAll() {
+        let ch = false;
+        try { ['astakim', 'akademi', 'milli'].forEach(c => (squadData[c] || []).forEach(p => { if (fillAges(p)) ch = true; })); } catch (e) {}
+        return ch;
+    }
+    window.gtFillAges = fillAgesAll;
+    if (typeof window.gtSqBirthSave === 'function') {
+        const oB = window.gtSqBirthSave;
+        window.gtSqBirthSave = function () { const r = oB.apply(this, arguments); try { if (fillAgesAll()) { saveToLocalStorage(); if (typeof renderSquadGrid === 'function') renderSquadGrid(); } } catch (e) {} return r; };
+    }
+    if (typeof window.applyLoadedData === 'function') {
+        const oL = window.applyLoadedData;
+        window.applyLoadedData = function () { const r = oL.apply(this, arguments); fillAgesAll(); return r; };
+    }
+    setTimeout(fillAgesAll, 0);
+
+    // ================= Development Plans önizlemesi: OVR sıçraması uyarısı =================
+    if (typeof window.attrImportPreview === 'function') {
+        const oP = window.attrImportPreview;
+        window.attrImportPreview = function () {
+            const r = oP.apply(this, arguments);
+            try {
+                const old = document.getElementById('gte-aw'); if (old) old.remove();
+                const msg = document.getElementById('ai-msg'); if (!msg || typeof attrImportRows === 'undefined' || !attrImportRows.length) return r;
+                const cx = document.getElementById('ai-ctx').value, squad = (squadData[cx] || []);
+                const big = [];
+                attrImportRows.forEach(row => {
+                    const p = squad.find(x => x.id === row.pick); if (!p) return;
+                    const last = typeof attrPair === 'function' ? attrPair(p) : null, oldO = parseInt(last ? last.to.ovr : (p.currentOvr || p.joinOvr)), nu = parseInt(row.v.ovr);
+                    if (oldO && nu && Math.abs(nu - oldO) > 10) big.push(`${p.name} ${oldO} → ${nu}`);
+                });
+                if (big.length) { const w = document.createElement('div'); w.id = 'gte-aw'; w.className = 'gte-w'; w.style.margin = '6px 0'; w.textContent = '⚠ ' + L(`OVR değişimi 10'dan büyük: ${big.join(', ')}. Videoyu kontrol et.`, `OVR change over 10: ${big.join(', ')}. Check the video.`); msg.insertAdjacentElement('afterend', w); }
+            } catch (e) { console.warn('gt-entry uyarı:', e); }
+            return r;
+        };
     }
 })();

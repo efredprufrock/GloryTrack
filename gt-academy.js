@@ -413,9 +413,10 @@
         try {
             const np = (squadData.astakim || []).find(x => !before.has(x.id));
             if (np && src && src.isPromoted) {
-                let last = null;
-                seasonsList.forEach(sn => { const h = np.history && np.history[sn]; if (h) CH.forEach(c => { if (h[c + 'o'] || h[c + 'a']) last = { sn, c }; }); });
-                if (!last) { const t = targetCell(); last = { sn: t.season, c: t.cell }; }
+                // Yükseldiği çeyrek = şu an işlenen (son sezonda, A takım veya akademide verisi girilmiş en son) ölçüm; hiç veri yoksa 31 Ağu
+                const sn0 = seasonsList[seasonsList.length - 1]; let ci = -1;
+                ['astakim', 'akademi'].forEach(cx => (squadData[cx] || []).forEach(x => { const h = x && x.history && x.history[sn0]; if (h) CH.forEach((c, i) => { if ((h[c + 'o'] || h[c + 'a']) && i > ci) ci = i; }); }));
+                const last = { sn: sn0, c: CH[Math.max(ci, 0)] };
                 np.history = np.history || {}; const h = np.history[last.sn] = np.history[last.sn] || {};
                 const cur = h[last.c + 'Type'];
                 if (!cur || cur === 'none' || cur === 'continue') { h[last.c + 'Type'] = 'academy'; saveToLocalStorage(); renderSquadGrid(); }

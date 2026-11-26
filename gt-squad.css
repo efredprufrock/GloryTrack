@@ -225,3 +225,8 @@ html body.theme-light span.gt-dl.gt-dl.gt-dl.text-red-400, html body.theme-light
 
 /* Özet formundaki halka sayısı: tam ortalı */
 html body .gt-sum .mb-ovr > b { min-width: 0; text-align: center; font-size: inherit; }
+
+/* Bedelsiz (free agent) katılım ikonu: hediye yerine özel görsel */
+.gt-tb-free_in i.fa-gift, .gt-sum-ic i.fa-gift { font-size:0 !important; display:inline-block; width:12px; height:13px; vertical-align:-2px; background:url(gt-free.png?v=1) center/contain no-repeat; }
+.gt-tb-free_in i.fa-gift::before, .gt-sum-ic i.fa-gift::before { content:none !important; }
+.gt-sum-ic i.fa-gift { width:15px; height:16px; }
