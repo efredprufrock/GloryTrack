@@ -1,7 +1,8 @@
 /* Veri sağlığı (Faz 1): boyut göstergesi · geri alma kapsamı · lig sözlüğü · eski nitelik budama · yedek hatırlatması */
 (function () {
     'use strict';
-    const LIMIT = 900 * 1024;
+    let LIMIT = 900 * 1024;
+    const syncLimit = () => { LIMIT = (window.GT_RTDB ? 40960 : 900) * 1024; };
     const en = () => typeof currentLang !== 'undefined' && currentLang === 'en';
     const L = (tr, e) => (en() ? e : tr);
     const E = s => (typeof escapeHtml === 'function' ? escapeHtml(String(s == null ? '' : s)) : String(s == null ? '' : s));
@@ -23,6 +24,7 @@
         return { all, sub };
     }
     function measure() {
+        syncLimit();
         const d = window.getAllData(), total = bytes(d);
         const parts = Object.keys(d).map(k => [k, bytes(d[k])]).sort((a, b) => b[1] - a[1]).slice(0, 5);
         return { total, parts, attr: attrBytes() };

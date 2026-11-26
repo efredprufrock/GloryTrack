@@ -8,15 +8,29 @@
 // =====================================================================
 (function () {
     'use strict';
-    const MAX_BYTES = 8 * 1024 * 1024;
+    const MAX_BYTES = 40 * 1024 * 1024;   // sıkıştırılmamış JSON sınırı; gzip ile bulutta ~5-8 MB yer tutar
+    const CAN_GZ = typeof CompressionStream === 'function' && typeof DecompressionStream === 'function';
+    const b64 = u8 => { let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); };
+    const unb64 = t => { const b = atob(t), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; };
+    async function gz(str) { return b64(new Uint8Array(await new Response(new Blob([str]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer())); }
+    async function ungz(t) { return await new Response(new Blob([unb64(t)]).stream().pipeThrough(new DecompressionStream('gzip'))).text(); }
+    // kayıt: eski biçim {j:'...'} da, yeni sıkıştırılmış {z:'...'} da okunur
+    const has = v => !!(v && (typeof v.j === 'string' || typeof v.z === 'string'));
+    async function plain(v) { return typeof v.z === 'string' ? await ungz(v.z) : v.j; }
 
     function build(fs, rdb) {
-        const snapOf = (id, v) => ({
-            id, exists: !!(v && typeof v.j === 'string'),
+        // v: ham düğüm; txt: açılmış JSON metni (sıkıştırılmışsa önceden açılır)
+        const snapOf = (id, v, txt) => ({
+            id, exists: has(v),
             metadata: { hasPendingWrites: false },
-            data() { return v && typeof v.j === 'string' ? JSON.parse(v.j) : undefined; }
+            data() { return has(v) ? JSON.parse(txt) : undefined; }
         });
-        const nodeOf = d => ({ rev: (d && d._rev) || 0, j: JSON.stringify(d) });
+        const snapAsync = async (id, v) => snapOf(id, v, has(v) ? await plain(v) : null);
+        const nodeOf = async d => {
+            const j = JSON.stringify(d), rev = (d && d._rev) || 0;
+            if (CAN_GZ && j.length > 2000) { try { return { rev, z: await gz(j) }; } catch (e) {} }
+            return { rev, j };
+        };
 
         function Ref(id, dataPath, base, legacy, main) { this.id = id; this.dataPath = dataPath; this.base = base; this.legacy = legacy; this.main = main; }
         Ref.prototype.collection = function (name) {
@@ -26,21 +40,21 @@
         Ref.prototype.markDone = function () { return this.main ? rdb.ref(this.base + '/m').set(true) : Promise.resolve(); };
         Ref.prototype.get = async function () {
             const v = (await rdb.ref(this.dataPath).get()).val();
-            if (v && typeof v.j === 'string') return snapOf(this.id, v);
+            if (has(v)) return snapAsync(this.id, v);
             if (this.main && (await rdb.ref(this.base + '/m').get()).val()) return snapOf(this.id, null);
             // RTDB'de yok → eski Firestore kaydını bir kerelik kopyala (hata olursa yukarı fırlar: boş sanıp üzerine yazmayalım)
             const old = await this.legacy.get();
             if (old && old.exists) {
-                const node = nodeOf(old.data());
+                const node = await nodeOf(old.data());
                 await rdb.ref(this.dataPath).set(node);
                 await this.markDone();
-                return snapOf(this.id, node);
+                return snapAsync(this.id, node);
             }
             await this.markDone();
             return snapOf(this.id, null);
         };
         Ref.prototype.set = async function (data) {
-            await rdb.ref(this.dataPath).set(nodeOf(data));
+            await rdb.ref(this.dataPath).set(await nodeOf(data));
             await this.markDone();
         };
         Ref.prototype.delete = async function () {
@@ -49,7 +63,7 @@
         };
         Ref.prototype.onSnapshot = function (cb, errCb) {
             const r = rdb.ref(this.dataPath), id = this.id;
-            const h = r.on('value', s => cb(snapOf(id, s.val())), e => { if (errCb) errCb(e); });
+            const h = r.on('value', s => { snapAsync(id, s.val()).then(cb, e => { if (errCb) errCb(e); }); }, e => { if (errCb) errCb(e); });
             return () => r.off('value', h);
         };
 
@@ -68,7 +82,7 @@
                     const result = await fn(t);
                     let ok = true;
                     for (const [ref, data] of writes) {
-                        const node = nodeOf(data);
+                        const node = await nodeOf(data);
                         if (!reads.has(ref)) { await rdb.ref(ref.dataPath).set(node); continue; }
                         const expected = reads.get(ref);
                         const res = await rdb.ref(ref.dataPath).transaction(cur => {
@@ -99,7 +113,7 @@
                 window.cloudSizeCheck = function (data) {
                     const size = new Blob([JSON.stringify(data)]).size;
                     if (size <= MAX_BYTES) return true;
-                    setSyncStatus('error', 'Veri buluta sığmıyor (' + Math.round(size / 1024) + ' KB / 8192 KB)');
+                    setSyncStatus('error', 'Veri buluta sığmıyor (' + Math.round(size / 1024) + ' KB / ' + Math.round(MAX_BYTES / 1024) + ' KB)');
                     return false;
                 };
             }
